@@ -1,6 +1,6 @@
 # Skills
 
-[English](./README.md)
+[English](./README.md) | [DeepWiki](https://deepwiki.com/TBSten/skills)
 
 TBSten の [Claude Code](https://docs.anthropic.com/en/docs/claude-code) スキルコレクション。
 
