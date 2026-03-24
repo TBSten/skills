@@ -7,26 +7,41 @@ BASE_URL="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 API_URL="https://api.github.com/repos/${REPO}/contents"
 
 usage() {
-  echo "Usage: curl -fsSL ${BASE_URL}/rules/install.sh | bash -s -- <rule-name>"
+  echo "Usage: curl -fsSL ${BASE_URL}/rules/install.sh | bash -s -- <rule-name> [install-name]"
   echo ""
   echo "Installs a rule into .claude/rules/ and downloads reference files."
+  echo "If install-name is specified, the rule is saved as .claude/rules/<install-name>.md"
   exit 1
 }
 
-rule_name="${1:-}"
+rule_name=""
+install_name=""
+
+for arg in "$@"; do
+  case "$arg" in
+    as=*)
+      install_name="${arg#as=}"
+      ;;
+    *)
+      rule_name="$arg"
+      ;;
+  esac
+done
+
 if [ -z "$rule_name" ]; then
   echo "Error: rule name is required."
   usage
 fi
 
+install_name="${install_name:-$rule_name}"
 rule_dir="rules/${rule_name}"
 
-echo "Installing rule: ${rule_name} ..."
+echo "Installing rule: ${rule_name} as ${install_name} ..."
 
-# Download RULE.md -> .claude/rules/<rule-name>.md
+# Download RULE.md -> .claude/rules/<install-name>.md
 mkdir -p .claude/rules
-echo "  -> .claude/rules/${rule_name}.md"
-curl -fsSL "${BASE_URL}/${rule_dir}/RULE.md" -o ".claude/rules/${rule_name}.md"
+echo "  -> .claude/rules/${install_name}.md"
+curl -fsSL "${BASE_URL}/${rule_dir}/RULE.md" -o ".claude/rules/${install_name}.md"
 
 # Recursively list and download files from a GitHub directory
 download_dir() {
@@ -64,4 +79,4 @@ download_dir() {
 # Download reference files recursively (everything except RULE.md)
 download_dir "$rule_dir"
 
-echo "Done! Rule '${rule_name}' installed."
+echo "Done! Rule '${install_name}' installed."
