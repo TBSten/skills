@@ -25,6 +25,18 @@ npx skills add tbsten/skills --skill kotlin-tuple
 <td>Type-safe Tuple utilities (Tuple0–Tuple20) for Kotlin/KMP</td>
 <td><a href="./kotlin-tuple.md">kotlin-tuple.md</a></td>
 </tr>
+<tr>
+<td>contribute-skill</td>
+<td>
+
+```sh
+npx skills add tbsten/skills --skill contribute-skill
+```
+
+</td>
+<td>Package project knowledge as a skill and create a PR to TBSten/skills</td>
+<td><a href="./contribute-skill.md">contribute-skill.md</a></td>
+</tr>
 </table>
 
 ## Available Rules
