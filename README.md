@@ -8,4 +8,4 @@
 
 | Skill | Install | Description | Details |
 |---|---|---|---|
-| kotlin-tuple | `npx skills add tbsten/skills --skill kotlin-tuple` | Type-safe Tuple utilities (Tuple0–Tuple20) for Kotlin/KMP | [kotlin-tuple.md](./kotlin-tuple.md) ([日本語](./kotlin-tuple.ja.md)) |
+| kotlin-tuple | `npx skills add tbsten/skills --skill kotlin-tuple` | Type-safe Tuple utilities (Tuple0–Tuple20) for Kotlin/KMP | [kotlin-tuple.md](./kotlin-tuple.md) |
