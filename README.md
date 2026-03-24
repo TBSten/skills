@@ -2,7 +2,7 @@
 
 [日本語](./README.ja.md) | [DeepWiki](https://deepwiki.com/TBSten/skills)
 
-[Claude Code](https://docs.anthropic.com/en/docs/claude-code) skills collection by TBSten.
+[Claude Code](https://docs.anthropic.com/en/docs/claude-code) skills and rules collection by TBSten.
 
 ## Available Skills
 
@@ -24,5 +24,16 @@ npx skills add tbsten/skills --skill kotlin-tuple
 </td>
 <td>Type-safe Tuple utilities (Tuple0–Tuple20) for Kotlin/KMP</td>
 <td><a href="./kotlin-tuple.md">kotlin-tuple.md</a></td>
+</tr>
+</table>
+
+## Available Rules
+
+<table>
+<tr>
+<th>Rule</th>
+<th>Install</th>
+<th>Description</th>
+<th>Details</th>
 </tr>
 </table>
