@@ -49,6 +49,18 @@ npx skills add tbsten/skills --skill contribute-rule
 <td>プロジェクトの知見をルールとしてパッケージし TBSten/skills に PR を作成</td>
 <td><a href="./contribute-rule.ja.md">contribute-rule.ja.md</a></td>
 </tr>
+<tr>
+<td>simple-loader</td>
+<td>
+
+```sh
+npx skills add tbsten/skills --skill simple-loader
+```
+
+</td>
+<td>Kotlin/Compose Multiplatform 向け sealed interface ベースの非同期データ読み込み状態管理ステートマシン</td>
+<td><a href="./simple-loader.ja.md">simple-loader.ja.md</a></td>
+</tr>
 </table>
 
 ## 利用可能なルール

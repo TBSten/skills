@@ -49,6 +49,18 @@ npx skills add tbsten/skills --skill contribute-rule
 <td>Package project knowledge as a rule and create a PR to TBSten/skills</td>
 <td><a href="./contribute-rule.md">contribute-rule.md</a></td>
 </tr>
+<tr>
+<td>simple-loader</td>
+<td>
+
+```sh
+npx skills add tbsten/skills --skill simple-loader
+```
+
+</td>
+<td>Sealed interface state machine for async data loading in Kotlin/Compose Multiplatform</td>
+<td><a href="./simple-loader.md">simple-loader.md</a></td>
+</tr>
 </table>
 
 ## Available Rules
