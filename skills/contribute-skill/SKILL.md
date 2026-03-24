@@ -70,7 +70,12 @@ git clone --depth 1 https://github.com/<repo>.git /tmp/contribute-skill
 /tmp/contribute-skill/.claude/skills/add-skill.md
 ```
 
-以降のファイル作成はこのガイドの手順に従う。
+add-skill.md を読み込んだ後、以下のように統合する:
+
+- **add-skill.md の Step 1 (確認事項)**: contribute-skill の Step 1-2 で既に完了。スキップする
+- **add-skill.md の Step 2 (SKILL.md 作成)**: フォーマット・構成ルールに従う。内容は contribute-skill の Step 2 で整理した知見を使う
+- **add-skill.md の Step 3-5 (リソース配置・ドキュメント・README)**: そのまま従う
+
 ガイドが見つからない場合は、以下の「フォールバック」セクションに従う。
 
 ## Step 3.5: コードの汎用化
