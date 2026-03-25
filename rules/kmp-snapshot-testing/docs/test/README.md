@@ -1,4 +1,4 @@
-# テスト方針
+# スナップショットテスト方針
 
 ## 基本方針
 
@@ -11,16 +11,12 @@
 
 | 種類                                                   | ソースセット            | 詳細ドキュメント                               |
 |------------------------------------------------------|-------------------|----------------------------------------|
-| [ユニットテスト](./unit-test.md)                            | `commonTest`      | ビジネスロジックの状態遷移・振る舞いテスト                  |
 | [スナップショットテスト](./snapshot-test.md)                    | `jvmSnapshotTest` | 値・StateHolder・ViewModel の PBT スナップショット |
 | [Compose UI スナップショットテスト](./compose-snapshot-test.md) | `jvmSnapshotTest` | Compose UI コンポーネントの画像・セマンティクス スナップショット |
 
 ## テストコマンド
 
 ```bash
-# ユニットテスト + スナップショット検証
-./gradlew jvmTest
-
 # スナップショット差分の確認
 ./tools/snapshot-diff.sh -before=<compare-commit-hash> -Ppbt.iteration.count=10
 
@@ -46,5 +42,4 @@ ui/core/testing/         ... Compose UI テスト基盤 (runComposableSnapshotTe
 
 ## Convention Plugin
 
-- `convention-kmp-test` — commonTest / jvmTest の依存を自動付与
 - `convention-kmp-snapshot-testing` — jvmSnapshotTest ソースセットと Record/Verify タスクを自動登録

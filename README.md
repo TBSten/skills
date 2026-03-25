@@ -85,15 +85,15 @@ curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh
 <td><a href="./rules/kmp-layered-architecture/RULE.md">RULE.md</a></td>
 </tr>
 <tr>
-<td>kmp-testing</td>
+<td>kmp-snapshot-testing</td>
 <td>
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh | bash -s -- kmp-testing
+curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh | bash -s -- kmp-snapshot-testing
 ```
 
 </td>
-<td>Testing strategy rule (unit tests + snapshot PBT) for Kotlin Multiplatform projects with Kotest + Turbine</td>
-<td><a href="./rules/kmp-testing/RULE.md">RULE.md</a></td>
+<td>Snapshot PBT testing rule for Kotlin Multiplatform projects with Kotest + Turbine</td>
+<td><a href="./rules/kmp-snapshot-testing/RULE.md">RULE.md</a></td>
 </tr>
 </table>
