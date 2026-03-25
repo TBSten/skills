@@ -99,7 +99,9 @@ Step 2 で整理した知見をもとに RULE.md を記述する。
 2. 参照ファイルがあれば同ディレクトリに配置
    - インストール時にユーザーのカレントディレクトリにコピーされることを意識してパスを設計する
    - サブディレクトリのネストも可能
-3. `README.md` と `README.ja.md` の Available Rules テーブルに行を追加
+3. `<rule-name>.md` — 詳細ドキュメント (英語)
+4. `<rule-name>.ja.md` — 詳細ドキュメント (日本語)
+5. `README.md` と `README.ja.md` の Available Rules テーブルに行を追加
 
 ### レビューの提示方法
 
@@ -132,6 +134,8 @@ Step 2 で整理した知見をもとに RULE.md を記述する。
 PR 作成前に以下を確認する:
 
 1. **必要なファイルが揃っているか** — 以下のファイルが存在することを確認する:
+   - `./<rule-name>.md` が存在すること (詳細ドキュメント 英語)
+   - `./<rule-name>.ja.md` が存在すること (詳細ドキュメント 日本語)
    - `./rules/<rule-name>/RULE.md` が存在すること
    - ルールが参照するすべてのファイルが `./rules/<rule-name>/` 配下に存在すること
    - `README.md` と `README.ja.md` の Available Rules テーブルに新しいルールのエントリが追加されていること
@@ -155,7 +159,7 @@ PR 作成前に以下を確認する:
 ```bash
 cd /tmp/contribute-rule
 git checkout -b add-rule/<rule-name>
-git add rules/<rule-name>/ README.md README.ja.md
+git add rules/<rule-name>/ <rule-name>.md <rule-name>.ja.md README.md README.ja.md
 git commit -m "add <rule-name> rule"
 git push -u origin add-rule/<rule-name>
 ```
