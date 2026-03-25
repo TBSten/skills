@@ -2,15 +2,16 @@
 set -euo pipefail
 
 REPO="tbsten/skills"
-BRANCH="main"
-BASE_URL="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
-API_URL="https://api.github.com/repos/${REPO}/contents"
+REF="main"
 
 usage() {
-  echo "Usage: curl -fsSL ${BASE_URL}/rules/install.sh | bash -s -- <rule-name> [install-name]"
+  echo "Usage: curl -fsSL .../rules/install.sh | bash -s -- <rule-name> [options]"
   echo ""
   echo "Installs a rule into .claude/rules/ and downloads reference files."
-  echo "If install-name is specified, the rule is saved as .claude/rules/<install-name>.md"
+  echo ""
+  echo "Options:"
+  echo "  as=<name>              Save the rule as .claude/rules/<name>.md"
+  echo "  --ref=<ref>, -r=<ref>  Git ref (branch, tag, or commit hash) to download from (default: main)"
   exit 1
 }
 
@@ -22,11 +23,20 @@ for arg in "$@"; do
     as=*)
       install_name="${arg#as=}"
       ;;
+    --ref=*)
+      REF="${arg#--ref=}"
+      ;;
+    -r=*)
+      REF="${arg#-r=}"
+      ;;
     *)
       rule_name="$arg"
       ;;
   esac
 done
+
+BASE_URL="https://raw.githubusercontent.com/${REPO}/${REF}"
+API_URL="https://api.github.com/repos/${REPO}/contents"
 
 if [ -z "$rule_name" ]; then
   echo "Error: rule name is required."
@@ -47,7 +57,7 @@ curl -fsSL "${BASE_URL}/${rule_dir}/RULE.md" -o ".claude/rules/${install_name}.m
 download_dir() {
   local api_path="$1"
   local entries
-  entries=$(curl -fsSL "${API_URL}/${api_path}")
+  entries=$(curl -fsSL "${API_URL}/${api_path}?ref=${REF}")
 
   echo "$entries" | grep '"path"\|"type"' | paste - - | while read -r line; do
     local path type
