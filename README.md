@@ -61,6 +61,18 @@ npx skills add tbsten/skills --skill simple-loader
 <td>Sealed interface state machine for async data loading in Kotlin/Compose Multiplatform</td>
 <td><a href="./simple-loader.md">simple-loader.md</a></td>
 </tr>
+<tr>
+<td>kmp-snapshot-testing-setup</td>
+<td>
+
+```sh
+npx skills add tbsten/skills --skill kmp-snapshot-testing-setup
+```
+
+</td>
+<td>Set up snapshot testing infrastructure (Kotest PBT + Turbine) for KMP + Compose projects</td>
+<td><a href="./kmp-snapshot-testing-setup.md">kmp-snapshot-testing-setup.md</a></td>
+</tr>
 </table>
 
 ## Available Rules

@@ -61,6 +61,18 @@ npx skills add tbsten/skills --skill simple-loader
 <td>Kotlin/Compose Multiplatform 向け sealed interface ベースの非同期データ読み込み状態管理ステートマシン</td>
 <td><a href="./simple-loader.ja.md">simple-loader.ja.md</a></td>
 </tr>
+<tr>
+<td>kmp-snapshot-testing-setup</td>
+<td>
+
+```sh
+npx skills add tbsten/skills --skill kmp-snapshot-testing-setup
+```
+
+</td>
+<td>KMP + Compose プロジェクト向けスナップショットテスト基盤 (Kotest PBT + Turbine) のセットアップ</td>
+<td><a href="./kmp-snapshot-testing-setup.ja.md">kmp-snapshot-testing-setup.ja.md</a></td>
+</tr>
 </table>
 
 ## 利用可能なルール
