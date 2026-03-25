@@ -89,7 +89,8 @@ npx skills add tbsten/skills --skill kmp-snapshot-testing-setup
 <td>
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh | bash -s -- kmp-layered-architecture
+curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh | \
+  bash -s -- kmp-layered-architecture
 ```
 
 </td>
@@ -101,7 +102,8 @@ curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh
 <td>
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh | bash -s -- kmp-snapshot-testing
+curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh | \
+  bash -s -- kmp-snapshot-testing
 ```
 
 </td>
@@ -115,7 +117,8 @@ curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh
 ルールは `rules/install.sh` 経由でインストールします。`RULE.md` を `.claude/rules/` に、参照ファイルをカレントディレクトリにダウンロードします。
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh | bash -s -- <rule-name>
+curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh | \
+  bash -s -- <rule-name>
 ```
 
 ### オプション
