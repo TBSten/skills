@@ -18,7 +18,8 @@
 <td>
 
 ```sh
-npx skills add tbsten/skills --skill kotlin-tuple
+npx skills add tbsten/skills \
+  --skill kotlin-tuple
 ```
 
 </td>
@@ -30,7 +31,8 @@ npx skills add tbsten/skills --skill kotlin-tuple
 <td>
 
 ```sh
-npx skills add tbsten/skills --skill contribute-skill
+npx skills add tbsten/skills \
+  --skill contribute-skill
 ```
 
 </td>
@@ -42,7 +44,8 @@ npx skills add tbsten/skills --skill contribute-skill
 <td>
 
 ```sh
-npx skills add tbsten/skills --skill contribute-rule
+npx skills add tbsten/skills \
+  --skill contribute-rule
 ```
 
 </td>
@@ -54,7 +57,8 @@ npx skills add tbsten/skills --skill contribute-rule
 <td>
 
 ```sh
-npx skills add tbsten/skills --skill simple-loader
+npx skills add tbsten/skills \
+  --skill simple-loader
 ```
 
 </td>
@@ -66,7 +70,8 @@ npx skills add tbsten/skills --skill simple-loader
 <td>
 
 ```sh
-npx skills add tbsten/skills --skill kmp-snapshot-testing-setup
+npx skills add tbsten/skills \
+  --skill kmp-snapshot-testing-setup
 ```
 
 </td>
@@ -89,7 +94,8 @@ npx skills add tbsten/skills --skill kmp-snapshot-testing-setup
 <td>
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh | \
+curl -fsSL \
+  https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh | \
   bash -s -- kmp-layered-architecture
 ```
 
@@ -102,7 +108,8 @@ curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh
 <td>
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh | \
+curl -fsSL \
+  https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh | \
   bash -s -- kmp-snapshot-testing
 ```
 
@@ -117,7 +124,8 @@ curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh
 Rules are installed via `rules/install.sh`. It downloads `RULE.md` into `.claude/rules/` and reference files into the current directory.
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh | \
+curl -fsSL \
+  https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh | \
   bash -s -- <rule-name>
 ```
 

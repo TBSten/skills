@@ -9,7 +9,8 @@ A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skill that sets 
 ### 1. Install the skill:
 
 ```bash
-npx skills add tbsten/skills --skill kmp-snapshot-testing-setup
+npx skills add tbsten/skills \
+  --skill kmp-snapshot-testing-setup
 ```
 
 ### 2. Ask your AI agent:

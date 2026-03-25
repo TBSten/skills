@@ -9,7 +9,8 @@ A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skill that gener
 ### 1. Install the skill:
 
 ```bash
-npx skills add tbsten/skills --skill kotlin-tuple
+npx skills add tbsten/skills \
+  --skill kotlin-tuple
 ```
 
 ### 2. Ask your AI agent:

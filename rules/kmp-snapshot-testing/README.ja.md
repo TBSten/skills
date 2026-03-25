@@ -9,7 +9,9 @@ Kotlin Multiplatform プロジェクト向けのスナップショット PBT (Pr
 ### 1. ルールをインストール:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh | bash -s -- kmp-snapshot-testing
+curl -fsSL \
+  https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh | \
+  bash -s -- kmp-snapshot-testing
 ```
 
 ### 2. コーディング開始:
@@ -40,5 +42,6 @@ curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh
 プロジェクトにスナップショットテスト基盤がまだない場合は、`kmp-snapshot-testing-setup` スキルでセットアップできます:
 
 ```bash
-npx skills add tbsten/skills --skill kmp-snapshot-testing-setup
+npx skills add tbsten/skills \
+  --skill kmp-snapshot-testing-setup
 ```

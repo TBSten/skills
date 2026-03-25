@@ -9,7 +9,9 @@ A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) rule for snapsho
 ### 1. Install the rule:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh | bash -s -- kmp-snapshot-testing
+curl -fsSL \
+  https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh | \
+  bash -s -- kmp-snapshot-testing
 ```
 
 ### 2. Start coding:
@@ -40,5 +42,6 @@ This is a **path-triggered rule**. When snapshot test code or test infrastructur
 If your project doesn't have snapshot testing infrastructure set up yet, use the `kmp-snapshot-testing-setup` skill:
 
 ```bash
-npx skills add tbsten/skills --skill kmp-snapshot-testing-setup
+npx skills add tbsten/skills \
+  --skill kmp-snapshot-testing-setup
 ```

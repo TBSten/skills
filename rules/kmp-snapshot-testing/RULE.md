@@ -18,5 +18,6 @@ paths:
 `kmp-snapshot-testing-setup` スキルを使ってセットアップすること。
 
 ```sh
-npx skills add tbsten/skills --skill kmp-snapshot-testing-setup
+npx skills add tbsten/skills \
+  --skill kmp-snapshot-testing-setup
 ```

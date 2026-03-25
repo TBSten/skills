@@ -9,7 +9,8 @@ Kotlin/Compose Multiplatform プロジェクト向けの非同期データ読み
 ### 1. スキルをインストール:
 
 ```bash
-npx skills add tbsten/skills --skill simple-loader
+npx skills add tbsten/skills \
+  --skill simple-loader
 ```
 
 ### 2. AI エージェントに依頼:
