@@ -1,6 +1,6 @@
 # kmp-layered-architecture ルール
 
-[English](./README.md) | [DeepWiki](https://deepwiki.com/TBSten/skills)
+[English](./kmp-layered-architecture.md) | [DeepWiki](https://deepwiki.com/TBSten/skills)
 
 Kotlin Multiplatform + Compose プロジェクト向けの 4 層アーキテクチャ (App / UI / Domain / Data) を強制する [Claude Code](https://docs.anthropic.com/en/docs/claude-code) ルール。
 

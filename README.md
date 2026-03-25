@@ -24,7 +24,7 @@ npx skills add tbsten/skills \
 
 </td>
 <td>Type-safe Tuple utilities for Kotlin/KMP</td>
-<td><a href="./skills/kotlin-tuple/README.md">Details</a></td>
+<td><a href="./skills/kotlin-tuple.md">Details</a></td>
 </tr>
 <tr>
 <td>contribute-skill</td>
@@ -37,7 +37,7 @@ npx skills add tbsten/skills \
 
 </td>
 <td>Package project knowledge as a skill and create a PR to TBSten/skills</td>
-<td><a href="./skills/contribute-skill/README.md">Details</a></td>
+<td><a href="./skills/contribute-skill.md">Details</a></td>
 </tr>
 <tr>
 <td>contribute-rule</td>
@@ -50,7 +50,7 @@ npx skills add tbsten/skills \
 
 </td>
 <td>Package project knowledge as a rule and create a PR to TBSten/skills</td>
-<td><a href="./skills/contribute-rule/README.md">Details</a></td>
+<td><a href="./skills/contribute-rule.md">Details</a></td>
 </tr>
 <tr>
 <td>simple-loader</td>
@@ -63,7 +63,7 @@ npx skills add tbsten/skills \
 
 </td>
 <td>Sealed interface state machine for async data loading in Kotlin/Compose Multiplatform</td>
-<td><a href="./skills/simple-loader/README.md">Details</a></td>
+<td><a href="./skills/simple-loader.md">Details</a></td>
 </tr>
 <tr>
 <td>kmp-snapshot-testing-setup</td>
@@ -76,7 +76,7 @@ npx skills add tbsten/skills \
 
 </td>
 <td>Set up snapshot testing infrastructure (Kotest PBT + Turbine) for KMP + Compose projects</td>
-<td><a href="./skills/kmp-snapshot-testing-setup/README.md">Details</a></td>
+<td><a href="./skills/kmp-snapshot-testing-setup.md">Details</a></td>
 </tr>
 </table>
 
@@ -100,7 +100,7 @@ curl -fsSL https://rules.tbsten.me/i | \
 
 </td>
 <td>4-layer architecture (App/UI/Domain/Data) rule for Kotlin Multiplatform + Compose projects</td>
-<td><a href="./rules/kmp-layered-architecture/README.md">Details</a></td>
+<td><a href="./rules/kmp-layered-architecture.md">Details</a></td>
 </tr>
 <tr>
 <td>kmp-snapshot-testing</td>
@@ -113,7 +113,7 @@ curl -fsSL https://rules.tbsten.me/i | \
 
 </td>
 <td>Snapshot PBT testing rule for Kotlin Multiplatform projects with Kotest + Turbine</td>
-<td><a href="./rules/kmp-snapshot-testing/README.md">Details</a></td>
+<td><a href="./rules/kmp-snapshot-testing.md">Details</a></td>
 </tr>
 </table>
 

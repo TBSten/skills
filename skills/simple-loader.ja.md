@@ -1,6 +1,6 @@
 # SimpleLoader スキル
 
-[English](./README.md) | [DeepWiki](https://deepwiki.com/TBSten/skills)
+[English](./simple-loader.md) | [DeepWiki](https://deepwiki.com/TBSten/skills)
 
 Kotlin/Compose Multiplatform プロジェクト向けの非同期データ読み込み状態管理ステートマシンを生成する [Claude Code](https://docs.anthropic.com/en/docs/claude-code) スキル。
 

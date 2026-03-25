@@ -21,9 +21,9 @@ rules/<rule-name>/
 └── **/*                   # 参照ファイル (任意。ユーザーのカレントディレクトリに配置される)
 ```
 
-ルールディレクトリ内に詳細ドキュメントも配置:
-- `README.md` — ルール詳細ドキュメント (英語)
-- `README.ja.md` — ルール詳細ドキュメント (日本語)
+詳細ドキュメントは `rules/` ディレクトリ直下に配置:
+- `rules/<rule-name>.md` — ルール詳細ドキュメント (英語)
+- `rules/<rule-name>.ja.md` — ルール詳細ドキュメント (日本語)
 
 ## インストールの仕組み
 
@@ -56,9 +56,9 @@ rules/<rule-name>/
 
 ### Step 2.5: 詳細ドキュメントの作成
 
-`rules/<rule-name>/` 内に以下を作成:
-- `README.md` (英語) — ルールの概要、適用対象、インストール方法、含まれるファイルの説明
-- `README.ja.md` (日本語) — 上記の日本語版
+`rules/` ディレクトリ直下に以下を作成:
+- `rules/<rule-name>.md` (英語) — ルールの概要、適用対象、インストール方法、含まれるファイルの説明
+- `rules/<rule-name>.ja.md` (日本語) — 上記の日本語版
 
 ### Step 3: README の更新
 
@@ -77,7 +77,7 @@ curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh
 
 </td>
 <td>Description in English</td>
-<td><a href="./rules/<rule-name>/README.md">Details</a></td>
+<td><a href="./rules/<rule-name>.md">Details</a></td>
 </tr>
 ````
 
@@ -93,7 +93,7 @@ curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh
 
 </td>
 <td>日本語の説明</td>
-<td><a href="./rules/<rule-name>/README.ja.md">詳細</a></td>
+<td><a href="./rules/<rule-name>.ja.md">詳細</a></td>
 </tr>
 ````
 
@@ -101,12 +101,12 @@ curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh
 
 1. `rules/<rule-name>/RULE.md` を編集する
 2. 参照ファイルの追加・削除・変更も同ディレクトリ内で行う
-3. README.md / README.ja.md の説明も必要に応じて同期する
+3. `rules/<rule-name>.md` / `<rule-name>.ja.md` の説明も必要に応じて同期する
 4. `rules/install.sh` は全ルール共通のスクリプトなので、個別ルールの更新では変更不要
 5. ユーザーは同じインストールコマンドを再実行すれば最新版に更新される
 
 ## 注意点
 
-- README.md (英語) と README.ja.md (日本語) は **常に同期して更新** する
+- `<rule-name>.md` (英語) と `<rule-name>.ja.md` (日本語) は **常に同期して更新** する
 - テーブルは HTML `<table>` タグで記述し、Install 列のコマンドは ```sh code block で記載する
 - 参照ファイルのパス設計時は、ユーザーのプロジェクトルートに展開されることを考慮する

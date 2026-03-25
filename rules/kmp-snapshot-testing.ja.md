@@ -1,6 +1,6 @@
 # kmp-snapshot-testing ルール
 
-[English](./README.md) | [DeepWiki](https://deepwiki.com/TBSten/skills)
+[English](./kmp-snapshot-testing.md) | [DeepWiki](https://deepwiki.com/TBSten/skills)
 
 Kotlin Multiplatform プロジェクト向けのスナップショット PBT (Property-Based Testing) ルール。Kotest と Turbine を使用。
 

@@ -23,9 +23,9 @@ skills/<skill-name>/
 └── assets/                # 出力に使用されるファイル (テンプレート等、任意)
 ```
 
-スキルディレクトリ内に詳細ドキュメントも配置:
-- `README.md` — スキル詳細ドキュメント (英語)
-- `README.ja.md` — スキル詳細ドキュメント (日本語)
+詳細ドキュメントは `skills/` ディレクトリ直下に配置:
+- `skills/<skill-name>.md` — スキル詳細ドキュメント (英語)
+- `skills/<skill-name>.ja.md` — スキル詳細ドキュメント (日本語)
 
 ## 新規追加の手順
 
@@ -94,9 +94,9 @@ example コードのパッケージ名は以下の規約に従う:
 
 ### Step 4: 詳細ドキュメントの作成
 
-`skills/<skill-name>/` 内に以下を作成:
-- `README.md` (英語) — スキルの概要、使い方、生成されるファイルの説明
-- `README.ja.md` (日本語) — 上記の日本語版
+`skills/` ディレクトリ直下に以下を作成:
+- `skills/<skill-name>.md` (英語) — スキルの概要、使い方、生成されるファイルの説明
+- `skills/<skill-name>.ja.md` (日本語) — 上記の日本語版
 
 ### Step 5: README の更新
 
@@ -115,7 +115,7 @@ npx skills add tbsten/skills --skill <skill-name>
 
 </td>
 <td>Description in English</td>
-<td><a href="./skills/<skill-name>/README.md">Details</a></td>
+<td><a href="./skills/<skill-name>.md">Details</a></td>
 </tr>
 ````
 
@@ -131,20 +131,20 @@ npx skills add tbsten/skills --skill <skill-name>
 
 </td>
 <td>日本語の説明</td>
-<td><a href="./skills/<skill-name>/README.ja.md">詳細</a></td>
+<td><a href="./skills/<skill-name>.ja.md">詳細</a></td>
 </tr>
 ````
 
 ## 既存スキルの更新
 
 1. `skills/<skill-name>/` 内の該当ファイルを編集する
-2. SKILL.md の `description` を変更した場合は README.md / README.ja.md の説明も同期する
-3. 詳細ドキュメント (`skills/<skill-name>/README.md`, `README.ja.md`) も必要に応じて更新する
+2. SKILL.md の `description` を変更した場合は `skills/<skill-name>.md` / `<skill-name>.ja.md` の説明も同期する
+3. 詳細ドキュメント (`skills/<skill-name>.md`, `<skill-name>.ja.md`) も必要に応じて更新する
 4. リソースの追加・削除も同ディレクトリ内で行う
 
 ## 注意点
 
-- README.md (英語) と README.ja.md (日本語) は **常に同期して更新** する
+- `<skill-name>.md` (英語) と `<skill-name>.ja.md` (日本語) は **常に同期して更新** する
 - テーブルは HTML `<table>` タグで記述し、Install 列のコマンドは ```sh code block で記載する
 - description は Claude Code がスキル発動を判断する最重要情報。具体的なトリガーフレーズを含めること
 - SKILL.md と references で情報を重複させない (Single Source of Truth)

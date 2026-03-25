@@ -6,7 +6,7 @@ description: >
   プロジェクトの CLAUDE.md、.claude/rules/、コードベースから知見を収集し、
   再利用可能な Claude Code rule としてパッケージングして PR を作成するまでを一貫して行う。
   rule は .claude/rules/ に配置されるファイルであり、skill とは異なり frontmatter は不要。
-  RULE.md がルール本体となり、詳細ドキュメント (README.md / README.ja.md) を同ディレクトリに配置する。
+  RULE.md がルール本体となり、詳細ドキュメント (<rule-name>.md / <rule-name>.ja.md) を rules/ ディレクトリ直下に配置する。
   Use when requested: "知見をルールとして登録", "contribute rule", "このルールを共有",
   "ルールとして登録", "ルールをまとめて PR", "この規約をルール化",
   "ベストプラクティスをルールに".
@@ -100,8 +100,8 @@ Step 2 で整理した知見をもとに RULE.md を記述する。
 2. 参照ファイルがあれば同ディレクトリに配置
    - インストール時にユーザーのカレントディレクトリにコピーされることを意識してパスを設計する
    - サブディレクトリのネストも可能
-3. `rules/<rule-name>/README.md` — 詳細ドキュメント (英語)
-4. `rules/<rule-name>/README.ja.md` — 詳細ドキュメント (日本語)
+3. `rules/<rule-name>.md` — 詳細ドキュメント (英語)
+4. `rules/<rule-name>.ja.md` — 詳細ドキュメント (日本語)
 5. `README.md` と `README.ja.md` の Available Rules テーブルに行を追加
 
 ### レビューの提示方法
@@ -135,8 +135,8 @@ Step 2 で整理した知見をもとに RULE.md を記述する。
 PR 作成前に以下を確認する:
 
 1. **必要なファイルが揃っているか** — 以下のファイルが存在することを確認する:
-   - `./rules/<rule-name>/README.md` が存在すること (詳細ドキュメント 英語)
-   - `./rules/<rule-name>/README.ja.md` が存在すること (詳細ドキュメント 日本語)
+   - `./rules/<rule-name>.md` が存在すること (詳細ドキュメント 英語)
+   - `./rules/<rule-name>.ja.md` が存在すること (詳細ドキュメント 日本語)
    - `./rules/<rule-name>/RULE.md` が存在すること
    - ルールが参照するすべてのファイルが `./rules/<rule-name>/` 配下に存在すること
    - `README.md` と `README.ja.md` の Available Rules テーブルに新しいルールのエントリが追加されていること

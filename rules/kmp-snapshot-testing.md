@@ -1,6 +1,6 @@
 # kmp-snapshot-testing Rule
 
-[日本語](./README.ja.md) | [DeepWiki](https://deepwiki.com/TBSten/skills)
+[日本語](./kmp-snapshot-testing.ja.md) | [DeepWiki](https://deepwiki.com/TBSten/skills)
 
 A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) rule for snapshot property-based testing (PBT) in Kotlin Multiplatform projects using Kotest and Turbine.
 

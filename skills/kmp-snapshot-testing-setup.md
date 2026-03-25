@@ -1,6 +1,6 @@
 # KMP Snapshot Testing Setup Skill
 
-[日本語](./README.ja.md) | [DeepWiki](https://deepwiki.com/TBSten/skills)
+[日本語](./kmp-snapshot-testing-setup.ja.md) | [DeepWiki](https://deepwiki.com/TBSten/skills)
 
 A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skill that sets up snapshot testing infrastructure for Kotlin Multiplatform + Compose projects.
 

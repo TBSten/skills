@@ -1,6 +1,6 @@
 # SimpleLoader Skill
 
-[日本語](./README.ja.md) | [DeepWiki](https://deepwiki.com/TBSten/skills)
+[日本語](./simple-loader.ja.md) | [DeepWiki](https://deepwiki.com/TBSten/skills)
 
 A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skill that generates a SimpleLoader state machine for async data loading in Kotlin/Compose Multiplatform projects.
 
