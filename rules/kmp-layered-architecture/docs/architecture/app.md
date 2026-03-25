@@ -33,6 +33,8 @@ internal interface FakeServerProviders {
 
 ## DI
 
+> **Note:** 以下のコード例は [Metro](https://github.com/nicholasgasior/metro) を使用しています。プロジェクトの DI フレームワークに応じて読み替えてください。
+
 - DI フレームワーク (Metro, Dagger/Hilt, Koin 等) を使って Domain の UseCase や Repository の interface と実装を Providers に定義する。
 - Providers の命名規則: `{Category}Providers` (例: `DomainAppConfigProviders`, `DataCacheProviders`, `LoaderProviders`)
   - **必ず `Providers` サフィックスに統一すること。`Module` や単数形 `Provider` は使わない。**
