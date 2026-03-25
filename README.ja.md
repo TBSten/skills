@@ -94,7 +94,7 @@ curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh
 
 </td>
 <td>Kotlin Multiplatform + Compose プロジェクト向け 4 層アーキテクチャ (App/UI/Domain/Data) ルール</td>
-<td><a href="./rules/kmp-layered-architecture/RULE.md">RULE.md</a></td>
+<td><a href="./kmp-layered-architecture.ja.md">kmp-layered-architecture.ja.md</a></td>
 </tr>
 <tr>
 <td>kmp-snapshot-testing</td>
@@ -106,6 +106,6 @@ curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh
 
 </td>
 <td>Kotlin Multiplatform プロジェクト向けスナップショット PBT テストルール (Kotest + Turbine)</td>
-<td><a href="./rules/kmp-snapshot-testing/RULE.md">RULE.md</a></td>
+<td><a href="./kmp-snapshot-testing.ja.md">kmp-snapshot-testing.ja.md</a></td>
 </tr>
 </table>

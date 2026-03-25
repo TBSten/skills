@@ -94,7 +94,7 @@ curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh
 
 </td>
 <td>4-layer architecture (App/UI/Domain/Data) rule for Kotlin Multiplatform + Compose projects</td>
-<td><a href="./rules/kmp-layered-architecture/RULE.md">RULE.md</a></td>
+<td><a href="./kmp-layered-architecture.md">kmp-layered-architecture.md</a></td>
 </tr>
 <tr>
 <td>kmp-snapshot-testing</td>
@@ -106,6 +106,6 @@ curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh
 
 </td>
 <td>Snapshot PBT testing rule for Kotlin Multiplatform projects with Kotest + Turbine</td>
-<td><a href="./rules/kmp-snapshot-testing/RULE.md">RULE.md</a></td>
+<td><a href="./kmp-snapshot-testing.md">kmp-snapshot-testing.md</a></td>
 </tr>
 </table>
