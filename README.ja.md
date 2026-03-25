@@ -63,6 +63,34 @@ npx skills add tbsten/skills --skill simple-loader
 </tr>
 </table>
 
+## ルールのインストール方法
+
+ルールは `rules/install.sh` 経由でインストールします。`RULE.md` を `.claude/rules/` に、参照ファイルをカレントディレクトリにダウンロードします。
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh | bash -s -- <rule-name>
+```
+
+### オプション
+
+| オプション | 説明 |
+|---|---|
+| `as=<name>` | デフォルト名の代わりに `.claude/rules/<name>.md` として保存 |
+| `--ref=<ref>` or `-r=<ref>` | ダウンロード元の Git ref (ブランチ名、タグ、コミットハッシュ)。デフォルト: `main` |
+
+### 例
+
+```sh
+# カスタム名でインストール
+curl -fsSL .../rules/install.sh | bash -s -- kmp-layered-architecture as=my-architecture
+
+# 特定ブランチからインストール
+curl -fsSL .../rules/install.sh | bash -s -- kmp-snapshot-testing --ref=feature/new-rule
+
+# 特定コミットからインストール
+curl -fsSL .../rules/install.sh | bash -s -- kmp-snapshot-testing -r=abc1234
+```
+
 ## 利用可能なルール
 
 <table>
