@@ -61,6 +61,18 @@ npx skills add tbsten/skills --skill simple-loader
 <td>Sealed interface state machine for async data loading in Kotlin/Compose Multiplatform</td>
 <td><a href="./simple-loader.md">simple-loader.md</a></td>
 </tr>
+<tr>
+<td>kmp-snapshot-testing-setup</td>
+<td>
+
+```sh
+npx skills add tbsten/skills --skill kmp-snapshot-testing-setup
+```
+
+</td>
+<td>Set up snapshot testing infrastructure (Kotest PBT + Turbine) for KMP + Compose projects</td>
+<td><a href="./kmp-snapshot-testing-setup.md">kmp-snapshot-testing-setup.md</a></td>
+</tr>
 </table>
 
 ## Available Rules
@@ -71,5 +83,29 @@ npx skills add tbsten/skills --skill simple-loader
 <th>Install</th>
 <th>Description</th>
 <th>Details</th>
+</tr>
+<tr>
+<td>kmp-layered-architecture</td>
+<td>
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh | bash -s -- kmp-layered-architecture
+```
+
+</td>
+<td>4-layer architecture (App/UI/Domain/Data) rule for Kotlin Multiplatform + Compose projects</td>
+<td><a href="./kmp-layered-architecture.md">kmp-layered-architecture.md</a></td>
+</tr>
+<tr>
+<td>kmp-snapshot-testing</td>
+<td>
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh | bash -s -- kmp-snapshot-testing
+```
+
+</td>
+<td>Snapshot PBT testing rule for Kotlin Multiplatform projects with Kotest + Turbine</td>
+<td><a href="./kmp-snapshot-testing.md">kmp-snapshot-testing.md</a></td>
 </tr>
 </table>

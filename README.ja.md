@@ -61,6 +61,18 @@ npx skills add tbsten/skills --skill simple-loader
 <td>Kotlin/Compose Multiplatform 向け sealed interface ベースの非同期データ読み込み状態管理ステートマシン</td>
 <td><a href="./simple-loader.ja.md">simple-loader.ja.md</a></td>
 </tr>
+<tr>
+<td>kmp-snapshot-testing-setup</td>
+<td>
+
+```sh
+npx skills add tbsten/skills --skill kmp-snapshot-testing-setup
+```
+
+</td>
+<td>KMP + Compose プロジェクト向けスナップショットテスト基盤 (Kotest PBT + Turbine) のセットアップ</td>
+<td><a href="./kmp-snapshot-testing-setup.ja.md">kmp-snapshot-testing-setup.ja.md</a></td>
+</tr>
 </table>
 
 ## 利用可能なルール
@@ -71,5 +83,29 @@ npx skills add tbsten/skills --skill simple-loader
 <th>インストール</th>
 <th>説明</th>
 <th>詳細</th>
+</tr>
+<tr>
+<td>kmp-layered-architecture</td>
+<td>
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh | bash -s -- kmp-layered-architecture
+```
+
+</td>
+<td>Kotlin Multiplatform + Compose プロジェクト向け 4 層アーキテクチャ (App/UI/Domain/Data) ルール</td>
+<td><a href="./kmp-layered-architecture.ja.md">kmp-layered-architecture.ja.md</a></td>
+</tr>
+<tr>
+<td>kmp-snapshot-testing</td>
+<td>
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh | bash -s -- kmp-snapshot-testing
+```
+
+</td>
+<td>Kotlin Multiplatform プロジェクト向けスナップショット PBT テストルール (Kotest + Turbine)</td>
+<td><a href="./kmp-snapshot-testing.ja.md">kmp-snapshot-testing.ja.md</a></td>
 </tr>
 </table>
