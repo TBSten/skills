@@ -74,18 +74,40 @@ cp <SKILL_DIR>/example/build-logic/*.gradle.kts <PROJECT>/build-logic/src/main/k
 
 ### Step 3: テスト基盤モジュールの作成
 
-この手順で作成するモジュールの Kotlin コードは量が多い (~30 ファイル)。
-references/architecture.md を参照し、各コンポーネントの役割を理解した上で実装する。
+`example/core-testing-snapshot/` と `example/ui-core-testing/` のファイルをプロジェクトにコピーし、
+パッケージ名を置換する。
 
-主要コンポーネント:
-- **ProjectConfig** — Kotest の設定 (Dispatchers.setMain, PBT 反復数, レポーター)
-- **shouldMatchSnapshot** — 値の Kotlin Code 形式スナップショット
-- **KotlinCodeFormat / KotlinCodeEncoder** — kotlinx.serialization の Kotlin Code 出力
-- **StateHolderSnapshotPbtSpec0-20** — StateHolder/ViewModel PBT テスト基底クラス
-- **LogicSnapshotPbtSpec1-20** — ロジック PBT テスト基底クラス
-- **ComposeSnapshotPbtSpec0-20** — Compose UI PBT テスト基底クラス
-- **PBT ユーティリティ** — Arb.suspendFunction(), Arb.basicString()
-- **SnapshotRegistry / OrphanedSnapshotDetector** — スナップショットファイル管理
+```bash
+# core/testing/snapshot モジュール
+cp -r <SKILL_DIR>/example/core-testing-snapshot/ <PROJECT>/core/testing/snapshot/src/jvmMain/kotlin/<package-path>/
+
+# ui/core/testing モジュール (Compose PBT)
+cp -r <SKILL_DIR>/example/ui-core-testing/ <PROJECT>/ui/core/testing/src/jvmMain/kotlin/<package-path>/
+
+# パッケージ名を置換
+find <TARGET_DIRS> -name "*.kt" -exec sed -i '' 's/com\.example\.snapshot/<your-package>/g' {} +
+```
+
+テスト基盤のアーキテクチャ詳細は references/architecture.md を参照。
+
+#### core-testing-snapshot の構成 (25 ファイル)
+
+- **ProjectConfig.kt** — Kotest 設定 (Dispatchers.setMain, PBT 反復数, レポーター)
+- **testing/snapshot/**
+  - `ShouldMatchSnapshot.kt` — 値の Kotlin Code 形式スナップショット
+  - `StateHolderSnapshotPbtSpec.kt` — StateHolder/ViewModel PBT (0-20 Arb)
+  - `LogicSnapshotPbtSpec.kt` — ロジック PBT (1-20 Arb)
+  - `SnapshotSpec.kt`, `PbtActionScope.kt`, `PbtSnapshotReport.kt` 等
+  - `code/KotlinCodeFormat.kt` — kotlinx.serialization の Kotlin Code 出力
+  - `internal/` — SnapshotRegistry, TextDiff, ImageDiff, OrphanedSnapshotDetector 等
+- **testing/property/**
+  - `SuspendFunction.kt` — `Arb.suspendFunction()`, FakeSuspendFunction
+  - `String.kt` — `Arb.basicString()` (多言語 Unicode)
+
+#### ui-core-testing の構成 (2 ファイル)
+
+- `ComposeSnapshot.kt` — `runComposableSnapshotTest()` ヘルパー
+- `ComposeSnapshotPbtSpec.kt` — Compose PBT (0-20 Arb, Density/ScreenSize/Theme)
 
 ### Step 4: Shell Scripts の配置
 

@@ -1,5 +1,9 @@
 # App Layers
 
+> **Note:** このドキュメントの DI コード例は [Metro](https://github.com/nicholasgasior/metro) を使用しています。
+> Dagger/Hilt, Koin 等の他の DI フレームワークを使用する場合は、アノテーションや構文を適宜読み替えてください。
+> アーキテクチャの層構造・依存方向・命名規則は DI フレームワークに依存しません。
+
 ```text
 +---------------+
 |               ↓
