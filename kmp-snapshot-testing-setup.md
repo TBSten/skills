@@ -53,7 +53,3 @@ Set up snapshot testing infrastructure for this project.
 
 # Check build/snapshots/result.html for visual report
 ```
-
-## Repository
-
-This skill is part of [TBSten/skills](https://github.com/TBSten/skills).

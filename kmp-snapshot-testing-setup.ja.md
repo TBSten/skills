@@ -53,7 +53,3 @@ npx skills add tbsten/skills --skill kmp-snapshot-testing-setup
 
 # build/snapshots/result.html でビジュアルレポートを確認
 ```
-
-## リポジトリ
-
-このスキルは [TBSten/skills](https://github.com/TBSten/skills) の一部です。
