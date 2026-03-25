@@ -22,8 +22,8 @@ npx skills add tbsten/skills --skill kotlin-tuple
 ```
 
 </td>
-<td>Type-safe Tuple utilities (Tuple0–Tuple20) for Kotlin/KMP</td>
-<td><a href="./kotlin-tuple.md">kotlin-tuple.md</a></td>
+<td>Type-safe Tuple utilities for Kotlin/KMP</td>
+<td><a href="./skills/kotlin-tuple/README.md">Details</a></td>
 </tr>
 <tr>
 <td>contribute-skill</td>
@@ -35,7 +35,7 @@ npx skills add tbsten/skills --skill contribute-skill
 
 </td>
 <td>Package project knowledge as a skill and create a PR to TBSten/skills</td>
-<td><a href="./contribute-skill.md">contribute-skill.md</a></td>
+<td><a href="./skills/contribute-skill/README.md">Details</a></td>
 </tr>
 <tr>
 <td>contribute-rule</td>
@@ -47,7 +47,7 @@ npx skills add tbsten/skills --skill contribute-rule
 
 </td>
 <td>Package project knowledge as a rule and create a PR to TBSten/skills</td>
-<td><a href="./contribute-rule.md">contribute-rule.md</a></td>
+<td><a href="./skills/contribute-rule/README.md">Details</a></td>
 </tr>
 <tr>
 <td>simple-loader</td>
@@ -59,7 +59,7 @@ npx skills add tbsten/skills --skill simple-loader
 
 </td>
 <td>Sealed interface state machine for async data loading in Kotlin/Compose Multiplatform</td>
-<td><a href="./simple-loader.md">simple-loader.md</a></td>
+<td><a href="./skills/simple-loader/README.md">Details</a></td>
 </tr>
 <tr>
 <td>kmp-snapshot-testing-setup</td>
@@ -71,7 +71,7 @@ npx skills add tbsten/skills --skill kmp-snapshot-testing-setup
 
 </td>
 <td>Set up snapshot testing infrastructure (Kotest PBT + Turbine) for KMP + Compose projects</td>
-<td><a href="./kmp-snapshot-testing-setup.md">kmp-snapshot-testing-setup.md</a></td>
+<td><a href="./skills/kmp-snapshot-testing-setup/README.md">Details</a></td>
 </tr>
 </table>
 
@@ -95,7 +95,7 @@ curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh
 
 </td>
 <td>4-layer architecture (App/UI/Domain/Data) rule for Kotlin Multiplatform + Compose projects</td>
-<td><a href="./kmp-layered-architecture.md">kmp-layered-architecture.md</a></td>
+<td><a href="./rules/kmp-layered-architecture/README.md">Details</a></td>
 </tr>
 <tr>
 <td>kmp-snapshot-testing</td>
@@ -108,7 +108,7 @@ curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh
 
 </td>
 <td>Snapshot PBT testing rule for Kotlin Multiplatform projects with Kotest + Turbine</td>
-<td><a href="./kmp-snapshot-testing.md">kmp-snapshot-testing.md</a></td>
+<td><a href="./rules/kmp-snapshot-testing/README.md">Details</a></td>
 </tr>
 </table>
 

@@ -1,6 +1,6 @@
 # KMP Snapshot Testing Setup スキル
 
-[English](./kmp-snapshot-testing-setup.md) | [DeepWiki](https://deepwiki.com/TBSten/skills)
+[English](./README.md) | [DeepWiki](https://deepwiki.com/TBSten/skills)
 
 Kotlin Multiplatform + Compose プロジェクトにスナップショットテスト基盤をセットアップする [Claude Code](https://docs.anthropic.com/en/docs/claude-code) スキル。
 

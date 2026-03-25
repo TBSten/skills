@@ -1,7 +1,7 @@
 ---
 name: kotlin-tuple
 description: >
-  Generates type-safe Tuple utilities (Tuple0–Tuple20) for Kotlin and Kotlin Multiplatform projects.
+  Generates type-safe Tuple utilities for Kotlin and Kotlin Multiplatform projects.
   Creates Tuple data classes, tupleOf factories, toList conversion, KSerializer for kotlinx.serialization, type-safe awaitAll, and allNotNullOrNull in one go.
   Use when requested: "add Tuple", "generate tupleOf", "type-safe Tuple", "type-safe awaitAll",
   "add allNotNullOrNull", "await multiple Deferred with type safety",
@@ -26,7 +26,7 @@ Before generating code, confirm the following with the user in **a single messag
    - Infer from the module's existing package structure and suggest a candidate
    - Ask the user to confirm or specify a different package name
 3. **Maximum Tuple size** (default: 20)
-   - Ask: "Generate Tuple0–Tuple20 (default)? Enter a different number to change."
+   - Ask: "Generate Tuple0–TupleN (default: 20)? Enter a different number to change."
 4. **File types to generate** (default: all)
    - Let the user select (multiple choice):
      - [x] `Tuple.kt` + `TupleFactory.kt` — Tuple data classes and tupleOf factories (required, always generated)
@@ -158,6 +158,6 @@ This skill ships pre-built example files under `example/src/commonMain/kotlin/co
 
 ### Why This Approach
 
-- The example files contain ~2,600 lines of repetitive Kotlin code (Tuple0–Tuple20)
+- The example files contain ~2,600 lines of repetitive Kotlin code
 - Copying and `sed`-replacing is far more efficient than generating from scratch
 - Minimizes context consumption and eliminates generation errors

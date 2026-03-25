@@ -1,8 +1,8 @@
 # Kotlin Tuple Skill
 
-[English](./kotlin-tuple.md) | [DeepWiki](https://deepwiki.com/TBSten/skills)
+[English](./README.md) | [DeepWiki](https://deepwiki.com/TBSten/skills)
 
-Kotlin / Kotlin Multiplatform プロジェクトに型安全な Tuple ユーティリティ (Tuple0〜Tuple20) を生成する [Claude Code](https://docs.anthropic.com/en/docs/claude-code) スキルです。
+Kotlin / Kotlin Multiplatform プロジェクトに型安全な Tuple ユーティリティを生成する [Claude Code](https://docs.anthropic.com/en/docs/claude-code) スキルです。
 
 ## クイックスタート
 

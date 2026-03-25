@@ -23,9 +23,9 @@ skills/<skill-name>/
 └── assets/                # 出力に使用されるファイル (テンプレート等、任意)
 ```
 
-リポジトリルートにも以下を配置:
-- `<skill-name>.md` — スキル詳細ドキュメント (英語)
-- `<skill-name>.ja.md` — スキル詳細ドキュメント (日本語)
+スキルディレクトリ内に詳細ドキュメントも配置:
+- `README.md` — スキル詳細ドキュメント (英語)
+- `README.ja.md` — スキル詳細ドキュメント (日本語)
 
 ## 新規追加の手順
 
@@ -94,9 +94,9 @@ example コードのパッケージ名は以下の規約に従う:
 
 ### Step 4: 詳細ドキュメントの作成
 
-リポジトリルートに以下を作成:
-- `<skill-name>.md` (英語) — スキルの概要、使い方、生成されるファイルの説明
-- `<skill-name>.ja.md` (日本語) — 上記の日本語版
+`skills/<skill-name>/` 内に以下を作成:
+- `README.md` (英語) — スキルの概要、使い方、生成されるファイルの説明
+- `README.ja.md` (日本語) — 上記の日本語版
 
 ### Step 5: README の更新
 
@@ -115,7 +115,7 @@ npx skills add tbsten/skills --skill <skill-name>
 
 </td>
 <td>Description in English</td>
-<td><a href="./<skill-name>.md"><skill-name>.md</a></td>
+<td><a href="./skills/<skill-name>/README.md">Details</a></td>
 </tr>
 ````
 
@@ -131,7 +131,7 @@ npx skills add tbsten/skills --skill <skill-name>
 
 </td>
 <td>日本語の説明</td>
-<td><a href="./<skill-name>.ja.md"><skill-name>.ja.md</a></td>
+<td><a href="./skills/<skill-name>/README.ja.md">詳細</a></td>
 </tr>
 ````
 
@@ -139,7 +139,7 @@ npx skills add tbsten/skills --skill <skill-name>
 
 1. `skills/<skill-name>/` 内の該当ファイルを編集する
 2. SKILL.md の `description` を変更した場合は README.md / README.ja.md の説明も同期する
-3. 詳細ドキュメント (`<skill-name>.md`, `<skill-name>.ja.md`) も必要に応じて更新する
+3. 詳細ドキュメント (`skills/<skill-name>/README.md`, `README.ja.md`) も必要に応じて更新する
 4. リソースの追加・削除も同ディレクトリ内で行う
 
 ## 注意点

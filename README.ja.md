@@ -22,8 +22,8 @@ npx skills add tbsten/skills --skill kotlin-tuple
 ```
 
 </td>
-<td>Kotlin/KMP 向け型安全な Tuple ユーティリティ (Tuple0–Tuple20)</td>
-<td><a href="./kotlin-tuple.ja.md">kotlin-tuple.ja.md</a></td>
+<td>Kotlin/KMP 向け型安全な Tuple ユーティリティ</td>
+<td><a href="./skills/kotlin-tuple/README.ja.md">詳細</a></td>
 </tr>
 <tr>
 <td>contribute-skill</td>
@@ -35,7 +35,7 @@ npx skills add tbsten/skills --skill contribute-skill
 
 </td>
 <td>プロジェクトの知見をスキルとしてパッケージし TBSten/skills に PR を作成</td>
-<td><a href="./contribute-skill.ja.md">contribute-skill.ja.md</a></td>
+<td><a href="./skills/contribute-skill/README.ja.md">詳細</a></td>
 </tr>
 <tr>
 <td>contribute-rule</td>
@@ -47,7 +47,7 @@ npx skills add tbsten/skills --skill contribute-rule
 
 </td>
 <td>プロジェクトの知見をルールとしてパッケージし TBSten/skills に PR を作成</td>
-<td><a href="./contribute-rule.ja.md">contribute-rule.ja.md</a></td>
+<td><a href="./skills/contribute-rule/README.ja.md">詳細</a></td>
 </tr>
 <tr>
 <td>simple-loader</td>
@@ -59,7 +59,7 @@ npx skills add tbsten/skills --skill simple-loader
 
 </td>
 <td>Kotlin/Compose Multiplatform 向け sealed interface ベースの非同期データ読み込み状態管理ステートマシン</td>
-<td><a href="./simple-loader.ja.md">simple-loader.ja.md</a></td>
+<td><a href="./skills/simple-loader/README.ja.md">詳細</a></td>
 </tr>
 <tr>
 <td>kmp-snapshot-testing-setup</td>
@@ -71,7 +71,7 @@ npx skills add tbsten/skills --skill kmp-snapshot-testing-setup
 
 </td>
 <td>KMP + Compose プロジェクト向けスナップショットテスト基盤 (Kotest PBT + Turbine) のセットアップ</td>
-<td><a href="./kmp-snapshot-testing-setup.ja.md">kmp-snapshot-testing-setup.ja.md</a></td>
+<td><a href="./skills/kmp-snapshot-testing-setup/README.ja.md">詳細</a></td>
 </tr>
 </table>
 
@@ -95,7 +95,7 @@ curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh
 
 </td>
 <td>Kotlin Multiplatform + Compose プロジェクト向け 4 層アーキテクチャ (App/UI/Domain/Data) ルール</td>
-<td><a href="./kmp-layered-architecture.ja.md">kmp-layered-architecture.ja.md</a></td>
+<td><a href="./rules/kmp-layered-architecture/README.ja.md">詳細</a></td>
 </tr>
 <tr>
 <td>kmp-snapshot-testing</td>
@@ -108,7 +108,7 @@ curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh
 
 </td>
 <td>Kotlin Multiplatform プロジェクト向けスナップショット PBT テストルール (Kotest + Turbine)</td>
-<td><a href="./kmp-snapshot-testing.ja.md">kmp-snapshot-testing.ja.md</a></td>
+<td><a href="./rules/kmp-snapshot-testing/README.ja.md">詳細</a></td>
 </tr>
 </table>
 

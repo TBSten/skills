@@ -21,9 +21,9 @@ rules/<rule-name>/
 └── **/*                   # 参照ファイル (任意。ユーザーのカレントディレクトリに配置される)
 ```
 
-リポジトリルートにも以下を配置:
-- `<rule-name>.md` — ルール詳細ドキュメント (英語)
-- `<rule-name>.ja.md` — ルール詳細ドキュメント (日本語)
+ルールディレクトリ内に詳細ドキュメントも配置:
+- `README.md` — ルール詳細ドキュメント (英語)
+- `README.ja.md` — ルール詳細ドキュメント (日本語)
 
 ## インストールの仕組み
 
@@ -56,9 +56,9 @@ rules/<rule-name>/
 
 ### Step 2.5: 詳細ドキュメントの作成
 
-リポジトリルートに以下を作成:
-- `<rule-name>.md` (英語) — ルールの概要、適用対象、インストール方法、含まれるファイルの説明
-- `<rule-name>.ja.md` (日本語) — 上記の日本語版
+`rules/<rule-name>/` 内に以下を作成:
+- `README.md` (英語) — ルールの概要、適用対象、インストール方法、含まれるファイルの説明
+- `README.ja.md` (日本語) — 上記の日本語版
 
 ### Step 3: README の更新
 
@@ -77,7 +77,7 @@ curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh
 
 </td>
 <td>Description in English</td>
-<td><a href="./<rule-name>.md"><rule-name>.md</a></td>
+<td><a href="./rules/<rule-name>/README.md">Details</a></td>
 </tr>
 ````
 
@@ -93,7 +93,7 @@ curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh
 
 </td>
 <td>日本語の説明</td>
-<td><a href="./<rule-name>.ja.md"><rule-name>.ja.md</a></td>
+<td><a href="./rules/<rule-name>/README.ja.md">詳細</a></td>
 </tr>
 ````
 
