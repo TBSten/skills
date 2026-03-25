@@ -18,7 +18,9 @@ TBSten の Claude Code skills・rules コレクションリポジトリ。
 │       ├── RULE.md              # ルール本体 (.claude/rules/<rule-name>.md として配置される)
 │       └── **/*                 # 参照ファイル (カレントディレクトリに配置される)
 ├── <skill-name>.md              # スキル詳細ドキュメント (英語)
-└── <skill-name>.ja.md           # スキル詳細ドキュメント (日本語)
+├── <skill-name>.ja.md           # スキル詳細ドキュメント (日本語)
+├── <rule-name>.md               # ルール詳細ドキュメント (英語)
+└── <rule-name>.ja.md            # ルール詳細ドキュメント (日本語)
 ```
 
 ## Skills の構成ルール
@@ -35,4 +37,5 @@ TBSten の Claude Code skills・rules コレクションリポジトリ。
 - RULE.md 以外のファイルは参照ファイルとしてユーザーのカレントディレクトリに配置される
 - サブディレクトリのネストも可能 (再帰的にダウンロードされる)
 - インストール: `curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh | bash -s -- <rule-name>`
+- ルートに `<rule-name>.md` / `<rule-name>.ja.md` で詳細ドキュメントを用意
 - `as=<name>` オプションで保存名を変更可能
