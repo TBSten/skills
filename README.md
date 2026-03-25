@@ -72,4 +72,28 @@ npx skills add tbsten/skills --skill simple-loader
 <th>Description</th>
 <th>Details</th>
 </tr>
+<tr>
+<td>kmp-layered-architecture</td>
+<td>
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh | bash -s -- kmp-layered-architecture
+```
+
+</td>
+<td>4-layer architecture (App/UI/Domain/Data) rule for Kotlin Multiplatform + Compose projects</td>
+<td><a href="./rules/kmp-layered-architecture/RULE.md">RULE.md</a></td>
+</tr>
+<tr>
+<td>kmp-testing</td>
+<td>
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh | bash -s -- kmp-testing
+```
+
+</td>
+<td>Testing strategy rule (unit tests + snapshot PBT) for Kotlin Multiplatform projects with Kotest + Turbine</td>
+<td><a href="./rules/kmp-testing/RULE.md">RULE.md</a></td>
+</tr>
 </table>
