@@ -4,7 +4,7 @@
 
 [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skills and rules collection by TBSten.
 
-## Available Skills
+## ⭐️ Available Skills
 
 <table>
 <tr>
@@ -75,35 +75,7 @@ npx skills add tbsten/skills --skill kmp-snapshot-testing-setup
 </tr>
 </table>
 
-## Installing Rules
-
-Rules are installed via `rules/install.sh`. It downloads `RULE.md` into `.claude/rules/` and reference files into the current directory.
-
-```sh
-curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh | bash -s -- <rule-name>
-```
-
-### Options
-
-| Option | Description |
-|---|---|
-| `as=<name>` | Save the rule as `.claude/rules/<name>.md` instead of the default name |
-| `--ref=<ref>` or `-r=<ref>` | Git ref (branch, tag, or commit hash) to download from (default: `main`) |
-
-### Examples
-
-```sh
-# Install with a custom name
-curl -fsSL .../rules/install.sh | bash -s -- kmp-layered-architecture as=my-architecture
-
-# Install from a specific branch
-curl -fsSL .../rules/install.sh | bash -s -- kmp-snapshot-testing --ref=feature/new-rule
-
-# Install from a specific commit
-curl -fsSL .../rules/install.sh | bash -s -- kmp-snapshot-testing -r=abc1234
-```
-
-## Available Rules
+## 📝 Available Rules
 
 <table>
 <tr>
@@ -137,3 +109,31 @@ curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh
 <td><a href="./kmp-snapshot-testing.md">kmp-snapshot-testing.md</a></td>
 </tr>
 </table>
+
+## Installing Rules
+
+Rules are installed via `rules/install.sh`. It downloads `RULE.md` into `.claude/rules/` and reference files into the current directory.
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh | bash -s -- <rule-name>
+```
+
+### Options
+
+| Option | Description |
+|---|---|
+| `as=<name>` | Save the rule as `.claude/rules/<name>.md` instead of the default name |
+| `--ref=<ref>` or `-r=<ref>` | Git ref (branch, tag, or commit hash) to download from (default: `main`) |
+
+### Examples
+
+```sh
+# Install with a custom name
+curl -fsSL .../rules/install.sh | bash -s -- kmp-layered-architecture as=my-architecture
+
+# Install from a specific branch
+curl -fsSL .../rules/install.sh | bash -s -- kmp-snapshot-testing --ref=feature/new-rule
+
+# Install from a specific commit
+curl -fsSL .../rules/install.sh | bash -s -- kmp-snapshot-testing -r=abc1234
+```
