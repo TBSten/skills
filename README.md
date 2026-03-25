@@ -37,6 +37,18 @@ npx skills add tbsten/skills --skill contribute-skill
 <td>Package project knowledge as a skill and create a PR to TBSten/skills</td>
 <td><a href="./contribute-skill.md">contribute-skill.md</a></td>
 </tr>
+<tr>
+<td>contribute-rule</td>
+<td>
+
+```sh
+npx skills add tbsten/skills --skill contribute-rule
+```
+
+</td>
+<td>Package project knowledge as a rule and create a PR to TBSten/skills</td>
+<td><a href="./contribute-rule.md">contribute-rule.md</a></td>
+</tr>
 </table>
 
 ## Available Rules
