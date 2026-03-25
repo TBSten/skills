@@ -5,8 +5,8 @@ description: >
   rule として登録するための PR を自動作成する。
   プロジェクトの CLAUDE.md、.claude/rules/、コードベースから知見を収集し、
   再利用可能な Claude Code rule としてパッケージングして PR を作成するまでを一貫して行う。
-  rule は .claude/rules/ に配置されるファイルであり、skill とは異なり frontmatter や
-  詳細ドキュメントは不要。RULE.md 自体がルール本体兼ドキュメントとなる。
+  rule は .claude/rules/ に配置されるファイルであり、skill とは異なり frontmatter は不要。
+  RULE.md がルール本体となり、詳細ドキュメント (<rule-name>.md / .ja.md) をルートに配置する。
   Use when requested: "知見をルールとして登録", "contribute rule", "このルールを共有",
   "ルールとして登録", "ルールをまとめて PR", "この規約をルール化",
   "ベストプラクティスをルールに".
@@ -86,6 +86,7 @@ add-rule.md を読み込んだ後、以下のように統合する:
 
 - **add-rule.md の Step 1 (確認事項)**: contribute-rule の Step 1-2 で既に完了。スキップする
 - **add-rule.md の Step 2 (ディレクトリとファイルの作成)**: 構成ルールに従う。内容は contribute-rule の Step 2 で整理した知見を使う
+- **add-rule.md の Step 2.5 (詳細ドキュメントの作成)**: そのまま従う
 - **add-rule.md の Step 3 (README の更新)**: そのまま従う
 
 ガイドが見つからない場合は、以下の「フォールバック」セクションに従う。

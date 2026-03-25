@@ -93,7 +93,7 @@ curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh
 
 </td>
 <td>日本語の説明</td>
-<td><a href="./<rule-name>.md"><rule-name>.md</a></td>
+<td><a href="./<rule-name>.ja.md"><rule-name>.ja.md</a></td>
 </tr>
 ````
 
