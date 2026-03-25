@@ -16,6 +16,7 @@ TBSten の Claude Code skills・rules コレクションリポジトリ。
 │       └── example/             # サンプルコード
 └── rules/
     ├── install.sh               # ルールインストールスクリプト
+    ├── install/                 # 短縮URL用 Cloudflare Worker (rules.tbsten.me/i)
     └── <rule-name>/
         ├── RULE.md              # ルール本体 (.claude/rules/<rule-name>.md として配置される)
         ├── README.md            # ルール詳細ドキュメント (英語)
@@ -37,5 +38,5 @@ TBSten の Claude Code skills・rules コレクションリポジトリ。
 - RULE.md 以外のファイルは参照ファイルとしてユーザーのカレントディレクトリに配置される
 - サブディレクトリのネストも可能 (再帰的にダウンロードされる)
 - `rules/<rule-name>/README.md` / `README.ja.md` で詳細ドキュメントを用意
-- インストール: `curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh | bash -s -- <rule-name>`
+- インストール: `curl -fsSL https://rules.tbsten.me/i | bash -s -- <rule-name>`
 - `as=<name>` オプションで保存名を変更可能

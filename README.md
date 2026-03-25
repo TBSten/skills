@@ -94,8 +94,7 @@ npx skills add tbsten/skills \
 <td>
 
 ```sh
-curl -fsSL \
-  https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh | \
+curl -fsSL https://rules.tbsten.me/i | \
   bash -s -- kmp-layered-architecture
 ```
 
@@ -108,8 +107,7 @@ curl -fsSL \
 <td>
 
 ```sh
-curl -fsSL \
-  https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh | \
+curl -fsSL https://rules.tbsten.me/i | \
   bash -s -- kmp-snapshot-testing
 ```
 
@@ -124,8 +122,7 @@ curl -fsSL \
 Rules are installed via `rules/install.sh`. It downloads `RULE.md` into `.claude/rules/` and reference files into the current directory.
 
 ```sh
-curl -fsSL \
-  https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh | \
+curl -fsSL https://rules.tbsten.me/i | \
   bash -s -- <rule-name>
 ```
 
@@ -140,11 +137,11 @@ curl -fsSL \
 
 ```sh
 # Install with a custom name
-curl -fsSL .../rules/install.sh | bash -s -- kmp-layered-architecture as=my-architecture
+curl -fsSL https://rules.tbsten.me/i | bash -s -- kmp-layered-architecture as=my-architecture
 
 # Install from a specific branch
-curl -fsSL .../rules/install.sh | bash -s -- kmp-snapshot-testing --ref=feature/new-rule
+curl -fsSL https://rules.tbsten.me/i | bash -s -- kmp-snapshot-testing --ref=feature/new-rule
 
 # Install from a specific commit
-curl -fsSL .../rules/install.sh | bash -s -- kmp-snapshot-testing -r=abc1234
+curl -fsSL https://rules.tbsten.me/i | bash -s -- kmp-snapshot-testing -r=abc1234
 ```
