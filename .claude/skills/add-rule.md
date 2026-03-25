@@ -21,7 +21,9 @@ rules/<rule-name>/
 └── **/*                   # 参照ファイル (任意。ユーザーのカレントディレクトリに配置される)
 ```
 
-skill と異なり、rule にはルートの詳細ドキュメント (`<name>.md`) は不要。RULE.md 自体がドキュメントを兼ねる。
+リポジトリルートにも以下を配置:
+- `<rule-name>.md` — ルール詳細ドキュメント (英語)
+- `<rule-name>.ja.md` — ルール詳細ドキュメント (日本語)
 
 ## インストールの仕組み
 
@@ -52,6 +54,12 @@ skill と異なり、rule にはルートの詳細ドキュメント (`<name>.md
    - サブディレクトリのネストも可能 (install.sh が再帰的にダウンロードする)
    - ファイルパスはユーザーのプロジェクトルートからの相対パスになることを意識する
 
+### Step 2.5: 詳細ドキュメントの作成
+
+リポジトリルートに以下を作成:
+- `<rule-name>.md` (英語) — ルールの概要、適用対象、インストール方法、含まれるファイルの説明
+- `<rule-name>.ja.md` (日本語) — 上記の日本語版
+
 ### Step 3: README の更新
 
 `README.md` と `README.ja.md` の **Available Rules** テーブルに行を追加する。
@@ -69,7 +77,7 @@ curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh
 
 </td>
 <td>Description in English</td>
-<td><a href="./rules/<rule-name>/RULE.md">RULE.md</a></td>
+<td><a href="./<rule-name>.md"><rule-name>.md</a></td>
 </tr>
 ````
 
@@ -85,7 +93,7 @@ curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh
 
 </td>
 <td>日本語の説明</td>
-<td><a href="./rules/<rule-name>/RULE.md">RULE.md</a></td>
+<td><a href="./<rule-name>.ja.md"><rule-name>.ja.md</a></td>
 </tr>
 ````
 

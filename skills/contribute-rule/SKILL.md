@@ -5,8 +5,8 @@ description: >
   rule として登録するための PR を自動作成する。
   プロジェクトの CLAUDE.md、.claude/rules/、コードベースから知見を収集し、
   再利用可能な Claude Code rule としてパッケージングして PR を作成するまでを一貫して行う。
-  rule は .claude/rules/ に配置されるファイルであり、skill とは異なり frontmatter や
-  詳細ドキュメントは不要。RULE.md 自体がルール本体兼ドキュメントとなる。
+  rule は .claude/rules/ に配置されるファイルであり、skill とは異なり frontmatter は不要。
+  RULE.md がルール本体となり、詳細ドキュメント (<rule-name>.md / .ja.md) をルートに配置する。
   Use when requested: "知見をルールとして登録", "contribute rule", "このルールを共有",
   "ルールとして登録", "ルールをまとめて PR", "この規約をルール化",
   "ベストプラクティスをルールに".
@@ -86,6 +86,7 @@ add-rule.md を読み込んだ後、以下のように統合する:
 
 - **add-rule.md の Step 1 (確認事項)**: contribute-rule の Step 1-2 で既に完了。スキップする
 - **add-rule.md の Step 2 (ディレクトリとファイルの作成)**: 構成ルールに従う。内容は contribute-rule の Step 2 で整理した知見を使う
+- **add-rule.md の Step 2.5 (詳細ドキュメントの作成)**: そのまま従う
 - **add-rule.md の Step 3 (README の更新)**: そのまま従う
 
 ガイドが見つからない場合は、以下の「フォールバック」セクションに従う。
@@ -99,7 +100,9 @@ Step 2 で整理した知見をもとに RULE.md を記述する。
 2. 参照ファイルがあれば同ディレクトリに配置
    - インストール時にユーザーのカレントディレクトリにコピーされることを意識してパスを設計する
    - サブディレクトリのネストも可能
-3. `README.md` と `README.ja.md` の Available Rules テーブルに行を追加
+3. `<rule-name>.md` — 詳細ドキュメント (英語)
+4. `<rule-name>.ja.md` — 詳細ドキュメント (日本語)
+5. `README.md` と `README.ja.md` の Available Rules テーブルに行を追加
 
 ### レビューの提示方法
 
@@ -131,10 +134,16 @@ Step 2 で整理した知見をもとに RULE.md を記述する。
 
 PR 作成前に以下を確認する:
 
-1. **RULE.md が命令形で記述されているか** — 「〜してください」ではなく「〜する」の形式
-2. **ルールの内容が汎用的か** — 特定プロジェクトでしか適用できないルールになっていないか
-3. **参照ファイルのパスが適切か** — ユーザーのプロジェクトルートに展開されることを考慮
-4. **README テーブルが既存行と同じフォーマットか** — HTML タグ、改行、code block の書き方を既存行と比較
+1. **必要なファイルが揃っているか** — 以下のファイルが存在することを確認する:
+   - `./<rule-name>.md` が存在すること (詳細ドキュメント 英語)
+   - `./<rule-name>.ja.md` が存在すること (詳細ドキュメント 日本語)
+   - `./rules/<rule-name>/RULE.md` が存在すること
+   - ルールが参照するすべてのファイルが `./rules/<rule-name>/` 配下に存在すること
+   - `README.md` と `README.ja.md` の Available Rules テーブルに新しいルールのエントリが追加されていること
+2. **RULE.md が命令形で記述されているか** — 「〜してください」ではなく「〜する」の形式
+3. **ルールの内容が汎用的か** — 特定プロジェクトでしか適用できないルールになっていないか
+4. **参照ファイルのパスが適切か** — ユーザーのプロジェクトルートに展開されることを考慮
+5. **README テーブルが既存行と同じフォーマットか** — HTML タグ、改行、code block の書き方を既存行と比較
 
 問題が見つかった場合は修正してからユーザーに報告する。
 
@@ -151,7 +160,7 @@ PR 作成前に以下を確認する:
 ```bash
 cd /tmp/contribute-rule
 git checkout -b add-rule/<rule-name>
-git add rules/<rule-name>/ README.md README.ja.md
+git add rules/<rule-name>/ <rule-name>.md <rule-name>.ja.md README.md README.ja.md
 git commit -m "add <rule-name> rule"
 git push -u origin add-rule/<rule-name>
 ```
