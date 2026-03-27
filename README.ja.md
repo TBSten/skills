@@ -104,6 +104,19 @@ npx skills add tbsten/skills \
 <td>Markdown ベースのローカルチケット管理システム</td>
 <td><a href="./skills/local-ticket-system.ja.md">詳細</a></td>
 </tr>
+<tr>
+<td>kotlin-maven-central-publish</td>
+<td>
+
+```sh
+npx skills add tbsten/skills \
+  --skill kotlin-maven-central-publish
+```
+
+</td>
+<td>Kotlin/KMP プロジェクト向け Maven Central 公開設定（Vanniktech Maven Publish + GPG 署名 + GitHub Actions）</td>
+<td><a href="./skills/kotlin-maven-central-publish.ja.md">詳細</a></td>
+</tr>
 </table>
 
 ## 📝 利用可能なルール
