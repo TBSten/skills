@@ -92,6 +92,19 @@ npx skills add tbsten/skills \
 <td><a href="./skills/navigation3-main-tab.ja.md">詳細</a></td>
 </tr>
 <tr>
+<td>local-ticket-system</td>
+<td>
+
+```sh
+npx skills add tbsten/skills \
+  --skill local-ticket-system
+```
+
+</td>
+<td>Markdown ベースのローカルチケット管理システム</td>
+<td><a href="./skills/local-ticket-system.ja.md">詳細</a></td>
+</tr>
+<tr>
 <td>kotlin-maven-central-publish</td>
 <td>
 
