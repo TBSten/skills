@@ -78,6 +78,19 @@ npx skills add tbsten/skills \
 <td>KMP + Compose プロジェクト向けスナップショットテスト基盤 (Kotest PBT + Turbine) のセットアップ</td>
 <td><a href="./skills/kmp-snapshot-testing-setup.ja.md">詳細</a></td>
 </tr>
+<tr>
+<td>kotlin-compiler-plugin-setup</td>
+<td>
+
+```sh
+npx skills add tbsten/skills \
+  --skill kotlin-compiler-plugin-setup
+```
+
+</td>
+<td>Kotlin Compiler Plugin のマルチモジュールプロジェクト (buildSrc、ユニットテスト kctfork、インテグレーションテスト) のセットアップ</td>
+<td><a href="./skills/kotlin-compiler-plugin-setup.ja.md">詳細</a></td>
+</tr>
 </table>
 
 ## 📝 利用可能なルール

@@ -78,6 +78,19 @@ npx skills add tbsten/skills \
 <td>Set up snapshot testing infrastructure (Kotest PBT + Turbine) for KMP + Compose projects</td>
 <td><a href="./skills/kmp-snapshot-testing-setup.md">Details</a></td>
 </tr>
+<tr>
+<td>kotlin-compiler-plugin-setup</td>
+<td>
+
+```sh
+npx skills add tbsten/skills \
+  --skill kotlin-compiler-plugin-setup
+```
+
+</td>
+<td>Set up a Kotlin Compiler Plugin project with multi-module Gradle structure, buildSrc, unit tests (kctfork), and integration tests</td>
+<td><a href="./skills/kotlin-compiler-plugin-setup.md">Details</a></td>
+</tr>
 </table>
 
 ## 📝 Available Rules
