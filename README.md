@@ -79,6 +79,19 @@ npx skills add tbsten/skills \
 <td><a href="./skills/kmp-snapshot-testing-setup.md">Details</a></td>
 </tr>
 <tr>
+<td>navigation3-main-tab</td>
+<td>
+
+```sh
+npx skills add tbsten/skills \
+  --skill navigation3-main-tab
+```
+
+</td>
+<td>Bottom tab management pattern using Navigation 3 SceneStrategy for KMP + Compose</td>
+<td><a href="./skills/navigation3-main-tab.md">Details</a></td>
+</tr>
+<tr>
 <td>kotlin-maven-central-publish</td>
 <td>
 
