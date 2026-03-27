@@ -78,6 +78,19 @@ npx skills add tbsten/skills \
 <td>Set up snapshot testing infrastructure (Kotest PBT + Turbine) for KMP + Compose projects</td>
 <td><a href="./skills/kmp-snapshot-testing-setup.md">Details</a></td>
 </tr>
+<tr>
+<td>kotlin-maven-central-publish</td>
+<td>
+
+```sh
+npx skills add tbsten/skills \
+  --skill kotlin-maven-central-publish
+```
+
+</td>
+<td>Set up Maven Central publishing for Kotlin/KMP projects with Vanniktech Maven Publish, GPG signing, and GitHub Actions</td>
+<td><a href="./skills/kotlin-maven-central-publish.md">Details</a></td>
+</tr>
 </table>
 
 ## 📝 Available Rules
