@@ -11,10 +11,9 @@
 <th>Skill</th>
 <th>Install</th>
 <th>Description</th>
-<th>Details</th>
 </tr>
 <tr>
-<td>kotlin-tuple</td>
+<td><a href="./skills/kotlin-tuple.md">kotlin-tuple</a></td>
 <td>
 
 ```sh
@@ -24,10 +23,9 @@ npx skills add tbsten/skills \
 
 </td>
 <td>Type-safe Tuple utilities for Kotlin/KMP</td>
-<td><a href="./skills/kotlin-tuple.md">Details</a></td>
 </tr>
 <tr>
-<td>contribute-skill</td>
+<td><a href="./skills/contribute-skill.md">contribute-skill</a></td>
 <td>
 
 ```sh
@@ -37,10 +35,9 @@ npx skills add tbsten/skills \
 
 </td>
 <td>Package project knowledge as a skill and create a PR to TBSten/skills</td>
-<td><a href="./skills/contribute-skill.md">Details</a></td>
 </tr>
 <tr>
-<td>contribute-rule</td>
+<td><a href="./skills/contribute-rule.md">contribute-rule</a></td>
 <td>
 
 ```sh
@@ -50,10 +47,9 @@ npx skills add tbsten/skills \
 
 </td>
 <td>Package project knowledge as a rule and create a PR to TBSten/skills</td>
-<td><a href="./skills/contribute-rule.md">Details</a></td>
 </tr>
 <tr>
-<td>simple-loader</td>
+<td><a href="./skills/simple-loader.md">simple-loader</a></td>
 <td>
 
 ```sh
@@ -63,10 +59,9 @@ npx skills add tbsten/skills \
 
 </td>
 <td>Sealed interface state machine for async data loading in Kotlin/Compose Multiplatform</td>
-<td><a href="./skills/simple-loader.md">Details</a></td>
 </tr>
 <tr>
-<td>kmp-snapshot-testing-setup</td>
+<td><a href="./skills/kmp-snapshot-testing-setup.md">kmp-snapshot-testing-setup</a></td>
 <td>
 
 ```sh
@@ -76,10 +71,9 @@ npx skills add tbsten/skills \
 
 </td>
 <td>Set up snapshot testing infrastructure (Kotest PBT + Turbine) for KMP + Compose projects</td>
-<td><a href="./skills/kmp-snapshot-testing-setup.md">Details</a></td>
 </tr>
 <tr>
-<td>navigation3-main-tab</td>
+<td><a href="./skills/navigation3-main-tab.md">navigation3-main-tab</a></td>
 <td>
 
 ```sh
@@ -89,10 +83,9 @@ npx skills add tbsten/skills \
 
 </td>
 <td>Bottom tab management pattern using Navigation 3 SceneStrategy for KMP + Compose</td>
-<td><a href="./skills/navigation3-main-tab.md">Details</a></td>
 </tr>
 <tr>
-<td>local-ticket-system</td>
+<td><a href="./skills/local-ticket-system.md">local-ticket-system</a></td>
 <td>
 
 ```sh
@@ -102,10 +95,9 @@ npx skills add tbsten/skills \
 
 </td>
 <td>Markdown-based local ticket management system for any project</td>
-<td><a href="./skills/local-ticket-system.md">Details</a></td>
 </tr>
 <tr>
-<td>kotlin-maven-central-publish</td>
+<td><a href="./skills/kotlin-maven-central-publish.md">kotlin-maven-central-publish</a></td>
 <td>
 
 ```sh
@@ -115,10 +107,9 @@ npx skills add tbsten/skills \
 
 </td>
 <td>Set up Maven Central publishing for Kotlin/KMP projects with Vanniktech Maven Publish, GPG signing, and GitHub Actions</td>
-<td><a href="./skills/kotlin-maven-central-publish.md">Details</a></td>
 </tr>
 <tr>
-<td>kotlin-compiler-plugin-setup</td>
+<td><a href="./skills/kotlin-compiler-plugin-setup.md">kotlin-compiler-plugin-setup</a></td>
 <td>
 
 ```sh
@@ -128,7 +119,6 @@ npx skills add tbsten/skills \
 
 </td>
 <td>Set up a Kotlin Compiler Plugin project with multi-module Gradle structure, buildSrc, unit tests (kctfork), and integration tests</td>
-<td><a href="./skills/kotlin-compiler-plugin-setup.md">Details</a></td>
 </tr>
 </table>
 
@@ -139,10 +129,9 @@ npx skills add tbsten/skills \
 <th>Rule</th>
 <th>Install</th>
 <th>Description</th>
-<th>Details</th>
 </tr>
 <tr>
-<td>kmp-layered-architecture</td>
+<td><a href="./rules/kmp-layered-architecture.md">kmp-layered-architecture</a></td>
 <td>
 
 ```sh
@@ -152,10 +141,9 @@ curl -fsSL https://rules.tbsten.me/i | \
 
 </td>
 <td>4-layer architecture (App/UI/Domain/Data) rule for Kotlin Multiplatform + Compose projects</td>
-<td><a href="./rules/kmp-layered-architecture.md">Details</a></td>
 </tr>
 <tr>
-<td>kmp-snapshot-testing</td>
+<td><a href="./rules/kmp-snapshot-testing.md">kmp-snapshot-testing</a></td>
 <td>
 
 ```sh
@@ -165,7 +153,6 @@ curl -fsSL https://rules.tbsten.me/i | \
 
 </td>
 <td>Snapshot PBT testing rule for Kotlin Multiplatform projects with Kotest + Turbine</td>
-<td><a href="./rules/kmp-snapshot-testing.md">Details</a></td>
 </tr>
 </table>
 
