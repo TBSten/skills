@@ -79,6 +79,45 @@ npx skills add tbsten/skills \
 <td><a href="./skills/kmp-snapshot-testing-setup.md">Details</a></td>
 </tr>
 <tr>
+<td>navigation3-main-tab</td>
+<td>
+
+```sh
+npx skills add tbsten/skills \
+  --skill navigation3-main-tab
+```
+
+</td>
+<td>Bottom tab management pattern using Navigation 3 SceneStrategy for KMP + Compose</td>
+<td><a href="./skills/navigation3-main-tab.md">Details</a></td>
+</tr>
+<tr>
+<td>local-ticket-system</td>
+<td>
+
+```sh
+npx skills add tbsten/skills \
+  --skill local-ticket-system
+```
+
+</td>
+<td>Markdown-based local ticket management system for any project</td>
+<td><a href="./skills/local-ticket-system.md">Details</a></td>
+</tr>
+<tr>
+<td>kotlin-maven-central-publish</td>
+<td>
+
+```sh
+npx skills add tbsten/skills \
+  --skill kotlin-maven-central-publish
+```
+
+</td>
+<td>Set up Maven Central publishing for Kotlin/KMP projects with Vanniktech Maven Publish, GPG signing, and GitHub Actions</td>
+<td><a href="./skills/kotlin-maven-central-publish.md">Details</a></td>
+</tr>
+<tr>
 <td>kotlin-compiler-plugin-setup</td>
 <td>
 
