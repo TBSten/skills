@@ -91,6 +91,19 @@ npx skills add tbsten/skills \
 <td>Bottom tab management pattern using Navigation 3 SceneStrategy for KMP + Compose</td>
 <td><a href="./skills/navigation3-main-tab.md">Details</a></td>
 </tr>
+<tr>
+<td>local-ticket-system</td>
+<td>
+
+```sh
+npx skills add tbsten/skills \
+  --skill local-ticket-system
+```
+
+</td>
+<td>Markdown-based local ticket management system for any project</td>
+<td><a href="./skills/local-ticket-system.md">Details</a></td>
+</tr>
 </table>
 
 ## 📝 Available Rules
