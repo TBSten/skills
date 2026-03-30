@@ -120,6 +120,18 @@ npx skills add tbsten/skills \
 </td>
 <td>Set up a Kotlin Compiler Plugin project with multi-module Gradle structure, buildSrc, unit tests (kctfork), and integration tests</td>
 </tr>
+<tr>
+<td><a href="./skills/react-vite-supabase-starter.md">react-vite-supabase-starter</a></td>
+<td>
+
+```sh
+npx skills add tbsten/skills \
+  --skill react-vite-supabase-starter
+```
+
+</td>
+<td>Scaffold a React + Vite + TypeScript + Tailwind v4 + shadcn/ui + TanStack Router/Query + Supabase web app</td>
+</tr>
 </table>
 
 ## 📝 Available Rules
