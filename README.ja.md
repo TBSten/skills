@@ -120,6 +120,18 @@ npx skills add tbsten/skills \
 </td>
 <td>Kotlin Compiler Plugin のマルチモジュールプロジェクト (buildSrc、ユニットテスト kctfork、インテグレーションテスト) のセットアップ</td>
 </tr>
+<tr>
+<td><a href="./skills/react-vite-supabase-starter.ja.md">react-vite-supabase-starter</a></td>
+<td>
+
+```sh
+npx skills add tbsten/skills \
+  --skill react-vite-supabase-starter
+```
+
+</td>
+<td>React + Vite + TypeScript + Tailwind v4 + shadcn/ui + TanStack Router/Query + Supabase の Web アプリをスキャフォールド</td>
+</tr>
 </table>
 
 ## 📝 利用可能なルール
