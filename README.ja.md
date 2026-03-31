@@ -144,7 +144,9 @@ curl -fsSL https://rules.tbsten.me/i | \
 </tr>
 </table>
 
-### ルールのインストール方法
+<details>
+
+<summary> ルールのインストール方法 </summary>
 
 ルールは `rules/install.sh` 経由でインストールします。`RULE.md` を `.claude/rules/` に、参照ファイルをカレントディレクトリにダウンロードします。
 
@@ -172,6 +174,8 @@ curl -fsSL https://rules.tbsten.me/i | bash -s -- kmp-snapshot-testing --ref=fea
 # 特定コミットからインストール
 curl -fsSL https://rules.tbsten.me/i | bash -s -- kmp-snapshot-testing -r=abc1234
 ```
+
+</details>
 
 ## 🤝 スキル / ルールの貢献
 

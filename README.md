@@ -144,7 +144,9 @@ curl -fsSL https://rules.tbsten.me/i | \
 </tr>
 </table>
 
-### Installing Rules
+<details>
+
+<summary> Installing Rules </summary>
 
 Rules are installed via `rules/install.sh`. It downloads `RULE.md` into `.claude/rules/` and reference files into the current directory.
 
@@ -172,6 +174,8 @@ curl -fsSL https://rules.tbsten.me/i | bash -s -- kmp-snapshot-testing --ref=fea
 # Install from a specific commit
 curl -fsSL https://rules.tbsten.me/i | bash -s -- kmp-snapshot-testing -r=abc1234
 ```
+
+</details>
 
 ## 🤝 Contribute Skills / Rules
 
