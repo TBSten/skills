@@ -2,6 +2,13 @@
 
 Markdown-based local ticket management system for any project.
 
+## Install
+
+```sh
+npx skills add tbsten/skills \
+  --skill local-ticket-system
+```
+
 ## Overview
 
 This skill sets up a `.local/ticket/` directory structure for managing tasks and bugs as Markdown files. Tickets are tracked outside of Git (`.local/` is gitignored), making it easy to manage work-in-progress without polluting the repository history.

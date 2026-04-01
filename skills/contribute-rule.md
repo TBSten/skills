@@ -2,6 +2,13 @@
 
 A Claude Code skill for contributing project knowledge to the [TBSten/skills](https://github.com/TBSten/skills) repository as a rule.
 
+## Install
+
+```sh
+npx skills add tbsten/skills \
+  --skill contribute-rule
+```
+
 ## Overview
 
 This skill automates the process of packaging project-specific conventions, best practices, and guidelines into a reusable Claude Code rule and creating a pull request to the TBSten/skills repository.

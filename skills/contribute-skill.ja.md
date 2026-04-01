@@ -2,6 +2,13 @@
 
 プロジェクトの知見を [TBSten/skills](https://github.com/TBSten/skills) リポジトリに登録するための Claude Code スキル。
 
+## インストール
+
+```sh
+npx skills add tbsten/skills \
+  --skill contribute-skill
+```
+
 ## 概要
 
 プロジェクトで得た知見・パターン・ワークフローを再利用可能な Claude Code スキルとしてパッケージングし、TBSten/skills リポジトリへの PR 作成までを自動化する。

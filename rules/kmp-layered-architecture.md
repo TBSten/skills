@@ -9,8 +9,7 @@ A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) rule that enforc
 ### 1. Install the rule:
 
 ```bash
-curl -fsSL \
-  https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh | \
+curl -fsSL https://rules.tbsten.me/i | \
   bash -s -- kmp-layered-architecture
 ```
 

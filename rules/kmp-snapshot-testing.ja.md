@@ -9,8 +9,7 @@ Kotlin Multiplatform プロジェクト向けのスナップショット PBT (Pr
 ### 1. ルールをインストール:
 
 ```bash
-curl -fsSL \
-  https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh | \
+curl -fsSL https://rules.tbsten.me/i | \
   bash -s -- kmp-snapshot-testing
 ```
 

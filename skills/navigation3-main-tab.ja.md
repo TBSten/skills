@@ -2,6 +2,13 @@
 
 Navigation 3 の SceneStrategy を活用した下タブ (BottomNavigation) 管理パターン。Kotlin Multiplatform + Compose プロジェクト向け。
 
+## インストール
+
+```sh
+npx skills add tbsten/skills \
+  --skill navigation3-main-tab
+```
+
 ## 概要
 
 Navigation 3 の `SceneStrategy` API を活用して下タブナビゲーションを実装するスキル。

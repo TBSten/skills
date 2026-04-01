@@ -72,7 +72,7 @@ rules/<rule-name>/
 <td>
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh | bash -s -- <rule-name>
+curl -fsSL https://rules.tbsten.me/i | bash -s -- <rule-name>
 ```
 
 </td>
@@ -88,7 +88,7 @@ curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh
 <td>
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/tbsten/skills/main/rules/install.sh | bash -s -- <rule-name>
+curl -fsSL https://rules.tbsten.me/i | bash -s -- <rule-name>
 ```
 
 </td>

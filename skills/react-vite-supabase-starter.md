@@ -2,6 +2,13 @@
 
 Scaffold a new web application with React + Vite + TypeScript + Tailwind CSS v4 + shadcn/ui + TanStack Router + TanStack Query + Supabase.
 
+## Install
+
+```sh
+npx skills add tbsten/skills \
+  --skill react-vite-supabase-starter
+```
+
 ## Overview
 
 This skill provides a complete project scaffold for building modern SPAs with:

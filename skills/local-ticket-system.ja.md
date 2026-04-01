@@ -2,6 +2,13 @@
 
 Markdown ベースのローカルチケット管理システム。
 
+## インストール
+
+```sh
+npx skills add tbsten/skills \
+  --skill local-ticket-system
+```
+
 ## 概要
 
 `.local/ticket/` ディレクトリ構造でタスクやバグを Markdown ファイルとして管理するスキル。`.local/` は gitignore 対象のため、リポジトリ履歴を汚さずに作業中のタスクを気軽に管理できる。

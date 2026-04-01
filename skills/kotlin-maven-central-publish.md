@@ -2,6 +2,13 @@
 
 Set up Maven Central publishing for Kotlin/KMP projects using Vanniktech Maven Publish plugin, GPG signing, and GitHub Actions CI/CD.
 
+## Install
+
+```sh
+npx skills add tbsten/skills \
+  --skill kotlin-maven-central-publish
+```
+
 ## Overview
 
 This skill automates the setup of Maven Central publishing for Kotlin and Kotlin Multiplatform projects. It creates:

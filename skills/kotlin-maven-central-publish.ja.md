@@ -2,6 +2,13 @@
 
 Kotlin/KMP プロジェクトに Maven Central 公開設定を追加するスキル。Vanniktech Maven Publish プラグイン、GPG 署名、GitHub Actions CI/CD を一括セットアップする。
 
+## インストール
+
+```sh
+npx skills add tbsten/skills \
+  --skill kotlin-maven-central-publish
+```
+
 ## 概要
 
 このスキルは Kotlin / Kotlin Multiplatform プロジェクトの Maven Central 公開に必要な設定を自動生成する:

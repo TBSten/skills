@@ -2,6 +2,13 @@
 
 React + Vite + TypeScript + Tailwind CSS v4 + shadcn/ui + TanStack Router + TanStack Query + Supabase のスタックで新規 Web アプリをスキャフォールドする。
 
+## インストール
+
+```sh
+npx skills add tbsten/skills \
+  --skill react-vite-supabase-starter
+```
+
 ## 概要
 
 以下の技術スタックで SPA を構築するための完全なプロジェクト雛形を提供する:

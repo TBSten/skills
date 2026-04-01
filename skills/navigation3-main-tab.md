@@ -2,6 +2,13 @@
 
 Bottom tab (BottomNavigation) management pattern using Navigation 3's SceneStrategy for Kotlin Multiplatform + Compose projects.
 
+## Install
+
+```sh
+npx skills add tbsten/skills \
+  --skill navigation3-main-tab
+```
+
 ## Overview
 
 This skill implements a bottom tab navigation pattern that leverages Navigation 3's `SceneStrategy` API. The key insight is using a custom `Scene` with a **fixed key** to preserve the tab scaffold across tab switches, while only swapping the inner content.
