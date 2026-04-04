@@ -22,7 +22,7 @@ npx skills add tbsten/skills \
 ```
 
 </td>
-<td>Markdown ベースのローカルチケット管理システム</td>
+<td>Markdown ベースのローカルチケット管理システム（task / bug / chapter 対応）</td>
 </tr>
 <tr>
 <td><a href="./skills/kotlin-tuple.ja.md">kotlin-tuple</a></td>
