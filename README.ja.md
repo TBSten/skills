@@ -142,6 +142,18 @@ curl -fsSL https://rules.tbsten.me/i | \
 </td>
 <td>Kotlin Multiplatform プロジェクト向けスナップショット PBT テストルール (Kotest + Turbine)</td>
 </tr>
+<tr>
+<td><a href="./rules/kmp-error-handling.ja.md">kmp-error-handling</a></td>
+<td>
+
+```sh
+curl -fsSL https://rules.tbsten.me/i | \
+  bash -s -- kmp-error-handling
+```
+
+</td>
+<td>Kotlin Multiplatform + Compose プロジェクト向けエラーハンドリング・ワーニング検知ルール</td>
+</tr>
 </table>
 
 <details>

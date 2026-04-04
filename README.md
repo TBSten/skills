@@ -142,6 +142,18 @@ curl -fsSL https://rules.tbsten.me/i | \
 </td>
 <td>Snapshot PBT testing rule for Kotlin Multiplatform projects with Kotest + Turbine</td>
 </tr>
+<tr>
+<td><a href="./rules/kmp-error-handling.md">kmp-error-handling</a></td>
+<td>
+
+```sh
+curl -fsSL https://rules.tbsten.me/i | \
+  bash -s -- kmp-error-handling
+```
+
+</td>
+<td>Error handling and warning detection rule for Kotlin Multiplatform + Compose projects</td>
+</tr>
 </table>
 
 <details>
