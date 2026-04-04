@@ -108,6 +108,18 @@ npx skills add tbsten/skills \
 </td>
 <td>Scaffold a React + Vite + TypeScript + Tailwind v4 + shadcn/ui + TanStack Router/Query + Supabase web app</td>
 </tr>
+<tr>
+<td><a href="./skills/kotlin-compiler-plugin-dev.md">kotlin-compiler-plugin-dev</a></td>
+<td>
+
+```sh
+npx skills add tbsten/skills \
+  --skill kotlin-compiler-plugin-dev
+```
+
+</td>
+<td>Develop and review Kotlin Compiler Plugins using research data from 30+ existing plugins (Extension Point selection, design patterns, precedent search)</td>
+</tr>
 </table>
 
 ## 📝 Available Rules

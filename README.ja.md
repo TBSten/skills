@@ -108,6 +108,18 @@ npx skills add tbsten/skills \
 </td>
 <td>React + Vite + TypeScript + Tailwind v4 + shadcn/ui + TanStack Router/Query + Supabase の Web アプリをスキャフォールド</td>
 </tr>
+<tr>
+<td><a href="./skills/kotlin-compiler-plugin-dev.ja.md">kotlin-compiler-plugin-dev</a></td>
+<td>
+
+```sh
+npx skills add tbsten/skills \
+  --skill kotlin-compiler-plugin-dev
+```
+
+</td>
+<td>30+ の既存プラグイン調査データをもとに Kotlin Compiler Plugin の開発・レビューを支援する（Extension Point 選択、設計パターン、前例調査）</td>
+</tr>
 </table>
 
 ## 📝 利用可能なルール
