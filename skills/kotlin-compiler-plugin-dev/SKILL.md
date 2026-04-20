@@ -10,7 +10,10 @@ description: >
   "Extension Point の選択は正しいか", "compiler plugin の前例を探して",
   "compiler plugin を開発したい", "この機能は FIR と IR どっちでやるべき？",
   "既存プラグインでこういうことやってるのある？",
-  "compiler plugin の設計を相談したい".
+  "compiler plugin の設計を相談したい",
+  "複数 Kotlin バージョン対応のアーキテクチャをレビュー",
+  "compat module layer の設計は正しいか", "source set separation を評価して",
+  "multi-version support の設計を評価", "タンデム vs 独立リリースどちらがよいか".
 ---
 
 # Kotlin Compiler Plugin Dev
@@ -149,7 +152,12 @@ mcp__deepwiki__ask_question
 - 前例との類似度: ... (最も近いプラグイン名)
 
 ### チェックリスト結果
-(references/review-checklist.md のチェックリストの結果)
+(references/review-checklist.md のチェックリストの結果。複数バージョン対応セクションも含める)
+
+### 複数 Kotlin バージョン対応
+- バージョニング戦略: タンデム / 独立
+- アーキテクチャ: compat module layer / source set separation / 未対応
+- 問題点 (minVersion 設定ミス、mergeServiceFiles 漏れ、fail-fast 設定等):
 
 ### 問題点・改善提案
 1. ...
