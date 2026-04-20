@@ -19,7 +19,7 @@ This skill sets up a `.local/ticket/` directory structure for managing tasks, bu
 - **Task tickets** (`task-{NNN}-{slug}.md`) — Track feature implementation with checklists
 - **Bug tickets** (`bug-{NNN}-{slug}.md`) — Document bugs with reproduction steps and fix candidates
 - **Chapter tickets** (`chapter-{slug}.md`) — Group related tasks/bugs under a higher-level goal, with scope, motivation, and a breakdown plan
-- **Lifecycle management** — Tasks/bugs: active → `done/` → `closed/`. Chapters: active → split into tasks → `archived/`
+- **Lifecycle management** — Tasks/bugs: active → `done/` → `closed/`. Chapters: active → split into tasks → `archived/`. Intentional deferral → `deferred/`
 - **Template-based** — Consistent ticket format with built-in checklist items
 - **Language/framework agnostic** — Works with any project type
 
@@ -35,7 +35,8 @@ This skill sets up a `.local/ticket/` directory structure for managing tasks, bu
 ├── chapter-*.md          # Active chapters
 ├── done/                 # Completed tickets (implemented & committed)
 ├── closed/               # Closed tickets (verified & validated)
-└── archived/             # Archived chapters (all child tickets completed)
+├── archived/             # Archived chapters (all child tickets completed)
+└── deferred/             # Deferred tickets (intentionally postponed)
 ```
 
 ## Ticket Types
@@ -54,6 +55,7 @@ This skill sets up a `.local/ticket/` directory structure for managing tasks, bu
 2. **In progress** — Work through the checklist items
 3. **Done** — Implementation and commit complete → move to `done/`
 4. **Closed** — Verification complete → move to `closed/`
+5. **Deferred** — Intentionally postponed → move to `deferred/` (intended to revisit later)
 
 ### chapter
 
@@ -61,6 +63,19 @@ This skill sets up a `.local/ticket/` directory structure for managing tasks, bu
 2. **Planning** — Refine scope and open questions
 3. **Split** — Break down into task/bug tickets
 4. **Archived** — All child tickets completed → move to `archived/`
+5. **Deferred** — Postponed to a future phase → move to `deferred/`
+
+### deferred/ rules
+
+Before moving, append the following to the ticket:
+
+```markdown
+**Deferred reason**: <why it's being postponed>
+**Re-open trigger**: <what condition would bring it back>
+**Deferred date**: YYYY-MM-DD
+```
+
+To resume, move the ticket back from `deferred/` to `ticket/`.
 
 ## Prerequisites
 
