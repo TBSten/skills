@@ -167,6 +167,19 @@ fun compile(source: String): JvmCompilationResult =
 ./gradlew :integration-test:test-kmp:jvmRun
 ```
 
+### Step 10: Multi-Kotlin Version Support (上級、任意)
+
+1 つの JAR で複数の Kotlin バージョン (例: 2.0.0 〜 2.4.x) をサポートしたい場合に実施する。
+
+**戦略の選択**:
+- **タンデムリリース** — プラグインバージョン = Kotlin バージョン。最もシンプル (kotlinx.serialization 方式)
+- **独立リリース** — 1 JAR で多バージョン対応。以下 2 つのアーキテクチャがある:
+  - **A: Source Set Separation** — Gradle がビルド時にソースディレクトリを切り替え。K1/K2 断絶の吸収に最適
+  - **B: Compat Module Layer (metro スタイル)** — ServiceLoader で実装を動的選択。K2+ のパッチ差異の吸収に最適
+
+詳細なセットアップ手順と全コード例は `references/multi-version-setup.md` を参照。
+バージョンの追加・削除の継続的な作業は `add-support-kotlin-version` スキルを使用する。
+
 ## セットアップ完了メッセージ
 
 ```
