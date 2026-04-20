@@ -19,7 +19,7 @@ npx skills add tbsten/skills \
 - **タスクチケット** (`task-{NNN}-{slug}.md`) — チェックリスト形式で機能実装を追跡
 - **バグチケット** (`bug-{NNN}-{slug}.md`) — 再現手順・修正候補を含むバグ記録
 - **チャプターチケット** (`chapter-{slug}.md`) — 関連する task/bug を上位目標でグループ化。スコープ・モチベーション・分割計画を含む
-- **ライフサイクル管理** — task/bug: アクティブ → `done/` → `closed/`。chapter: アクティブ → task に分割 → `archived/`
+- **ライフサイクル管理** — task/bug: アクティブ → `done/` → `closed/`。chapter: アクティブ → task に分割 → `archived/`。意図的な先送りは `deferred/`
 - **テンプレートベース** — 共通チェックリスト項目付きの統一フォーマット
 - **言語・フレームワーク不問** — どのプロジェクトでも利用可能
 
@@ -35,7 +35,8 @@ npx skills add tbsten/skills \
 ├── chapter-*.md          # チャプター
 ├── done/                 # 完了済みチケット（実装完了・commit 済み）
 ├── closed/               # クローズ済みチケット（動作確認・検証済み）
-└── archived/             # アーカイブ済みチャプター
+├── archived/             # アーカイブ済みチャプター
+└── deferred/             # 後回しチケット（意図的に将来に先送り）
 ```
 
 ## チケット種別
@@ -54,6 +55,7 @@ npx skills add tbsten/skills \
 2. **作業中** — チェックリストを消化しながら実装
 3. **done** — 実装・commit が完了 → `done/` へ移動
 4. **closed** — 動作確認が完了 → `closed/` へ移動
+5. **deferred** — 意図的に後回し → `deferred/` へ移動（再着手の意図あり）
 
 ### chapter
 
@@ -61,6 +63,19 @@ npx skills add tbsten/skills \
 2. **検討中** — スコープや検討事項を詰めていく
 3. **分割** — task / bug チケットに分割する
 4. **archived** — 全ての子チケットが完了 → `archived/` へ移動
+5. **deferred** — 着手を先送りにするとき → `deferred/` へ移動
+
+### deferred/ のルール
+
+移動前にチケット内に以下を追記すること:
+
+```markdown
+**Deferred 理由**: <なぜ後回しにするか>
+**再起票 trigger**: <どういう条件で再着手するか>
+**Deferred 日付**: YYYY-MM-DD
+```
+
+再着手するときは `deferred/` から `ticket/` 直下に戻す。
 
 ## 前提条件
 

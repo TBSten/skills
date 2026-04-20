@@ -20,7 +20,7 @@ description: >
 
 - プロジェクトにローカルチケット管理を新規導入したい
 - 既存のチケットシステムにタスク・バグ・チャプターチケットを追加したい
-- チケットのステータスを変更したい (done / closed / archived への移動)
+- チケットのステータスを変更したい (done / closed / archived / deferred への移動)
 
 ## Step 1: セットアップ (初回のみ)
 
@@ -155,6 +155,7 @@ task の構成に加え、以下を含める:
 2. **作業中**: チェックリストを消化しながら実装
 3. **done**: 実装・commit が完了 → `done/` へ移動
 4. **closed**: 動作確認・検証が完了 → `closed/` へ移動
+5. **deferred**: 意図的に後回し → `deferred/` へ移動（再着手の意図あり）
 
 ステータス変更はファイルの移動で行う:
 
@@ -168,5 +169,20 @@ mv .local/ticket/task-001-add-login.md .local/ticket/done/
 2. **検討中**: スコープや検討事項を詰めていく
 3. **分割**: task / bug チケットに分割する。分割したチケット名を chapter 内に記録する
 4. **archived**: 全ての子チケットが done/closed になったら `archived/` へ移動
+5. **deferred**: 着手を先送りにするとき → `deferred/` へ移動
 
 chapter は done/closed には移動しない。子チケットの完了が chapter の完了を意味する。
+
+### deferred/ への移動
+
+「今のフェーズでは着手しないが、将来再着手する意図がある」チケット・チャプターを置く場所。完了ではなく先送りを意味する。
+
+移動前にチケット内に以下を追記する:
+
+```markdown
+**Deferred 理由**: <なぜ後回しにするか>
+**再起票 trigger**: <どういう条件で再着手するか>
+**Deferred 日付**: YYYY-MM-DD
+```
+
+再着手するときは `deferred/` から `ticket/` 直下に戻す。
