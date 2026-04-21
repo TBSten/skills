@@ -120,6 +120,18 @@ npx skills add tbsten/skills \
 </td>
 <td>Develop and review Kotlin Compiler Plugins using research data from 30+ existing plugins (Extension Point selection, design patterns, precedent search)</td>
 </tr>
+<tr>
+<td><a href="./skills/add-support-kotlin-version.md">add-support-kotlin-version</a></td>
+<td>
+
+```sh
+npx skills add tbsten/skills \
+  --skill add-support-kotlin-version
+```
+
+</td>
+<td>Add or remove a supported Kotlin version in a compiler plugin project (compat module layer / source set separation)</td>
+</tr>
 </table>
 
 ## 📝 Available Rules

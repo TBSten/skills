@@ -9,7 +9,8 @@ This skill helps you:
 1. **Find precedents** — Search 30+ existing compiler plugins to find implementations similar to what you want to build
 2. **Choose Extension Points** — Determine the right FIR/IR Extension Points based on your requirements
 3. **Review implementations** — Evaluate your compiler plugin against established patterns and best practices
-4. **Deep-dive into source code** — Use deepwiki MCP to read the latest source code of reference plugins
+4. **Review multi-version support** — Evaluate compat module layer / source set separation architecture; advise on tandem vs. independent release strategy
+5. **Deep-dive into source code** — Use deepwiki MCP to read the latest source code of reference plugins
 
 ## When to use
 
@@ -33,8 +34,8 @@ This skill helps you:
 | File | Description |
 |---|---|
 | `references/overview.md` | Flat table of all Extension Points across 30+ plugins with source URLs |
-| `references/patterns.md` | 4 architectural patterns + Extension Point selection guides |
-| `references/review-checklist.md` | Checklists for K2 compatibility, design patterns, code quality |
+| `references/patterns.md` | 4 architectural patterns + Extension Point selection guides + Multi-Version Support architectures (compat module layer / source set separation) |
+| `references/review-checklist.md` | Checklists for K2 compatibility, design patterns, code quality, multi-Kotlin-version support |
 | `references/details/*.md` | Source-code-level details for each plugin group (8 files) |
 
 ## Prerequisites

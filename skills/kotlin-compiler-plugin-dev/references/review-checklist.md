@@ -35,3 +35,16 @@
 - [ ] テストが存在するか (kctfork / KotlinCompilation を使った unit test)
 - [ ] マルチプラットフォーム対応が必要な場合、各プラットフォームでの動作を考慮しているか
 - [ ] `GeneratedDeclarationKey` を使って生成した宣言を識別しているか (origin による判定)
+
+## 複数 Kotlin バージョン対応
+
+- [ ] バージョニング戦略が明確か (タンデムリリース / 独立リリース)
+- [ ] 独立リリースの場合: compat module layer または source set separation のアーキテクチャが整備されているか
+- [ ] Compat module layer: ServiceLoader dispatch ロジックが `minVersion ≤ 現在バージョン` の最大選択になっているか
+- [ ] Compat module layer: Shadow JAR で `mergeServiceFiles()` が設定されているか
+- [ ] Compat module layer: Interface モジュールの `apiVersion` が最も古い対象バージョンに揃えられているか
+- [ ] Source set separation: Gradle で動的 `srcDir` 切り替えが実装されているか
+- [ ] CI matrix で全対象バージョンを並列テストし、`fail-fast: false` が設定されているか
+- [ ] kctfork バージョンマップが対象 Kotlin バージョンを網羅しているか
+- [ ] ランタイムライブラリの ABI が BCV (Binary Compatibility Validator) で保護されているか
+- [ ] IDE 組み込みコンパイラの特殊バージョン (`2.X.Y-ij...`) へのフォールバックを考慮しているか

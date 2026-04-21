@@ -7,7 +7,8 @@
 1. **前例を探す** — 30+ の既存 compiler plugin から、やりたいことに近い実装を検索する
 2. **Extension Point を選ぶ** — 要件に合った FIR/IR Extension Point を提案する
 3. **実装をレビュー** — 確立されたパターンとベストプラクティスをもとに実装を評価する
-4. **ソースコードを深掘り** — deepwiki MCP を使って参考プラグインの最新ソースコードを読む
+4. **複数バージョン対応をレビュー** — compat module layer / source set separation のアーキテクチャ評価、タンデム vs 独立リリース戦略の判断支援
+5. **ソースコードを深掘り** — deepwiki MCP を使って参考プラグインの最新ソースコードを読む
 
 ## こんなときに使う
 
@@ -31,8 +32,8 @@
 | ファイル | 内容 |
 |---|---|
 | `references/overview.md` | 30+ プラグインの全 Extension Point をまとめたフラットな一覧表（ソース URL 付き） |
-| `references/patterns.md` | 4 つの設計パターン + Extension Point 選択ガイド |
-| `references/review-checklist.md` | K2 対応・設計パターン・コード品質のチェックリスト |
+| `references/patterns.md` | 4 つの設計パターン + Extension Point 選択ガイド + Multi-Version Support アーキテクチャ (compat module layer / source set separation) |
+| `references/review-checklist.md` | K2 対応・設計パターン・コード品質・複数 Kotlin バージョン対応のチェックリスト |
 | `references/details/*.md` | プラグイングループごとのソースコードレベルの詳細（8 ファイル） |
 
 ## 前提条件
