@@ -178,6 +178,18 @@ curl -fsSL https://rules.tbsten.me/i | \
 </td>
 <td>Error handling and warning detection rule for Kotlin Multiplatform + Compose projects</td>
 </tr>
+<tr>
+<td><a href="./rules/android-compose-design-system.md">android-compose-design-system</a></td>
+<td>
+
+```sh
+curl -fsSL https://rules.tbsten.me/i | \
+  bash -s -- android-compose-design-system
+```
+
+</td>
+<td>Architectural standards for structuring a Jetpack Compose design system (Colors, Typography, Shapes)</td>
+</tr>
 </table>
 
 <details>
