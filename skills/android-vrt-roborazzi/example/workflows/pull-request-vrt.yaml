@@ -1,0 +1,95 @@
+name: Pull Request VRT
+
+on: [ pull_request ]
+
+concurrency:
+  group: pull-request-vrt-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  pull-requests: write
+
+env:
+  expect-artifact: vrt-${{ github.event.pull_request.base.sha }}-expected
+  actual-artifact: vrt-${{ github.event.pull_request.head.sha }}-actual
+
+jobs:
+  take-expect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Base Branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Take Expect Screenshot from Base Branch
+        run: ./gradlew recordRoborazziDebug
+        
+      - run: mkdir -p .reg/expected && mv build/roborazzi-outputs/* .reg/expected/ || true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.expect-artifact }}
+          path: .reg/expected
+
+  take-actual:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Head Branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Take Actual Screenshot from Head Branch
+        run: ./gradlew recordRoborazziDebug
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.actual-artifact }}
+          path: build/roborazzi-outputs
+
+  report:
+    needs: [ take-expect, take-actual ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install reg-suit
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.expect-artifact }}
+          path: .reg/expected
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.actual-artifact }}
+          path: build/roborazzi-outputs
+
+      - run: npx reg-suit run
+
+      # Note: Requires hosting setup (e.g. GitHub Pages) for report viewing
+      # - uses: peaceiris/actions-gh-pages@v4
+      #   with:
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      #     publish_dir: ./.reg
+      
+      - name: Update PR Body
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const script = require('./.github/workflows/report-vrt-to-pr-body.js')
+            // ... invoke updatePr ...
