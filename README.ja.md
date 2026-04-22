@@ -132,6 +132,18 @@ npx skills add tbsten/skills \
 </td>
 <td>Kotlin Compiler Plugin プロジェクトのサポート対象 Kotlin バージョンを追加・削除する（compat module layer / source set separation 対応）</td>
 </tr>
+<tr>
+<td><a href="./skills/android-vrt-roborazzi.ja.md">android-vrt-roborazzi</a></td>
+<td>
+
+```sh
+npx skills add tbsten/skills \
+  --skill android-vrt-roborazzi
+```
+
+</td>
+<td>Roborazzi と GitHub Actions を活用した Android 向け自動 Visual Regression Testing (VRT) 基盤</td>
+</tr>
 </table>
 
 ## 📝 利用可能なルール
