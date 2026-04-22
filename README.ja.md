@@ -178,6 +178,18 @@ curl -fsSL https://rules.tbsten.me/i | \
 </td>
 <td>Kotlin Multiplatform + Compose プロジェクト向けエラーハンドリング・ワーニング検知ルール</td>
 </tr>
+<tr>
+<td><a href="./rules/android-compose-design-system.ja.md">android-compose-design-system</a></td>
+<td>
+
+```sh
+curl -fsSL https://rules.tbsten.me/i | \
+  bash -s -- android-compose-design-system
+```
+
+</td>
+<td>Jetpack Compose におけるデザインシステムの構造化に関する規約 (Colors, Typography, Shapes)</td>
+</tr>
 </table>
 
 <details>
