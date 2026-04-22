@@ -132,6 +132,18 @@ npx skills add tbsten/skills \
 </td>
 <td>Add or remove a supported Kotlin version in a compiler plugin project (compat module layer / source set separation)</td>
 </tr>
+<tr>
+<td><a href="./skills/android-error-handling.md">android-error-handling</a></td>
+<td>
+
+```sh
+npx skills add tbsten/skills \
+  --skill android-error-handling
+```
+
+</td>
+<td>Centralized error management for Android using Coroutines and Hilt</td>
+</tr>
 </table>
 
 ## 📝 Available Rules

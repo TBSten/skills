@@ -132,6 +132,18 @@ npx skills add tbsten/skills \
 </td>
 <td>Kotlin Compiler Plugin プロジェクトのサポート対象 Kotlin バージョンを追加・削除する（compat module layer / source set separation 対応）</td>
 </tr>
+<tr>
+<td><a href="./skills/android-error-handling.ja.md">android-error-handling</a></td>
+<td>
+
+```sh
+npx skills add tbsten/skills \
+  --skill android-error-handling
+```
+
+</td>
+<td>CoroutineExceptionHandler と StateFlow を活用した Android 向け共通エラーハンドリング基盤</td>
+</tr>
 </table>
 
 ## 📝 利用可能なルール
