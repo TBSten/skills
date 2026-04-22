@@ -132,6 +132,18 @@ npx skills add tbsten/skills \
 </td>
 <td>Add or remove a supported Kotlin version in a compiler plugin project (compat module layer / source set separation)</td>
 </tr>
+<tr>
+<td><a href="./skills/android-convention-plugins.md">android-convention-plugins</a></td>
+<td>
+
+```sh
+npx skills add tbsten/skills \
+  --skill android-convention-plugins
+```
+
+</td>
+<td>Scalable "Primitive & Module" Gradle Convention Plugins architecture for Android projects</td>
+</tr>
 </table>
 
 ## 📝 Available Rules
