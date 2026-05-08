@@ -20,6 +20,7 @@ This skill sets up a `.local/ticket/` directory structure for managing tasks, bu
 - **Bug tickets** (`bug-{NNN}-{slug}.md`) — Document bugs with reproduction steps and fix candidates
 - **Chapter tickets** (`chapter-{slug}.md`) — Group related tasks/bugs under a higher-level goal, with scope, motivation, and a breakdown plan
 - **Lifecycle management** — Tasks/bugs: active → `done/` → `closed/`. Chapters: active → split into tasks → `archived/`. Intentional deferral → `deferred/`
+- **Emoji prefix titles** — Tickets carry a leading emoji prefix (e.g. `🗑️ Remove dead code`, `✨ Add login`, `🐛 Null pointer in user lookup`) for at-a-glance categorization
 - **Template-based** — Consistent ticket format with built-in checklist items
 - **Language/framework agnostic** — Works with any project type
 
