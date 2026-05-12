@@ -1,30 +1,9 @@
----
-name: add-support-kotlin-version
-description: >
-  Adds or removes a specific Kotlin version from a Kotlin Compiler Plugin project's
-  support matrix. Covers two architectures: compat module layer (ServiceLoader dispatch,
-  metro-style with capability-flag + delegation patterns) and source set separation
-  (Gradle dynamic source directory switching). Determines whether an existing compat
-  module covers the target version or a new module is needed; covers reflection-based
-  forward-compat for small accessor diffs, ShadowJar packaging, kctfork version mapping,
-  baseline-vs-runtime mismatch handling (`-Xskip-prerelease-check`), `KotlinToolingVersion`
-  with Maturity comparison for Beta/RC/Stable ordering, dynamic CI matrix sourced from
-  SSOT, test classpath isolation, and Java 21 toolchain pin for kctfork.
-  Use when requested: "Kotlin X.Y.Z をサポートしたい", "新しい Kotlin バージョン対応",
-  "サポート Kotlin バージョンを追加したい", "Kotlin の新バージョン対応したい",
-  "Kotlin X.Y.Z のサポートを外したい", "compat module を追加したい",
-  "CI matrix に Kotlin X.Y.Z を追加したい", "kctfork を更新したい",
-  "Kotlin RC/Beta を入れたい", "複数バージョン対応プラグインに新バージョンを追加",
-  "新しい Kotlin パッチで NoSuchMethodError が出た", "compat layer の version を追加",
-  "compat module を delegation で作りたい", "capability flag を追加したい",
-  "IrDeclarationOrigin が patch で変わった", "ShadowJar で compat module を束ねたい".
----
+# Add/Remove Supported Kotlin Version — Workflow
 
-# Add/Remove Supported Kotlin Version
+Kotlin Compiler Plugin のサポート対象 Kotlin バージョンを追加・削除するための詳細ワークフロー。
+本ワークフローはプロジェクトに既に複数バージョン対応基盤（compat module layer または source set separation）が存在することを前提とする。基盤の初期セットアップは `kotlin-compiler-plugin-setup` の Step 10 を参照。
 
-Kotlin Compiler Plugin のサポート対象 Kotlin バージョンを追加・削除する。
-
-このスキルはプロジェクトに既に複数バージョン対応基盤（compat module layer または source set separation）が存在することを前提とする。基盤の初期セットアップは `kotlin-compiler-plugin-setup` の Step 10 を参照。
+`kotlin-compiler-plugin-dev` の Step 6 から本ファイルが参照される。
 
 ---
 
@@ -62,7 +41,7 @@ compiler-plugin/                  # baseline Kotlin で compile される main �
 
 ### 1A-1: 既存 compat module で対応可能か判定
 
-各 compat module の `Factory.minVersion` で `KotlinToolingVersion` 比較する。 `minVersion ≤ current` を満たす中で最大の minVersion を持つ Factory が選ばれる。 Beta / RC は STABLE より小さい (`2.4.0 > 2.4.0-Beta2 > 2.4.0-Beta1`) — 詳細は `references/kotlin-tooling-version.md`。
+各 compat module の `Factory.minVersion` で `KotlinToolingVersion` 比較する。 `minVersion ≤ current` を満たす中で最大の minVersion を持つ Factory が選ばれる。 Beta / RC は STABLE より小さい (`2.4.0 > 2.4.0-Beta2 > 2.4.0-Beta1`) — 詳細は `./kotlin-tooling-version.md`。
 
 **判定フロー**:
 
@@ -71,7 +50,7 @@ compiler-plugin/                  # baseline Kotlin で compile される main �
 3. **OK → Step 2 へ進む**
 4. **失敗パターン別の対処**:
    - `NoSuchMethodError` / `NoClassDefFoundError` / `IncompatibleClassChangeError` → API 境界が変わった
-     - 小さな accessor / enum 差分 → **reflection-based shim** で吸収 (`references/reflection-shim.md`)
+     - 小さな accessor / enum 差分 → **reflection-based shim** で吸収 (`./reflection-shim.md`)
      - method signature 差分 → 該当 compat module の同名メソッドを修正、または新 compat module
    - 単に **未知のクラスが存在しない** (例: `FirNamedFunction` が 2.3.20 で導入) → **capability flag** (`supportsFirCheckers()`) で feature を gating
    - kctfork 起動不能 → kctfork version map を更新 (Step 2)
@@ -101,7 +80,7 @@ class CompatContextImpl : CompatContext by K230Impl() {
 }
 ```
 
-詳細手順 (build.gradle.kts / settings.gradle.kts / META-INF/services / ShadowJar 取り込み) は `references/compat-module-setup.md` を参照。
+詳細手順 (build.gradle.kts / settings.gradle.kts / META-INF/services / ShadowJar 取り込み) は `./compat-module-setup.md` を参照。
 
 ---
 
@@ -109,7 +88,7 @@ class CompatContextImpl : CompatContext by K230Impl() {
 
 `src/v{バージョン}/kotlin` または `src/pre_{バージョン}/kotlin` の命名規則で新しいソースディレクトリを追加する。
 
-詳細コードは `references/source-set-separation.md` を参照。
+詳細コードは `./source-set-separation.md` を参照。
 
 1. **ディレクトリ作成**: `src/v{major}_{minor}_{patch}/kotlin/`
 2. **VersionSpecificAPIImpl を実装**: そのバージョン向けの処理を書く
@@ -170,7 +149,7 @@ compiler-plugin-test:
 - `fail-fast: false` 必須。 Beta / RC が失敗しても stable の結果を視認できるようにする
 - `setup-java` の `java-version: 17` は **CI runner JVM の話**。 kctfork が新 JDK の version string をパースできない場合は Gradle 側で `javaToolchains.launcherFor { languageVersion.set(JavaLanguageVersion.of(21)) }` を test task に pin する (= 後述 2-3 の Java 21 pin と関係)
 
-完全な YAML テンプレート / per-version test script は `references/ci-matrix.md`。
+完全な YAML テンプレート / per-version test script は `./ci-matrix.md`。
 
 ### 2-3: kctfork バージョンマップ (compat module の test 用)
 
@@ -245,13 +224,13 @@ done
 | 症状                                | 原因                                                | 対処                                                                                |
 | ---                                 | ---                                                 | ---                                                                                 |
 | `NoSuchMethodError`                 | main 実装が内部で使う API が変わった                | `CompatContext` に新メソッドを追加し、 各 compat module で実装                      |
-| `NoClassDefFoundError`              | 新バージョンで導入されたクラスを早期に load 試行    | `CompatContext.supportsXxx()` capability flag で gating (`references/version-gating.md`) |
-| `IncompatibleClassChangeError`      | binary signature 差分 (return type / param 等)      | reflection shim (`references/reflection-shim.md`) で吸収                            |
+| `NoClassDefFoundError`              | 新バージョンで導入されたクラスを早期に load 試行    | `CompatContext.supportsXxx()` capability flag で gating (`./version-gating.md`) |
+| `IncompatibleClassChangeError`      | binary signature 差分 (return type / param 等)      | reflection shim (`./reflection-shim.md`) で吸収                            |
 | `Cannot parse 'X' as Java version`  | kctfork が新 JDK の version string をパース不可     | test JVM の toolchain を `JavaLanguageVersion.of(21)` に pin                        |
 | `metadata version is X.Y.0`         | test classpath の Kotlin が baseline と乖離         | `compileTestKotlin` に `-Xskip-prerelease-check -Xskip-metadata-version-check`     |
 | KGP 自体の initialize 失敗          | `force` resolution が main classpath にも波及       | `force` は `testCompileClasspath` / `testRuntimeClasspath` 限定                     |
 
-詳細な再現手順と Gradle スニペットは `references/troubleshooting.md`。
+詳細な再現手順と Gradle スニペットは `./troubleshooting.md`。
 
 ---
 
@@ -297,10 +276,10 @@ done
 
 ## 詳細リファレンス (本 skill 内)
 
-- [`references/compat-module-setup.md`](references/compat-module-setup.md) — `CompatContext` SPI / delegation pattern / ShadowJar 設定 / 新 compat module 追加コマンド
-- [`references/source-set-separation.md`](references/source-set-separation.md) — Source set 分離アプローチの詳細
-- [`references/ci-matrix.md`](references/ci-matrix.md) — SSOT 駆動 dynamic matrix の YAML テンプレート / per-version test script / classpath isolation
-- [`references/kotlin-tooling-version.md`](references/kotlin-tooling-version.md) — `KotlinToolingVersion` with Maturity (STABLE > RC > BETA > ALPHA > MILESTONE > DEV > SNAPSHOT) の比較ロジック
-- [`references/version-gating.md`](references/version-gating.md) — capability flag (`supportsXxx()`) の設計 + テストの `isAtLeast(...)` self-skip
-- [`references/reflection-shim.md`](references/reflection-shim.md) — 小さな差分を新 compat module なしで吸収する reflection shim (例: `IrDeclarationOriginCompat`)
-- [`references/troubleshooting.md`](references/troubleshooting.md) — 失敗パターン別の原因と対処 (NoSuchMethodError / metadata mismatch / KGP 初期化エラー / Java toolchain)
+- [`./compat-module-setup.md`](./compat-module-setup.md) — `CompatContext` SPI / delegation pattern / ShadowJar 設定 / 新 compat module 追加コマンド
+- [`./source-set-separation.md`](./source-set-separation.md) — Source set 分離アプローチの詳細
+- [`./ci-matrix.md`](./ci-matrix.md) — SSOT 駆動 dynamic matrix の YAML テンプレート / per-version test script / classpath isolation
+- [`./kotlin-tooling-version.md`](./kotlin-tooling-version.md) — `KotlinToolingVersion` with Maturity (STABLE > RC > BETA > ALPHA > MILESTONE > DEV > SNAPSHOT) の比較ロジック
+- [`./version-gating.md`](./version-gating.md) — capability flag (`supportsXxx()`) の設計 + テストの `isAtLeast(...)` self-skip
+- [`./reflection-shim.md`](./reflection-shim.md) — 小さな差分を新 compat module なしで吸収する reflection shim (例: `IrDeclarationOriginCompat`)
+- [`./troubleshooting.md`](./troubleshooting.md) — 失敗パターン別の原因と対処 (NoSuchMethodError / metadata mismatch / KGP 初期化エラー / Java toolchain)

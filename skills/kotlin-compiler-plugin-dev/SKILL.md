@@ -1,9 +1,10 @@
 ---
 name: kotlin-compiler-plugin-dev
 description: >
-  Kotlin Compiler Plugin の開発・レビューを支援するスキル。
+  Kotlin Compiler Plugin の開発・レビュー、および複数 Kotlin バージョン対応 (compat module layer / source set separation) の追加・削除を支援するスキル。
   30+ の既存プラグインの調査データ (Extension Point、設計パターン、ソースコード URL) を参照し、
   やりたいことに最適な Extension Point の選択、設計パターンの提案、前例のソースコード参照を行う。
+  サポート Kotlin バージョンの追加・削除では compat module の delegation pattern / capability flag / reflection shim / SSOT 駆動 CI matrix / kctfork version mapping / Java 21 toolchain pin など実運用パターンをカバーする。
   deepwiki MCP を使って最新のソースコードを深掘りする機能も持つ。
   Use when requested: "compiler plugin をレビュー", "compiler plugin の実装を評価",
   "review compiler plugin", "FIR/IR の設計をチェック",
@@ -13,7 +14,14 @@ description: >
   "compiler plugin の設計を相談したい",
   "複数 Kotlin バージョン対応のアーキテクチャをレビュー",
   "compat module layer の設計は正しいか", "source set separation を評価して",
-  "multi-version support の設計を評価", "タンデム vs 独立リリースどちらがよいか".
+  "multi-version support の設計を評価", "タンデム vs 独立リリースどちらがよいか",
+  "Kotlin X.Y.Z をサポートしたい", "新しい Kotlin バージョン対応",
+  "サポート Kotlin バージョンを追加したい", "Kotlin X.Y.Z のサポートを外したい",
+  "compat module を追加したい", "CI matrix に Kotlin X.Y.Z を追加したい",
+  "kctfork を更新したい", "Kotlin RC/Beta を入れたい",
+  "新しい Kotlin パッチで NoSuchMethodError が出た",
+  "compat module を delegation で作りたい", "capability flag を追加したい",
+  "IrDeclarationOrigin が patch で変わった", "ShadowJar で compat module を束ねたい".
 ---
 
 # Kotlin Compiler Plugin Dev
@@ -44,6 +52,7 @@ deepwiki がなくても references/ 内のデータで作業を続行する。
 1. **開発モード**: 新しい compiler plugin を作りたい / 既存プラグインに機能を追加したい
 2. **レビューモード**: 既存の compiler plugin 実装をレビュー・評価したい
 3. **調査モード**: やりたいことに対する前例を探したい
+4. **サポートバージョン追加・削除モード**: 既に複数バージョン対応基盤を持つプラグインに新しい Kotlin バージョンを追加 / 削除したい → **Step 6** へ直接ジャンプ
 
 ## Step 2: overview.md で前例を検索
 
@@ -171,3 +180,51 @@ mcp__deepwiki__ask_question
 ### 調査モードの出力
 
 前例の一覧と、各前例の概要・ソースコード URL を提示する。
+
+## Step 6: サポート Kotlin バージョンの追加・削除
+
+既に複数バージョン対応基盤 (compat module layer または source set separation) を持つ Kotlin Compiler Plugin プロジェクトに対して、サポート対象 Kotlin バージョンを追加・削除する。基盤の初期セットアップは `kotlin-compiler-plugin-setup` の Step 10 を参照。
+
+### 概要
+
+- **A: Compat Module Layer** — `compiler-plugin/compat-kXX/` 形式のモジュールがあり、ServiceLoader で実装を選択して ShadowJar で 1 jar にバンドルする構成
+- **B: Source Set Separation** — `src/v2_0_0/kotlin` / `src/pre_2_0_0/kotlin` 等のディレクトリで Gradle が動的に切り替える構成
+
+### ワークフロー
+
+詳細手順 (要件確認 → 既存 module で対応可能か判定 → 新 compat module 追加 (delegation pattern) → SSOT 更新 → CI matrix / kctfork / Compose マップ / README 更新 → テスト切り分け → ドキュメント反映) は **[`references/multi-version-workflow.md`](references/multi-version-workflow.md)** を参照。
+
+### よく使う詳細リファレンス
+
+| 用途 | ファイル |
+|---|---|
+| `CompatContext` SPI / delegation / ShadowJar 設定 | [`references/compat-module-setup.md`](references/compat-module-setup.md) |
+| Source set 分離アプローチ | [`references/source-set-separation.md`](references/source-set-separation.md) |
+| SSOT 駆動 CI matrix の YAML テンプレ | [`references/ci-matrix.md`](references/ci-matrix.md) |
+| Beta/RC/Stable 比較 (Maturity) | [`references/kotlin-tooling-version.md`](references/kotlin-tooling-version.md) |
+| capability flag の設計 / self-skip | [`references/version-gating.md`](references/version-gating.md) |
+| reflection shim (小さな差分の吸収) | [`references/reflection-shim.md`](references/reflection-shim.md) |
+| 失敗パターン別の原因と対処 | [`references/troubleshooting.md`](references/troubleshooting.md) |
+
+### サポートバージョン追加・削除モードの出力
+
+```markdown
+## Kotlin X.Y.Z サポート追加レポート
+
+### 対象
+- バージョン: X.Y.Z (stable / Beta / RC / dev)
+- operation: 追加 / 削除 / 置換
+- アーキテクチャ: A: Compat Module Layer / B: Source Set Separation
+
+### 実施内容
+- [ ] SSOT (`scripts/supported-kotlin-versions.txt`) 更新
+- [ ] compat module / ソースセット 追加・修正 (該当時)
+- [ ] CI matrix 確認 (`fail-fast: false`、SSOT 駆動)
+- [ ] kctfork バージョンマップ更新 (該当時)
+- [ ] Compose マップ更新 (KMP/CMP プロジェクトの場合)
+- [ ] README 両言語 / `docs/support-kotlin-versions.md` 反映
+- [ ] 全バージョンでテスト GREEN
+
+### 問題・注記
+- (例: 新 API 境界が必要だった理由、shim/capability flag の追加 etc)
+```
