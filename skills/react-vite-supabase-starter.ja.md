@@ -5,8 +5,7 @@ React + Vite + TypeScript + Tailwind CSS v4 + shadcn/ui + TanStack Router + TanS
 ## インストール
 
 ```sh
-npx skills add tbsten/skills \
-  --skill react-vite-supabase-starter
+gh skill install tbsten/skills react-vite-supabase-starter
 ```
 
 ## 概要

@@ -5,8 +5,7 @@
 ## インストール
 
 ```sh
-npx skills add tbsten/skills \
-  --skill contribute-skill
+gh skill install tbsten/skills contribute-skill
 ```
 
 ## 概要

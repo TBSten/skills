@@ -5,8 +5,7 @@ A Claude Code skill for contributing project knowledge to the [TBSten/skills](ht
 ## Install
 
 ```sh
-npx skills add tbsten/skills \
-  --skill contribute-rule
+gh skill install tbsten/skills contribute-rule
 ```
 
 ## Overview

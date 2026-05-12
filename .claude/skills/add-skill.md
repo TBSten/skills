@@ -110,7 +110,7 @@ example コードのパッケージ名は以下の規約に従う:
 <td>
 
 ```sh
-npx skills add tbsten/skills --skill <skill-name>
+gh skill install tbsten/skills <skill-name>
 ```
 
 </td>
@@ -126,7 +126,7 @@ npx skills add tbsten/skills --skill <skill-name>
 <td>
 
 ```sh
-npx skills add tbsten/skills --skill <skill-name>
+gh skill install tbsten/skills <skill-name>
 ```
 
 </td>

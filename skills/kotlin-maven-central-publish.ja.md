@@ -5,8 +5,7 @@ Kotlin/KMP プロジェクトに Maven Central 公開設定を追加するスキ
 ## インストール
 
 ```sh
-npx skills add tbsten/skills \
-  --skill kotlin-maven-central-publish
+gh skill install tbsten/skills kotlin-maven-central-publish
 ```
 
 ## 概要

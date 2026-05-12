@@ -9,8 +9,7 @@ A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skill that gener
 ### 1. Install the skill:
 
 ```bash
-npx skills add tbsten/skills \
-  --skill kotlin-tuple
+gh skill install tbsten/skills kotlin-tuple
 ```
 
 ### 2. Ask your AI agent:
@@ -149,7 +148,7 @@ This skill is part of [TBSten/skills](https://github.com/TBSten/skills).
 
 ```
 skills/kotlin-tuple/
-└── SKILL.md          ← Only this directory is installed by `npx skills add`
+└── SKILL.md          ← Only this directory is installed by `gh skill install`
 ```
 
 `kotlin-tuple.md` and other repo-level files are not included when installing the skill.

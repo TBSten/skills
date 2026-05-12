@@ -9,8 +9,7 @@ Kotlin Compiler Plugin プロジェクトのサポート対象 Kotlin バージ�
 ### 1. スキルをインストール:
 
 ```bash
-npx skills add tbsten/skills \
-  --skill add-support-kotlin-version
+gh skill install tbsten/skills add-support-kotlin-version
 ```
 
 ### 2. AI エージェントに依頼:

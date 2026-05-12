@@ -17,8 +17,7 @@ TBSten の [Claude Code](https://docs.anthropic.com/en/docs/claude-code) スキ�
 <td>
 
 ```sh
-npx skills add tbsten/skills \
-  --skill local-ticket-system
+gh skill install tbsten/skills local-ticket-system
 ```
 
 </td>
@@ -29,8 +28,7 @@ npx skills add tbsten/skills \
 <td>
 
 ```sh
-npx skills add tbsten/skills \
-  --skill kotlin-tuple
+gh skill install tbsten/skills kotlin-tuple
 ```
 
 </td>
@@ -41,8 +39,7 @@ npx skills add tbsten/skills \
 <td>
 
 ```sh
-npx skills add tbsten/skills \
-  --skill simple-loader
+gh skill install tbsten/skills simple-loader
 ```
 
 </td>
@@ -53,8 +50,7 @@ npx skills add tbsten/skills \
 <td>
 
 ```sh
-npx skills add tbsten/skills \
-  --skill navigation3-main-tab
+gh skill install tbsten/skills navigation3-main-tab
 ```
 
 </td>
@@ -65,8 +61,7 @@ npx skills add tbsten/skills \
 <td>
 
 ```sh
-npx skills add tbsten/skills \
-  --skill kotlin-compiler-plugin-setup
+gh skill install tbsten/skills kotlin-compiler-plugin-setup
 ```
 
 </td>
@@ -77,8 +72,7 @@ npx skills add tbsten/skills \
 <td>
 
 ```sh
-npx skills add tbsten/skills \
-  --skill kotlin-maven-central-publish
+gh skill install tbsten/skills kotlin-maven-central-publish
 ```
 
 </td>
@@ -89,8 +83,7 @@ npx skills add tbsten/skills \
 <td>
 
 ```sh
-npx skills add tbsten/skills \
-  --skill kmp-snapshot-testing-setup
+gh skill install tbsten/skills kmp-snapshot-testing-setup
 ```
 
 </td>
@@ -101,8 +94,7 @@ npx skills add tbsten/skills \
 <td>
 
 ```sh
-npx skills add tbsten/skills \
-  --skill react-vite-supabase-starter
+gh skill install tbsten/skills react-vite-supabase-starter
 ```
 
 </td>
@@ -113,8 +105,7 @@ npx skills add tbsten/skills \
 <td>
 
 ```sh
-npx skills add tbsten/skills \
-  --skill kotlin-compiler-plugin-dev
+gh skill install tbsten/skills kotlin-compiler-plugin-dev
 ```
 
 </td>
@@ -125,8 +116,7 @@ npx skills add tbsten/skills \
 <td>
 
 ```sh
-npx skills add tbsten/skills \
-  --skill add-support-kotlin-version
+gh skill install tbsten/skills add-support-kotlin-version
 ```
 
 </td>
@@ -228,8 +218,7 @@ curl -fsSL https://rules.tbsten.me/i | bash -s -- kmp-snapshot-testing -r=abc123
 <td>
 
 ```sh
-npx skills add tbsten/skills \
-  --skill contribute-skill
+gh skill install tbsten/skills contribute-skill
 ```
 
 </td>
@@ -240,8 +229,7 @@ npx skills add tbsten/skills \
 <td>
 
 ```sh
-npx skills add tbsten/skills \
-  --skill contribute-rule
+gh skill install tbsten/skills contribute-rule
 ```
 
 </td>

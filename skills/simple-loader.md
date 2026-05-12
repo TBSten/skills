@@ -9,8 +9,7 @@ A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skill that gener
 ### 1. Install the skill:
 
 ```bash
-npx skills add tbsten/skills \
-  --skill simple-loader
+gh skill install tbsten/skills simple-loader
 ```
 
 ### 2. Ask your AI agent:
@@ -100,7 +99,7 @@ This skill is part of [TBSten/skills](https://github.com/TBSten/skills).
 
 ```
 skills/simple-loader/
-├── SKILL.md              ← Installed by `npx skills add`
+├── SKILL.md              ← Installed by `gh skill install`
 ├── example/              ← Template source files
 └── references/           ← Usage pattern documentation
 ```

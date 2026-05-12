@@ -5,8 +5,7 @@ Bottom tab (BottomNavigation) management pattern using Navigation 3's SceneStrat
 ## Install
 
 ```sh
-npx skills add tbsten/skills \
-  --skill navigation3-main-tab
+gh skill install tbsten/skills navigation3-main-tab
 ```
 
 ## Overview

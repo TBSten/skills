@@ -5,8 +5,7 @@ Navigation 3 の SceneStrategy を活用した下タブ (BottomNavigation) 管�
 ## インストール
 
 ```sh
-npx skills add tbsten/skills \
-  --skill navigation3-main-tab
+gh skill install tbsten/skills navigation3-main-tab
 ```
 
 ## 概要

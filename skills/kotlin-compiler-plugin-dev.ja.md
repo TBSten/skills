@@ -44,5 +44,5 @@
 ## インストール
 
 ```sh
-npx skills add TBSten/skills --skill kotlin-compiler-plugin-dev
+gh skill install TBSten/skills kotlin-compiler-plugin-dev
 ```

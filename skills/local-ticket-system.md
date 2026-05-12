@@ -5,8 +5,7 @@ Markdown-based local ticket management system for any project.
 ## Install
 
 ```sh
-npx skills add tbsten/skills \
-  --skill local-ticket-system
+gh skill install tbsten/skills local-ticket-system
 ```
 
 ## Overview
