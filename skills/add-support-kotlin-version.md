@@ -9,8 +9,7 @@ A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skill that adds 
 ### 1. Install the skill:
 
 ```bash
-npx skills add tbsten/skills \
-  --skill add-support-kotlin-version
+gh skill install tbsten/skills add-support-kotlin-version
 ```
 
 ### 2. Ask your AI agent:

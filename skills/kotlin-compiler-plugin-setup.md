@@ -9,8 +9,7 @@ A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skill that sets 
 ### 1. Install the skill:
 
 ```bash
-npx skills add tbsten/skills \
-  --skill kotlin-compiler-plugin-setup
+gh skill install tbsten/skills kotlin-compiler-plugin-setup
 ```
 
 ### 2. Ask your AI agent:

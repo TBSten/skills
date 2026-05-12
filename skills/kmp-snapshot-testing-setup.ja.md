@@ -9,8 +9,7 @@ Kotlin Multiplatform + Compose プロジェクトにスナップショットテ�
 ### 1. スキルをインストール:
 
 ```bash
-npx skills add tbsten/skills \
-  --skill kmp-snapshot-testing-setup
+gh skill install tbsten/skills kmp-snapshot-testing-setup
 ```
 
 ### 2. AI エージェントに依頼:

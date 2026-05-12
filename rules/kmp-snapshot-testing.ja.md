@@ -41,6 +41,5 @@ curl -fsSL https://rules.tbsten.me/i | \
 プロジェクトにスナップショットテスト基盤がまだない場合は、`kmp-snapshot-testing-setup` スキルでセットアップできます:
 
 ```bash
-npx skills add tbsten/skills \
-  --skill kmp-snapshot-testing-setup
+gh skill install tbsten/skills kmp-snapshot-testing-setup
 ```

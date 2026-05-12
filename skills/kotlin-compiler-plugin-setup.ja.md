@@ -9,8 +9,7 @@ Kotlin Compiler Plugin のマルチモジュールプロジェクトを buildSrc
 ### 1. スキルをインストール:
 
 ```bash
-npx skills add tbsten/skills \
-  --skill kotlin-compiler-plugin-setup
+gh skill install tbsten/skills kotlin-compiler-plugin-setup
 ```
 
 ### 2. AI エージェントに依頼:

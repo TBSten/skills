@@ -9,8 +9,7 @@ Kotlin / Kotlin Multiplatform プロジェクトに型安全な Tuple ユーテ�
 ### 1. スキルをインストール:
 
 ```bash
-npx skills add tbsten/skills \
-  --skill kotlin-tuple
+gh skill install tbsten/skills kotlin-tuple
 ```
 
 ### 2. AI エージェントに依頼:
@@ -149,7 +148,7 @@ val missing: Tuple2<String, Int>? = allNotNullOrNull("Alice", null)
 
 ```
 skills/kotlin-tuple/
-└── SKILL.md          ← `npx skills add` でインストールされるのはこのディレクトリのみ
+└── SKILL.md          ← `gh skill install` でインストールされるのはこのディレクトリのみ
 ```
 
 `kotlin-tuple.md` などのリポジトリレベルのファイルはスキルのインストールには含まれません。

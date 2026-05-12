@@ -30,7 +30,7 @@ TBSten の Claude Code skills・rules コレクションリポジトリ。
 - SKILL.md には YAML frontmatter (`name`, `description`) を含める
 - 参照ドキュメントやサンプルコードは同ディレクトリ内に配置
 - `skills/<skill-name>.md` / `<skill-name>.ja.md` で詳細ドキュメントを用意
-- インストール: `npx skills add tbsten/skills --skill <skill-name>`
+- インストール: `gh skill install tbsten/skills <skill-name>`
 
 ## Rules の構成ルール
 

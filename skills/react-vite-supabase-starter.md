@@ -5,8 +5,7 @@ Scaffold a new web application with React + Vite + TypeScript + Tailwind CSS v4 
 ## Install
 
 ```sh
-npx skills add tbsten/skills \
-  --skill react-vite-supabase-starter
+gh skill install tbsten/skills react-vite-supabase-starter
 ```
 
 ## Overview

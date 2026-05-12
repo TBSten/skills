@@ -41,6 +41,5 @@ This is a **path-triggered rule**. When snapshot test code or test infrastructur
 If your project doesn't have snapshot testing infrastructure set up yet, use the `kmp-snapshot-testing-setup` skill:
 
 ```bash
-npx skills add tbsten/skills \
-  --skill kmp-snapshot-testing-setup
+gh skill install tbsten/skills kmp-snapshot-testing-setup
 ```

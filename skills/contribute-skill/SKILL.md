@@ -238,7 +238,7 @@ gh pr create \
 - <その他の追加ファイル一覧>
 
 ## Test plan
-- [ ] npx skills add <repo> --skill <skill-name> でインストールできること
+- [ ] gh skill install <repo> <skill-name> でインストールできること
 - [ ] スキルのトリガーフレーズで正しく発動すること
 "
 ```

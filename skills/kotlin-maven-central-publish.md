@@ -5,8 +5,7 @@ Set up Maven Central publishing for Kotlin/KMP projects using Vanniktech Maven P
 ## Install
 
 ```sh
-npx skills add tbsten/skills \
-  --skill kotlin-maven-central-publish
+gh skill install tbsten/skills kotlin-maven-central-publish
 ```
 
 ## Overview
