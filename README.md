@@ -111,6 +111,28 @@ gh skill install tbsten/skills kotlin-compiler-plugin-dev
 </td>
 <td>Develop and review Kotlin Compiler Plugins using research data from 30+ existing plugins; also covers adding/removing supported Kotlin versions in projects with compat module layer or source set separation</td>
 </tr>
+<tr>
+<td><a href="./skills/exploratory-pr-verification.md">exploratory-pr-verification</a></td>
+<td>
+
+```sh
+gh skill install tbsten/skills exploratory-pr-verification
+```
+
+</td>
+<td>Operational rules for multi-subagent exploratory PR verification on Kotlin projects (PDCA / MCP / ticket bookkeeping / PR comment etiquette / loop termination)</td>
+</tr>
+<tr>
+<td><a href="./skills/exploratory-nightly-verification.md">exploratory-nightly-verification</a></td>
+<td>
+
+```sh
+gh skill install tbsten/skills exploratory-nightly-verification
+```
+
+</td>
+<td>60-minute single-shot exploratory verification of a Kotlin project's main branch from a nightly CI job, with Markdown-file-based findings and zero side effects</td>
+</tr>
 </table>
 
 ## 📝 Available Rules
