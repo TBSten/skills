@@ -109,18 +109,7 @@ gh skill install tbsten/skills kotlin-compiler-plugin-dev
 ```
 
 </td>
-<td>Develop and review Kotlin Compiler Plugins using research data from 30+ existing plugins (Extension Point selection, design patterns, precedent search)</td>
-</tr>
-<tr>
-<td><a href="./skills/add-support-kotlin-version.md">add-support-kotlin-version</a></td>
-<td>
-
-```sh
-gh skill install tbsten/skills add-support-kotlin-version
-```
-
-</td>
-<td>Add or remove a supported Kotlin version in a compiler plugin project (compat module layer / source set separation)</td>
+<td>Develop and review Kotlin Compiler Plugins using research data from 30+ existing plugins; also covers adding/removing supported Kotlin versions in projects with compat module layer or source set separation</td>
 </tr>
 </table>
 
