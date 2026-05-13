@@ -111,6 +111,28 @@ gh skill install tbsten/skills kotlin-compiler-plugin-dev
 </td>
 <td>30+ の既存プラグイン調査データをもとに Kotlin Compiler Plugin の開発・レビューを支援する（Extension Point 選択、設計パターン、前例調査、compat module layer / source set separation でのサポート Kotlin バージョン追加・削除も含む）</td>
 </tr>
+<tr>
+<td><a href="./skills/exploratory-pr-verification.ja.md">exploratory-pr-verification</a></td>
+<td>
+
+```sh
+gh skill install tbsten/skills exploratory-pr-verification
+```
+
+</td>
+<td>Kotlin プロジェクトの PR を複数 subagent 並列で探索的に検証する運用規約 (PDCA / MCP / ticket 起票 / PR コメント policy / loop 終了処理)</td>
+</tr>
+<tr>
+<td><a href="./skills/exploratory-nightly-verification.ja.md">exploratory-nightly-verification</a></td>
+<td>
+
+```sh
+gh skill install tbsten/skills exploratory-nightly-verification
+```
+
+</td>
+<td>nightly CI ジョブから Kotlin プロジェクトの main を 60 分 single-shot で探索的検証。 発見を Markdown ファイルに逐次書き出し、 PR への副作用は一切なし</td>
+</tr>
 </table>
 
 ## 📝 利用可能なルール
