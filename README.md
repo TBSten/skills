@@ -133,6 +133,17 @@ gh skill install tbsten/skills exploratory-nightly-verification
 </td>
 <td>60-minute single-shot exploratory verification of a Kotlin project's main branch from a nightly CI job, with Markdown-file-based findings and zero side effects</td>
 </tr>
+<tr>
+<td><a href="./skills/pr-fix-loop.md">pr-fix-loop</a></td>
+<td>
+
+```sh
+gh skill install tbsten/skills pr-fix-loop
+```
+
+</td>
+<td>Drive multiple GitHub PRs to green in parallel — one loop pass classifies each failing CI check (transient / lint / binary-compat / build / test) and delegates to a fix-ci-* skill, handles review and issue comments end to end, and chains rebases for stacked PRs; pairs with a /loop driver for unattended runs</td>
+</tr>
 </table>
 
 ## 📝 Available Rules

@@ -133,6 +133,17 @@ gh skill install tbsten/skills exploratory-nightly-verification
 </td>
 <td>nightly CI ジョブから Kotlin プロジェクトの main を 60 分 single-shot で探索的検証。 発見を Markdown ファイルに逐次書き出し、 PR への副作用は一切なし</td>
 </tr>
+<tr>
+<td><a href="./skills/pr-fix-loop.ja.md">pr-fix-loop</a></td>
+<td>
+
+```sh
+gh skill install tbsten/skills pr-fix-loop
+```
+
+</td>
+<td>複数の GitHub PR を並行して green に。 1 パスで失敗 CI check (transient / lint / binary-compat / build / test) を分類して fix-ci-* skill に委譲、 review / issue コメントを取得〜resolve まで対応、 stacked PR の rebase を連鎖。 /loop driver と組み合わせて無人実行</td>
+</tr>
 </table>
 
 ## 📝 利用可能なルール
