@@ -144,6 +144,17 @@ gh skill install tbsten/skills pr-fix-loop
 </td>
 <td>複数の GitHub PR を並行して green に。 1 パスで失敗 CI check (transient / lint / binary-compat / build / test) を分類して fix-ci-* skill に委譲、 review / issue コメントを取得〜resolve まで対応、 stacked PR の rebase を連鎖。 /loop driver と組み合わせて無人実行</td>
 </tr>
+<tr>
+<td><a href="./skills/github-get-attachment-url.ja.md">github-get-attachment-url</a></td>
+<td>
+
+```sh
+gh skill install tbsten/skills github-get-attachment-url
+```
+
+</td>
+<td>ローカルファイルを GitHub にアップロードし、Issue を作成せずに user-attachments URL(または Markdown)を取得する。同梱の決定的な Python + Playwright ランナーで実行</td>
+</tr>
 </table>
 
 ## 📝 利用可能なルール
