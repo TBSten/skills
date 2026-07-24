@@ -144,6 +144,17 @@ gh skill install tbsten/skills pr-fix-loop
 </td>
 <td>Drive multiple GitHub PRs to green in parallel — one loop pass classifies each failing CI check (transient / lint / binary-compat / build / test) and delegates to a fix-ci-* skill, handles review and issue comments end to end, and chains rebases for stacked PRs; pairs with a /loop driver for unattended runs</td>
 </tr>
+<tr>
+<td><a href="./skills/github-get-attachment-url.md">github-get-attachment-url</a></td>
+<td>
+
+```sh
+gh skill install tbsten/skills github-get-attachment-url
+```
+
+</td>
+<td>Upload local files to GitHub and get their user-attachments URLs (or Markdown) without creating an issue, via a bundled deterministic Python + Playwright runner</td>
+</tr>
 </table>
 
 ## 📝 Available Rules
