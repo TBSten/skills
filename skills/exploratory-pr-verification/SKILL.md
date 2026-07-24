@@ -10,6 +10,8 @@ description: >
   Use when requested: "PR exploratory verification", "PR 探索検証", "並列 subagent kick",
   "PR loop", "ticket 駆動で PR review", "stacked PR を多角的に audit",
   "complex PR を 5 並列で深掘り".
+metadata:
+  status: Active
 ---
 
 # Exploratory PR Verification — Operational Rules

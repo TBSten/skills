@@ -22,6 +22,8 @@ description: >
   "新しい Kotlin パッチで NoSuchMethodError が出た",
   "compat module を delegation で作りたい", "capability flag を追加したい",
   "IrDeclarationOrigin が patch で変わった", "ShadowJar で compat module を束ねたい".
+metadata:
+  status: Active
 ---
 
 # Kotlin Compiler Plugin Dev

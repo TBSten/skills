@@ -10,6 +10,8 @@ description: >
   project itself.
   Use when requested: "nightly exploration", "nightly 探索", "夜間探索的検証",
   "exploratory-nightly", "60 分 budget で main を探索", "夜間 main quality scan".
+metadata:
+  status: Active
 ---
 
 # Exploratory Nightly Verification

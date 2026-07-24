@@ -60,15 +60,42 @@ rules/<rule-name>/
 - `rules/<rule-name>.md` (英語) — ルールの概要、適用対象、インストール方法、含まれるファイルの説明
 - `rules/<rule-name>.ja.md` (日本語) — 上記の日本語版
 
+#### status (必須)
+
+rule の成熟度は **英語詳細ドキュメント `rules/<rule-name>.md` の先頭 frontmatter** に記載する
+(RULE.md はユーザーの `.claude/rules/` にそのまま配置されるため frontmatter を持たせない)。
+`.ja.md` には付けず、英語版を SSoT とする。
+
+```yaml
+---
+status: Experimental
+---
+# <rule-name> Rule
+```
+
+値は以下の 4 つのいずれか:
+
+| status | 絵文字 | 意味 |
+|---|---|---|
+| `WIP` | 🌱 | 作成中だけど一旦出してみた |
+| `Experimental` | 🧪 | 使えるはずだが、しっかり検証はされていない |
+| `Active` | 🟢 | プロダクションレディで実用的に使える |
+| `Active-Prime` | 💎 | Active かつ定番として愛用している |
+
+新規追加時のデフォルトは `Experimental` (ユーザーの指示があればそれに従う)。
+既存 rule の status を後から変更する場合は `change-status` スキルを使う。
+
 ### Step 3: README の更新
 
 `README.md` と `README.ja.md` の **Available Rules** テーブルに行を追加する。
-既存の行のフォーマットに厳密に合わせること。
+既存の行のフォーマットに厳密に合わせること。テーブルには Install と Description の間に
+**Status** (日本語版は **ステータス**) 列がある。ステータスセルは `絵文字 + 半角スペース + status ラベル`
+で記載する (例: `🧪 Experimental`, `🟢 Active`)。詳細ドキュメントの `status` frontmatter と必ず一致させる。
 
 **README.md テンプレート:**
 ````html
 <tr>
-<td><rule-name></td>
+<td><a href="./rules/<rule-name>.md"><rule-name></a></td>
 <td>
 
 ```sh
@@ -76,15 +103,15 @@ curl -fsSL https://rules.tbsten.me/i | bash -s -- <rule-name>
 ```
 
 </td>
+<td>🧪 Experimental</td>
 <td>Description in English</td>
-<td><a href="./rules/<rule-name>.md">Details</a></td>
 </tr>
 ````
 
 **README.ja.md テンプレート:**
 ````html
 <tr>
-<td><rule-name></td>
+<td><a href="./rules/<rule-name>.ja.md"><rule-name></a></td>
 <td>
 
 ```sh
@@ -92,8 +119,8 @@ curl -fsSL https://rules.tbsten.me/i | bash -s -- <rule-name>
 ```
 
 </td>
+<td>🧪 Experimental</td>
 <td>日本語の説明</td>
-<td><a href="./rules/<rule-name>.ja.md">詳細</a></td>
 </tr>
 ````
 
@@ -110,3 +137,4 @@ curl -fsSL https://rules.tbsten.me/i | bash -s -- <rule-name>
 - `<rule-name>.md` (英語) と `<rule-name>.ja.md` (日本語) は **常に同期して更新** する
 - テーブルは HTML `<table>` タグで記述し、Install 列のコマンドは ```sh code block で記載する
 - 参照ファイルのパス設計時は、ユーザーのプロジェクトルートに展開されることを考慮する
+- status は `rules/<rule-name>.md` の frontmatter を SSoT とし、README のステータス列と必ず一致させる (RULE.md には書かない)

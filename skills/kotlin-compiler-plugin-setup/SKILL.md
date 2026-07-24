@@ -12,6 +12,8 @@ description: >
   "setup kotlin compiler plugin", "KotlinCompilation でテストしたい",
   "compiler plugin の unit test を書きたい", "FIR/IR extension のプロジェクト構成",
   "Gradle plugin で compiler plugin をラップ", "compiler plugin の integration test をセットアップ".
+metadata:
+  status: Active
 ---
 
 # Kotlin Compiler Plugin Setup

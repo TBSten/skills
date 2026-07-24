@@ -54,10 +54,26 @@ description: >
   - スキルが何を行うか
   - どのようなプロジェクト・状況で使うか
   - Use when requested: "トリガーフレーズ1", "フレーズ2", ...
+metadata:
+  status: Experimental
 ---
 ```
 
 description は第三者視点で記述する (例: "This skill should be used when..." ではなく具体的な機能説明)。
+
+#### status (必須)
+
+`metadata.status` に skill の成熟度を記載する。値は以下の 4 つのいずれか:
+
+| status | 絵文字 | 意味 |
+|---|---|---|
+| `WIP` | 🌱 | 作成中だけど一旦出してみた |
+| `Experimental` | 🧪 | 使えるはずだが、しっかり検証はされていない |
+| `Active` | 🟢 | プロダクションレディで実用的に使える |
+| `Active-Prime` | 💎 | Active かつ定番として愛用している |
+
+新規追加時のデフォルトは `Experimental` (ユーザーの指示があればそれに従う)。
+既存 skill の status を後から変更する場合は `change-status` スキルを使う。
 
 #### Markdown 本文
 
@@ -101,12 +117,14 @@ example コードのパッケージ名は以下の規約に従う:
 ### Step 5: README の更新
 
 `README.md` と `README.ja.md` の **Available Skills** テーブルに行を追加する。
-既存の行のフォーマットに厳密に合わせること。
+既存の行のフォーマットに厳密に合わせること。テーブルには Install と Description の間に
+**Status** (日本語版は **ステータス**) 列がある。ステータスセルは `絵文字 + 半角スペース + status ラベル`
+で記載する (例: `🧪 Experimental`, `🟢 Active`)。frontmatter の `metadata.status` と必ず一致させる。
 
 **README.md テンプレート:**
 ````html
 <tr>
-<td><skill-name></td>
+<td><a href="./skills/<skill-name>.md"><skill-name></a></td>
 <td>
 
 ```sh
@@ -114,15 +132,15 @@ gh skill install tbsten/skills <skill-name>
 ```
 
 </td>
+<td>🧪 Experimental</td>
 <td>Description in English</td>
-<td><a href="./skills/<skill-name>.md">Details</a></td>
 </tr>
 ````
 
 **README.ja.md テンプレート:**
 ````html
 <tr>
-<td><skill-name></td>
+<td><a href="./skills/<skill-name>.ja.md"><skill-name></a></td>
 <td>
 
 ```sh
@@ -130,8 +148,8 @@ gh skill install tbsten/skills <skill-name>
 ```
 
 </td>
+<td>🧪 Experimental</td>
 <td>日本語の説明</td>
-<td><a href="./skills/<skill-name>.ja.md">詳細</a></td>
 </tr>
 ````
 
@@ -148,3 +166,4 @@ gh skill install tbsten/skills <skill-name>
 - テーブルは HTML `<table>` タグで記述し、Install 列のコマンドは ```sh code block で記載する
 - description は Claude Code がスキル発動を判断する最重要情報。具体的なトリガーフレーズを含めること
 - SKILL.md と references で情報を重複させない (Single Source of Truth)
+- status は SKILL.md の `metadata.status` を SSoT とし、README のステータス列と必ず一致させる

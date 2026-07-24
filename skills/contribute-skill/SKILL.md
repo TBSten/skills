@@ -8,6 +8,8 @@ description: >
   Use when requested: "知見をスキルリポジトリに登録", "contribute skill", "この知見を共有",
   "スキルとして登録", "知見をまとめて PR", "このパターンをスキル化".
   gh CLI と git がインストールされている必要がある。
+metadata:
+  status: Active
 ---
 
 # contribute-skill
@@ -29,7 +31,8 @@ ARGUMENTS からユーザーが収集したい知見の説明を受け取る。�
 1. **skill 名** — kebab-case で命名。知見の内容から適切な名前を提案する
 2. **収集対象** — どの知見をスキル化するか。具体的なファイルパスやセクションを特定する
 3. **スキルの対象ユーザー** — どのようなプロジェクト・状況で使われるスキルか
-4. **リポジトリ** — デフォルトは `TBSten/skills`。fork を使う場合はユーザーに確認する
+4. **status** — skill の成熟度 (WIP / Experimental / Active / Active-Prime)。デフォルトは `Experimental`。ユーザーの指示があればそれに従う
+5. **リポジトリ** — デフォルトは `TBSten/skills`。fork を使う場合はユーザーに確認する
 
 ## Step 2: 知見の収集と整理
 
@@ -73,6 +76,7 @@ ARGUMENTS からユーザーが収集したい知見の説明を受け取る。�
 - **利用パターン** — 実プロジェクトでの使い方を 3 つ以上リストアップ
 - **同梱リソース** — サンプルコードやテンプレート等。不要であれば「なし」と明記
 - **対象プロジェクトの前提** — 言語、フレームワーク、ディレクトリ構成等の前提条件
+- **status** — skill の成熟度 (デフォルト `Experimental`)
 
 ユーザーの承認を得てから次のステップに進む。
 
@@ -180,6 +184,7 @@ PR 作成前に以下を確認する。
    - `./skills/<skill-name>/SKILL.md` が存在すること
    - SKILL.md 内で参照しているすべてのファイルが `./skills/<skill-name>/` 配下に存在すること
    - `README.md` と `README.ja.md` の Available Skills テーブルに新しいスキルのエントリが追加されていること
+   - SKILL.md の frontmatter に `metadata.status` があり、README のステータス列 (絵文字+ラベル) と一致していること
 2. **SKILL.md の word count が 5,000 words 以下か** — `wc -w` で確認。超える場合は詳細を references/ に分離する
 3. **SKILL.md と references/ に情報重複がないか** — SKILL.md には概要・手順のみ、詳細コード例は references/ に分離
 4. **example/ 内の import が整合しているか** — `grep -r "^import"` でプロジェクト固有依存が残っていないか確認

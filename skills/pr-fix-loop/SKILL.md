@@ -10,6 +10,8 @@ description: >
   Use when requested: "fix multiple PRs at once", "PR fix loop", "pr-fix-loop", "get stacked
   PRs green in order", "fix CI while my PRs sit", "auto-handle CI and review comments across
   PRs", "複数 PR を見ながら修正", "PR ループ", "stacked PR を順番に green に".
+metadata:
+  status: Active
 ---
 
 # pr-fix-loop

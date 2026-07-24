@@ -27,7 +27,7 @@ TBSten の Claude Code skills・rules コレクションリポジトリ。
 ## Skills の構成ルール
 
 - `skills/<skill-name>/SKILL.md` がスキルのエントリポイント
-- SKILL.md には YAML frontmatter (`name`, `description`) を含める
+- SKILL.md には YAML frontmatter (`name`, `description`, `metadata.status`) を含める
 - 参照ドキュメントやサンプルコードは同ディレクトリ内に配置
 - `skills/<skill-name>.md` / `<skill-name>.ja.md` で詳細ドキュメントを用意
 - インストール: `gh skill install tbsten/skills <skill-name>`
@@ -38,5 +38,22 @@ TBSten の Claude Code skills・rules コレクションリポジトリ。
 - RULE.md 以外のファイルは参照ファイルとしてユーザーのカレントディレクトリに配置される
 - サブディレクトリのネストも可能 (再帰的にダウンロードされる)
 - `rules/<rule-name>.md` / `<rule-name>.ja.md` で詳細ドキュメントを用意
+- status は英語詳細ドキュメント `rules/<rule-name>.md` の frontmatter に記載 (RULE.md には書かない)
 - インストール: `curl -fsSL https://rules.tbsten.me/i | bash -s -- <rule-name>`
+
+## Status
+
+各 skill / rule には成熟度を表す status を持たせる。
+
+| status | 絵文字 | 意味 |
+|---|---|---|
+| `WIP` | 🌱 | 作成中だけど一旦出してみた |
+| `Experimental` | 🧪 | 使えるはずだが、しっかり検証はされていない |
+| `Active` | 🟢 | プロダクションレディで実用的に使える |
+| `Active-Prime` | 💎 | Active かつ定番として愛用している |
+
+- **SSoT**: skill は `SKILL.md` の `metadata.status`、rule は `rules/<name>.md` の frontmatter `status`
+- README.md / README.ja.md の Status 列は SSoT のミラー (絵文字+ラベル表示)。必ず一致させる
+- 新規追加時のデフォルトは `Experimental`
+- status の変更は `.claude/skills/change-status.md` スキルで行う
 - `as=<name>` オプションで保存名を変更可能

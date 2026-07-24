@@ -7,6 +7,8 @@ description: >
   "add allNotNullOrNull", "await multiple Deferred with type safety",
   "null-check multiple nullable values at once".
   For Kotlin/KMP projects where Pair/Triple is not enough for multi-element grouping.
+metadata:
+  status: Active
 ---
 
 # Kotlin Tuple Utility Generation Skill

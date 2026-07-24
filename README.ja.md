@@ -4,12 +4,15 @@
 
 TBSten の [Claude Code](https://docs.anthropic.com/en/docs/claude-code) スキル・ルールコレクション。
 
+> **ステータス:** 🌱 WIP ・ 🧪 Experimental ・ 🟢 Active ・ 💎 Active-Prime
+
 ## ⭐️ 利用可能なスキル
 
 <table>
 <tr>
 <th>スキル</th>
 <th>インストール</th>
+<th>ステータス</th>
 <th>説明</th>
 </tr>
 <tr>
@@ -21,6 +24,7 @@ gh skill install tbsten/skills local-ticket-system
 ```
 
 </td>
+<td>🟢 Active</td>
 <td>Markdown ベースのローカルチケット管理システム（task / bug / chapter 対応）</td>
 </tr>
 <tr>
@@ -32,6 +36,7 @@ gh skill install tbsten/skills kotlin-tuple
 ```
 
 </td>
+<td>🟢 Active</td>
 <td>Kotlin/KMP 向け型安全な Tuple ユーティリティ</td>
 </tr>
 <tr>
@@ -43,6 +48,7 @@ gh skill install tbsten/skills simple-loader
 ```
 
 </td>
+<td>🟢 Active</td>
 <td>Kotlin/Compose Multiplatform 向け sealed interface ベースの非同期データ読み込み状態管理ステートマシン</td>
 </tr>
 <tr>
@@ -54,6 +60,7 @@ gh skill install tbsten/skills navigation3-main-tab
 ```
 
 </td>
+<td>🟢 Active</td>
 <td>Navigation 3 の SceneStrategy を活用した下タブ管理パターン (KMP + Compose)</td>
 </tr>
 <tr>
@@ -65,6 +72,7 @@ gh skill install tbsten/skills kotlin-compiler-plugin-setup
 ```
 
 </td>
+<td>🟢 Active</td>
 <td>Kotlin Compiler Plugin のマルチモジュールプロジェクト (buildSrc、ユニットテスト kctfork、インテグレーションテスト) のセットアップ</td>
 </tr>
 <tr>
@@ -76,6 +84,7 @@ gh skill install tbsten/skills kotlin-maven-central-publish
 ```
 
 </td>
+<td>🟢 Active</td>
 <td>Kotlin/KMP プロジェクト向け Maven Central 公開設定（Vanniktech Maven Publish + GPG 署名 + GitHub Actions）</td>
 </tr>
 <tr>
@@ -87,6 +96,7 @@ gh skill install tbsten/skills kmp-snapshot-testing-setup
 ```
 
 </td>
+<td>🟢 Active</td>
 <td>KMP + Compose プロジェクト向けスナップショットテスト基盤 (Kotest PBT + Turbine) のセットアップ</td>
 </tr>
 <tr>
@@ -98,6 +108,7 @@ gh skill install tbsten/skills react-vite-supabase-starter
 ```
 
 </td>
+<td>🟢 Active</td>
 <td>React + Vite + TypeScript + Tailwind v4 + shadcn/ui + TanStack Router/Query + Supabase の Web アプリをスキャフォールド</td>
 </tr>
 <tr>
@@ -109,6 +120,7 @@ gh skill install tbsten/skills kotlin-compiler-plugin-dev
 ```
 
 </td>
+<td>🟢 Active</td>
 <td>30+ の既存プラグイン調査データをもとに Kotlin Compiler Plugin の開発・レビューを支援する（Extension Point 選択、設計パターン、前例調査、compat module layer / source set separation でのサポート Kotlin バージョン追加・削除も含む）</td>
 </tr>
 <tr>
@@ -120,6 +132,7 @@ gh skill install tbsten/skills exploratory-pr-verification
 ```
 
 </td>
+<td>🟢 Active</td>
 <td>Kotlin プロジェクトの PR を複数 subagent 並列で探索的に検証する運用規約 (PDCA / MCP / ticket 起票 / PR コメント policy / loop 終了処理)</td>
 </tr>
 <tr>
@@ -131,6 +144,7 @@ gh skill install tbsten/skills exploratory-nightly-verification
 ```
 
 </td>
+<td>🟢 Active</td>
 <td>nightly CI ジョブから Kotlin プロジェクトの main を 60 分 single-shot で探索的検証。 発見を Markdown ファイルに逐次書き出し、 PR への副作用は一切なし</td>
 </tr>
 <tr>
@@ -142,6 +156,7 @@ gh skill install tbsten/skills pr-fix-loop
 ```
 
 </td>
+<td>🟢 Active</td>
 <td>複数の GitHub PR を並行して green に。 1 パスで失敗 CI check (transient / lint / binary-compat / build / test) を分類して fix-ci-* skill に委譲、 review / issue コメントを取得〜resolve まで対応、 stacked PR の rebase を連鎖。 /loop driver と組み合わせて無人実行</td>
 </tr>
 <tr>
@@ -153,6 +168,7 @@ gh skill install tbsten/skills github-get-attachment-url
 ```
 
 </td>
+<td>🟢 Active</td>
 <td>ローカルファイルを GitHub にアップロードし、Issue を作成せずに user-attachments URL(または Markdown)を取得する。同梱の決定的な Python + Playwright ランナーで実行</td>
 </tr>
 </table>
@@ -163,6 +179,7 @@ gh skill install tbsten/skills github-get-attachment-url
 <tr>
 <th>ルール</th>
 <th>インストール</th>
+<th>ステータス</th>
 <th>説明</th>
 </tr>
 <tr>
@@ -175,6 +192,7 @@ curl -fsSL https://rules.tbsten.me/i | \
 ```
 
 </td>
+<td>🟢 Active</td>
 <td>Kotlin Multiplatform + Compose プロジェクト向け 4 層アーキテクチャ (App/UI/Domain/Data) ルール</td>
 </tr>
 <tr>
@@ -187,6 +205,7 @@ curl -fsSL https://rules.tbsten.me/i | \
 ```
 
 </td>
+<td>🟢 Active</td>
 <td>Kotlin Multiplatform プロジェクト向けスナップショット PBT テストルール (Kotest + Turbine)</td>
 </tr>
 <tr>
@@ -199,6 +218,7 @@ curl -fsSL https://rules.tbsten.me/i | \
 ```
 
 </td>
+<td>🟢 Active</td>
 <td>Kotlin Multiplatform + Compose プロジェクト向けエラーハンドリング・ワーニング検知ルール</td>
 </tr>
 </table>
@@ -244,6 +264,7 @@ curl -fsSL https://rules.tbsten.me/i | bash -s -- kmp-snapshot-testing -r=abc123
 <tr>
 <th>スキル</th>
 <th>インストール</th>
+<th>ステータス</th>
 <th>説明</th>
 </tr>
 <tr>
@@ -255,6 +276,7 @@ gh skill install tbsten/skills contribute-skill
 ```
 
 </td>
+<td>🟢 Active</td>
 <td>プロジェクトの知見をスキルとしてパッケージし TBSten/skills に PR を作成</td>
 </tr>
 <tr>
@@ -266,6 +288,7 @@ gh skill install tbsten/skills contribute-rule
 ```
 
 </td>
+<td>🟢 Active</td>
 <td>プロジェクトの知見をルールとしてパッケージし TBSten/skills に PR を作成</td>
 </tr>
 </table>

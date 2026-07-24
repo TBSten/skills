@@ -1,3 +1,7 @@
+---
+status: Active
+---
+
 # kmp-snapshot-testing Rule
 
 [日本語](./kmp-snapshot-testing.ja.md) | [DeepWiki](https://deepwiki.com/TBSten/skills)

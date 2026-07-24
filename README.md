@@ -4,12 +4,15 @@
 
 [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skills and rules collection by TBSten.
 
+> **Status:** 🌱 WIP · 🧪 Experimental · 🟢 Active · 💎 Active-Prime
+
 ## ⭐️ Available Skills
 
 <table>
 <tr>
 <th>Skill</th>
 <th>Install</th>
+<th>Status</th>
 <th>Description</th>
 </tr>
 <tr>
@@ -21,6 +24,7 @@ gh skill install tbsten/skills local-ticket-system
 ```
 
 </td>
+<td>🟢 Active</td>
 <td>Markdown-based local ticket management system with task, bug, and chapter tickets</td>
 </tr>
 <tr>
@@ -32,6 +36,7 @@ gh skill install tbsten/skills kotlin-tuple
 ```
 
 </td>
+<td>🟢 Active</td>
 <td>Type-safe Tuple utilities for Kotlin/KMP</td>
 </tr>
 <tr>
@@ -43,6 +48,7 @@ gh skill install tbsten/skills simple-loader
 ```
 
 </td>
+<td>🟢 Active</td>
 <td>Sealed interface state machine for async data loading in Kotlin/Compose Multiplatform</td>
 </tr>
 <tr>
@@ -54,6 +60,7 @@ gh skill install tbsten/skills navigation3-main-tab
 ```
 
 </td>
+<td>🟢 Active</td>
 <td>Bottom tab management pattern using Navigation 3 SceneStrategy for KMP + Compose</td>
 </tr>
 <tr>
@@ -65,6 +72,7 @@ gh skill install tbsten/skills kotlin-compiler-plugin-setup
 ```
 
 </td>
+<td>🟢 Active</td>
 <td>Set up a Kotlin Compiler Plugin project with multi-module Gradle structure, buildSrc, unit tests (kctfork), and integration tests</td>
 </tr>
 <tr>
@@ -76,6 +84,7 @@ gh skill install tbsten/skills kotlin-maven-central-publish
 ```
 
 </td>
+<td>🟢 Active</td>
 <td>Set up Maven Central publishing for Kotlin/KMP projects with Vanniktech Maven Publish, GPG signing, and GitHub Actions</td>
 </tr>
 <tr>
@@ -87,6 +96,7 @@ gh skill install tbsten/skills kmp-snapshot-testing-setup
 ```
 
 </td>
+<td>🟢 Active</td>
 <td>Set up snapshot testing infrastructure (Kotest PBT + Turbine) for KMP + Compose projects</td>
 </tr>
 <tr>
@@ -98,6 +108,7 @@ gh skill install tbsten/skills react-vite-supabase-starter
 ```
 
 </td>
+<td>🟢 Active</td>
 <td>Scaffold a React + Vite + TypeScript + Tailwind v4 + shadcn/ui + TanStack Router/Query + Supabase web app</td>
 </tr>
 <tr>
@@ -109,6 +120,7 @@ gh skill install tbsten/skills kotlin-compiler-plugin-dev
 ```
 
 </td>
+<td>🟢 Active</td>
 <td>Develop and review Kotlin Compiler Plugins using research data from 30+ existing plugins; also covers adding/removing supported Kotlin versions in projects with compat module layer or source set separation</td>
 </tr>
 <tr>
@@ -120,6 +132,7 @@ gh skill install tbsten/skills exploratory-pr-verification
 ```
 
 </td>
+<td>🟢 Active</td>
 <td>Operational rules for multi-subagent exploratory PR verification on Kotlin projects (PDCA / MCP / ticket bookkeeping / PR comment etiquette / loop termination)</td>
 </tr>
 <tr>
@@ -131,6 +144,7 @@ gh skill install tbsten/skills exploratory-nightly-verification
 ```
 
 </td>
+<td>🟢 Active</td>
 <td>60-minute single-shot exploratory verification of a Kotlin project's main branch from a nightly CI job, with Markdown-file-based findings and zero side effects</td>
 </tr>
 <tr>
@@ -142,6 +156,7 @@ gh skill install tbsten/skills pr-fix-loop
 ```
 
 </td>
+<td>🟢 Active</td>
 <td>Drive multiple GitHub PRs to green in parallel — one loop pass classifies each failing CI check (transient / lint / binary-compat / build / test) and delegates to a fix-ci-* skill, handles review and issue comments end to end, and chains rebases for stacked PRs; pairs with a /loop driver for unattended runs</td>
 </tr>
 <tr>
@@ -153,6 +168,7 @@ gh skill install tbsten/skills github-get-attachment-url
 ```
 
 </td>
+<td>🟢 Active</td>
 <td>Upload local files to GitHub and get their user-attachments URLs (or Markdown) without creating an issue, via a bundled deterministic Python + Playwright runner</td>
 </tr>
 </table>
@@ -163,6 +179,7 @@ gh skill install tbsten/skills github-get-attachment-url
 <tr>
 <th>Rule</th>
 <th>Install</th>
+<th>Status</th>
 <th>Description</th>
 </tr>
 <tr>
@@ -175,6 +192,7 @@ curl -fsSL https://rules.tbsten.me/i | \
 ```
 
 </td>
+<td>🟢 Active</td>
 <td>4-layer architecture (App/UI/Domain/Data) rule for Kotlin Multiplatform + Compose projects</td>
 </tr>
 <tr>
@@ -187,6 +205,7 @@ curl -fsSL https://rules.tbsten.me/i | \
 ```
 
 </td>
+<td>🟢 Active</td>
 <td>Snapshot PBT testing rule for Kotlin Multiplatform projects with Kotest + Turbine</td>
 </tr>
 <tr>
@@ -199,6 +218,7 @@ curl -fsSL https://rules.tbsten.me/i | \
 ```
 
 </td>
+<td>🟢 Active</td>
 <td>Error handling and warning detection rule for Kotlin Multiplatform + Compose projects</td>
 </tr>
 </table>
@@ -244,6 +264,7 @@ Use the following skills to create a Pull Request to this repository.
 <tr>
 <th>Skill</th>
 <th>Install</th>
+<th>Status</th>
 <th>Description</th>
 </tr>
 <tr>
@@ -255,6 +276,7 @@ gh skill install tbsten/skills contribute-skill
 ```
 
 </td>
+<td>🟢 Active</td>
 <td>Package project knowledge as a skill and create a PR to TBSten/skills</td>
 </tr>
 <tr>
@@ -266,6 +288,7 @@ gh skill install tbsten/skills contribute-rule
 ```
 
 </td>
+<td>🟢 Active</td>
 <td>Package project knowledge as a rule and create a PR to TBSten/skills</td>
 </tr>
 </table>

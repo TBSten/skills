@@ -10,6 +10,8 @@ description: >
   "PBT でスナップショットテスト", "snapshot-diff.sh を使えるようにして",
   "テスト基盤モジュールを作りたい", "setup snapshot testing".
   For KMP + Compose Multiplatform projects using Gradle with build-logic convention plugins.
+metadata:
+  status: Active
 ---
 
 # KMP Snapshot Testing Setup

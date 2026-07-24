@@ -1,3 +1,7 @@
+---
+status: Active
+---
+
 # kmp-layered-architecture Rule
 
 [日本語](./kmp-layered-architecture.ja.md) | [DeepWiki](https://deepwiki.com/TBSten/skills)

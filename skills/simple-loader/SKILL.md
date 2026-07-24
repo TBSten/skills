@@ -10,6 +10,8 @@ description: >
   "非同期データ取得のステートマシン", "初回読み込みとリフレッシュを区別したローダー",
   "Compose でローディングのアニメーション遷移", "PartialData でプログレス表示".
   For Kotlin/KMP + Compose Multiplatform projects that need structured async data loading with state management.
+metadata:
+  status: Active
 ---
 
 # SimpleLoader Generation Skill

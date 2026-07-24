@@ -8,6 +8,8 @@ description: >
   Use when requested: "チケットシステムを導入", "タスク管理を Markdown で",
   "ローカルチケット管理をセットアップ", "チケットを作成", "バグチケットを作成",
   "チャプターを作成", "epic を作成", "local ticket system", "setup ticket management".
+metadata:
+  status: Active
 ---
 
 # local-ticket-system

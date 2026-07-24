@@ -1,3 +1,7 @@
+---
+status: Active
+---
+
 # kmp-error-handling Rule
 
 [Japanese](./kmp-error-handling.ja.md)

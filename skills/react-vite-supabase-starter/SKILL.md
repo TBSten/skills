@@ -7,6 +7,8 @@ description: >
   Use when requested: "React + Supabase でプロジェクトを始めたい", "Vite + React の新規プロジェクト",
   "shadcn + Tailwind v4 のセットアップ", "TanStack Router + Query の初期構成",
   "Supabase 認証付き SPA テンプレート", "react-vite-supabase-starter".
+metadata:
+  status: Active
 ---
 
 # react-vite-supabase-starter

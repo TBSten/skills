@@ -8,6 +8,8 @@ description: >
   Use when requested: "Maven Central に公開したい", "ライブラリを publish したい",
   "Maven Central publishing をセットアップ", "publishToMavenLocal できるように",
   "Gradle で Maven Central 公開の設定", "Kotlin ライブラリを公開する設定を追加".
+metadata:
+  status: Active
 ---
 
 # kotlin-maven-central-publish
