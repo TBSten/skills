@@ -171,6 +171,18 @@ gh skill install tbsten/skills github-get-attachment-url
 <td>🟢 Active</td>
 <td>Upload local files to GitHub and get their user-attachments URLs (or Markdown) without creating an issue, via a bundled deterministic Python + Playwright runner</td>
 </tr>
+<tr>
+<td><a href="./skills/intellij-plugin-dev.md">intellij-plugin-dev</a></td>
+<td>
+
+```sh
+gh skill install tbsten/skills intellij-plugin-dev
+```
+
+</td>
+<td>🌱 WIP</td>
+<td>Tooling & workflow reference for building IntelliJ Platform / Android Studio plugins agent-driven — decomposes verification into 6 channels anchored on headless functional tests (Kotlin Analysis API) and headless PNG self-review (renderComposeScene + Jewel); covers the tool window, gutter line markers, editor following, PSI insertion (codegen), VRT golden, Driver smoke, and build/since-until wiring</td>
+</tr>
 </table>
 
 ## 📝 Available Rules

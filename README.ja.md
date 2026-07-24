@@ -171,6 +171,18 @@ gh skill install tbsten/skills github-get-attachment-url
 <td>🟢 Active</td>
 <td>ローカルファイルを GitHub にアップロードし、Issue を作成せずに user-attachments URL(または Markdown)を取得する。同梱の決定的な Python + Playwright ランナーで実行</td>
 </tr>
+<tr>
+<td><a href="./skills/intellij-plugin-dev.ja.md">intellij-plugin-dev</a></td>
+<td>
+
+```sh
+gh skill install tbsten/skills intellij-plugin-dev
+```
+
+</td>
+<td>🌱 WIP</td>
+<td>IntelliJ Platform / Android Studio 向けプラグインをエージェント主導で開発するためのツーリング・進め方リファレンス。検証を 6 チャネルに分解し、ヘッドレス機能テスト (Kotlin Analysis API) と headless PNG 自己目視 (renderComposeScene + Jewel) の 2 本を主軸に据える。tool window・gutter line marker・エディタ追従・PSI 挿入 (コード生成)・VRT golden・Driver スモーク・build/since-until 配線をカバー</td>
+</tr>
 </table>
 
 ## 📝 利用可能なルール
