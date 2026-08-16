@@ -9,7 +9,7 @@ description: >
   "ローカルチケット管理をセットアップ", "チケットを作成", "バグチケットを作成",
   "チャプターを作成", "epic を作成", "local ticket system", "setup ticket management".
 metadata:
-  status: Archived
+  status: Active
 ---
 
 # local-ticket-system

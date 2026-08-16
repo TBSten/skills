@@ -16,6 +16,18 @@ TBSten の [Claude Code](https://docs.anthropic.com/en/docs/claude-code) スキ�
 <th>説明</th>
 </tr>
 <tr>
+<td><a href="./skills/local-ticket-system.ja.md">local-ticket-system</a></td>
+<td>
+
+```sh
+gh skill install tbsten/skills local-ticket-system
+```
+
+</td>
+<td>🟢 Active</td>
+<td>Markdown ベースのローカルチケット管理システム（task / bug / chapter 対応）</td>
+</tr>
+<tr>
 <td><a href="./skills/kotlin-tuple.ja.md">kotlin-tuple</a></td>
 <td>
 
@@ -304,32 +316,3 @@ gh skill install tbsten/skills contribute-rule
 <td>プロジェクトの知見をルールとしてパッケージし TBSten/skills に PR を作成</td>
 </tr>
 </table>
-
-<details>
-
-<summary> ❌ アーカイブ済みのスキル / ルール </summary>
-
-メンテナンスを終了したスキル / ルールです。インストールは引き続き可能ですが、利用は推奨しません。
-
-<table>
-<tr>
-<th>スキル / ルール</th>
-<th>インストール</th>
-<th>ステータス</th>
-<th>説明</th>
-</tr>
-<tr>
-<td><a href="./skills/local-ticket-system.ja.md">local-ticket-system</a></td>
-<td>
-
-```sh
-gh skill install tbsten/skills local-ticket-system
-```
-
-</td>
-<td>❌ Archived</td>
-<td>Markdown ベースのローカルチケット管理システム（task / bug / chapter 対応）</td>
-</tr>
-</table>
-
-</details>
