@@ -4,7 +4,7 @@
 
 [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skills and rules collection by TBSten.
 
-> **Status:** 🌱 WIP · 🧪 Experimental · 🟢 Active · 💎 Active-Prime
+> **Status:** 🌱 WIP · 🧪 Experimental · 🟢 Active · 💎 Active-Prime · ❌ Archived
 
 ## ⭐️ Available Skills
 
@@ -14,18 +14,6 @@
 <th>Install</th>
 <th>Status</th>
 <th>Description</th>
-</tr>
-<tr>
-<td><a href="./skills/local-ticket-system.md">local-ticket-system</a></td>
-<td>
-
-```sh
-gh skill install tbsten/skills local-ticket-system
-```
-
-</td>
-<td>🟢 Active</td>
-<td>Markdown-based local ticket management system with task, bug, and chapter tickets</td>
 </tr>
 <tr>
 <td><a href="./skills/kotlin-tuple.md">kotlin-tuple</a></td>
@@ -316,3 +304,32 @@ gh skill install tbsten/skills contribute-rule
 <td>Package project knowledge as a rule and create a PR to TBSten/skills</td>
 </tr>
 </table>
+
+<details>
+
+<summary> ❌ Archived Skills / Rules </summary>
+
+Skills / rules that are no longer maintained. They can still be installed, but are not recommended.
+
+<table>
+<tr>
+<th>Skill / Rule</th>
+<th>Install</th>
+<th>Status</th>
+<th>Description</th>
+</tr>
+<tr>
+<td><a href="./skills/local-ticket-system.md">local-ticket-system</a></td>
+<td>
+
+```sh
+gh skill install tbsten/skills local-ticket-system
+```
+
+</td>
+<td>❌ Archived</td>
+<td>Markdown-based local ticket management system with task, bug, and chapter tickets</td>
+</tr>
+</table>
+
+</details>
