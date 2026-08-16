@@ -183,6 +183,18 @@ gh skill install tbsten/skills intellij-plugin-dev
 <td>🌱 WIP</td>
 <td>Tooling & workflow reference for building IntelliJ Platform / Android Studio plugins agent-driven — decomposes verification into 6 channels anchored on headless functional tests (Kotlin Analysis API) and headless PNG self-review (renderComposeScene + Jewel); covers the tool window, gutter line markers, editor following, PSI insertion (codegen), VRT golden, Driver smoke, and build/since-until wiring</td>
 </tr>
+<tr>
+<td><a href="./skills/status-board.md">status-board</a></td>
+<td>
+
+```sh
+gh skill install tbsten/skills status-board
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>Collapse everything in flight — GitHub PRs and issues, local branches, and the open questions that only exist in the conversation — into one standalone HTML page: a dependency-graph SVG plus an epic-by-epic kanban, designed so "waiting on a human" and "the next move" read at a glance; ships ask boxes that collect answers in the browser, and is tuned for speed (one GraphQL round trip, defaults pre-filled, self-verification bundled into the output)</td>
+</tr>
 </table>
 
 ## 📝 Available Rules
