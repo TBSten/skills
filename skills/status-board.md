@@ -3,6 +3,18 @@
 **Collapse everything you have in flight into a single HTML page.** A dependency-graph SVG plus an
 epic-by-epic kanban, built so that "what is waiting on me" and "what is next" read at a glance.
 
+![Example of the HTML produced by status-board](./status-board-overview.png)
+
+Reading the example above:
+
+- **Graph (top)** — dependencies flow left to right. Dashed frames are epics; the red hexagon
+  (`PR 196 を merge する`) is blocked on a human, and the gold `NEXT 1` marks the next move.
+  The dashed red `blocks` edge leaving it points at what it is holding up
+- **Kanban (bottom)** — one band per epic, showing only the status columns that band actually has
+- **Detail panel (right)** — body, dependencies (prerequisite / blocked-by / next), and linked PRs
+  for the current selection
+- **Filter row (top)** — status chips; pressing one dims the graph and removes the column from the kanban
+
 ## Install
 
 ```sh
@@ -15,12 +27,9 @@ Collects GitHub PRs and issues, local branches, and — crucially — **the open
 human-blocked items that only exist in the conversation**, then writes a **standalone single file**
 to `.local/status-board/<yyyy-MM-dd-HH-mm>.html`. CSS and JS are inlined, so it just opens in a browser.
 
-Three panes:
-
-- **Graph (top)** — dependency lanes flowing left to right, with epics drawn as dashed subgraph
-  frames. Drag to pan, wheel to zoom; zooming out drops detail lines (semantic zoom). Exports to SVG / PNG
-- **Kanban (bottom)** — one band per epic, showing only the status columns that band actually has
-- **Detail panel (right)** — body, sub-tickets, dependencies, linked PRs, and notes for the selection
+Drag to pan and wheel to zoom; zooming out triggers **semantic zoom**, dropping detail lines so the
+whole chain stays readable. Clicking an epic label folds that group into a single node and reroutes
+its dependency edges. The graph alone can be exported as SVG or PNG.
 
 Two things are designed to be unmissable: the 🙋 hexagon (waiting on a human) and the gold
 `NEXT n` flag (the next move).
