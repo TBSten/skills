@@ -183,6 +183,18 @@ gh skill install tbsten/skills intellij-plugin-dev
 <td>🌱 WIP</td>
 <td>IntelliJ Platform / Android Studio 向けプラグインをエージェント主導で開発するためのツーリング・進め方リファレンス。検証を 6 チャネルに分解し、ヘッドレス機能テスト (Kotlin Analysis API) と headless PNG 自己目視 (renderComposeScene + Jewel) の 2 本を主軸に据える。tool window・gutter line marker・エディタ追従・PSI 挿入 (コード生成)・VRT golden・Driver スモーク・build/since-until 配線をカバー</td>
 </tr>
+<tr>
+<td><a href="./skills/status-board.ja.md">status-board</a></td>
+<td>
+
+```sh
+gh skill install tbsten/skills status-board
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>抱えている作業 (GitHub の PR / issue、 ローカルブランチ、 会話の中にしか無い未決事項) を 1 枚の standalone HTML に。 依存グラフの SVG + エピック別カンバンで、 「人間待ち」 と 「次の一手」 が一目で分かる。 確認したいことはブラウザ上の textarea で回答を受け取れる。 GraphQL 1 往復 / 既定値の作り込み / 生成物への自己検証同梱 で速度を作っている</td>
+</tr>
 </table>
 
 ## 📝 利用可能なルール

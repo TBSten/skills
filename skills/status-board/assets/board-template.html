@@ -1,0 +1,1254 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>status board</title>
+<!-- favicon をインラインで持つ。HTTP で配信したときに /favicon.ico の 404 を出さないため -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23C9E8EA'/><circle cx='11' cy='13' r='2.8' fill='%231D2564'/><circle cx='21' cy='13' r='2.8' fill='%231D2564'/><path d='M9 20 Q16 26 23 20' stroke='%233F4B7F' stroke-width='3' fill='none' stroke-linecap='round'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=DotGothic16&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<!-- 本体の <style> は末尾にある。ここは初期表示の白フラッシュを防ぐ最小限だけ。 -->
+<style>html,body{margin:0;background:#EAF6F7}</style>
+<!-- エラー捕捉。__verify() が自分で拾えるようにするため、他の何より先に仕込む。
+     （検証のたびに console を別途読みに行く往復を省くのが目的） -->
+<script>
+window.__errors = [];
+addEventListener('error', e => __errors.push('error: ' + (e.message || e.type)));
+addEventListener('unhandledrejection', e => __errors.push('rejection: ' + e.reason));
+(c => { const o = c.error.bind(c); c.error = (...a) => { __errors.push(a.map(String).join(' ')); o(...a); }; })(console);
+</script>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     ここから: 実行のたびに書き換える部分（build-board.mjs が差し替える）
+
+       META     … タイトル / リポジトリ / この HTML 自体の最終更新
+       PROPS    … showChildren: 図の子チケットを最初から開くか
+                  dimUnrelated: ホバー・選択時に無関係を薄くするか
+                  nodeWidth   : 図のノード幅 = レーン幅 (160〜260)
+       STATUSES … カンバンの列 = ノードの色。自由に増減してよい
+                  { id, label, short, stroke, fill, pane, collapsedByDefault }
+       EPICS    … 図の枠 = カンバンの段。所属チケットの col は連続させること
+       URGENCY  … 畳んだエピックの代表ステータスを決める優先順（上ほど緊急）
+       ITEMS    … チケット 1 件 = 1 行。col を省くとカンバンにだけ出る
+       EDGES    … 依存線。左レーン → 右レーンの向きだけ
+     ══════════════════════════════════════════════════════════════════════════ -->
+<script>
+/* ===== BOARD DATA START ===== */
+const META = {
+  title: 'status board',
+  repoUrl: '',
+  repoLabel: '',
+  updatedAt: '—'
+};
+
+const PROPS = { showChildren: false, dimUnrelated: true, nodeWidth: 198 };
+
+const STATUSES = [
+  { id: 'discussing',   label: '調査中 / 議論中', short: '議論中',     stroke: '#C69A08', fill: '#FBF2D8', pane: '#FBF6E6' },
+  { id: 'implementing', label: '実装中',          short: '実装中',     stroke: '#3F4B7F', fill: '#DBEFF1', pane: '#EAF6F7' },
+  { id: 'review',       label: 'PR レビュー中',   short: 'レビュー中', stroke: '#E0A32E', fill: '#FCF3E4', pane: '#FBF5EA' },
+  { id: 'nits',         label: 'nits 対応中',     short: 'nits',       stroke: '#9EB7C9', fill: '#EAF6F7', pane: '#F5FBFC' },
+  { id: 'merge-wait',   label: 'マージ待ち',      short: 'マージ待ち', stroke: '#3E9E7A', fill: '#E7F3EE', pane: '#EDF6F2' },
+  { id: 'blocked',      label: 'ブロック中',      short: 'ブロック',   stroke: '#E2596B', fill: '#FCEBEE', pane: '#FCF0F2' },
+  { id: 'backlog',      label: '未着手',          short: '未着手',     stroke: '#849AB5', fill: '#F7FAFB', pane: '#F7FAFB' },
+  { id: 'closed',       label: '完了 / クローズ', short: '完了',       stroke: '#C4D0D3', fill: '#EDF2F3', pane: '#F7FAFB', collapsedByDefault: true }
+];
+
+const EPICS = [];
+
+const URGENCY = ['blocked', 'discussing', 'review', 'nits', 'implementing', 'merge-wait', 'backlog', 'closed'];
+
+const ITEMS = [
+  { id: 'sample', key: 'sample', title: 'データ未投入', kind: 'task', status: 'backlog', col: 0,
+    desc: ['build-board.mjs に board.json を渡して生成してください。'], updated: '—' }
+];
+
+const EDGES = [];
+/* ===== BOARD DATA END ===== */
+</script>
+<!-- ══════════════════════════════════════════════════════════════════════════
+     ここから下は原則変更不要。デザインの調整だけしたい場合は下の <style>、
+     図の描き方を変えたい場合は「図の SVG 生成」セクションを見る。
+     ══════════════════════════════════════════════════════════════════════════ -->
+
+<div id="app"></div>
+
+<style>
+/* ---- デザイントークン ----------------------------------------------------
+   ここを差し替えれば全体の色味が変わる。ただし SVG の中はリテラル hex なので、
+   図の色も変えるときは下の C 定数を合わせて直すこと。 */
+:root{
+  --tbs-sky-50:#F5FBFC; --tbs-sky-100:#EAF6F7; --tbs-sky-200:#DBEFF1;
+  --tbs-sky-300:#C9E8EA; --tbs-sky-400:#AECAD5; --tbs-sky-500:#9EB7C9;
+  --tbs-navy-300:#849AB5; --tbs-navy-400:#617199; --tbs-navy-500:#4A5788;
+  --tbs-navy-600:#3F4B7F; --tbs-navy-700:#2E3872; --tbs-navy-800:#1D2564;
+  --tbs-white:#FFFFFF; --tbs-gray-50:#F7FAFB; --tbs-gray-100:#EDF2F3;
+  --tbs-gray-200:#DDE5E7; --tbs-gray-300:#C4D0D3;
+  --tbs-coin:#F5C518; --tbs-coin-dark:#C69A08; --tbs-heart:#E2596B;
+  --tbs-leaf:#3E9E7A; --tbs-amber:#E0A32E;
+
+  --text-strong:var(--tbs-navy-800); --text-body:var(--tbs-navy-700);
+  --text-muted:var(--tbs-navy-400); --text-link:var(--tbs-navy-600);
+  --text-link-hover:var(--tbs-navy-800);
+  --surface-page:var(--tbs-sky-100); --surface-card:var(--tbs-white);
+  --border-subtle:var(--tbs-sky-400); --border-default:var(--tbs-navy-400);
+  --radius-card:12px;
+  --shadow-card:0 2px 6px rgba(29,37,100,.10);
+
+  --tbs-font-body:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Yu Gothic UI","Noto Sans JP",sans-serif;
+  --tbs-font-pixel:"DotGothic16","Zen Maru Gothic","Noto Sans JP",sans-serif;
+  --tbs-font-mono:"JetBrains Mono","SFMono-Regular","Consolas","Noto Sans Mono",monospace;
+
+  /* 選択枠 / ホバー枠の太さ。JS が縮尺に応じて書き換え、画面上の太さを一定に保つ */
+  --sel-sw:4px; --hov-sw:2.8px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--surface-page);overflow-x:auto;
+     font-family:var(--tbs-font-body);color:var(--text-body)}
+a{color:var(--text-link)} a:hover{color:var(--text-link-hover)}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:var(--tbs-sky-400);border-radius:999px;border:3px solid var(--tbs-sky-100)}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ---- 全体レイアウト: 3 面固定・ページ自体はスクロールさせない -------------- */
+.shell{height:100vh;min-height:700px;min-width:1220px;display:flex;flex-direction:column;
+       background:var(--surface-page);overflow:hidden}
+
+.hdr{flex:0 0 auto;display:flex;align-items:center;gap:20px;padding:10px 20px;
+     background:rgba(234,246,247,.86);backdrop-filter:blur(10px);
+     border-bottom:1px solid var(--border-subtle)}
+.hdr h1{margin:0;font-size:22px;font-weight:700;letter-spacing:.04em;
+        color:var(--text-strong);white-space:nowrap}
+.hdr-id{display:flex;align-items:baseline;gap:10px;min-width:0}
+.repo{font-family:var(--tbs-font-mono);font-size:12px;color:var(--text-link);text-decoration:none}
+.stamp{margin-left:auto;font-family:var(--tbs-font-mono);font-size:12px;color:var(--text-strong);
+       background:var(--tbs-sky-200);border:1px solid var(--border-subtle);
+       border-radius:999px;padding:3px 10px;white-space:nowrap}
+.hdr-tools{display:flex;align-items:center;gap:8px}
+.qbox{display:flex;align-items:center;gap:6px;background:var(--surface-card);
+      border:1px solid var(--border-subtle);border-radius:8px;padding:5px 10px}
+.qbox input{border:0;outline:none;background:transparent;font-family:var(--tbs-font-body);
+            font-size:13px;color:var(--text-strong);width:132px}
+.btn{font-family:var(--tbs-font-body);font-size:12px;font-weight:700;color:var(--text-strong);
+     background:var(--surface-card);border:2px solid var(--border-default);border-radius:8px;
+     padding:5px 12px;cursor:pointer}
+.btn:hover{background:var(--tbs-sky-100)}
+.btn-toggle{border-color:var(--tbs-navy-400);background:var(--tbs-white);color:var(--tbs-navy-800)}
+.btn-toggle.on{border-color:var(--tbs-navy-800);background:var(--tbs-sky-300)}
+
+.chips{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:8px 20px;overflow-x:auto}
+.chip{flex:0 0 auto;display:flex;align-items:center;gap:6px;font-family:var(--tbs-font-body);
+      font-size:11.5px;font-weight:700;border-radius:999px;padding:4px 11px;cursor:pointer;
+      border:1px solid var(--tbs-gray-300);background:var(--tbs-white);color:var(--tbs-navy-300)}
+.chip .n{opacity:.55}
+.chip-reset{flex:0 0 auto;font-size:11px;color:var(--text-muted);background:transparent;
+            border:0;cursor:pointer;padding:4px 6px;text-decoration:underline}
+
+.main{flex:1 1 auto;min-height:0;display:grid;
+      grid-template-columns:minmax(0,1fr) 372px;grid-template-rows:minmax(0,1fr);
+      gap:16px;padding:0 20px 18px}
+/* 図 : カンバン の高さ配分。図が低すぎると初期縮尺が 0.7 を割って意味的ズームに入り、
+   meta 行が最初から見えなくなるので図側を厚めに取る。カンバンは全体が縦スクロールする。 */
+.left{min-width:0;display:grid;grid-template-rows:minmax(0,1.15fr) minmax(0,1fr);gap:16px}
+.card{min-height:0;display:flex;flex-direction:column;background:var(--surface-card);
+      border:1px solid var(--border-subtle);border-radius:var(--radius-card);
+      box-shadow:var(--shadow-card);overflow:hidden}
+
+/* ---- 図 ------------------------------------------------------------------ */
+.map-bar{flex:0 0 auto;display:flex;align-items:center;gap:4px;padding:6px 10px;
+         border-bottom:1px solid var(--tbs-sky-200);justify-content:flex-end}
+.zbtn{width:26px;height:26px;font-size:14px;font-weight:700;color:var(--text-strong);
+      background:var(--tbs-sky-100);border:1px solid var(--border-subtle);
+      border-radius:6px;cursor:pointer;line-height:1}
+.zbtn.wide{width:auto;height:26px;padding:0 10px;font-size:11px}
+.pane{flex:1 1 auto;min-height:0;position:relative;background:var(--tbs-sky-50);overflow:hidden}
+.pane svg{display:block;cursor:grab;touch-action:none}
+.pane svg.grabbing{cursor:grabbing}
+.sel-outline{stroke-width:var(--sel-sw)}
+.hov-outline{stroke-width:var(--hov-sw)}
+
+/* ---- カンバン ------------------------------------------------------------ */
+.kanban{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:32px;
+        padding:12px 16px;overflow-y:auto}
+.band{display:flex;flex-direction:column;gap:7px}
+.band-hd{display:flex;align-items:center;gap:8px}
+.band-hd h3{margin:0;font-size:14px;font-weight:700;letter-spacing:.06em;color:var(--text-strong)}
+.band-hd .n{font-family:var(--tbs-font-mono);font-size:11px;color:var(--text-muted)}
+.dash{width:12px;height:12px;border-radius:3px}
+.strip{display:flex;align-items:flex-start;gap:10px;overflow-x:auto;padding-bottom:2px}
+.col{flex:0 0 236px;min-width:0;display:flex;flex-direction:column;border-radius:10px;overflow:hidden}
+.col-folded{flex:0 0 auto;display:flex;align-items:flex-start;padding-top:6px}
+.col-chip{font-family:var(--tbs-font-body);font-size:12px;font-weight:700;color:var(--tbs-navy-400);
+          background:var(--tbs-gray-100);border:1px solid var(--tbs-gray-300);border-radius:8px;
+          padding:8px 10px;cursor:pointer;white-space:nowrap}
+.col-hd{flex:0 0 auto;display:flex;align-items:center;gap:6px;padding:8px 10px 6px}
+.col-dot{width:9px;height:9px;border-radius:2px}
+.col-name{font-size:13px;font-weight:700;letter-spacing:.04em}
+.col-n{margin-left:auto;font-family:var(--tbs-font-mono);font-size:11px;color:var(--text-muted)}
+.col-x{background:transparent;border:0;color:var(--tbs-navy-300);cursor:pointer;font-size:12px;padding:0 2px}
+/* 列の中は高さを制限しない。チケットが多い段はカンバン全体の縦スクロールで見る */
+.col-body{flex:0 0 auto;display:flex;flex-direction:column;gap:8px;padding:2px 10px 10px}
+.cardstack{display:flex;flex-direction:column;gap:6px}
+.tkt{display:flex;flex-direction:column;gap:4px;background:var(--tbs-white);
+     border:1px solid var(--tbs-sky-400);border-radius:10px;padding:9px 10px;cursor:pointer;
+     box-shadow:0 1px 2px rgba(29,37,100,.08);transition:transform 140ms cubic-bezier(.16,.84,.44,1)}
+.tkt:hover{transform:translateY(-1px)}
+.tkt.on{border:2px solid var(--tbs-coin-dark);box-shadow:0 3px 10px rgba(29,37,100,.14)}
+.tkt-hd{display:flex;align-items:center;gap:6px}
+.tkt-key{font-family:var(--tbs-font-mono);font-size:10.5px;color:var(--tbs-navy-300)}
+.tkt-mark{font-size:10px;font-weight:700;color:var(--tbs-navy-800);border-radius:4px;padding:0 5px}
+.tkt-out{margin-left:auto;font-size:11px;color:var(--text-link);text-decoration:none}
+.tkt-title{font-size:13.5px;font-weight:500;line-height:1.45;color:var(--text-strong);text-wrap:pretty}
+.kid{margin-left:14px;border-left:2px solid var(--tbs-sky-300);background:#FFFFFFcc;
+     border-radius:0 8px 8px 0;padding:6px 9px;cursor:pointer}
+.kid-key{font-family:var(--tbs-font-mono);font-size:10px;color:var(--tbs-navy-300)}
+.kid-title{font-size:12.5px;line-height:1.4;color:var(--text-body)}
+
+/* ---- 詳細パネル ---------------------------------------------------------- */
+.side{min-height:0;display:flex;flex-direction:column;background:var(--tbs-sky-50);
+      border:1px solid var(--border-subtle);border-radius:var(--radius-card);
+      box-shadow:var(--shadow-card);overflow:hidden}
+.side-hd{flex:0 0 auto;padding:14px 16px 12px;background:var(--surface-card);
+         border-bottom:1px solid var(--tbs-sky-200)}
+.side-hd .row{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+.side-hd h3{margin:0;font-size:20px;font-weight:700;line-height:1.4;
+            color:var(--text-strong);text-wrap:pretty}
+.pill{font-size:10.5px;font-weight:700;border-radius:999px;padding:2px 9px}
+.flag{font-size:10.5px;font-weight:700;color:#1D2564;background:#F5C518;
+      border:1.5px solid #1D2564;border-radius:4px;padding:1px 7px}
+.side-body{flex:1 1 auto;min-height:0;overflow-y:auto;padding:14px 16px 24px;
+           display:flex;flex-direction:column;gap:18px}
+.sec{display:flex;flex-direction:column;gap:8px}
+.sec-t{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--tbs-navy-400)}
+.sec p{margin:0;font-size:13.5px;line-height:1.75;color:var(--text-body);text-wrap:pretty}
+.subrow{display:flex;gap:8px;align-items:flex-start;background:var(--surface-card);
+        border:1px solid var(--border-subtle);border-radius:8px;padding:8px 10px}
+.bullet{color:var(--tbs-navy-300);font-size:11px;line-height:1.6}
+.dep{display:flex;align-items:center;gap:9px;background:var(--tbs-white);
+     border:1px solid var(--tbs-sky-400);border-radius:8px;padding:8px 10px;cursor:pointer;
+     text-align:left;width:100%;font-family:var(--tbs-font-body)}
+.dep .rel{font-size:10.5px;font-weight:700;white-space:nowrap}
+.dep .t{font-size:13px;color:var(--text-strong);text-align:left}
+.lnk{display:flex;align-items:center;gap:8px;background:var(--surface-card);
+     border:1px solid var(--border-subtle);border-radius:8px;padding:9px 10px;text-decoration:none}
+.lnk .l{font-family:var(--tbs-font-mono);font-size:11px;color:var(--text-link)}
+.lnk .n{font-size:12.5px;color:var(--text-body);min-width:0}
+.lnk .a{margin-left:auto;color:var(--tbs-navy-300);font-size:12px}
+/* 確認欄。人間待ち・未決のタスクに「確認したいこと」と「回答」を書き込む */
+.ask-box{display:flex;flex-direction:column;gap:6px}
+.ask-box textarea{width:100%;resize:vertical;font-family:var(--tbs-font-body);font-size:13px;
+                  line-height:1.7;color:var(--text-body);background:var(--surface-card);
+                  border:1px solid var(--border-subtle);border-radius:8px;padding:8px 10px}
+.ask-box textarea:focus{outline:2px solid var(--tbs-coin);outline-offset:-1px}
+.ask-box textarea::placeholder{color:var(--tbs-navy-300)}
+.ask-box textarea.ans{background:var(--tbs-sky-50);border-color:var(--tbs-leaf);min-height:76px}
+.tkt-ans{font-size:10px;font-weight:700;color:#FFFFFF;background:var(--tbs-leaf);
+         border-radius:4px;padding:0 5px}
+.notes{background:var(--tbs-sky-100);border:1px solid var(--border-subtle);border-radius:8px;
+       padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.notes .row{display:flex;gap:7px;align-items:flex-start}
+.notes span.t{font-size:12.5px;line-height:1.7;color:var(--text-body);text-wrap:pretty}
+.stamp-row{display:flex;align-items:center;gap:8px;border-top:1px dashed var(--border-subtle);
+           padding-top:12px}
+.stamp-row .k{font-size:11px;color:var(--tbs-navy-400)}
+.stamp-row .v{font-family:var(--tbs-font-mono);font-size:11.5px;color:var(--text-body)}
+.empty{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;justify-content:center;
+       gap:14px;padding:24px}
+.retro{background:var(--tbs-sky-100);border:4px solid var(--tbs-navy-800);border-radius:0;
+       box-shadow:4px 4px 0 var(--tbs-navy-800);padding:16px 18px}
+.retro p{margin:0;font-family:var(--tbs-font-pixel);font-size:14px;line-height:1.9;
+         letter-spacing:.08em;color:var(--tbs-navy-800)}
+</style>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════════════
+   1. 定数
+      SVG の中はリテラル hex。書き出した SVG を単体で開いても色が出るようにするため
+      CSS 変数を使わない。
+   ══════════════════════════════════════════════════════════════════════════ */
+const C = {
+  navy800:'#1D2564', navy700:'#2E3872', navy600:'#3F4B7F', navy400:'#617199', navy300:'#849AB5',
+  sky500:'#9EB7C9', sky400:'#AECAD5', sky300:'#C9E8EA', sky200:'#DBEFF1', sky100:'#EAF6F7', sky50:'#F5FBFC',
+  white:'#FFFFFF', gray300:'#C4D0D3', gray100:'#EDF2F3', gray50:'#F7FAFB',
+  coin:'#F5C518', coinDark:'#C69A08', heart:'#E2596B', leaf:'#3E9E7A', amber:'#E0A32E'
+};
+const FONT = 'Zen Maru Gothic, Hiragino Maru Gothic ProN, Noto Sans JP, sans-serif';
+const MONO = 'JetBrains Mono, Consolas, monospace';
+
+const GX = 68;    /* レーン間の余白 */
+const GY = 26;    /* 同レーン内の縦の余白 */
+const CY = 206;   /* レーンの中心線 */
+const M  = 28;    /* 図全体の余白 */
+const COMPACT_K = 0.7;  /* この縮尺を下回ると意味的ズームに入る */
+const K_MIN = 0.3, K_MAX = 2.4;
+
+/* ══════════════════════════════════════════════════════════════════════════
+   2. ユーティリティ
+   ══════════════════════════════════════════════════════════════════════════ */
+const esc = s => String(s == null ? '' : s)
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+
+/* CJK は全角 1、それ以外は 0.56 として文字幅を見積もる */
+const unit = ch => (ch.charCodeAt(0) < 0x2E80 ? 0.56 : 1);
+const units = s => { let u = 0; for (const ch of s) u += unit(ch); return u; };
+const isWordChar = ch => ch.charCodeAt(0) < 0x2E80 && /[0-9A-Za-z]/.test(ch);
+
+/* 折り返し。ASCII の語の途中で切れると読めなくなる（core/parser → core/par / ser）
+   ので、直前の区切り（空白 / -_/.:, / CJK）まで巻き戻してから改行する。 */
+function wrap(text, maxU) {
+  const out = [];
+  let line = '', u = 0;
+  for (const ch of String(text)) {
+    const w = unit(ch);
+    if (line && u + w > maxU) {
+      let cut = -1;
+      if (isWordChar(ch)) {
+        for (let i = line.length - 1; i > 0; i--) {
+          if (line[i] === ' ') { cut = i; break; }
+          if (!isWordChar(line[i])) { cut = i + 1; break; }
+        }
+      }
+      if (cut > 0 && line.length - cut <= 14) {
+        out.push(line.slice(0, cut).replace(/\s+$/, ''));
+        line = line.slice(cut).replace(/^\s+/, '');
+      } else {
+        out.push(line.replace(/\s+$/, ''));
+        line = '';
+      }
+      u = units(line);
+    }
+    if (!line && ch === ' ') continue;   /* 行頭の空白は捨てる */
+    line += ch; u += w;
+  }
+  if (line) out.push(line);
+  return out;
+}
+
+const statusOf = id => STATUSES.find(s => s.id === id) || STATUSES[STATUSES.length - 1];
+const byId = {}; ITEMS.forEach(i => { byId[i.id] = i; });
+
+/* 確認欄の保存。キーはファイル名ではなくボード名なので、再生成しても引き継がれる。
+   file:// で開くと localStorage が使えないブラウザがあるため、失敗しても黙って諦める
+   （その場合はページを開いている間だけ保持される）。 */
+const store = (() => {
+  const ns = 'status-board:' + (META.repoLabel || META.title || '');
+  const mem = {};
+  let ls = null;
+  try { ls = window.localStorage; ls.setItem(ns + ':probe', '1'); ls.removeItem(ns + ':probe'); }
+  catch { ls = null; }
+  const k = (id, field) => `${ns}:${id}:${field}`;
+  return {
+    get: (id, field) => { try { return (ls ? ls.getItem(k(id, field)) : mem[k(id, field)]) || ''; } catch { return mem[k(id, field)] || ''; } },
+    set: (id, field, v) => { try { if (ls) ls.setItem(k(id, field), v); else mem[k(id, field)] = v; } catch { mem[k(id, field)] = v; } }
+  };
+})();
+
+/* 確認欄を出す対象。ask があるもの、または人間待ち */
+const needsAsk = i => !!(i.ask || i.human || i.kind === 'human');
+/* 回答が書き込まれているか */
+const answered = id => store.get(id, 'ans').trim().length > 0;
+
+/* ══════════════════════════════════════════════════════════════════════════
+   3. 状態
+   ══════════════════════════════════════════════════════════════════════════ */
+const S = {
+  sel:null, hover:null,
+  expanded:!!PROPS.showChildren,
+  hidden:{},                       /* status id -> true で非表示 */
+  collapsed:Object.fromEntries(STATUSES.filter(s => s.collapsedByDefault).map(s => [s.id, true])),
+  folded:{},                       /* epic id -> true で 1 ノードに畳む */
+  q:'',
+  view:{ k:1, tx:24, ty:24 },
+  vw:1000, vh:430,
+  fitted:false, touched:false, fitW:0, fitH:0
+};
+
+const dimOn = () => PROPS.dimUnrelated !== false;
+const nodeW = () => Math.round(PROPS.nodeWidth || 198);
+
+function matches(i) {
+  const q = S.q.trim().toLowerCase();
+  if (!q) return true;
+  const hay = [i.key, i.title, (i.meta||[]).join(' '), (i.desc||[]).join(' '),
+               (i.children||[]).map(c => c.title).join(' ')].join(' ').toLowerCase();
+  return hay.indexOf(q) >= 0;
+}
+function neighbors(id) {
+  const s = new Set([id]);
+  EDGES.forEach(e => { if (e.from === id) s.add(e.to); if (e.to === id) s.add(e.from); });
+  return s;
+}
+function chain(id) {
+  const s = new Set([id]);
+  let grew = true;
+  while (grew) {
+    grew = false;
+    EDGES.forEach(e => {
+      if (s.has(e.from) && !s.has(e.to)) { s.add(e.to); grew = true; }
+      if (s.has(e.to) && !s.has(e.from)) { s.add(e.from); grew = true; }
+    });
+  }
+  return s;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   4. 図のレイアウト計算
+      graph(opts) は純関数。opts を変えれば「畳みを無視した全体図」も同じ関数で得られる
+      ので、書き出しは live DOM を clone せずここから作り直す。
+   ══════════════════════════════════════════════════════════════════════════ */
+function graph(opts) {
+  const o = opts || {};
+  const compact  = !!o.compact;
+  const folded   = o.folded || {};
+  const expanded = o.expanded === undefined ? S.expanded : o.expanded;
+  const W = nodeW();
+
+  const fsT = compact ? 17 : 13, fsK = compact ? 13 : 10.5, lhT = compact ? 22 : 18;
+
+  /* 畳まれていないエピックのメンバー + エピック無しのノード */
+  const src = ITEMS.filter(i => i.col !== undefined && !(i.epic && folded[i.epic]));
+
+  /* 畳まれたエピックは 1 ノードに集約する */
+  EPICS.forEach(e => {
+    if (!folded[e.id]) return;
+    const mem = ITEMS.filter(i => i.epic === e.id && i.col !== undefined);
+    if (!mem.length) return;
+    const nx = mem.filter(m => m.next).map(m => m.next);
+    src.push({
+      id:'epic:' + e.id, key:'epic', title:e.label, kind:'epic', epic:e.id, epicRef:e,
+      col:Math.min.apply(null, mem.map(m => m.col)),
+      status:URGENCY.find(s => mem.some(m => m.status === s)) || 'backlog',
+      meta:[mem.length + ' 件'],
+      human:mem.some(m => m.human || m.kind === 'human'),
+      next:nx.length ? Math.min.apply(null, nx) : undefined
+    });
+  });
+
+  /* 使われている col だけを詰めてレーン番号に割り当てる（空レーンは作らない） */
+  const usedCols = Array.from(new Set(src.map(i => i.col))).sort((a, b) => a - b);
+  const colIdx = {}; usedCols.forEach((c, ix) => { colIdx[c] = ix; });
+
+  const nodes = src.map(i => {
+    const st = statusOf(i.status);
+    const isHex = i.kind === 'human';
+    const w = i.kind === 'anchor' ? 96 : W;
+    const inner = w - 26 - (isHex ? 12 : 0);
+    const titleLines = wrap(i.title, inner / fsT);
+    const metaLines = [];
+    if (!compact) (i.meta || []).forEach(m => wrap(m, inner / 11).forEach(l => metaLines.push(l)));
+    const kids = (compact || !expanded) ? [] : (i.children || []);
+    const kidLines = kids.map(k => wrap('▶︎ ' + k.title, (inner - 6) / 11));
+    let h = 12;
+    if (i.kind !== 'anchor') h += compact ? 17 : 15;
+    h += titleLines.length * lhT + metaLines.length * 15;
+    kidLines.forEach(kl => { h += kl.length * 15 + 4; });
+    if (kids.length) h += 8;
+    h += i.kind === 'anchor' ? 8 : 30;
+    h = Math.max(h, i.kind === 'anchor' ? 42 : 82);
+    return { i, st, isHex, w, h, inner, titleLines, metaLines, kids, kidLines, fsT, fsK, lhT, compact };
+  });
+
+  /* レーンごとに上から積む。anchorY があればその y を下限として使う */
+  const cols = {};
+  nodes.forEach(n => { (cols[n.i.col] = cols[n.i.col] || []).push(n); });
+  let maxX = 0, maxY = 0, minX = 1e9, minY = 1e9;
+  Object.keys(cols).forEach(c => {
+    let cursor = null;
+    cols[c].forEach(n => {
+      const laneX = M + colIdx[Number(c)] * (W + GX);
+      n.x = laneX + (W - n.w) / 2;
+      if (cursor === null) n.y = n.i.anchorY !== undefined ? n.i.anchorY : CY - n.h / 2;
+      else n.y = Math.max(cursor + GY, n.i.anchorY !== undefined ? n.i.anchorY : 0);
+      cursor = n.y + n.h;
+      maxX = Math.max(maxX, n.x + n.w); maxY = Math.max(maxY, n.y + n.h);
+      minX = Math.min(minX, n.x); minY = Math.min(minY, n.y - 16); /* -16 は NEXT 旗のはみ出し分 */
+    });
+  });
+
+  const map = {}; nodes.forEach(n => { map[n.i.id] = n; });
+
+  /* エピック枠 */
+  const frames = [];
+  EPICS.forEach(e => {
+    if (folded[e.id]) return;
+    const mem = nodes.filter(n => n.i.epic === e.id);
+    if (!mem.length) return;
+    const x1 = Math.min.apply(null, mem.map(n => n.x)) - 16;
+    const x2 = Math.max.apply(null, mem.map(n => n.x + n.w)) + 16;
+    const y1 = Math.min.apply(null, mem.map(n => n.y)) - 30;
+    const y2 = Math.max.apply(null, mem.map(n => n.y + n.h)) + 16;
+    frames.push({ e, x:x1, y:y1, w:x2 - x1, h:y2 - y1 });
+    minX = Math.min(minX, x1); minY = Math.min(minY, y1 - 12);
+    maxX = Math.max(maxX, x2); maxY = Math.max(maxY, y2);
+  });
+
+  if (!nodes.length) { minX = 0; minY = 0; maxX = 1; maxY = 1; }
+  return { nodes, map, frames, minX, minY,
+           cw:Math.max(1, maxX - minX), ch:Math.max(1, maxY - minY), compact, folded };
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   5. 図の SVG 生成（純関数）
+      live 描画と SVG / PNG 書き出しで共有する。ハンドラは付けず data-* だけ置いて、
+      イベントは SVG ルートで委譲する。
+   ══════════════════════════════════════════════════════════════════════════ */
+const DEFS = `<defs>
+  <marker id="ar-flow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="${C.navy600}"/></marker>
+  <marker id="ar-block" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="${C.heart}"/></marker>
+  <marker id="ar-idea" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="${C.navy300}"/></marker>
+  <filter id="fx-sel" x="-25%" y="-25%" width="150%" height="160%"><feDropShadow dx="0" dy="5" stdDeviation="4" flood-color="${C.navy800}" flood-opacity=".3"/></filter>
+  <filter id="fx-hover" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="3" stdDeviation="2.5" flood-color="${C.navy800}" flood-opacity=".18"/></filter>
+</defs>`;
+
+const txt = (t, x, y, fs, fw, fill, ff, anchor) =>
+  `<text x="${x}" y="${y}" font-size="${fs}" font-weight="${fw}" fill="${fill}" font-family="${ff}"${anchor ? ` text-anchor="${anchor}"` : ''}>${esc(t)}</text>`;
+
+/* opts: { hidden, q, hover, sel, dim, forExport } */
+function svgBody(g, opts) {
+  const o = opts || {};
+  const hidden = o.hidden || {}, q = (o.q || '').trim();
+  const hv = o.hover || null, sel = o.sel || null;
+  const dim = o.dim !== false;
+  const active = hv ? neighbors(hv) : (sel ? chain(sel) : null);
+
+  const opacityFor = id => {
+    const it = byId[id];
+    if (!it) return 1;                                   /* 畳んだエピックのノード */
+    if (hidden[it.status]) return 0.1;
+    if (q && !matches(it)) return 0.14;
+    if (dim && active && !active.has(id)) return 0.2;
+    return 1;
+  };
+
+  /* --- エピック枠 (mermaid の subgraph 相当) --- */
+  let out = '';
+  g.frames.forEach(f => {
+    const fs = g.compact ? 15 : 12, lh = g.compact ? 26 : 22;
+    const labelW = Math.round(22 + units(f.e.label) * fs);
+    out += `<g transform="translate(${f.x},${f.y})">`
+      + `<rect x="0" y="0" width="${f.w}" height="${f.h}" rx="14" fill="${f.e.fill}" fill-opacity=".72" stroke="${f.e.border}" stroke-width="1.5" stroke-dasharray="7 5"/>`
+      + `<g data-fold="${esc(f.e.id)}" style="cursor:pointer">`
+      + `<rect x="12" y="${-lh / 2}" width="${labelW}" height="${lh}" rx="6" fill="#FFFFFF" stroke="${f.e.border}" stroke-width="1.5"/>`
+      + `<text x="23" y="${fs * 0.4}" font-size="${fs}" font-weight="700" fill="${C.navy600}" font-family="${FONT}" letter-spacing=".04em">${esc(f.e.label)}</text>`
+      + `</g></g>`;
+  });
+
+  /* --- 依存線。畳まれたエピックのメンバー宛ての線はその箱に繋ぎ替える --- */
+  const via = id => {
+    const it = byId[id];
+    return (it && it.epic && g.folded[it.epic]) ? 'epic:' + it.epic : id;
+  };
+  let labels = '';
+  EDGES.forEach(e => {
+    const fromId = via(e.from), toId = via(e.to);
+    if (fromId === toId) return;
+    const a = g.map[fromId], b = g.map[toId];
+    if (!a || !b) return;
+    const sx = a.x + a.w, sy = a.y + a.h / 2, tx = b.x - 9, ty = b.y + b.h / 2;
+    const dx = Math.max(38, (tx - sx) * 0.48);
+    const isActive = hv ? (fromId === hv || toId === hv)
+                        : (active ? (active.has(fromId) && active.has(toId)) : false);
+    const base = e.kind === 'block' ? C.heart : e.kind === 'idea' ? C.navy300 : C.navy600;
+    const s1 = byId[e.from], s2 = byId[e.to];
+    const hid = (s1 && hidden[s1.status]) || (s2 && hidden[s2.status]);
+    const op = hid ? 0.08 : (dim && active ? (isActive ? 1 : 0.08) : 0.85);
+    const dash = e.kind === 'block' ? ' stroke-dasharray="6 5"' : e.kind === 'idea' ? ' stroke-dasharray="2 5"' : '';
+    const mk = e.kind === 'block' ? 'block' : e.kind === 'idea' ? 'idea' : 'flow';
+    out += `<path d="M${sx} ${sy} C${sx + dx} ${sy},${tx - dx} ${ty},${tx} ${ty}" fill="none" stroke="${base}" stroke-width="${isActive ? 2.8 : 1.8}"${dash} stroke-linecap="round" marker-end="url(#ar-${mk})" opacity="${op}"/>`;
+    if (e.label) {
+      labels += `<g transform="translate(${(sx + tx) / 2},${(sy + ty) / 2})" opacity="${op}">`
+        + `<rect x="-20" y="-9" width="40" height="18" rx="4" fill="#FFFFFF" stroke="${C.heart}" stroke-width="1"/>`
+        + `<text x="0" y="4" text-anchor="middle" font-size="10" font-weight="700" fill="${C.heart}" font-family="${FONT}">${esc(e.label)}</text></g>`;
+    }
+  });
+  out += labels;
+
+  /* --- ノード。選択中のものは最後に描いて最前面に持ってくる --- */
+  const ordered = g.nodes.slice().sort((a, b) => (a.i.id === sel ? 1 : 0) - (b.i.id === sel ? 1 : 0));
+  ordered.forEach(n => {
+    const i = n.i, st = n.st, isSel = sel === i.id, isHov = hv === i.id;
+    const pad = n.isHex ? 20 : 13;
+    let body = '', y = 12;
+
+    if (i.kind !== 'anchor') {
+      body += txt(i.key, pad, y + 3, n.fsK, 400, C.navy300, MONO);
+      y += n.compact ? 17 : 15;
+    }
+    n.titleLines.forEach(t => {
+      body += txt(t, pad, y + n.fsT, n.fsT, 700, i.kind === 'idea' ? C.navy600 : C.navy800, FONT);
+      y += n.lhT;
+    });
+    n.metaLines.forEach(t => { body += txt(t, pad, y + 11, 11, 400, C.navy400, FONT); y += 15; });
+    if (n.kids.length) {
+      y += 4;
+      body += `<line x1="${pad}" y1="${y}" x2="${n.w - pad}" y2="${y}" stroke="${C.sky400}" stroke-width="1"/>`;
+      y += 4;
+      n.kidLines.forEach(kl => {
+        kl.forEach((t, ix) => { body += txt(t, pad + (ix ? 12 : 0), y + 11, 11, 400, C.navy600, FONT); y += 15; });
+        y += 4;
+      });
+    }
+
+    /* チップ列: ステータス / 🙋 人間待ち / 構想 */
+    const cfs = n.compact ? 14 : 10.5, chh = n.compact ? 24 : 18, cy = n.h - chh - 6;
+    let cx = pad;
+    const chip = (text, fill, stroke, color) => {
+      const w = Math.round(14 + units(text) * cfs);
+      body += `<g transform="translate(${cx},${cy})">`
+        + `<rect x="0" y="0" width="${w}" height="${chh}" rx="${chh / 2}" fill="${fill}" stroke="${stroke}" stroke-width="1"/>`
+        + `<text x="7" y="${chh * 0.7}" font-size="${cfs}" font-weight="700" fill="${color}" font-family="${FONT}">${esc(text)}</text></g>`;
+      cx += w + 5;
+    };
+    if (i.kind !== 'anchor') chip(st.short, C.white, st.stroke, st.stroke);
+    if (i.human) {
+      /* 回答が書き込まれたら 🙋 から ✓ に変わる。何が片付いたか図の上で分かる */
+      const done = answered(i.id);
+      chip(done ? '✓ 回答済' : '🙋 人間待ち',
+           done ? '#E7F3EE' : '#FCEBEE',
+           done ? C.leaf : C.heart,
+           done ? C.leaf : C.heart);
+    }
+    if (i.kind === 'idea') chip('構想', C.white, C.navy300, C.navy400);
+
+    /* NEXT 旗 — 常に最前面・省略しない */
+    if (i.next) {
+      const fw = n.compact ? 78 : 58, fh = n.compact ? 27 : 21, ffs = n.compact ? 14 : 10.5;
+      body += `<g transform="translate(${n.w - (n.compact ? 82 : 62)},${n.compact ? -14 : -11})">`
+        + `<rect x="0" y="0" width="${fw}" height="${fh}" rx="4" fill="${C.coin}" stroke="${C.navy800}" stroke-width="1.5"/>`
+        + `<text x="9" y="${n.compact ? 19 : 14.5}" font-size="${ffs}" font-weight="700" fill="${C.navy800}" font-family="${FONT}" letter-spacing=".06em">NEXT ${i.next}</text></g>`;
+    }
+
+    const url = (i.links || []).length ? i.links[0].url : null;
+    const stroke = isSel ? C.coinDark : st.stroke;
+    if (url) {
+      body += `<g transform="translate(${n.w - 30},${n.h - (n.compact ? 32 : 26)})" data-open="${esc(url)}" style="cursor:pointer">`
+        + `<rect x="0" y="0" width="22" height="20" rx="5" fill="#FFFFFF" stroke="${stroke}" stroke-width="1"/>`
+        + `<text x="11" y="14" text-anchor="middle" font-size="11" font-weight="700" fill="${stroke}" font-family="${FONT}">↗</text></g>`;
+    }
+
+    /* 枠の太さ: 選択・ホバーは CSS 変数で画面上の太さを一定に保つ */
+    const cls = isSel ? ' class="sel-outline"' : (isHov ? ' class="hov-outline"' : '');
+    const sw = isSel || isHov ? '' : ` stroke-width="${i.kind === 'human' ? 2.2 : 2}"`;
+    const fill = i.kind === 'epic' ? i.epicRef.fill : st.fill;
+    let shape;
+    if (n.isHex) {
+      shape = `<polygon points="14,0 ${n.w - 14},0 ${n.w},${n.h / 2} ${n.w - 14},${n.h} 14,${n.h} 0,${n.h / 2}" fill="${fill}" stroke="${stroke}"${sw}${cls}/>`;
+    } else {
+      const rx = i.kind === 'anchor' ? n.h / 2 : i.kind === 'epic' ? 14 : 10;
+      const bd = i.kind === 'idea' ? ' stroke-dasharray="5 4"' : '';
+      shape = `<rect x="0" y="0" width="${n.w}" height="${n.h}" rx="${rx}" fill="${fill}" stroke="${stroke}"${sw}${bd}${cls}/>`;
+    }
+
+    const lift = isSel ? 3 : isHov ? 2 : 0;
+    const flt = isSel ? ' filter="url(#fx-sel)"' : (isHov ? ' filter="url(#fx-hover)"' : '');
+    out += `<g transform="translate(${n.x},${n.y - lift})" opacity="${opacityFor(i.id)}"${flt} data-node="${esc(i.id)}" style="cursor:pointer">${shape}${body}</g>`;
+  });
+  return out;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   6. カンバンと詳細パネルの生成
+   ══════════════════════════════════════════════════════════════════════════ */
+function kanbanMarkup() {
+  const bands = EPICS.map(e => ({ id:e.id, label:e.label, color:e.border }))
+    .concat([{ id:'none', label:'エピック外', color:C.navy300 }]);
+  let out = '';
+  bands.forEach(bd => {
+    const pool = ITEMS.filter(i => (i.epic || 'none') === bd.id && i.kanban !== false);
+    if (!pool.length) return;
+
+    /* そのエピックが実際に持っているステータス列だけ出す */
+    let colsHtml = '';
+    STATUSES.forEach(s => {
+      if (S.hidden[s.id]) return;
+      const items = pool.filter(i => i.status === s.id && matches(i));
+      if (!items.length) return;
+      const key = bd.id + '/' + s.id;
+      if (S.collapsed[s.id]) {
+        colsHtml += `<div class="col-folded" data-col="${esc(key)}">`
+          + `<button class="col-chip" data-toggle-col="${esc(s.id)}">${esc(s.label)} ${items.length}</button></div>`;
+        return;
+      }
+      let cards = '';
+      items.forEach(i => {
+        const isSel = S.sel === i.id;
+        const url = (i.links || []).length ? i.links[0].url : null;
+        const mark = i.human ? '🙋' : (i.next ? 'NEXT ' + i.next : '');
+        const markStyle = i.human
+          ? `background:#FCEBEE;border:1px solid ${C.heart}`
+          : `background:${C.coin};border:1px solid ${C.navy800}`;
+        cards += `<div class="cardstack">`
+          + `<div class="tkt${isSel ? ' on' : ''}" data-item="${esc(i.id)}" data-from="kanban">`
+          + `<div class="tkt-hd"><span class="tkt-key">${esc(i.key)}</span>`
+          + (mark ? `<span class="tkt-mark" style="${markStyle}">${esc(mark)}</span>` : '')
+          + (needsAsk(i) && answered(i.id) ? `<span class="tkt-ans" title="回答あり">✓</span>` : '')
+          + (url ? `<a class="tkt-out" href="${esc(url)}" target="_blank" rel="noreferrer" data-stop>↗</a>` : '')
+          + `</div><div class="tkt-title">${esc(i.title)}</div></div>`
+          + (i.children || []).map(k =>
+              `<div class="kid" data-item="${esc(i.id)}" data-from="kanban">`
+              + `<span class="kid-key">${esc(k.key)}</span>`
+              + `<div class="kid-title">${esc(k.title)}</div></div>`).join('')
+          + `</div>`;
+      });
+      colsHtml += `<div class="col" data-col="${esc(key)}" style="background:${s.pane};border:1px solid ${s.stroke}55">`
+        + `<div class="col-hd"><span class="col-dot" style="background:${s.stroke}"></span>`
+        + `<span class="col-name" style="color:${s.stroke}">${esc(s.label)}</span>`
+        + `<span class="col-n">${items.length}</span>`
+        + `<button class="col-x" title="折りたたむ" data-toggle-col="${esc(s.id)}">×</button></div>`
+        + `<div class="col-body">${cards}</div></div>`;
+    });
+    if (!colsHtml) return;
+
+    out += `<div class="band"><div class="band-hd">`
+      + `<span class="dash" style="background:${bd.color}"></span>`
+      + `<h3>${esc(bd.label)}</h3><span class="n">${pool.length}</span></div>`
+      + `<div class="strip" data-strip="${esc(bd.id)}">${colsHtml}</div></div>`;
+  });
+  return out || `<div class="band"><div class="band-hd"><h3>該当なし</h3></div></div>`;
+}
+
+function detailMarkup() {
+  const it = S.sel ? byId[S.sel] : null;
+  if (!it) return `<div class="empty"><div class="retro"><p>えらんでください....</p></div></div>`;
+  const st = statusOf(it.status);
+
+  const deps = [];
+  EDGES.forEach(e => {
+    if (e.to === it.id)   deps.push({ rel:e.kind === 'block' ? 'ブロックされている' : '前提', id:e.from, tone:e.kind === 'block' ? C.heart : C.navy600 });
+    if (e.from === it.id) deps.push({ rel:e.kind === 'block' ? 'ブロックしている'   : '次',   id:e.to,   tone:e.kind === 'block' ? C.heart : C.navy600 });
+  });
+
+  const sec = (title, inner) => inner ? `<div class="sec"><div class="sec-t">${title}</div>${inner}</div>` : '';
+  const done = answered(it.id);
+  const flag = it.next ? `NEXT ${it.next}` : (it.human ? (done ? '✓ 回答済' : '🙋 人間待ち') : null);
+
+  /* 確認欄。書き込んだ内容は store に入り、再生成しても引き継がれる。
+     中でスクロールさせたくないので、行数は内容に合わせる（2〜10 行）。 */
+  const rowsFor = s => Math.max(2, Math.min(10, String(s).split('\n').length + 1));
+  const askText = store.get(it.id, 'ask')
+    || (Array.isArray(it.ask) ? it.ask.join('\n') : (it.ask || ''));
+  const ansText = store.get(it.id, 'ans');
+  const askBox = needsAsk(it)
+    ? `<div class="ask-box">`
+      + `<textarea data-field="ask" data-id="${esc(it.id)}" rows="${rowsFor(askText)}" placeholder="確認したいこと">${esc(askText)}</textarea>`
+      + `<textarea class="ans" data-field="ans" data-id="${esc(it.id)}" rows="${rowsFor(ansText)}" placeholder="回答">${esc(ansText)}</textarea></div>`
+    : '';
+
+  return `<div class="side-hd">`
+    + `<div class="row"><span class="tkt-key">${esc(it.key)}</span>`
+    + `<span class="pill" style="color:${st.stroke};background:${st.fill};border:1px solid ${st.stroke}">${esc(st.label)}</span>`
+    + (flag ? `<span class="flag">${esc(flag)}</span>` : '')
+    + `</div><h3>${esc(it.title)}</h3></div>`
+    + `<div class="side-body">`
+    + ((it.desc || []).length ? `<div class="sec">${it.desc.map(p => `<p>${esc(p)}</p>`).join('')}</div>` : '')
+    + sec('確認', askBox)
+    + sec('子チケット', (it.children || []).map(k =>
+        `<div class="subrow"><span class="bullet">▶︎</span><div style="min-width:0">`
+        + `<div class="kid-key">${esc(k.key)}</div><div class="kid-title">${esc(k.title)}</div></div></div>`).join(''))
+    + sec('依存', deps.map(d => byId[d.id] ? `<button class="dep" data-item="${esc(d.id)}" data-from="kanban">`
+        + `<span class="rel" style="color:${d.tone}">${esc(d.rel)}</span>`
+        + `<span class="t">${esc(byId[d.id].title)}</span></button>` : '').join(''))
+    + sec('関連 PR・ブランチ', (it.links || []).map(l =>
+        `<a class="lnk" href="${esc(l.url)}" target="_blank" rel="noreferrer">`
+        + `<span class="l">${esc(l.label)}</span><span class="n">${esc(l.note || '')}</span>`
+        + `<span class="a">↗</span></a>`).join(''))
+    + sec('備考・メモ', (it.notes || []).length
+        ? `<div class="notes">${it.notes.map(n => `<div class="row"><span class="bullet">▶︎</span><span class="t">${esc(n)}</span></div>`).join('')}</div>`
+        : '')
+    + `<div class="stamp-row"><span class="k">最終更新</span><span class="v">${esc(it.updated || '—')}</span></div>`
+    + `</div>`;
+}
+
+function chipsMarkup() {
+  return STATUSES.map(s => {
+    const on = !S.hidden[s.id];
+    const n = ITEMS.filter(i => i.status === s.id && i.kanban !== false).length;
+    const style = on
+      ? `border-color:${s.stroke};background:${s.fill};color:${s.stroke}`
+      : '';
+    return `<button class="chip" data-chip="${esc(s.id)}" style="${style}">${esc(s.label)}<span class="n">${n}</span></button>`;
+  }).join('') + `<button class="chip-reset" data-reset>解除</button>`;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   7. 骨組みの組み立てと描画
+   ══════════════════════════════════════════════════════════════════════════ */
+function shell() {
+  return `<div class="shell">
+  <header class="hdr">
+    <div class="hdr-id"><h1>${esc(META.title)}</h1>
+      ${META.repoUrl ? `<a class="repo" href="${esc(META.repoUrl)}" target="_blank" rel="noreferrer">${esc(META.repoLabel || META.repoUrl)}</a>` : ''}
+    </div>
+    <span class="stamp">${esc(META.updatedAt)}</span>
+    <div class="hdr-tools">
+      <div class="qbox"><input id="q" placeholder="検索" value=""></div>
+      <button class="btn btn-toggle" id="btn-children">子チケット</button>
+      <button class="btn" data-export="svg">SVG</button>
+      <button class="btn" data-export="png">PNG</button>
+    </div>
+  </header>
+  <div class="chips" id="chips"></div>
+  <div class="main">
+    <div class="left">
+      <section class="card">
+        <div class="map-bar">
+          <button class="zbtn" data-zoom="out">−</button>
+          <button class="zbtn" data-zoom="in">＋</button>
+          <button class="zbtn wide" data-zoom="fit">全体</button>
+        </div>
+        <div class="pane" id="pane">
+          <svg id="svg" width="100%" height="100%">${DEFS}<g id="zoomG"></g></svg>
+        </div>
+      </section>
+      <section class="card"><div class="kanban" id="kanban"></div></section>
+    </div>
+    <aside class="side" id="side"></aside>
+  </div>
+</div>`;
+}
+
+let els = {};
+function renderMap() {
+  const g = graph({ compact:S.view.k < COMPACT_K, folded:S.folded });
+  els.zoomG.innerHTML = svgBody(g, { hidden:S.hidden, q:S.q, hover:S.hover, sel:S.sel, dim:dimOn() });
+  return g;
+}
+function applyView() {
+  const v = S.view;
+  els.zoomG.setAttribute('transform', `translate(${v.tx},${v.ty}) scale(${v.k})`);
+  document.documentElement.style.setProperty('--sel-sw', (4 / Math.min(1, v.k)) + 'px');
+  document.documentElement.style.setProperty('--hov-sw', (2.8 / Math.min(1, v.k)) + 'px');
+}
+/* innerHTML を丸ごと差し替えるとスクロール位置が飛ぶ。選択のたびにカンバンが
+   先頭に戻るのは邪魔なので、縦（カンバン全体）と横（各段）を保存して戻す。 */
+function keepScroll(fn) {
+  const top = els.kanban.scrollTop, chipsLeft = els.chips.scrollLeft;
+  const lefts = {};
+  els.kanban.querySelectorAll('[data-strip]').forEach(s => { lefts[s.dataset.strip] = s.scrollLeft; });
+  fn();
+  els.kanban.scrollTop = top;
+  els.chips.scrollLeft = chipsLeft;
+  els.kanban.querySelectorAll('[data-strip]').forEach(s => {
+    const v = lefts[s.dataset.strip];
+    if (v != null) s.scrollLeft = v;
+  });
+}
+function render() {
+  renderMap();
+  applyView();
+  keepScroll(() => {
+    els.chips.innerHTML = chipsMarkup();
+    els.kanban.innerHTML = kanbanMarkup();
+  });
+  els.side.innerHTML = detailMarkup();
+  els.btnChildren.classList.toggle('on', S.expanded);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   8. ズームとパン
+      意味的ズーム (k<0.7) でノードの高さが変わるため、
+        - 全体フィットは「非 compact で k を出す → 0.7 未満なら compact で出し直す」
+          の 2 パスで前提を揃える
+        - 縮尺が閾値を跨いだときは画面中央の graph 座標を保存して復元し、
+          見た目のジャンプだけ吸収する
+   ══════════════════════════════════════════════════════════════════════════ */
+function solveFit(kOf) {
+  let g = graph({ compact:false, folded:S.folded });
+  let k = kOf(g);
+  if (k < COMPACT_K) {
+    const g2 = graph({ compact:true, folded:S.folded });
+    const k2 = kOf(g2);
+    /* compact 側で 0.7 以上になると非 compact に戻ってしまい前提が壊れるので、
+       自己整合する範囲に丸める */
+    g = g2; k = k2 >= COMPACT_K ? COMPACT_K - 0.001 : k2;
+  }
+  return { g, k };
+}
+function fitView() {
+  const p = 20;
+  const { g, k } = solveFit(gg => Math.max(K_MIN, Math.min(1.06, (S.vw - p * 2) / gg.cw, (S.vh - p * 2) / gg.ch)));
+  S.touched = false; S.fitted = true; S.fitW = S.vw; S.fitH = S.vh;
+  setView({ k, tx:(S.vw - g.cw * k) / 2 - g.minX * k, ty:(S.vh - g.ch * k) / 2 - g.minY * k });
+}
+/* 初期表示は高さを合わせて左寄せ。チェーンの先頭が必ず読める状態にする */
+function fitStart() {
+  const p = 20;
+  const { g, k } = solveFit(gg => Math.max(0.52, Math.min(1, (S.vh - p * 2) / gg.ch)));
+  S.fitted = true; S.fitW = S.vw; S.fitH = S.vh;
+  setView({ k, tx:p - g.minX * k, ty:(S.vh - g.ch * k) / 2 - g.minY * k });
+}
+function setView(v) {
+  const wasCompact = S.view.k < COMPACT_K, isCompact = v.k < COMPACT_K;
+  S.view = v;
+  if (wasCompact !== isCompact) renderMap();
+  applyView();
+}
+/* 画面上の点 (px, py) を固定したまま縮尺を k へ */
+function zoomAt(k, px, py) {
+  const v = S.view;
+  const nk = Math.max(K_MIN, Math.min(K_MAX, k));
+  setView({ k:nk, tx:px - (px - v.tx) * (nk / v.k), ty:py - (py - v.ty) * (nk / v.k) });
+}
+function zoomBy(f) { S.touched = true; zoomAt(S.view.k * f, S.vw / 2, S.vh / 2); }
+
+function measure(forceFit) {
+  const r = els.pane.getBoundingClientRect();
+  if (!r.width) return;
+  const w = Math.round(r.width), h = Math.round(r.height);
+  const resized = Math.abs(S.fitW - w) > 24 || Math.abs(S.fitH - h) > 24;
+  S.vw = w; S.vh = h;
+  if (forceFit || !S.fitted || (resized && !S.touched)) fitStart();
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   9. 書き出し
+      畳み状態・フィルタ・縮尺を無視して常に全体・等倍で出す。live DOM の clone では
+      それができないので、graph / svgBody をきれいな状態で呼び直す。
+   ══════════════════════════════════════════════════════════════════════════ */
+function exportSvgText() {
+  const g = graph({ compact:false, folded:{} });
+  const pad = 24;
+  const W = Math.round(g.cw + pad * 2), H = Math.round(g.ch + pad * 2);
+  const body = svgBody(g, { hidden:{}, q:'', hover:null, sel:S.sel, dim:false });
+  return `<?xml version="1.0" encoding="UTF-8"?>\n`
+    + `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`
+    + `<rect width="100%" height="100%" fill="${C.sky50}"/>${DEFS}`
+    + `<g transform="translate(${pad - g.minX},${pad - g.minY})">${body}</g></svg>`;
+}
+function download(blob, name) {
+  const url = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = url; a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+const slug = () => (META.title || 'status').replace(/[^\w\-]+/g, '-').replace(/^-+|-+$/g, '').toLowerCase() || 'status';
+function exportSvg() { download(new Blob([exportSvgText()], { type:'image/svg+xml' }), slug() + '.svg'); }
+function exportPng() {
+  const t = exportSvgText();
+  const g = graph({ compact:false, folded:{} }), pad = 24, s = 2, img = new Image();
+  img.onload = () => {
+    const cv = document.createElement('canvas');
+    cv.width = Math.round((g.cw + pad * 2) * s); cv.height = Math.round((g.ch + pad * 2) * s);
+    const ctx = cv.getContext('2d');
+    ctx.fillStyle = C.sky50; ctx.fillRect(0, 0, cv.width, cv.height);
+    ctx.drawImage(img, 0, 0, cv.width, cv.height);
+    cv.toBlob(b => download(b, slug() + '.png'));
+  };
+  img.onerror = () => console.error('[board] PNG 書き出しに失敗しました');
+  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(t);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   10. 選択とスクロール連動
+   ══════════════════════════════════════════════════════════════════════════ */
+function select(id, from) {
+  if (id.indexOf('epic:') === 0) {           /* 畳んだエピックは選択ではなく展開 */
+    const f = Object.assign({}, S.folded); delete f[id.slice(5)];
+    S.folded = f; render();
+    return;
+  }
+  S.sel = id;
+  render();
+  const it = byId[id];
+  if (!it) return;
+
+  if (from === 'kanban' && it.col !== undefined) {
+    const g = graph({ compact:S.view.k < COMPACT_K, folded:S.folded });
+    const n = g.map[id];
+    if (n) {
+      S.touched = true;
+      const k = S.view.k;
+      setView({ k, tx:S.vw / 2 - (n.x + n.w / 2) * k, ty:S.vh / 2 - (n.y + n.h / 2) * k });
+    }
+  }
+  if (from === 'map') {
+    const bid = it.epic || 'none';
+    const strip = els.kanban.querySelector(`[data-strip="${CSS.escape(bid)}"]`);
+    const col = els.kanban.querySelector(`[data-col="${CSS.escape(bid + '/' + it.status)}"]`);
+    if (strip && col) strip.scrollLeft += col.getBoundingClientRect().left - strip.getBoundingClientRect().left - 12;
+    if (strip) els.kanban.scrollTop += strip.parentElement.getBoundingClientRect().top - els.kanban.getBoundingClientRect().top - 8;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   11. 初期化とイベント（すべて委譲）
+   ══════════════════════════════════════════════════════════════════════════ */
+function init() {
+  document.title = META.title || 'status board';
+  document.getElementById('app').innerHTML = shell();
+  els = {
+    pane:document.getElementById('pane'),
+    svg:document.getElementById('svg'),
+    zoomG:document.getElementById('zoomG'),
+    chips:document.getElementById('chips'),
+    kanban:document.getElementById('kanban'),
+    side:document.getElementById('side'),
+    q:document.getElementById('q'),
+    btnChildren:document.getElementById('btn-children')
+  };
+  render();
+
+  /* --- 図: ホバー --- */
+  els.svg.addEventListener('mouseover', e => {
+    const node = e.target.closest('[data-node]');
+    const id = node ? node.getAttribute('data-node') : null;
+    if (id !== S.hover) { S.hover = id; renderMap(); }
+  });
+  els.svg.addEventListener('mouseleave', () => { if (S.hover) { S.hover = null; renderMap(); } });
+
+  /* --- 図: ホイールでズーム / ドラッグでパン --- */
+  els.pane.addEventListener('wheel', e => {
+    e.preventDefault();
+    S.touched = true;
+    const r = els.pane.getBoundingClientRect();
+    const f = Math.exp(-e.deltaY * (e.ctrlKey ? 0.008 : 0.0016));
+    zoomAt(S.view.k * f, e.clientX - r.left, e.clientY - r.top);
+  }, { passive:false });
+
+  /* --- 図: ドラッグでパン + クリックで選択 ---
+     setPointerCapture は click のターゲットを svg 本体に付け替えてしまい data-node を
+     拾えなくなるので、(1) 実際に動き始めるまで capture しない (2) 選択は click ではなく
+     pointerup で、pointerdown 時の要素を使って判定する。 */
+  els.svg.addEventListener('pointerdown', e => {
+    if (e.button !== 0) return;
+    S.moved = false;
+    S.drag = { x:e.clientX, y:e.clientY, tx:S.view.tx, ty:S.view.ty, id:e.pointerId, el:e.target, cap:false };
+    els.svg.classList.add('grabbing');
+  });
+  els.svg.addEventListener('pointermove', e => {
+    if (!S.drag || S.drag.id !== e.pointerId) return;
+    const dx = e.clientX - S.drag.x, dy = e.clientY - S.drag.y;
+    if (!S.moved && Math.abs(dx) + Math.abs(dy) <= 4) return;
+    if (!S.drag.cap) { S.drag.cap = true; els.svg.setPointerCapture(e.pointerId); }
+    S.moved = true; S.touched = true;
+    setView({ k:S.view.k, tx:S.drag.tx + dx, ty:S.drag.ty + dy });
+  });
+  const endDrag = e => {
+    const d = S.drag;
+    if (!d) return;
+    if (d.cap && els.svg.hasPointerCapture(e.pointerId)) els.svg.releasePointerCapture(e.pointerId);
+    S.drag = null;
+    els.svg.classList.remove('grabbing');
+    if (S.moved || e.type === 'pointercancel') { S.moved = false; return; }
+    activate(d.el);
+  };
+  els.svg.addEventListener('pointerup', endDrag);
+  els.svg.addEventListener('pointercancel', endDrag);
+
+  /* 図の中で「押した」ときの動作。↗ / エピックのラベル / ノード の順に見る */
+  function activate(el) {
+    if (!el || !el.closest) return;
+    const open = el.closest('[data-open]');
+    if (open) { window.open(open.getAttribute('data-open'), '_blank', 'noreferrer'); return; }
+    const fold = el.closest('[data-fold]');
+    if (fold) { S.folded = Object.assign({}, S.folded, { [fold.getAttribute('data-fold')]:true }); render(); return; }
+    const node = el.closest('[data-node]');
+    if (node) select(node.getAttribute('data-node'), 'map');
+  }
+
+  /* --- ヘッダー / チップ / カンバン / 詳細 --- */
+  document.addEventListener('click', e => {
+    const zoom = e.target.closest('[data-zoom]');
+    if (zoom) {
+      const w = zoom.getAttribute('data-zoom');
+      if (w === 'in') zoomBy(1.18); else if (w === 'out') zoomBy(1 / 1.18); else fitView();
+      return;
+    }
+    const ex = e.target.closest('[data-export]');
+    if (ex) { ex.getAttribute('data-export') === 'svg' ? exportSvg() : exportPng(); return; }
+    if (e.target.closest('#btn-children')) { S.expanded = !S.expanded; render(); return; }
+    const chip = e.target.closest('[data-chip]');
+    if (chip) {
+      const id = chip.getAttribute('data-chip');
+      S.hidden = Object.assign({}, S.hidden, { [id]:!S.hidden[id] });
+      render(); return;
+    }
+    if (e.target.closest('[data-reset]')) { S.hidden = {}; S.q = ''; S.sel = null; els.q.value = ''; render(); return; }
+    const tc = e.target.closest('[data-toggle-col]');
+    if (tc) {
+      const id = tc.getAttribute('data-toggle-col');
+      S.collapsed = Object.assign({}, S.collapsed, { [id]:!S.collapsed[id] });
+      render(); return;
+    }
+    if (e.target.closest('[data-stop]')) { e.stopPropagation(); return; }
+    const item = e.target.closest('[data-item]');
+    if (item) select(item.getAttribute('data-item'), item.getAttribute('data-from') || 'kanban');
+  });
+
+  els.q.addEventListener('input', e => { S.q = e.target.value; render(); });
+
+  /* --- 確認欄 ---
+     打鍵のたびに render すると focus が飛ぶので、input では保存だけ。
+     blur (change) のタイミングで図とカンバンの ✓ 表示を更新する。 */
+  const askOf = e => {
+    const t = e.target;
+    return (t.tagName === 'TEXTAREA' && t.dataset.field) ? t : null;
+  };
+  els.side.addEventListener('input', e => {
+    const t = askOf(e); if (!t) return;
+    store.set(t.dataset.id, t.dataset.field, t.value);
+  });
+  els.side.addEventListener('change', e => {
+    const t = askOf(e); if (!t) return;
+    store.set(t.dataset.id, t.dataset.field, t.value);
+    renderMap();
+    keepScroll(() => { els.kanban.innerHTML = kanbanMarkup(); });
+  });
+
+  /* --- サイズ追従。手で動かした後は勝手に再フィットしない --- */
+  if (window.ResizeObserver) new ResizeObserver(() => measure(false)).observe(els.pane);
+  requestAnimationFrame(() => measure(true));
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   12. 自己検証 __verify()
+       生成物の検証を Playwright の 1 呼び出しで済ませるために同梱している。
+
+         browser_evaluate:  () => __verify()
+
+       静的チェックと操作チェックをまとめて回し、状態を元に戻してから
+       { pass, failures[], info } を返す。目視項目だけは呼び出し側で見る。
+   ══════════════════════════════════════════════════════════════════════════ */
+function __verify() {
+  const fail = [], info = {};
+  const check = (cond, msg) => { if (!cond) fail.push(msg); };
+  const box = el => { const b = el.getBoundingClientRect(); return { x:b.x, y:b.y, w:b.width, h:b.height }; };
+  const hit = (a, b) => a.x < b.x + b.w - 1 && b.x < a.x + a.w - 1 && a.y < b.y + b.h - 1 && b.y < a.y + a.h - 1;
+  const nodesOf = () => [...document.querySelectorAll('#zoomG [data-node]')];
+
+  /* 状態を退避して、最後に必ず戻す */
+  const snap = { sel:S.sel, hover:S.hover, expanded:S.expanded, q:S.q, view:Object.assign({}, S.view),
+                 hidden:Object.assign({}, S.hidden), collapsed:Object.assign({}, S.collapsed),
+                 folded:Object.assign({}, S.folded), scrollTop:els.kanban.scrollTop };
+  try {
+    /* --- 静的 --- */
+    check(__errors.length === 0, `コンソールエラー ${__errors.length} 件: ${__errors.slice(0, 3).join(' / ')}`);
+    check(document.body.scrollWidth - document.body.clientWidth === 0, 'body に横スクロールが出ている');
+    check(document.documentElement.scrollWidth - document.documentElement.clientWidth === 0, 'html に横スクロールが出ている');
+
+    const ns = nodesOf().map(g => ({ id:g.dataset.node, r:box(g) }));
+    info.nodes = ns.length;
+    for (let i = 0; i < ns.length; i++) for (let j = i + 1; j < ns.length; j++)
+      check(!hit(ns[i].r, ns[j].r), `ノードが重なっている: ${ns[i].id} x ${ns[j].id}`);
+
+    const fr = [...document.querySelectorAll('#zoomG [data-fold]')]
+      .map(g => ({ id:g.dataset.fold, r:box(g.parentNode.querySelector('rect')) }));
+    for (let i = 0; i < fr.length; i++) for (let j = i + 1; j < fr.length; j++)
+      check(!hit(fr[i].r, fr[j].r), `エピック枠が重なっている: ${fr[i].id} x ${fr[j].id}`);
+
+    nodesOf().forEach(g => {
+      const shape = g.querySelector('rect, polygon'); if (!shape) return;
+      const sb = shape.getBoundingClientRect();
+      g.querySelectorAll(':scope > text').forEach(t => {
+        const tb = t.getBoundingClientRect();
+        check(!(tb.width && (tb.right > sb.right - 1 || tb.left < sb.left - 1)),
+              `テキストが枠からはみ出している: ${g.dataset.node} "${t.textContent}"`);
+      });
+      check(g.querySelectorAll(':scope > text').length <= 6, `1 ノードに詰め込みすぎ: ${g.dataset.node}`);
+    });
+
+    const badge = [...document.querySelectorAll('#kanban .col-n')].reduce((a, e) => a + Number(e.textContent), 0);
+    const foldedN = [...document.querySelectorAll('#kanban .col-chip')]
+      .reduce((a, e) => a + Number((e.textContent.match(/(\d+)\s*$/) || [0, 0])[1]), 0);
+    const expected = ITEMS.filter(i => i.kanban !== false).length;
+    info.kanban = `${badge + foldedN}/${expected}`;
+    check(badge + foldedN === expected, `カンバンの件数が合わない: ${badge + foldedN} ≠ ${expected}`);
+    check([...document.querySelectorAll('a[href]')].every(a => a.getAttribute('href')), 'href が空のリンクがある');
+
+    /* --- 操作 --- */
+    const t0 = els.zoomG.getAttribute('transform');
+    zoomBy(1.18);
+    check(t0 !== els.zoomG.getAttribute('transform'), 'ズームで transform が変わらない');
+
+    fitView();
+    const pb = els.pane.getBoundingClientRect();
+    const outside = nodesOf().filter(n => { const b = n.getBoundingClientRect();
+      return b.left < pb.left - 1 || b.right > pb.right + 1 || b.top < pb.top - 1 || b.bottom > pb.bottom + 1; });
+    check(outside.length === 0, `「全体」で収まらないノード: ${outside.map(n => n.dataset.node).join(', ')}`);
+    info.fitK = Number(S.view.k.toFixed(3));
+    info.compact = S.view.k < COMPACT_K;
+
+    const first = ITEMS.find(i => i.col !== undefined && i.kanban !== false);
+    if (first) {
+      els.kanban.scrollTop = 40;
+      select(first.id, 'kanban');
+      check((document.querySelector('#side h3') || {}).textContent === first.title,
+            `ノードを選んでも詳細に出ない: ${first.id}`);
+      /* チェーン外のノードだけが薄くなる。全ノードが 1 本のチェーンなら薄くなる対象が
+         そもそも無いので、その場合は判定しない（誤検知になる）。 */
+      const inChain = chain(first.id);
+      const outside = nodesOf().filter(n => !inChain.has(n.dataset.node));
+      check(!outside.length || outside.every(n => Number(n.getAttribute('opacity')) < 1),
+            '選択しても依存チェーン外のノードが薄くならない');
+    }
+
+    const st = STATUSES.find(s => ITEMS.some(i => i.status === s.id && i.kanban !== false));
+    if (st) {
+      const before = document.querySelectorAll('#kanban .col, #kanban .col-folded').length;
+      S.hidden = { [st.id]:true }; render();
+      check(document.querySelectorAll('#kanban .col, #kanban .col-folded').length < before,
+            `ステータスチップで絞り込めない: ${st.id}`);
+      S.hidden = {}; render();
+    }
+
+    S.q = ' 該当なし '; render();
+    check(nodesOf().every(n => Number(n.getAttribute('opacity')) < 1) || !nodesOf().length,
+          '検索で一致しないノードが薄くならない');
+    S.q = ''; render();
+
+    const ep = EPICS.find(e => ITEMS.some(i => i.epic === e.id && i.col !== undefined));
+    if (ep) {
+      const before = nodesOf().length;
+      S.folded = { [ep.id]:true }; render();
+      check(nodesOf().length < before, `エピックを畳めない: ${ep.id}`);
+      check(!!document.querySelector(`#zoomG [data-node="epic:${ep.id}"]`), `畳んだエピックのノードが出ない: ${ep.id}`);
+      S.folded = {}; render();
+      check(nodesOf().length === before, `エピックを戻せない: ${ep.id}`);
+    }
+
+    try {
+      const svg = exportSvgText();
+      check(!new DOMParser().parseFromString(svg, 'image/svg+xml').querySelector('parsererror'), '書き出した SVG が壊れている');
+      check((svg.match(/data-node=/g) || []).length === ITEMS.filter(i => i.col !== undefined).length,
+            '書き出した SVG のノード数が図と合わない');
+    } catch (e) { fail.push('SVG 書き出しで例外: ' + e.message); }
+
+    /* --- 確認欄 --- */
+    const asked = ITEMS.find(needsAsk);
+    if (asked) {
+      const prev = store.get(asked.id, 'ans');
+      select(asked.id, 'kanban');
+      const ta = document.querySelector('#side textarea.ans');
+      check(!!ta && !!document.querySelector('#side textarea[data-field="ask"]'), `確認欄が出ない: ${asked.id}`);
+      if (ta) {
+        ta.value = ' probe ';
+        ta.dispatchEvent(new Event('change', { bubbles:true }));
+        check(store.get(asked.id, 'ans') === ' probe ', '確認欄の回答が保存されない');
+        check(!!document.querySelector('#kanban .tkt-ans'), '回答してもカンバンに ✓ が出ない');
+        store.set(asked.id, 'ans', prev);           /* 後始末 */
+      }
+      info.askItems = ITEMS.filter(needsAsk).length;
+    }
+  } catch (e) {
+    fail.push('検証中に例外: ' + (e && e.stack ? e.stack.split('\n')[0] : e));
+  } finally {
+    Object.assign(S, { sel:snap.sel, hover:snap.hover, expanded:snap.expanded, q:snap.q,
+                       hidden:snap.hidden, collapsed:snap.collapsed, folded:snap.folded });
+    els.q.value = snap.q;
+    render();
+    setView(snap.view);
+    els.kanban.scrollTop = snap.scrollTop;
+  }
+  return { pass:fail.length === 0, failures:fail, info };
+}
+window.__verify = __verify;
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+else init();
+</script>
+</body>
+</html>
