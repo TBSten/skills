@@ -71,11 +71,10 @@ echo "OUT=$OUT"
   "items": [
     { "id": "decision-api-deprecation", "key": "decision", "title": "未決 — 旧 API の廃止時期",
       "kind": "human", "status": "blocked", "human": true,
-      "col": 1, "anchorY": 300, "epic": "stack1",
       "meta": ["A 次マイナー / B 即時 / C 据え置き"],
       "ask": ["A / B / C のどれにしますか。"], "updated": "2026-08-16" }
   ],
-  "edges": [{ "from": "decision-api-deprecation", "to": "pr123", "kind": "block", "label": "blocks" }]
+  "edges": [{ "from": "decision-api-deprecation", "to": "pr123", "kind": "block" }]
 }
 ```
 
@@ -86,6 +85,9 @@ echo "OUT=$OUT"
 | ユーザーにしかできない作業 | `kind:"human"`, `human:true`（六角形 + 🙋） |
 | 方針が決まっていない論点 | 上に加えて `status:"blocked"` と、止めている先への `kind:"block"` エッジ |
 | 今回やらないが視野にある話 | `kind:"idea"`（点線枠） |
+
+**`block` の起点には `col` / `epic` / `anchorY` を書かない。** 止めている相手の真下に自動で
+置かれ、下から上へ矢印が突き上がる（横に長い線で図を横断させるより読めるため）。
 
 **確認したいことは `ask` に書く。** 詳細パネルに textarea が出て、ユーザーが回答を書き込むと
 図とカンバンの表示が 🙋 から ✓ に変わる。回答は `localStorage` に残り、id が同じなら次の生成にも引き継がれる。

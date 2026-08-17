@@ -297,6 +297,7 @@ const MONO = 'JetBrains Mono, Consolas, monospace';
 
 const GX = 68;    /* レーン間の余白 */
 const GY = 26;    /* 同レーン内の縦の余白 */
+const GYB = 54;   /* 同上。block の起点の手前だけ広くして、上向きの矢印が読める長さを作る */
 const CY = 206;   /* レーンの中心線 */
 const M  = 28;    /* 図全体の余白 */
 const COMPACT_K = 0.7;  /* この縮尺を下回ると意味的ズームに入る */
@@ -468,17 +469,24 @@ function graph(opts) {
     return { i, st, isHex, w, h, inner, titleLines, metaLines, kids, kidLines, fsT, fsK, lhT, compact };
   });
 
+  /* block の起点（未決・人間待ち）は、止めている相手と同じレーンの下に置く。
+     下から上へ矢印を突き上げるため、レーン内では必ず相手より後に積む。 */
+  const blockSrc = new Set(EDGES.filter(e => e.kind === 'block').map(e => e.from));
+
   /* レーンごとに上から積む。anchorY があればその y を下限として使う */
   const cols = {};
   nodes.forEach(n => { (cols[n.i.col] = cols[n.i.col] || []).push(n); });
   let maxX = 0, maxY = 0, minX = 1e9, minY = 1e9;
   Object.keys(cols).forEach(c => {
     let cursor = null;
+    /* 安定ソート。block の起点だけを後ろへ回し、それ以外の並びは崩さない */
+    cols[c].sort((p, q) => (blockSrc.has(p.i.id) ? 1 : 0) - (blockSrc.has(q.i.id) ? 1 : 0));
     cols[c].forEach(n => {
       const laneX = M + colIdx[Number(c)] * (W + GX);
+      const gap = blockSrc.has(n.i.id) ? GYB : GY;
       n.x = laneX + (W - n.w) / 2;
       if (cursor === null) n.y = n.i.anchorY !== undefined ? n.i.anchorY : CY - n.h / 2;
-      else n.y = Math.max(cursor + GY, n.i.anchorY !== undefined ? n.i.anchorY : 0);
+      else n.y = Math.max(cursor + gap, n.i.anchorY !== undefined ? n.i.anchorY : 0);
       cursor = n.y + n.h;
       maxX = Math.max(maxX, n.x + n.w); maxY = Math.max(maxY, n.y + n.h);
       minX = Math.min(minX, n.x); minY = Math.min(minY, n.y - 16); /* -16 は NEXT 旗のはみ出し分 */
@@ -565,8 +573,18 @@ function svgBody(g, opts) {
     if (fromId === toId) return;
     const a = g.map[fromId], b = g.map[toId];
     if (!a || !b) return;
-    const sx = a.x + a.w, sy = a.y + a.h / 2, tx = b.x - 9, ty = b.y + b.h / 2;
+
+    /* 止めている相手の真下に居るときは、横に回さず下から上へ真っ直ぐ突き上げる。
+       「この未決がこれを止めている」は縦一直線の方が一目で分かるため。
+       畳みや手書きの col で真下に来なかったときは、下の従来どおりの横向きに落ちる。 */
+    const up = e.kind === 'block' && a.y > b.y + b.h;
+
+    const sx = up ? a.x + a.w / 2 : a.x + a.w;
+    const sy = up ? a.y            : a.y + a.h / 2;
+    const tx = up ? b.x + b.w / 2 : b.x - 9;
+    const ty = up ? b.y + b.h + 9 : b.y + b.h / 2;
     const dx = Math.max(38, (tx - sx) * 0.48);
+    const dy = (sy - ty) * 0.42;
     const isActive = hv ? (fromId === hv || toId === hv)
                         : (active ? (active.has(fromId) && active.has(toId)) : false);
     const base = e.kind === 'block' ? C.heart : e.kind === 'idea' ? C.navy300 : C.navy600;
@@ -575,8 +593,13 @@ function svgBody(g, opts) {
     const op = hid ? 0.08 : (dim && active ? (isActive ? 1 : 0.08) : 0.85);
     const dash = e.kind === 'block' ? ' stroke-dasharray="6 5"' : e.kind === 'idea' ? ' stroke-dasharray="2 5"' : '';
     const mk = e.kind === 'block' ? 'block' : e.kind === 'idea' ? 'idea' : 'flow';
-    out += `<path d="M${sx} ${sy} C${sx + dx} ${sy},${tx - dx} ${ty},${tx} ${ty}" fill="none" stroke="${base}" stroke-width="${isActive ? 2.8 : 1.8}"${dash} stroke-linecap="round" marker-end="url(#ar-${mk})" opacity="${op}"/>`;
-    if (e.label) {
+    const d = up
+      ? `M${sx} ${sy} C${sx} ${sy - dy},${tx} ${ty + dy},${tx} ${ty}`
+      : `M${sx} ${sy} C${sx + dx} ${sy},${tx - dx} ${ty},${tx} ${ty}`;
+    out += `<path d="${d}" fill="none" stroke="${base}" stroke-width="${isActive ? 2.8 : 1.8}"${dash} stroke-linecap="round" marker-end="url(#ar-${mk})" opacity="${op}"/>`;
+    /* 縦向きのときはラベルを出さない。ノード間が詰まっていて置き場所が無く、
+       赤い破線 + 上向きの矢尻と 🙋 六角形だけで意味は足りている。 */
+    if (e.label && !up) {
       labels += `<g transform="translate(${(sx + tx) / 2},${(sy + ty) / 2})" opacity="${op}">`
         + `<rect x="-20" y="-9" width="40" height="18" rx="4" fill="#FFFFFF" stroke="${C.heart}" stroke-width="1"/>`
         + `<text x="0" y="4" text-anchor="middle" font-size="10" font-weight="700" fill="${C.heart}" font-family="${FONT}">${esc(e.label)}</text></g>`;

@@ -7,9 +7,10 @@ epic-by-epic kanban, built so that "what is waiting on me" and "what is next" re
 
 Reading the example above:
 
-- **Graph (top)** — dependencies flow left to right. Dashed frames are epics; the red hexagon
-  (`PR 196 を merge する`) is blocked on a human, and the gold `NEXT 1` marks the next move.
-  The dashed red `blocks` edge leaving it points at what it is holding up
+- **Graph (top)** — dependencies flow left to right. Dashed frames are epics; a red hexagon is
+  blocked on a human, and the gold `NEXT 1` marks the next move. **Open decisions sit directly
+  beneath whatever they hold up, with a dashed red arrow pushing up into it** — far easier to read
+  than a long edge sweeping across the whole graph
 - **Kanban (bottom)** — one band per epic, showing only the status columns that band actually has
 - **Detail panel (right)** — body, dependencies (prerequisite / blocked-by / next), and linked PRs
   for the current selection
