@@ -78,6 +78,34 @@ if (overlay) {
   };
 }
 
+/* ---- block の起点を相手の真下へ寄せる ------------------------------------
+   「未決がこれを止めている」は、横に長い線より真下から突き上げる矢印の方が読める。
+   そのためには起点が相手と同じレーンに居る必要があるので、col / epic は
+   書かせずにここで相手から導出する（複数を止めているときは一番左の相手に合わせる）。
+   縦に並べる都合で items の末尾へ回す。 */
+{
+  const items = Array.isArray(data.items) ? data.items : [];
+  const at = new Map(items.map(i => [i.id, i]));
+  const moved = [];
+  (data.edges || []).filter(e => e.kind === 'block').forEach(e => {
+    const src = at.get(e.from), dst = at.get(e.to);
+    if (!src || !dst || dst.col === undefined) return;
+    /* 起点のレーンは常に相手が決める。書かれていた col は当てにしない
+       （2 件目以降は一番左の相手に合わせ、残りは横向きの線に落ちる）。 */
+    const first = !moved.includes(src.id);
+    if (!first && !(dst.col < src.col)) return;
+    src.col = dst.col;
+    src.epic = dst.epic;
+    delete src.anchorY;                   /* レーン内で相手の下に積ませる */
+    if (first) moved.push(src.id);
+  });
+  if (moved.length) {
+    data.items = items.filter(i => !moved.includes(i.id))
+      .concat(moved.map(id => at.get(id)));
+    console.error(`note: block の起点を相手の真下へ寄せた: ${moved.join(', ')}`);
+  }
+}
+
 /* ---- 検証 --------------------------------------------------------------- */
 const errors = [], warnings = [];
 const err = m => errors.push(m);
@@ -176,7 +204,9 @@ edges.forEach((e, ix) => {
   if (!b) { err(`${at}.to "${e.to}" が items に無い`); return; }
   if (a.col === undefined) err(`${at}.from "${e.from}" は col を持たない（図に出ないので線を引けない）`);
   if (b.col === undefined) err(`${at}.to "${e.to}" は col を持たない（図に出ないので線を引けない）`);
-  if (a.col !== undefined && b.col !== undefined && a.col >= b.col) {
+  /* block は同じレーンの下から上へ引く（col は相手から導出済み）。
+     flow / idea は横向きなので左レーン → 右レーンに限る。 */
+  if (a.col !== undefined && b.col !== undefined && e.kind !== 'block' && a.col >= b.col) {
     err(`${at} は ${e.from}(col=${a.col}) → ${e.to}(col=${b.col})。依存線は左レーン → 右レーンだけにする`);
   }
   if (e.kind && !['flow', 'block', 'idea'].includes(e.kind)) {

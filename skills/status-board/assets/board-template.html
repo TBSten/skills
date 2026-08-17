@@ -233,6 +233,22 @@ a{color:var(--text-link)} a:hover{color:var(--text-link-hover)}
      text-align:left;width:100%;font-family:var(--tbs-font-body)}
 .dep .rel{font-size:10.5px;font-weight:700;white-space:nowrap}
 .dep .t{font-size:13px;color:var(--text-strong);text-align:left}
+/* 複数選択中の一覧。1 行 = 1 チケット。行を押すとその 1 件に絞られる */
+.sellist{display:flex;flex-direction:column;gap:6px}
+.selrow{display:flex;align-items:stretch;gap:6px}
+.selrow-main{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:8px;
+             background:var(--tbs-white);border:1px solid var(--tbs-sky-400);border-radius:8px;
+             padding:8px 10px;cursor:pointer;text-align:left;font-family:var(--tbs-font-body)}
+.selrow-dot{flex:0 0 auto;width:9px;height:9px;border-radius:999px}
+.selrow-mark{flex:0 0 auto;font-size:10px;font-weight:700;color:var(--text-strong)}
+.selrow-title{flex:1 1 auto;min-width:0;font-size:13px;color:var(--text-strong);
+              overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.selrow-x{flex:0 0 auto;width:30px;border:1px solid var(--border-subtle);border-radius:8px;
+          background:var(--surface-card);color:var(--tbs-navy-300);font-size:12px;cursor:pointer}
+.selrow-x:hover{color:var(--tbs-heart);border-color:var(--tbs-heart)}
+.selrow-n{font-family:var(--tbs-font-mono);font-size:15px;color:var(--tbs-navy-400)}
+.sel-clear{margin-left:auto;font-size:11px;color:var(--text-muted);background:transparent;
+           border:1px solid var(--border-subtle);border-radius:999px;padding:3px 10px;cursor:pointer}
 .lnk{display:flex;align-items:center;gap:8px;background:var(--surface-card);
      border:1px solid var(--border-subtle);border-radius:8px;padding:9px 10px;text-decoration:none}
 .lnk .l{font-family:var(--tbs-font-mono);font-size:11px;color:var(--text-link)}
@@ -281,6 +297,7 @@ const MONO = 'JetBrains Mono, Consolas, monospace';
 
 const GX = 68;    /* レーン間の余白 */
 const GY = 26;    /* 同レーン内の縦の余白 */
+const GYB = 54;   /* 同上。block の起点の手前だけ広くして、上向きの矢印が読める長さを作る */
 const CY = 206;   /* レーンの中心線 */
 const M  = 28;    /* 図全体の余白 */
 const COMPACT_K = 0.7;  /* この縮尺を下回ると意味的ズームに入る */
@@ -357,7 +374,8 @@ const answered = id => store.get(id, 'ans').trim().length > 0;
    3. 状態
    ══════════════════════════════════════════════════════════════════════════ */
 const S = {
-  sel:null, hover:null,
+  sel:[],                          /* 選択中の item id。選択順に並ぶ（複数選択できる） */
+  hover:null,
   expanded:!!PROPS.showChildren,
   hidden:{},                       /* status id -> true で非表示 */
   collapsed:Object.fromEntries(STATUSES.filter(s => s.collapsedByDefault).map(s => [s.id, true])),
@@ -371,6 +389,9 @@ const S = {
 const dimOn = () => PROPS.dimUnrelated !== false;
 const nodeW = () => Math.round(PROPS.nodeWidth || 198);
 
+/* S.sel は選択順の配列。判定は Set に通す（呼ぶ側で 1 回だけ作って使い回す） */
+const selSet = sel => new Set(sel || S.sel);
+
 function matches(i) {
   const q = S.q.trim().toLowerCase();
   if (!q) return true;
@@ -378,22 +399,32 @@ function matches(i) {
                (i.children||[]).map(c => c.title).join(' ')].join(' ').toLowerCase();
   return hay.indexOf(q) >= 0;
 }
-function neighbors(id) {
-  const s = new Set([id]);
-  EDGES.forEach(e => { if (e.from === id) s.add(e.to); if (e.to === id) s.add(e.from); });
-  return s;
-}
-function chain(id) {
-  const s = new Set([id]);
-  let grew = true;
-  while (grew) {
-    grew = false;
-    EDGES.forEach(e => {
-      if (s.has(e.from) && !s.has(e.to)) { s.add(e.to); grew = true; }
-      if (s.has(e.to) && !s.has(e.from)) { s.add(e.from); grew = true; }
-    });
-  }
-  return s;
+/* 点灯は 3 段。hover でも選択でも同じ規則で光らせる。
+
+     lit  = 主役。hover 中のノード、または選択したノード     … 1.0
+     near = lit の隣接                                      … NEAR_OP
+     それ以外                                               … 0.2
+
+   主役だけを 1.0 にして残りを一律 0.2 に沈めると、前後に何が繋がっているのかが
+   読めなくなる。かといって隣接まで 1.0 にすると、書き出した図で「自分が選んだのは
+   どれか」の手がかりが coin 枠だけになる。3 段にして両方を立てる。
+
+   依存チェーン（連結成分）を丸ごと点灯させるやり方は採らない。一本鎖の stack では
+   1 件選んだだけでほぼ全点灯になり、絞り込む意味が消えるため。
+
+   via は「畳んだエピックのメンバーをその箱に読み替える」写像。畳んだ状態でも
+   隣接判定が箱の単位で効くように、呼ぶ側から渡す。 */
+const NEAR_OP = 0.5;
+function litSets(primaryIds, via) {
+  const lit = new Set(primaryIds);
+  const near = new Set();
+  if (lit.size) EDGES.forEach(e => {
+    const f = via(e.from), t = via(e.to);
+    if (f === t) return;
+    if (lit.has(f) && !lit.has(t)) near.add(t);
+    if (lit.has(t) && !lit.has(f)) near.add(f);
+  });
+  return { lit, near };
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -453,17 +484,24 @@ function graph(opts) {
     return { i, st, isHex, w, h, inner, titleLines, metaLines, kids, kidLines, fsT, fsK, lhT, compact };
   });
 
+  /* block の起点（未決・人間待ち）は、止めている相手と同じレーンの下に置く。
+     下から上へ矢印を突き上げるため、レーン内では必ず相手より後に積む。 */
+  const blockSrc = new Set(EDGES.filter(e => e.kind === 'block').map(e => e.from));
+
   /* レーンごとに上から積む。anchorY があればその y を下限として使う */
   const cols = {};
   nodes.forEach(n => { (cols[n.i.col] = cols[n.i.col] || []).push(n); });
   let maxX = 0, maxY = 0, minX = 1e9, minY = 1e9;
   Object.keys(cols).forEach(c => {
     let cursor = null;
+    /* 安定ソート。block の起点だけを後ろへ回し、それ以外の並びは崩さない */
+    cols[c].sort((p, q) => (blockSrc.has(p.i.id) ? 1 : 0) - (blockSrc.has(q.i.id) ? 1 : 0));
     cols[c].forEach(n => {
       const laneX = M + colIdx[Number(c)] * (W + GX);
+      const gap = blockSrc.has(n.i.id) ? GYB : GY;
       n.x = laneX + (W - n.w) / 2;
       if (cursor === null) n.y = n.i.anchorY !== undefined ? n.i.anchorY : CY - n.h / 2;
-      else n.y = Math.max(cursor + GY, n.i.anchorY !== undefined ? n.i.anchorY : 0);
+      else n.y = Math.max(cursor + gap, n.i.anchorY !== undefined ? n.i.anchorY : 0);
       cursor = n.y + n.h;
       maxX = Math.max(maxX, n.x + n.w); maxY = Math.max(maxY, n.y + n.h);
       minX = Math.min(minX, n.x); minY = Math.min(minY, n.y - 16); /* -16 は NEXT 旗のはみ出し分 */
@@ -512,16 +550,29 @@ const txt = (t, x, y, fs, fw, fill, ff, anchor) =>
 function svgBody(g, opts) {
   const o = opts || {};
   const hidden = o.hidden || {}, q = (o.q || '').trim();
-  const hv = o.hover || null, sel = o.sel || null;
+  const hv = o.hover || null, sel = o.sel || [];
   const dim = o.dim !== false;
-  const active = hv ? neighbors(hv) : (sel ? chain(sel) : null);
+  const sset = selSet(sel);
+
+  /* 畳まれたエピックのメンバーはその箱に読み替える。線の付け替えと隣接判定の両方で使う */
+  const via = id => {
+    const it = byId[id];
+    return (it && it.epic && g.folded[it.epic]) ? 'epic:' + it.epic : id;
+  };
+
+  /* hover が優先。hover していなければ選択が主役になる */
+  const primary = hv ? [hv] : [...sset];
+  const { lit, near } = litSets(primary, via);
+  const active = lit.size ? lit : null;
 
   const opacityFor = id => {
-    const it = byId[id];
-    if (!it) return 1;                                   /* 畳んだエピックのノード */
-    if (hidden[it.status]) return 0.1;
-    if (q && !matches(it)) return 0.14;
-    if (dim && active && !active.has(id)) return 0.2;
+    const it = byId[id];                                 /* 畳んだエピックのノードは byId に無い */
+    if (it && hidden[it.status]) return 0.1;
+    if (it && q && !matches(it)) return 0.14;
+    if (dim && active) {
+      if (lit.has(id)) return 1;
+      return near.has(id) ? NEAR_OP : 0.2;
+    }
     return 1;
   };
 
@@ -538,29 +589,40 @@ function svgBody(g, opts) {
       + `</g></g>`;
   });
 
-  /* --- 依存線。畳まれたエピックのメンバー宛ての線はその箱に繋ぎ替える --- */
-  const via = id => {
-    const it = byId[id];
-    return (it && it.epic && g.folded[it.epic]) ? 'epic:' + it.epic : id;
-  };
+  /* --- 依存線。畳まれたエピックのメンバー宛ての線は via でその箱に繋ぎ替わる --- */
   let labels = '';
   EDGES.forEach(e => {
     const fromId = via(e.from), toId = via(e.to);
     if (fromId === toId) return;
     const a = g.map[fromId], b = g.map[toId];
     if (!a || !b) return;
-    const sx = a.x + a.w, sy = a.y + a.h / 2, tx = b.x - 9, ty = b.y + b.h / 2;
+
+    /* 止めている相手の真下に居るときは、横に回さず下から上へ真っ直ぐ突き上げる。
+       「この未決がこれを止めている」は縦一直線の方が一目で分かるため。
+       畳みや手書きの col で真下に来なかったときは、下の従来どおりの横向きに落ちる。 */
+    const up = e.kind === 'block' && a.y > b.y + b.h;
+
+    const sx = up ? a.x + a.w / 2 : a.x + a.w;
+    const sy = up ? a.y            : a.y + a.h / 2;
+    const tx = up ? b.x + b.w / 2 : b.x - 9;
+    const ty = up ? b.y + b.h + 9 : b.y + b.h / 2;
     const dx = Math.max(38, (tx - sx) * 0.48);
-    const isActive = hv ? (fromId === hv || toId === hv)
-                        : (active ? (active.has(fromId) && active.has(toId)) : false);
+    const dy = (sy - ty) * 0.42;
+    /* 主役に触れている線を太くする。hover でも選択でも同じ規則 */
+    const isActive = lit.has(fromId) || lit.has(toId);
     const base = e.kind === 'block' ? C.heart : e.kind === 'idea' ? C.navy300 : C.navy600;
     const s1 = byId[e.from], s2 = byId[e.to];
     const hid = (s1 && hidden[s1.status]) || (s2 && hidden[s2.status]);
     const op = hid ? 0.08 : (dim && active ? (isActive ? 1 : 0.08) : 0.85);
     const dash = e.kind === 'block' ? ' stroke-dasharray="6 5"' : e.kind === 'idea' ? ' stroke-dasharray="2 5"' : '';
     const mk = e.kind === 'block' ? 'block' : e.kind === 'idea' ? 'idea' : 'flow';
-    out += `<path d="M${sx} ${sy} C${sx + dx} ${sy},${tx - dx} ${ty},${tx} ${ty}" fill="none" stroke="${base}" stroke-width="${isActive ? 2.8 : 1.8}"${dash} stroke-linecap="round" marker-end="url(#ar-${mk})" opacity="${op}"/>`;
-    if (e.label) {
+    const d = up
+      ? `M${sx} ${sy} C${sx} ${sy - dy},${tx} ${ty + dy},${tx} ${ty}`
+      : `M${sx} ${sy} C${sx + dx} ${sy},${tx - dx} ${ty},${tx} ${ty}`;
+    out += `<path d="${d}" fill="none" stroke="${base}" stroke-width="${isActive ? 2.8 : 1.8}"${dash} stroke-linecap="round" marker-end="url(#ar-${mk})" opacity="${op}"/>`;
+    /* 縦向きのときはラベルを出さない。ノード間が詰まっていて置き場所が無く、
+       赤い破線 + 上向きの矢尻と 🙋 六角形だけで意味は足りている。 */
+    if (e.label && !up) {
       labels += `<g transform="translate(${(sx + tx) / 2},${(sy + ty) / 2})" opacity="${op}">`
         + `<rect x="-20" y="-9" width="40" height="18" rx="4" fill="#FFFFFF" stroke="${C.heart}" stroke-width="1"/>`
         + `<text x="0" y="4" text-anchor="middle" font-size="10" font-weight="700" fill="${C.heart}" font-family="${FONT}">${esc(e.label)}</text></g>`;
@@ -568,10 +630,10 @@ function svgBody(g, opts) {
   });
   out += labels;
 
-  /* --- ノード。選択中のものは最後に描いて最前面に持ってくる --- */
-  const ordered = g.nodes.slice().sort((a, b) => (a.i.id === sel ? 1 : 0) - (b.i.id === sel ? 1 : 0));
+  /* --- ノード。選択中のものは最後に描いて最前面に持ってくる（複数なら選択順） --- */
+  const ordered = g.nodes.slice().sort((a, b) => (sset.has(a.i.id) ? 1 : 0) - (sset.has(b.i.id) ? 1 : 0));
   ordered.forEach(n => {
-    const i = n.i, st = n.st, isSel = sel === i.id, isHov = hv === i.id;
+    const i = n.i, st = n.st, isSel = sset.has(i.id), isHov = hv === i.id;
     const pad = n.isHex ? 20 : 13;
     let body = '', y = 12;
 
@@ -657,6 +719,7 @@ function svgBody(g, opts) {
 function kanbanMarkup() {
   const bands = EPICS.map(e => ({ id:e.id, label:e.label, color:e.border }))
     .concat([{ id:'none', label:'エピック外', color:C.navy300 }]);
+  const sset = selSet();
   let out = '';
   bands.forEach(bd => {
     const pool = ITEMS.filter(i => (i.epic || 'none') === bd.id && i.kanban !== false);
@@ -676,7 +739,7 @@ function kanbanMarkup() {
       }
       let cards = '';
       items.forEach(i => {
-        const isSel = S.sel === i.id;
+        const isSel = sset.has(i.id);
         const url = (i.links || []).length ? i.links[0].url : null;
         const mark = i.human ? '🙋' : (i.next ? 'NEXT ' + i.next : '');
         const markStyle = i.human
@@ -712,9 +775,35 @@ function kanbanMarkup() {
   return out || `<div class="band"><div class="band-hd"><h3>該当なし</h3></div></div>`;
 }
 
+/* 複数選択のときの一覧。1 行 = 1 チケット。
+   行を押すとその 1 件だけの選択に切り替わり（＝いつもの詳細に潜る）、✕ で選択から外れる。 */
+function multiMarkup(ids) {
+  const rows = ids.map(id => {
+    const i = byId[id];
+    if (!i) return '';
+    const st = statusOf(i.status);
+    const mark = i.human ? '🙋' : (i.next ? 'NEXT ' + i.next : '');
+    return `<div class="selrow">`
+      + `<button class="selrow-main" data-item="${esc(id)}" data-from="kanban">`
+      + `<span class="selrow-dot" style="background:${st.stroke}" title="${esc(st.label)}"></span>`
+      + `<span class="tkt-key">${esc(i.key)}</span>`
+      + (mark ? `<span class="selrow-mark">${esc(mark)}</span>` : '')
+      + `<span class="selrow-title">${esc(i.title)}</span></button>`
+      + `<button class="selrow-x" data-deselect="${esc(id)}" title="選択から外す">✕</button>`
+      + `</div>`;
+  }).join('');
+  return `<div class="side-hd"><div class="row">`
+    + `<h3 style="margin:0">選択中 <span class="selrow-n">${ids.length}</span></h3>`
+    + `<button class="sel-clear" data-deselect-all>解除</button>`
+    + `</div></div>`
+    + `<div class="side-body"><div class="sellist">${rows}</div></div>`;
+}
+
 function detailMarkup() {
-  const it = S.sel ? byId[S.sel] : null;
-  if (!it) return `<div class="empty"><div class="retro"><p>えらんでください....</p></div></div>`;
+  const ids = S.sel.filter(id => byId[id]);
+  if (!ids.length) return `<div class="empty"><div class="retro"><p>えらんでください....</p></div></div>`;
+  if (ids.length > 1) return multiMarkup(ids);
+  const it = byId[ids[0]];
   const st = statusOf(it.status);
 
   const deps = [];
@@ -909,12 +998,16 @@ function measure(forceFit) {
    9. 書き出し
       畳み状態・フィルタ・縮尺を無視して常に全体・等倍で出す。live DOM の clone では
       それができないので、graph / svgBody をきれいな状態で呼び直す。
+
+      選択があるときだけ dim を効かせ、非選択を沈めた「全体図」を出す。
+      選択したノードだけに切り取らないのは、PR に貼ったときに全体のどこの話かが
+      読み手に伝わらなくなるため。
    ══════════════════════════════════════════════════════════════════════════ */
 function exportSvgText() {
   const g = graph({ compact:false, folded:{} });
   const pad = 24;
   const W = Math.round(g.cw + pad * 2), H = Math.round(g.ch + pad * 2);
-  const body = svgBody(g, { hidden:{}, q:'', hover:null, sel:S.sel, dim:false });
+  const body = svgBody(g, { hidden:{}, q:'', hover:null, sel:S.sel, dim:S.sel.length > 0 });
   return `<?xml version="1.0" encoding="UTF-8"?>\n`
     + `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`
     + `<rect width="100%" height="100%" fill="${C.sky50}"/>${DEFS}`
@@ -945,16 +1038,22 @@ function exportPng() {
 /* ══════════════════════════════════════════════════════════════════════════
    10. 選択とスクロール連動
    ══════════════════════════════════════════════════════════════════════════ */
-function select(id, from) {
+/* additive = Shift 併用。選択に足す / 既に入っていれば外す。
+   通常クリックは今まで通り「その 1 件だけ」に置き換える。 */
+function select(id, from, additive) {
   if (id.indexOf('epic:') === 0) {           /* 畳んだエピックは選択ではなく展開 */
     const f = Object.assign({}, S.folded); delete f[id.slice(5)];
     S.folded = f; render();
     return;
   }
-  S.sel = id;
+  if (additive) {
+    S.sel = S.sel.includes(id) ? S.sel.filter(x => x !== id) : S.sel.concat([id]);
+  } else {
+    S.sel = [id];
+  }
   render();
   const it = byId[id];
-  if (!it) return;
+  if (!it || !S.sel.includes(id)) return;    /* 外したときは寄せない */
 
   if (from === 'kanban' && it.col !== undefined) {
     const g = graph({ compact:S.view.k < COMPACT_K, folded:S.folded });
@@ -1034,20 +1133,20 @@ function init() {
     S.drag = null;
     els.svg.classList.remove('grabbing');
     if (S.moved || e.type === 'pointercancel') { S.moved = false; return; }
-    activate(d.el);
+    activate(d.el, e.shiftKey);
   };
   els.svg.addEventListener('pointerup', endDrag);
   els.svg.addEventListener('pointercancel', endDrag);
 
   /* 図の中で「押した」ときの動作。↗ / エピックのラベル / ノード の順に見る */
-  function activate(el) {
+  function activate(el, additive) {
     if (!el || !el.closest) return;
     const open = el.closest('[data-open]');
     if (open) { window.open(open.getAttribute('data-open'), '_blank', 'noreferrer'); return; }
     const fold = el.closest('[data-fold]');
     if (fold) { S.folded = Object.assign({}, S.folded, { [fold.getAttribute('data-fold')]:true }); render(); return; }
     const node = el.closest('[data-node]');
-    if (node) select(node.getAttribute('data-node'), 'map');
+    if (node) select(node.getAttribute('data-node'), 'map', additive);
   }
 
   /* --- ヘッダー / チップ / カンバン / 詳細 --- */
@@ -1067,16 +1166,26 @@ function init() {
       S.hidden = Object.assign({}, S.hidden, { [id]:!S.hidden[id] });
       render(); return;
     }
-    if (e.target.closest('[data-reset]')) { S.hidden = {}; S.q = ''; S.sel = null; els.q.value = ''; render(); return; }
+    if (e.target.closest('[data-reset]')) { S.hidden = {}; S.q = ''; S.sel = []; els.q.value = ''; render(); return; }
     const tc = e.target.closest('[data-toggle-col]');
     if (tc) {
       const id = tc.getAttribute('data-toggle-col');
       S.collapsed = Object.assign({}, S.collapsed, { [id]:!S.collapsed[id] });
       render(); return;
     }
+    /* 複数選択の一覧から 1 件外す / 全部外す */
+    const dx = e.target.closest('[data-deselect]');
+    if (dx) { const id = dx.getAttribute('data-deselect'); S.sel = S.sel.filter(x => x !== id); render(); return; }
+    if (e.target.closest('[data-deselect-all]')) { S.sel = []; render(); return; }
     if (e.target.closest('[data-stop]')) { e.stopPropagation(); return; }
     const item = e.target.closest('[data-item]');
-    if (item) select(item.getAttribute('data-item'), item.getAttribute('data-from') || 'kanban');
+    if (item) select(item.getAttribute('data-item'), item.getAttribute('data-from') || 'kanban', e.shiftKey);
+  });
+
+  /* Shift+クリックはブラウザ既定だと文字範囲選択になる。カード側でそれを止める
+     （pointerdown で止めないと、click に来る頃には既に選択されている） */
+  document.addEventListener('pointerdown', e => {
+    if (e.shiftKey && e.target.closest && e.target.closest('[data-item]')) e.preventDefault();
   });
 
   els.q.addEventListener('input', e => { S.q = e.target.value; render(); });
@@ -1121,7 +1230,7 @@ function __verify() {
   const nodesOf = () => [...document.querySelectorAll('#zoomG [data-node]')];
 
   /* 状態を退避して、最後に必ず戻す */
-  const snap = { sel:S.sel, hover:S.hover, expanded:S.expanded, q:S.q, view:Object.assign({}, S.view),
+  const snap = { sel:S.sel.slice(), hover:S.hover, expanded:S.expanded, q:S.q, view:Object.assign({}, S.view),
                  hidden:Object.assign({}, S.hidden), collapsed:Object.assign({}, S.collapsed),
                  folded:Object.assign({}, S.folded), scrollTop:els.kanban.scrollTop };
   try {
@@ -1172,18 +1281,78 @@ function __verify() {
     info.fitK = Number(S.view.k.toFixed(3));
     info.compact = S.view.k < COMPACT_K;
 
-    const first = ITEMS.find(i => i.col !== undefined && i.kanban !== false);
+    const onMap = ITEMS.filter(i => i.col !== undefined && i.kanban !== false);
+    const first = onMap[0];
     if (first) {
       els.kanban.scrollTop = 40;
       select(first.id, 'kanban');
       check((document.querySelector('#side h3') || {}).textContent === first.title,
             `ノードを選んでも詳細に出ない: ${first.id}`);
-      /* チェーン外のノードだけが薄くなる。全ノードが 1 本のチェーンなら薄くなる対象が
-         そもそも無いので、その場合は判定しない（誤検知になる）。 */
-      const inChain = chain(first.id);
-      const outside = nodesOf().filter(n => !inChain.has(n.dataset.node));
+      /* 選択したノード以外が薄くなる（点灯は選択集合だけ。依存チェーンには広げない） */
+      const outside = nodesOf().filter(n => n.dataset.node !== first.id);
       check(!outside.length || outside.every(n => Number(n.getAttribute('opacity')) < 1),
-            '選択しても依存チェーン外のノードが薄くならない');
+            '選択しても他のノードが薄くならない');
+    }
+
+    /* --- 複数選択 --- */
+    const second = onMap[1];
+    if (first && second) {
+      select(first.id, 'kanban');
+      select(second.id, 'kanban', true);            /* Shift+クリック相当 */
+      check(S.sel.length === 2, `Shift 併用で選択が 2 件にならない: ${S.sel.length} 件`);
+      const rows = [...document.querySelectorAll('#side .selrow')];
+      check(rows.length === 2, `複数選択の一覧が 2 行にならない: ${rows.length} 行`);
+      check(!!document.querySelector('#side [data-deselect-all]'), '複数選択時に「解除」が出ない');
+
+      /* 点灯は 3 段。選んだもの = 1.0 / その隣接 = NEAR_OP / それ以外 = 0.2 */
+      const sets = litSets(S.sel, id => id);
+      const opOf = n => Number(n.getAttribute('opacity') || 1);
+      check(nodesOf().filter(n => sets.lit.has(n.dataset.node)).every(n => opOf(n) === 1),
+            '複数選択で選んだノードまで薄くなっている');
+      const nearNodes = nodesOf().filter(n => sets.near.has(n.dataset.node));
+      check(nearNodes.every(n => opOf(n) === NEAR_OP),
+            `隣接ノードが中間の濃さにならない: ${nearNodes.map(n => n.dataset.node + '=' + opOf(n)).join(', ')}`);
+      const rest = nodesOf().filter(n => !sets.lit.has(n.dataset.node) && !sets.near.has(n.dataset.node));
+      check(rest.every(n => opOf(n) === 0.2),
+            `選択とも隣接とも無関係なノードが沈まない: ${rest.map(n => n.dataset.node + '=' + opOf(n)).join(', ')}`);
+      info.tiers = `${sets.lit.size}/${nearNodes.length}/${rest.length}`;
+      check([...document.querySelectorAll('#kanban .tkt.on')].length === 2,
+            'カンバン側で 2 件が選択表示にならない');
+
+      /* 書き出しは「非選択を薄くした全体図」。ノードは減らさない */
+      const svg = exportSvgText();
+      check((svg.match(/data-node=/g) || []).length === ITEMS.filter(i => i.col !== undefined).length,
+            '選択中の書き出しでノードが欠けている');
+      check(svg.indexOf('opacity="0.2"') >= 0, '選択中の書き出しで非選択が薄くなっていない');
+
+      /* ✕ で 1 件外すと単一表示に戻る */
+      const x = document.querySelector('#side [data-deselect]');
+      if (x) {
+        x.click();
+        check(S.sel.length === 1, `✕ で選択が 1 件に減らない: ${S.sel.length} 件`);
+        check(!document.querySelector('#side .selrow'), '1 件に戻っても一覧表示のままになっている');
+      }
+      info.multi = 'ok';
+    }
+
+    /* Shift 併用の配線。上は select() を直接呼んでいるだけなので、
+       実際のクリックから additive が届いているかは別に見る。 */
+    const cards = [...document.querySelectorAll('#kanban .tkt[data-item]')];
+    if (cards.length >= 2) {
+      const hit = (el, shift) => el.dispatchEvent(
+        new MouseEvent('click', { bubbles:true, cancelable:true, shiftKey:!!shift }));
+      hit(cards[0]);
+      const a = S.sel.slice();
+      check(a.length === 1, `カードの通常クリックで 1 件にならない: ${a.length} 件`);
+      hit([...document.querySelectorAll('#kanban .tkt[data-item]')][1], true);
+      check(S.sel.length === 2, `カードの Shift+クリックで追加されない: ${S.sel.length} 件`);
+      const again = [...document.querySelectorAll('#kanban .tkt[data-item]')]
+        .find(c => c.getAttribute('data-item') === S.sel[1]);
+      if (again) {
+        hit(again, true);
+        check(S.sel.length === 1, `Shift+クリックの再押下で外れない: ${S.sel.length} 件`);
+      }
+      info.shiftClick = 'ok';
     }
 
     const st = STATUSES.find(s => ITEMS.some(i => i.status === s.id && i.kanban !== false));

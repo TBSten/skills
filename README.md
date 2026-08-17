@@ -193,7 +193,7 @@ gh skill install tbsten/skills status-board
 
 </td>
 <td>🧪 Experimental</td>
-<td>Collapse everything in flight — GitHub PRs and issues, local branches, and the open questions that only exist in the conversation — into one standalone HTML page: a dependency-graph SVG plus an epic-by-epic kanban, designed so "waiting on a human" and "the next move" read at a glance; ships ask boxes that collect answers in the browser, and is tuned for speed (one GraphQL round trip, defaults pre-filled, self-verification bundled into the output)</td>
+<td>Collapse everything in flight — GitHub PRs and issues, local branches, and the open questions that only exist in the conversation — into one standalone HTML page: a dependency-graph SVG plus an epic-by-epic kanban, designed so "waiting on a human" and "the next move" read at a glance; ships ask boxes that collect answers in the browser, exports a figure with only the Shift-clicked tickets lifted out so it drops straight into a PR, and is tuned for speed (one GraphQL round trip, defaults pre-filled, self-verification bundled into the output)</td>
 </tr>
 </table>
 

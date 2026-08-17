@@ -7,9 +7,10 @@ epic-by-epic kanban, built so that "what is waiting on me" and "what is next" re
 
 Reading the example above:
 
-- **Graph (top)** — dependencies flow left to right. Dashed frames are epics; the red hexagon
-  (`PR 196 を merge する`) is blocked on a human, and the gold `NEXT 1` marks the next move.
-  The dashed red `blocks` edge leaving it points at what it is holding up
+- **Graph (top)** — dependencies flow left to right. Dashed frames are epics; a red hexagon is
+  blocked on a human, and the gold `NEXT 1` marks the next move. **Open decisions sit directly
+  beneath whatever they hold up, with a dashed red arrow pushing up into it** — far easier to read
+  than a long edge sweeping across the whole graph
 - **Kanban (bottom)** — one band per epic, showing only the status columns that band actually has
 - **Detail panel (right)** — body, dependencies (prerequisite / blocked-by / next), and linked PRs
   for the current selection
@@ -29,7 +30,8 @@ to `.local/status-board/<yyyy-MM-dd-HH-mm>.html`. CSS and JS are inlined, so it 
 
 Drag to pan and wheel to zoom; zooming out triggers **semantic zoom**, dropping detail lines so the
 whole chain stays readable. Clicking an epic label folds that group into a single node and reroutes
-its dependency edges. The graph alone can be exported as SVG or PNG.
+its dependency edges. The graph alone can be exported as SVG or PNG — and Shift-clicking several
+tickets exports **a view with only those lifted out of the rest** (see below).
 
 Two things are designed to be unmissable: the 🙋 hexagon (waiting on a human) and the gold
 `NEXT n` flag (the next move).
@@ -53,6 +55,29 @@ detail panel: the question and the answer.
   the next generated file** as long as the id is stable
 - Some browsers disable `localStorage` for `file://` URLs. To keep answers, open the page through
   the bundled `serve.mjs`
+
+## Multi-select — build the figure you paste into a PR
+
+**Shift-click to select several tickets.** It works the same in the graph and in the kanban; a plain
+click still selects exactly one.
+
+- While more than one is selected, the detail panel becomes **a list of the selection**. Clicking a
+  row drills into that single ticket; ✕ drops it from the selection
+- With a selection active, `SVG` / `PNG` exports **the whole graph with only the selected tickets
+  lifted out**: everything else sinks to a faint wash, and only edges whose *both* endpoints are
+  selected stay bold
+
+Pasting the entire graph leaves the reader guessing which part you mean. Select the few tickets that
+matter and the exported figure **drops straight into a PR or issue description**. It keeps the full
+graph rather than cropping so the reader still sees where those tickets sit in the whole.
+
+Highlighting runs in three tiers: **what you selected stays full strength, its immediate neighbours
+sit at an intermediate wash, everything else sinks.** Hovering lights the graph by the same rule.
+Neighbours are kept because dropping them loses what a ticket connects to; they are not brought to
+full strength because then the outline would be the only clue as to which ones you actually picked.
+
+It does not walk the dependency edges to light the whole connected component — in a single-file
+stack that would light everything from one click, leaving nothing to narrow down.
 
 ## Built for speed
 

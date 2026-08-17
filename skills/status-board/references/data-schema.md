@@ -128,14 +128,25 @@ PR / issue 由来の id (`pr123` / `issue45`) は `collect.mjs` が安定して�
 
 `{ from, to, kind, label }`。`kind` の既定は `flow`。
 
-| kind | 線 | 意味 |
-| --- | --- | --- |
-| `flow` | 実線・navy | 依存・順序 |
-| `block` | 破線・赤 | 止めている。`label: "blocks"` を付けると線上にラベルが出る |
-| `idea` | 点線・薄い navy | 構想へのつながり |
+| kind | 線 | 向き | 意味 |
+| --- | --- | --- | --- |
+| `flow` | 実線・navy | 左 → 右 | 依存・順序 |
+| `block` | 破線・赤 | **下 → 上** | 止めている |
+| `idea` | 点線・薄い navy | 左 → 右 | 構想へのつながり |
 
-**制約**: `from` / `to` はどちらも `col` を持つこと。`from.col < to.col` であること。
-図に出ないチケットには線を引けない。
+**制約**: `from` / `to` はどちらも `col` を持つこと。図に出ないチケットには線を引けない。
+`flow` / `idea` は `from.col < to.col` であること。
+
+### block は下から上へ
+
+`block` だけは向きが違う。**止めている側を相手の真下に置いて、下から上へ矢印を突き上げる。**
+横に長い線で図を横断させるより「この未決がこれを止めている」が一目で分かるため。
+
+そのため `block` の `from` に **`col` / `epic` / `anchorY` を書かない**。ビルド時に相手から
+導出してレーンを合わせ、items の末尾へ回して相手の下に積む
+（複数を止めているときは一番左の相手に合わせ、残りは従来どおりの横向きになる）。
+`label` は縦向きのときは出ない。ノード間に置き場所が無く、赤い破線と上向きの矢尻、
+🙋 六角形だけで意味が足りているため。
 
 ## collect.mjs が決めるところ
 
@@ -191,10 +202,9 @@ merged PR は最大 6 件）。塩漬けの issue とブランチを全部載せ
   "items": [
     { "id": "decision-api-deprecation", "key": "decision", "title": "未決 — 旧 API の廃止時期",
       "kind": "human", "status": "blocked", "human": true,
-      "col": 1, "anchorY": 300, "epic": "stack1",
       "ask": ["A / B / C のどれにしますか。"], "updated": "2026-08-16" }
   ],
-  "edges": [{ "from": "decision-api-deprecation", "to": "pr123", "kind": "block", "label": "blocks" }]
+  "edges": [{ "from": "decision-api-deprecation", "to": "pr123", "kind": "block" }]
 }
 ```
 
@@ -212,6 +222,7 @@ merged PR は最大 6 件）。塩漬けの issue とブランチを全部載せ
 
 `col` を持つ item を足すとき、その col がエピックの範囲内なら `epic` も付ける。
 忘れてもビルドが直し方つきで止めるので、先に悩まない。
+**`block` の起点だけは例外で、`col` / `epic` / `anchorY` を書かない**（相手から導出される）。
 
 ## 検証（`build-board.mjs`）
 
@@ -220,7 +231,7 @@ merged PR は最大 6 件）。塩漬けの issue とブランチを全部載せ
 - `items[].id` の重複 / `statuses[].id` の重複 / `epics[].id` の重複
 - `items[].status` が `statuses` に無い / `items[].epic` が `epics` に無い
 - `items[].kind` が 5 種以外
-- `edges[].from/to` が `items` に無い、`col` を持たない、`from.col >= to.col`
+- `edges[].from/to` が `items` に無い、`col` を持たない、`from.col >= to.col`（`block` を除く）
 - `edges[].kind` が 3 種以外
 - エピックの `col` 範囲に別のノードが入っている
 - `next` の重複
