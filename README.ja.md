@@ -193,7 +193,7 @@ gh skill install tbsten/skills status-board
 
 </td>
 <td>🧪 Experimental</td>
-<td>抱えている作業 (GitHub の PR / issue、 ローカルブランチ、 会話の中にしか無い未決事項) を 1 枚の standalone HTML に。 依存グラフの SVG + エピック別カンバンで、 「人間待ち」 と 「次の一手」 が一目で分かる。 確認したいことはブラウザ上の textarea で回答を受け取れる。 GraphQL 1 往復 / 既定値の作り込み / 生成物への自己検証同梱 で速度を作っている</td>
+<td>抱えている作業 (GitHub の PR / issue、 ローカルブランチ、 会話の中にしか無い未決事項) を 1 枚の standalone HTML に。 依存グラフの SVG + エピック別カンバンで、 「人間待ち」 と 「次の一手」 が一目で分かる。 確認したいことはブラウザ上の textarea で回答を受け取れる。 Shift+クリックで選んだチケットだけを浮かせた図を書き出せるので、 そのまま PR に貼れる。 GraphQL 1 往復 / 既定値の作り込み / 生成物への自己検証同梱 で速度を作っている</td>
 </tr>
 </table>
 
