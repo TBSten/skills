@@ -24,7 +24,7 @@ sleep 1 && cat /tmp/sb-serve.log
 ```jsonc
 { "pass": true, "failures": [],
   "info": { "nodes": 12, "kanban": "11/11", "fitK": 0.467, "compact": true,
-            "multi": "ok", "shiftClick": "ok", "askItems": 2 } }
+            "tiers": "2/3/7", "multi": "ok", "shiftClick": "ok", "askItems": 2 } }
 ```
 
 `failures` は日本語の 1 行メッセージ。**そこに書かれた項目だけ**直して、再ビルド → 2 を
@@ -38,7 +38,8 @@ sleep 1 && cat /tmp/sb-serve.log
 | レイアウト | body / html の横スクロール、ノード同士の重なり、エピック枠同士の重なり、テキストの枠はみ出し、1 ノードの行数過多 |
 | 整合 | カンバンの件数合計 = `items` のうち `kanban !== false` の数、空の `href` |
 | 操作 | ＋ / − で transform が変わる、「全体」で全ノードが収まる、ノード選択で詳細が出る、選択外が薄くなる、ステータスチップの絞り込み、検索、エピックの畳み / 展開 |
-| 複数選択 | Shift 併用で 2 件になる、一覧が 2 行出る、選択外だけが薄い、カンバンも 2 件光る、✕ で単一表示に戻る、実クリックから `shiftKey` が届いている（`info.shiftClick`） |
+| 複数選択 | Shift 併用で 2 件になる、一覧が 2 行出る、カンバンも 2 件光る、✕ で単一表示に戻る、実クリックから `shiftKey` が届いている（`info.shiftClick`） |
+| 点灯の 3 段 | 選択 = 1.0 / 隣接 = 中間 / それ以外 = 0.2 になっている（`info.tiers` が `選択/隣接/その他` の件数） |
 | 書き出し | `exportSvgText()` が壊れた SVG を出さない、ノード数が図と一致、選択中は非選択が薄く出る |
 | 確認欄 | textarea が出る、回答が保存される、カンバンに ✓ が出る（テスト値は書き戻して消す） |
 

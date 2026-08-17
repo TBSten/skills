@@ -399,17 +399,32 @@ function matches(i) {
                (i.children||[]).map(c => c.title).join(' ')].join(' ').toLowerCase();
   return hay.indexOf(q) >= 0;
 }
-function neighbors(id) {
-  const s = new Set([id]);
-  EDGES.forEach(e => { if (e.from === id) s.add(e.to); if (e.to === id) s.add(e.from); });
-  return s;
-}
-/* 選択で点灯する範囲。選択したノードそのものだけを返す。
-   依存チェーン（連結成分）を丸ごと返すやり方もあるが、一本鎖の stack では
-   1 件選んだだけでほぼ全点灯になり、複数選択で絞り込む意味が消えるため採らない。
-   辺は「両端とも選択されている」ものだけが太くなる（svgBody 側で判定）。 */
-function litBy(sel) {
-  return selSet(sel);
+/* 点灯は 3 段。hover でも選択でも同じ規則で光らせる。
+
+     lit  = 主役。hover 中のノード、または選択したノード     … 1.0
+     near = lit の隣接                                      … NEAR_OP
+     それ以外                                               … 0.2
+
+   主役だけを 1.0 にして残りを一律 0.2 に沈めると、前後に何が繋がっているのかが
+   読めなくなる。かといって隣接まで 1.0 にすると、書き出した図で「自分が選んだのは
+   どれか」の手がかりが coin 枠だけになる。3 段にして両方を立てる。
+
+   依存チェーン（連結成分）を丸ごと点灯させるやり方は採らない。一本鎖の stack では
+   1 件選んだだけでほぼ全点灯になり、絞り込む意味が消えるため。
+
+   via は「畳んだエピックのメンバーをその箱に読み替える」写像。畳んだ状態でも
+   隣接判定が箱の単位で効くように、呼ぶ側から渡す。 */
+const NEAR_OP = 0.5;
+function litSets(primaryIds, via) {
+  const lit = new Set(primaryIds);
+  const near = new Set();
+  if (lit.size) EDGES.forEach(e => {
+    const f = via(e.from), t = via(e.to);
+    if (f === t) return;
+    if (lit.has(f) && !lit.has(t)) near.add(t);
+    if (lit.has(t) && !lit.has(f)) near.add(f);
+  });
+  return { lit, near };
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -538,14 +553,26 @@ function svgBody(g, opts) {
   const hv = o.hover || null, sel = o.sel || [];
   const dim = o.dim !== false;
   const sset = selSet(sel);
-  const active = hv ? neighbors(hv) : (sset.size ? litBy(sel) : null);
+
+  /* 畳まれたエピックのメンバーはその箱に読み替える。線の付け替えと隣接判定の両方で使う */
+  const via = id => {
+    const it = byId[id];
+    return (it && it.epic && g.folded[it.epic]) ? 'epic:' + it.epic : id;
+  };
+
+  /* hover が優先。hover していなければ選択が主役になる */
+  const primary = hv ? [hv] : [...sset];
+  const { lit, near } = litSets(primary, via);
+  const active = lit.size ? lit : null;
 
   const opacityFor = id => {
-    const it = byId[id];
-    if (!it) return 1;                                   /* 畳んだエピックのノード */
-    if (hidden[it.status]) return 0.1;
-    if (q && !matches(it)) return 0.14;
-    if (dim && active && !active.has(id)) return 0.2;
+    const it = byId[id];                                 /* 畳んだエピックのノードは byId に無い */
+    if (it && hidden[it.status]) return 0.1;
+    if (it && q && !matches(it)) return 0.14;
+    if (dim && active) {
+      if (lit.has(id)) return 1;
+      return near.has(id) ? NEAR_OP : 0.2;
+    }
     return 1;
   };
 
@@ -562,11 +589,7 @@ function svgBody(g, opts) {
       + `</g></g>`;
   });
 
-  /* --- 依存線。畳まれたエピックのメンバー宛ての線はその箱に繋ぎ替える --- */
-  const via = id => {
-    const it = byId[id];
-    return (it && it.epic && g.folded[it.epic]) ? 'epic:' + it.epic : id;
-  };
+  /* --- 依存線。畳まれたエピックのメンバー宛ての線は via でその箱に繋ぎ替わる --- */
   let labels = '';
   EDGES.forEach(e => {
     const fromId = via(e.from), toId = via(e.to);
@@ -585,8 +608,8 @@ function svgBody(g, opts) {
     const ty = up ? b.y + b.h + 9 : b.y + b.h / 2;
     const dx = Math.max(38, (tx - sx) * 0.48);
     const dy = (sy - ty) * 0.42;
-    const isActive = hv ? (fromId === hv || toId === hv)
-                        : (active ? (active.has(fromId) && active.has(toId)) : false);
+    /* 主役に触れている線を太くする。hover でも選択でも同じ規則 */
+    const isActive = lit.has(fromId) || lit.has(toId);
     const base = e.kind === 'block' ? C.heart : e.kind === 'idea' ? C.navy300 : C.navy600;
     const s1 = byId[e.from], s2 = byId[e.to];
     const hid = (s1 && hidden[s1.status]) || (s2 && hidden[s2.status]);
@@ -1281,13 +1304,18 @@ function __verify() {
       check(rows.length === 2, `複数選択の一覧が 2 行にならない: ${rows.length} 行`);
       check(!!document.querySelector('#side [data-deselect-all]'), '複数選択時に「解除」が出ない');
 
-      const lit = new Set(S.sel);
-      const dark = nodesOf().filter(n => !lit.has(n.dataset.node));
-      check(!dark.length || dark.every(n => Number(n.getAttribute('opacity')) < 1),
-            '複数選択で選択外のノードが薄くならない');
-      check(nodesOf().filter(n => lit.has(n.dataset.node))
-              .every(n => Number(n.getAttribute('opacity') || 1) === 1),
+      /* 点灯は 3 段。選んだもの = 1.0 / その隣接 = NEAR_OP / それ以外 = 0.2 */
+      const sets = litSets(S.sel, id => id);
+      const opOf = n => Number(n.getAttribute('opacity') || 1);
+      check(nodesOf().filter(n => sets.lit.has(n.dataset.node)).every(n => opOf(n) === 1),
             '複数選択で選んだノードまで薄くなっている');
+      const nearNodes = nodesOf().filter(n => sets.near.has(n.dataset.node));
+      check(nearNodes.every(n => opOf(n) === NEAR_OP),
+            `隣接ノードが中間の濃さにならない: ${nearNodes.map(n => n.dataset.node + '=' + opOf(n)).join(', ')}`);
+      const rest = nodesOf().filter(n => !sets.lit.has(n.dataset.node) && !sets.near.has(n.dataset.node));
+      check(rest.every(n => opOf(n) === 0.2),
+            `選択とも隣接とも無関係なノードが沈まない: ${rest.map(n => n.dataset.node + '=' + opOf(n)).join(', ')}`);
+      info.tiers = `${sets.lit.size}/${nearNodes.length}/${rest.length}`;
       check([...document.querySelectorAll('#kanban .tkt.on')].length === 2,
             'カンバン側で 2 件が選択表示にならない');
 

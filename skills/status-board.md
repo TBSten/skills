@@ -71,9 +71,13 @@ Pasting the entire graph leaves the reader guessing which part you mean. Select 
 matter and the exported figure **drops straight into a PR or issue description**. It keeps the full
 graph rather than cropping so the reader still sees where those tickets sit in the whole.
 
-Selection lights **only the selected nodes** — it does not walk the dependency edges to light the
-whole connected component, because in a single-file stack that would light everything from one click
-and there would be nothing left to narrow down.
+Highlighting runs in three tiers: **what you selected stays full strength, its immediate neighbours
+sit at an intermediate wash, everything else sinks.** Hovering lights the graph by the same rule.
+Neighbours are kept because dropping them loses what a ticket connects to; they are not brought to
+full strength because then the outline would be the only clue as to which ones you actually picked.
+
+It does not walk the dependency edges to light the whole connected component — in a single-file
+stack that would light everything from one click, leaving nothing to narrow down.
 
 ## Built for speed
 
