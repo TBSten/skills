@@ -280,7 +280,7 @@ curl -fsSL https://rules.tbsten.me/i | bash -s -- kmp-snapshot-testing -r=abc123
 
 </details>
 
-## 🤝 スキル / ルールの貢献
+## 🤝 スキル / ルールのコントリビュート
 
 以下の skills を使用してこのリポジトリへの Pull Request を作成してください。
 
