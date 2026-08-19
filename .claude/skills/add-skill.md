@@ -142,6 +142,7 @@ Install と Description の間に **Status** (日本語版は **ステータス*
   同グループの 2 行目以降は空セル `<td></td>` にする。グループ名は frontmatter の `metadata.group` と必ず一致させる
 - **ステータスセル**: `絵文字 + 半角スペース + status ラベル` で記載する (例: `🧪 Experimental`, `✅ Active`)。
   frontmatter の `metadata.status` と必ず一致させる
+- **説明セル**: **最大 80 文字**。詳細は詳細ドキュメント (`skills/<skill-name>.md` / `.ja.md`) に書き、README には要点のみを記載する
 
 **README.md テンプレート** (グループ先頭行になる場合は 1 つ目の `<td></td>` を `<td><絵文字> <Group in English></td>` にする):
 ````html
@@ -192,3 +193,4 @@ gh skill install tbsten/skills <skill-name>
 - SKILL.md と references で情報を重複させない (Single Source of Truth)
 - status は SKILL.md の `metadata.status` を SSoT とし、README のステータス列と必ず一致させる
 - group は SKILL.md の `metadata.group` (日本語グループ名) を SSoT とし、README のグループ列 (英語版は英語名) と必ず一致させる。グループセルの記載はグループ先頭行のみ (絵文字付き)、継続行は空セル
+- README の説明列は最大 80 文字。収まらない詳細は詳細ドキュメント側に書く
