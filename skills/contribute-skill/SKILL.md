@@ -187,7 +187,7 @@ PR 作成前に以下を確認する。
    - SKILL.md 内で参照しているすべてのファイルが `./skills/<skill-name>/` 配下に存在すること
    - `README.md` と `README.ja.md` の Available Skills テーブルに新しいスキルのエントリが追加されていること
    - SKILL.md の frontmatter に `metadata.status` があり、README のステータス列 (絵文字+ラベル) と一致していること
-   - SKILL.md の frontmatter に `metadata.group` があり、README のグループ列 (英語版は英語グループ名) と一致していること。行が同じグループの既存行のまとまりに挿入されていること
+   - SKILL.md の frontmatter に `metadata.group` があり、README のグループ列と一致していること。行が同じグループのまとまりに挿入され、グループセルはグループ先頭行のみ絵文字付きで記載・継続行は空セルになっていること
 2. **SKILL.md の word count が 5,000 words 以下か** — `wc -w` で確認。超える場合は詳細を references/ に分離する
 3. **SKILL.md と references/ に情報重複がないか** — SKILL.md には概要・手順のみ、詳細コード例は references/ に分離
 4. **example/ 内の import が整合しているか** — `grep -r "^import"` でプロジェクト固有依存が残っていないか確認

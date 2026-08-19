@@ -164,7 +164,7 @@ PR 作成前に以下を確認する。
    - ルールが参照するすべてのファイルが `./rules/<rule-name>/` 配下に存在すること
    - `README.md` と `README.ja.md` の Available Rules テーブルに新しいルールのエントリが追加されていること
    - `rules/<rule-name>.md` の frontmatter に `status` があり、README のステータス列 (絵文字+ラベル) と一致していること
-   - `rules/<rule-name>.md` の frontmatter に `group` があり、README のグループ列 (英語版は英語グループ名) と一致していること。行が同じグループの既存行のまとまりに挿入されていること
+   - `rules/<rule-name>.md` の frontmatter に `group` があり、README のグループ列と一致していること。行が同じグループのまとまりに挿入され、グループセルはグループ先頭行のみ絵文字付きで記載・継続行は空セルになっていること
 2. **参照ファイルのパスが適切か** — ユーザーのプロジェクトルートに展開されることを考慮
 3. **README テーブルが既存行と同じフォーマットか** — HTML タグ、改行、code block の書き方を既存行と比較
 

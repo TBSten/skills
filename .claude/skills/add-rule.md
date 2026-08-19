@@ -81,7 +81,7 @@ group: <グループ名>
 |---|---|---|
 | `WIP` | 🌱 | 作成中だけど一旦出してみた |
 | `Experimental` | 🧪 | 使えるはずだが、しっかり検証はされていない |
-| `Active` | 🟢 | プロダクションレディで実用的に使える |
+| `Active` | ✅ | プロダクションレディで実用的に使える |
 | `Active-Prime` | 💎 | Active かつ定番として愛用している |
 
 新規追加時のデフォルトは `Experimental` (ユーザーの指示があればそれに従う)。
@@ -90,15 +90,15 @@ group: <グループ名>
 #### group (必須)
 
 rule の所属グループも status と同じく **英語詳細ドキュメント `rules/<rule-name>.md` の frontmatter** に、
-**日本語グループ名** で記載する (`.ja.md` には付けず、英語版を SSoT とする)。値は以下のいずれか:
+**日本語グループ名** で記載する (`.ja.md` には付けず、英語版を SSoT とする。絵文字は付けない)。値は以下のいずれか:
 
-| グループ (ja) | Group (en) |
-|---|---|
-| タスク管理 | Task Management |
-| Kotlin / Android アプリ開発 | Kotlin / Android App Development |
-| Kotlin ライブラリ/ツール開発 | Kotlin Library / Tool Development |
-| Web フロントエンド | Web Frontend |
-| Git / GitHub | Git / GitHub |
+| 絵文字 | グループ (ja) | Group (en) |
+|---|---|---|
+| 🔴 | タスク管理 | Task Management |
+| 🟢 | Kotlin / Android アプリ開発 | Kotlin / Android App Development |
+| 🟣 | Kotlin ライブラリ/ツール開発 | Kotlin Library / Tool Development |
+| 🔵 | Web フロントエンド | Web Frontend |
+| ⚫ | Git / GitHub | Git / GitHub |
 
 適切なグループが無い場合は、CLAUDE.md の Group 表とこの表に新グループを追加した上で使う。
 
@@ -110,14 +110,15 @@ Install と Description の間に **Status** (日本語版は **ステータス*
 
 - **行の挿入位置**: テーブルの行はグループごとにまとまっている。新しい行はテーブル末尾ではなく、
   同じグループの既存行のまとまりの末尾に挿入する (そのグループの行がまだ無ければ「group (必須)」の表の順に従った位置に挿入する)
-- **グループセル**: 詳細ドキュメントの `group` frontmatter と必ず一致させる。英語版 README では表の英語名 (Group (en)) を使う
-- **ステータスセル**: `絵文字 + 半角スペース + status ラベル` で記載する (例: `🧪 Experimental`, `🟢 Active`)。
+- **グループセル**: グループの **先頭行のみ** `<td><絵文字> <グループ名></td>` (例: `<td>🟢 Kotlin / Android アプリ開発</td>`、英語版 README では表の英語名) を記載し、
+  同グループの 2 行目以降は空セル `<td></td>` にする。グループ名は詳細ドキュメントの `group` frontmatter と必ず一致させる
+- **ステータスセル**: `絵文字 + 半角スペース + status ラベル` で記載する (例: `🧪 Experimental`, `✅ Active`)。
   詳細ドキュメントの `status` frontmatter と必ず一致させる
 
-**README.md テンプレート:**
+**README.md テンプレート** (グループ先頭行になる場合は 1 つ目の `<td></td>` を `<td><絵文字> <Group in English></td>` にする):
 ````html
 <tr>
-<td>Group in English</td>
+<td></td>
 <td><a href="./rules/<rule-name>.md"><rule-name></a></td>
 <td>
 
@@ -131,10 +132,10 @@ curl -fsSL https://rules.tbsten.me/i | bash -s -- <rule-name>
 </tr>
 ````
 
-**README.ja.md テンプレート:**
+**README.ja.md テンプレート** (グループ先頭行になる場合は 1 つ目の `<td></td>` を `<td><絵文字> <日本語グループ名></td>` にする):
 ````html
 <tr>
-<td>日本語グループ名</td>
+<td></td>
 <td><a href="./rules/<rule-name>.ja.md"><rule-name></a></td>
 <td>
 
@@ -162,4 +163,4 @@ curl -fsSL https://rules.tbsten.me/i | bash -s -- <rule-name>
 - テーブルは HTML `<table>` タグで記述し、Install 列のコマンドは ```sh code block で記載する
 - 参照ファイルのパス設計時は、ユーザーのプロジェクトルートに展開されることを考慮する
 - status は `rules/<rule-name>.md` の frontmatter を SSoT とし、README のステータス列と必ず一致させる (RULE.md には書かない)
-- group も `rules/<rule-name>.md` の frontmatter (日本語グループ名) を SSoT とし、README のグループ列 (英語版は英語名) と必ず一致させる (RULE.md には書かない)
+- group も `rules/<rule-name>.md` の frontmatter (日本語グループ名) を SSoT とし、README のグループ列 (英語版は英語名) と必ず一致させる (RULE.md には書かない)。グループセルの記載はグループ先頭行のみ (絵文字付き)、継続行は空セル
