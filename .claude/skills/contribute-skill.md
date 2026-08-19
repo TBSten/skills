@@ -1,5 +1,5 @@
 ---
-name: add-skill
+name: contribute-skill
 description: >
   このリポジトリ (tbsten/skills) に新しい Claude Code skill を追加、または既存 skill を更新するためのスキル。
   skill のディレクトリ構成、SKILL.md の作成、参照ドキュメント・サンプルコードの配置、
@@ -9,7 +9,7 @@ description: >
   "スキルを更新", "update skill", "スキルの修正", "スキルの内容を変更".
 ---
 
-# add-skill: Skill の追加・更新
+# contribute-skill: Skill の追加・更新
 
 このリポジトリに新しい skill を追加、または既存 skill を更新する。
 

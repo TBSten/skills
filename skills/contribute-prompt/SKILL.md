@@ -34,7 +34,7 @@ ARGUMENTS からユーザーが収集したい知見の説明を受け取る。�
 2. **収集対象** — どの知見をプロンプト化するか。具体的なファイルパスやセクションを特定する
 3. **prompt に向いているか** — 1 回で完結する作業 (セットアップ、スキャフォールド等) か。継続的に発動すべき知見なら contribute-skill / contribute-rule を提案する
 4. **status** — prompt の成熟度 (WIP / Experimental / Active / Active-Prime)。デフォルトは `Experimental`。ユーザーの指示があればそれに従う
-5. **group** — prompt の所属グループ (「タスク管理」「Kotlin / Android アプリ開発」「Kotlin ライブラリ/ツール開発」「Web フロントエンド」「Git / GitHub」等)。知見の内容から適切なグループを提案する。全一覧は clone 先の `.claude/skills/add-prompt.md` の group 表を正とする
+5. **group** — prompt の所属グループ (「タスク管理」「Kotlin / Android アプリ開発」「Kotlin ライブラリ/ツール開発」「Web フロントエンド」「Git / GitHub」等)。知見の内容から適切なグループを提案する。全一覧は clone 先の `.claude/skills/contribute-prompt.md` の group 表を正とする
 6. **リポジトリ** — デフォルトは `TBSten/skills`。fork を使う場合はユーザーに確認する
 
 ## Step 2: 知見の収集と整理
@@ -59,7 +59,7 @@ ARGUMENTS からユーザーが収集したい知見の説明を受け取る。�
 
 ユーザーの承認を得てから次のステップに進む。
 
-## Step 3: ワークディレクトリの準備と add-prompt.md の読み込み
+## Step 3: ワークディレクトリの準備と contribute-prompt.md の読み込み
 
 1. ワークディレクトリを準備する:
 
@@ -74,18 +74,18 @@ git clone --depth 1 https://github.com/<repo>.git /tmp/contribute-prompt-<prompt
 2. clone したリポジトリ内のプロンプト作成ガイドを読み込む:
 
 ```
-/tmp/contribute-prompt-<prompt-name>/.claude/skills/add-prompt.md
+/tmp/contribute-prompt-<prompt-name>/.claude/skills/contribute-prompt.md
 ```
 
-add-prompt.md を読み込んだ後、以下のように統合する:
+contribute-prompt.md を読み込んだ後、以下のように統合する:
 
-- **add-prompt.md の「PROMPT.md の書き方」「詳細ドキュメント」「README の更新」**: そのまま従う。内容は contribute-prompt の Step 2 で整理した知見を使う
+- **contribute-prompt.md の「PROMPT.md の書き方」「詳細ドキュメント」「README の更新」**: そのまま従う。内容は contribute-prompt の Step 2 で整理した知見を使う
 
 ガイドが見つからない場合は、以下の「フォールバック」セクションに従う。
 
 ## Step 4: プロンプトファイルの作成
 
-clone した `/tmp/contribute-prompt-<prompt-name>/` 内で、add-prompt.md の手順に従い以下を作成する。
+clone した `/tmp/contribute-prompt-<prompt-name>/` 内で、contribute-prompt.md の手順に従い以下を作成する。
 
 1. `prompts/<prompt-name>/PROMPT.md` — プロンプト本体 (frontmatter なし、命令形、self-contained)
 2. `prompts/<prompt-name>.md` — 詳細ドキュメント (英語、frontmatter に `status` / `group`)
@@ -220,7 +220,7 @@ EOF
 
 ## フォールバック
 
-add-prompt.md が clone 先に存在しない場合、以下の最低限の構成で作成する:
+contribute-prompt.md が clone 先に存在しない場合、以下の最低限の構成で作成する:
 
 1. `prompts/<prompt-name>/PROMPT.md` にプロンプトの内容を記述 (frontmatter なし)
 2. `prompts/<prompt-name>.md` / `<prompt-name>.ja.md` に概要・実行プロンプト・前提条件を記述
