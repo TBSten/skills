@@ -114,6 +114,7 @@ Install と Description の間に **Status** (日本語版は **ステータス*
   同グループの 2 行目以降は空セル `<td></td>` にする。グループ名は詳細ドキュメントの `group` frontmatter と必ず一致させる
 - **ステータスセル**: `絵文字 + 半角スペース + status ラベル` で記載する (例: `🧪 Experimental`, `✅ Active`)。
   詳細ドキュメントの `status` frontmatter と必ず一致させる
+- **説明セル**: **最大 80 文字**。詳細は詳細ドキュメント (`rules/<rule-name>.md` / `.ja.md`) に書き、README には要点のみを記載する
 
 **README.md テンプレート** (グループ先頭行になる場合は 1 つ目の `<td></td>` を `<td><絵文字> <Group in English></td>` にする):
 ````html
@@ -164,3 +165,4 @@ curl -fsSL https://rules.tbsten.me/i | bash -s -- <rule-name>
 - 参照ファイルのパス設計時は、ユーザーのプロジェクトルートに展開されることを考慮する
 - status は `rules/<rule-name>.md` の frontmatter を SSoT とし、README のステータス列と必ず一致させる (RULE.md には書かない)
 - group も `rules/<rule-name>.md` の frontmatter (日本語グループ名) を SSoT とし、README のグループ列 (英語版は英語名) と必ず一致させる (RULE.md には書かない)。グループセルの記載はグループ先頭行のみ (絵文字付き)、継続行は空セル
+- README の説明列は最大 80 文字。収まらない詳細は詳細ドキュメント側に書く

@@ -14,14 +14,19 @@ TBSten の Claude Code skills・rules コレクションリポジトリ。
 │       ├── SKILL.md             # スキル本体 (frontmatter 付き)
 │       ├── *.md                 # 参照ドキュメント
 │       └── example/             # サンプルコード
-└── rules/
-    ├── install.sh               # ルールインストールスクリプト
-    ├── install/                 # 短縮URL用 Cloudflare Worker (rules.tbsten.me/i)
-    ├── <rule-name>.md           # ルール詳細ドキュメント (英語)
-    ├── <rule-name>.ja.md        # ルール詳細ドキュメント (日本語)
-    └── <rule-name>/
-        ├── RULE.md              # ルール本体 (.claude/rules/<rule-name>.md として配置される)
-        └── **/*                 # 参照ファイル (カレントディレクトリに配置される)
+├── rules/
+│   ├── install.sh               # ルールインストールスクリプト
+│   ├── install/                 # 短縮URL用 Cloudflare Worker (rules.tbsten.me/i)
+│   ├── <rule-name>.md           # ルール詳細ドキュメント (英語)
+│   ├── <rule-name>.ja.md        # ルール詳細ドキュメント (日本語)
+│   └── <rule-name>/
+│       ├── RULE.md              # ルール本体 (.claude/rules/<rule-name>.md として配置される)
+│       └── **/*                 # 参照ファイル (カレントディレクトリに配置される)
+└── prompts/
+    ├── <prompt-name>.md         # プロンプト詳細ドキュメント (英語)
+    ├── <prompt-name>.ja.md      # プロンプト詳細ドキュメント (日本語)
+    └── <prompt-name>/
+        └── PROMPT.md            # プロンプト本体 (raw URL 参照で一回限り実行される)
 ```
 
 ## Skills の構成ルール
@@ -41,9 +46,18 @@ TBSten の Claude Code skills・rules コレクションリポジトリ。
 - status は英語詳細ドキュメント `rules/<rule-name>.md` の frontmatter に記載 (RULE.md には書かない)
 - インストール: `curl -fsSL https://rules.tbsten.me/i | bash -s -- <rule-name>`
 
+## Prompts の構成ルール
+
+- `prompts/<prompt-name>/PROMPT.md` がプロンプト本体。skill と違いインストール不要の一回限りのプロンプトで、README の実行プロンプトから raw URL (`https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/prompts/<prompt-name>/PROMPT.md`) を参照させて実行する
+- PROMPT.md には frontmatter を付けない (raw URL で直接取得・実行されるため)
+- 参照ファイルは prompts/ にコピーせず、既存 skill 等のファイルを raw.githubusercontent.com URL で参照する (多数の場合は sparse clone を案内)
+- `prompts/<prompt-name>.md` / `<prompt-name>.ja.md` で詳細ドキュメントを用意
+- status / group は英語詳細ドキュメント `prompts/<prompt-name>.md` の frontmatter に記載 (PROMPT.md には書かない)
+- 追加・更新は `.claude/skills/add-prompt.md` スキルで行う (既存 skill のプロンプト化手順もそこに記載)
+
 ## Status
 
-各 skill / rule には成熟度を表す status を持たせる。
+各 skill / rule / prompt には成熟度を表す status を持たせる。
 
 | status | 絵文字 | 意味 |
 |---|---|---|
@@ -53,16 +67,16 @@ TBSten の Claude Code skills・rules コレクションリポジトリ。
 | `Active-Prime` | 💎 | Active かつ定番として愛用している |
 | `Archived` | ❌ | 役目を終えた・メンテナンスされていない |
 
-- **SSoT**: skill は `SKILL.md` の `metadata.status`、rule は `rules/<name>.md` の frontmatter `status`
+- **SSoT**: skill は `SKILL.md` の `metadata.status`、rule / prompt はそれぞれ `rules/<name>.md` / `prompts/<name>.md` の frontmatter `status`
 - README.md / README.ja.md の Status 列は SSoT のミラー (絵文字+ラベル表示)。必ず一致させる
-- `Archived` の skill / rule は README の通常テーブルには載せず、🤝 Contribute セクション下の `<details>` (Archived 一覧) に移動する
+- `Archived` の skill / rule / prompt は README の通常テーブルには載せず、🤝 Contribute セクション下の `<details>` (Archived 一覧) に移動する
 - 新規追加時のデフォルトは `Experimental`
 - status の変更は `.claude/skills/change-status.md` スキルで行う
 - `as=<name>` オプションで保存名を変更可能
 
 ## Group
 
-各 skill / rule には所属グループを持たせ、README の一覧テーブルはグループごとにまとめて表示する。
+各 skill / rule / prompt には所属グループを持たせ、README の一覧テーブルはグループごとにまとめて表示する。
 
 | 絵文字 | グループ (ja) | Group (en) |
 |---|---|---|
@@ -72,9 +86,9 @@ TBSten の Claude Code skills・rules コレクションリポジトリ。
 | 🔵 | Web フロントエンド | Web Frontend |
 | ⚫️ | Git / GitHub | Git / GitHub |
 
-- **SSoT**: skill は `SKILL.md` の `metadata.group`、rule は `rules/<name>.md` の frontmatter `group`。いずれも日本語グループ名で記載する (絵文字は付けない)
+- **SSoT**: skill は `SKILL.md` の `metadata.group`、rule / prompt はそれぞれ `rules/<name>.md` / `prompts/<name>.md` の frontmatter `group`。いずれも日本語グループ名で記載する (絵文字は付けない)
 - README.md / README.ja.md の一覧テーブル先頭の Group / グループ列は SSoT のミラー (英語版は上表の英語名で表示)。必ず一致させる
 - グループセルは各グループの **先頭行のみ** `絵文字 + 半角スペース + グループ名` (例: `🔴 タスク管理`) を記載し、同グループの 2 行目以降は空セル `<td></td>` にする
 - テーブルの行は上表のグループ順に並べ、同じグループの行は隣接させる (行の追加は該当グループのまとまりの中に挿入する)
 - 新規追加時は既存グループから選ぶ。適切なグループが無ければ上表に新グループを追加した上で使う
-- 🤝 Contribute セクションの skill (contribute-skill / contribute-rule) はグループ対象外
+- 🤝 Contribute セクションの skill (contribute-skill / contribute-rule / contribute-prompt) はグループ対象外

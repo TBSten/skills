@@ -40,7 +40,7 @@ gh skill install tbsten/skills status-board
 
 </td>
 <td>🧪 Experimental</td>
-<td>抱えている作業 (GitHub の PR / issue、 ローカルブランチ、 会話の中にしか無い未決事項) を 1 枚の standalone HTML に。 依存グラフの SVG + エピック別カンバンで、 「人間待ち」 と 「次の一手」 が一目で分かる。 確認したいことはブラウザ上の textarea で回答を受け取れる。 Shift+クリックで選んだチケットだけを浮かせた図を書き出せるので、 そのまま PR に貼れる。 GraphQL 1 往復 / 既定値の作り込み / 生成物への自己検証同梱 で速度を作っている</td>
+<td>抱えている作業 (PR / issue / ローカルブランチ / 未決事項) を依存グラフ + カンバンの 1 枚 HTML に集約</td>
 </tr>
 <tr>
 <td>🟢 Kotlin / Android アプリ開発</td>
@@ -105,7 +105,7 @@ gh skill install tbsten/skills kotlin-compiler-plugin-setup
 
 </td>
 <td>✅ Active</td>
-<td>Kotlin Compiler Plugin のマルチモジュールプロジェクト (buildSrc、ユニットテスト kctfork、インテグレーションテスト) のセットアップ</td>
+<td>Kotlin Compiler Plugin プロジェクト (buildSrc / kctfork / 統合テスト) のセットアップ</td>
 </tr>
 <tr>
 <td></td>
@@ -118,7 +118,7 @@ gh skill install tbsten/skills kotlin-compiler-plugin-dev
 
 </td>
 <td>✅ Active</td>
-<td>30+ の既存プラグイン調査データをもとに Kotlin Compiler Plugin の開発・レビューを支援する（Extension Point 選択、設計パターン、前例調査、compat module layer / source set separation でのサポート Kotlin バージョン追加・削除も含む）</td>
+<td>30+ の既存プラグイン調査データをもとに Kotlin Compiler Plugin の開発・レビューを支援</td>
 </tr>
 <tr>
 <td></td>
@@ -131,7 +131,7 @@ gh skill install tbsten/skills kotlin-maven-central-publish
 
 </td>
 <td>✅ Active</td>
-<td>Kotlin/KMP プロジェクト向け Maven Central 公開設定（Vanniktech Maven Publish + GPG 署名 + GitHub Actions）</td>
+<td>Kotlin/KMP 向け Maven Central 公開設定 (Vanniktech + GPG + GitHub Actions)</td>
 </tr>
 <tr>
 <td></td>
@@ -144,7 +144,7 @@ gh skill install tbsten/skills intellij-plugin-dev
 
 </td>
 <td>🌱 WIP</td>
-<td>IntelliJ Platform / Android Studio 向けプラグインをエージェント主導で開発するためのツーリング・進め方リファレンス。検証を 6 チャネルに分解し、ヘッドレス機能テスト (Kotlin Analysis API) と headless PNG 自己目視 (renderComposeScene + Jewel) の 2 本を主軸に据える。tool window・gutter line marker・エディタ追従・PSI 挿入 (コード生成)・VRT golden・Driver スモーク・build/since-until 配線をカバー</td>
+<td>IntelliJ / Android Studio プラグインをエージェント主導で開発するためのツーリング・検証リファレンス</td>
 </tr>
 <tr>
 <td>🔵 Web フロントエンド</td>
@@ -157,7 +157,7 @@ gh skill install tbsten/skills react-vite-supabase-starter
 
 </td>
 <td>✅ Active</td>
-<td>React + Vite + TypeScript + Tailwind v4 + shadcn/ui + TanStack Router/Query + Supabase の Web アプリをスキャフォールド</td>
+<td>React + Vite + Tailwind v4 + shadcn/ui + TanStack + Supabase の Web アプリをスキャフォールド</td>
 </tr>
 <tr>
 <td>⚫️ Git / GitHub</td>
@@ -170,7 +170,7 @@ gh skill install tbsten/skills exploratory-pr-verification
 
 </td>
 <td>✅ Active</td>
-<td>Kotlin プロジェクトの PR を複数 subagent 並列で探索的に検証する運用規約 (PDCA / MCP / ticket 起票 / PR コメント policy / loop 終了処理)</td>
+<td>Kotlin プロジェクトの PR を複数 subagent 並列で探索的に検証する運用規約</td>
 </tr>
 <tr>
 <td></td>
@@ -183,7 +183,7 @@ gh skill install tbsten/skills exploratory-nightly-verification
 
 </td>
 <td>✅ Active</td>
-<td>nightly CI ジョブから Kotlin プロジェクトの main を 60 分 single-shot で探索的検証。 発見を Markdown ファイルに逐次書き出し、 PR への副作用は一切なし</td>
+<td>nightly CI から main を 60 分 single-shot で探索検証し、発見を Markdown に書き出す</td>
 </tr>
 <tr>
 <td></td>
@@ -196,7 +196,7 @@ gh skill install tbsten/skills pr-fix-loop
 
 </td>
 <td>✅ Active</td>
-<td>複数の GitHub PR を並行して green に。 1 パスで失敗 CI check (transient / lint / binary-compat / build / test) を分類して fix-ci-* skill に委譲、 review / issue コメントを取得〜resolve まで対応、 stacked PR の rebase を連鎖。 /loop driver と組み合わせて無人実行</td>
+<td>複数 PR を並行して green に。CI 失敗の分類・修正委譲、コメント対応、stacked PR の rebase 連鎖</td>
 </tr>
 <tr>
 <td></td>
@@ -209,7 +209,7 @@ gh skill install tbsten/skills github-get-attachment-url
 
 </td>
 <td>✅ Active</td>
-<td>ローカルファイルを GitHub にアップロードし、Issue を作成せずに user-attachments URL(または Markdown)を取得する。同梱の決定的な Python + Playwright ランナーで実行</td>
+<td>Issue を作らずにローカルファイルの user-attachments URL を取得 (Playwright ランナー同梱)</td>
 </tr>
 </table>
 
@@ -300,6 +300,72 @@ curl -fsSL https://rules.tbsten.me/i | bash -s -- kmp-snapshot-testing -r=abc123
 
 </details>
 
+## 💬 利用可能なプロンプト
+
+スキルをインストールせずに使える一回限りのプロンプト集。「実行」列のプロンプトをコピーして Claude Code に貼り付けると実行できます。
+
+<table>
+<tr>
+<th>グループ</th>
+<th>プロンプト</th>
+<th>実行</th>
+<th>ステータス</th>
+<th>説明</th>
+</tr>
+<tr>
+<td>🟢 Kotlin / Android アプリ開発</td>
+<td><a href="./prompts/kmp-snapshot-testing-setup.ja.md">kmp-snapshot-testing-setup</a></td>
+<td>
+
+```
+https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/prompts/kmp-snapshot-testing-setup/PROMPT.md を取得して、その指示に従って実行して
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>KMP + Compose 向けスナップショットテスト基盤のセットアップ (skill のプロンプト版)</td>
+</tr>
+<tr>
+<td>🟣 Kotlin ライブラリ/ツール開発</td>
+<td><a href="./prompts/kotlin-compiler-plugin-setup.ja.md">kotlin-compiler-plugin-setup</a></td>
+<td>
+
+```
+https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/prompts/kotlin-compiler-plugin-setup/PROMPT.md を取得して、その指示に従って実行して
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>Kotlin Compiler Plugin プロジェクトのセットアップ (skill のプロンプト版)</td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./prompts/kotlin-maven-central-publish.ja.md">kotlin-maven-central-publish</a></td>
+<td>
+
+```
+https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/prompts/kotlin-maven-central-publish/PROMPT.md を取得して、その指示に従って実行して
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>Kotlin/KMP 向け Maven Central 公開設定 (skill のプロンプト版)</td>
+</tr>
+<tr>
+<td>🔵 Web フロントエンド</td>
+<td><a href="./prompts/react-vite-supabase-starter.ja.md">react-vite-supabase-starter</a></td>
+<td>
+
+```
+https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/prompts/react-vite-supabase-starter/PROMPT.md を取得して、その指示に従って実行して
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>React + Vite + Supabase の Web アプリをスキャフォールド (skill のプロンプト版)</td>
+</tr>
+</table>
+
 ## 🤝 スキル / ルールのコントリビュート
 
 以下の skills を使用してこのリポジトリへの Pull Request を作成してください。
@@ -334,5 +400,17 @@ gh skill install tbsten/skills contribute-rule
 </td>
 <td>✅ Active</td>
 <td>プロジェクトの知見をルールとしてパッケージし TBSten/skills に PR を作成</td>
+</tr>
+<tr>
+<td><a href="./skills/contribute-prompt.ja.md">contribute-prompt</a></td>
+<td>
+
+```sh
+gh skill install tbsten/skills contribute-prompt
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>プロジェクトの知見をプロンプトとしてパッケージし TBSten/skills に PR を作成</td>
 </tr>
 </table>
