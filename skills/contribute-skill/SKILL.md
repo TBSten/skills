@@ -231,27 +231,67 @@ git commit -m "add <skill-name> skill"
 git push -u origin add-skill/<skill-name>
 ```
 
-PR を作成する:
+PR を作成する。タイトル・本文は下記「PR フォーマット」に **厳密に** 従う:
 
 ```bash
 gh pr create \
   --repo <repo> \
   --head add-skill/<skill-name> \
-  --title "Add <skill-name> skill" \
+  --title "Add skill: <skill-name>" \
   --body "## Summary
-- <Step 2 で整理したスキルの目的>
+- <スキルの目的 (50 文字以内)>
+- 主要ファイル: skills/<skill-name>/SKILL.md
 
-## Files
-- skills/<skill-name>/SKILL.md
-- <その他の追加ファイル一覧>
+## 実行イメージ
+1. <トリガーフレーズで skill が発動する様子>
+2. <実行される主なステップ>
+3. <最終的な成果物・完了報告>
 
-## Test plan
-- [ ] gh skill install <repo> <skill-name> でインストールできること
-- [ ] スキルのトリガーフレーズで正しく発動すること
+## 備考
+- 特になし
 "
 ```
 
-作成された PR の URL をユーザーに報告する。
+### PR フォーマット
+
+- **タイトル**: 新規追加は `Add skill: <skill-name>`、既存 skill の更新は `Update skill: <skill-name>` (rule / prompt の contribute では `skill` の箇所を `rule` / `prompt` に変える)
+- **本文**: `## Summary` / `## 実行イメージ` / `## 備考` の 3 セクション **のみ** で構成する。これ以外のセクションを入れてはならない
+  - **Summary** — 箇条書き最大 3 つ、各行 50 文字以内。主要ファイル 1〜3 つ (基本 1 つ。SKILL.md や README 等) を含める
+  - **実行イメージ** — skill 実行時に何が起きるかを `1.` 始まりの番号付き箇条書きで列挙する。各行 100 文字以内
+  - **備考** — 補足事項。無ければ「特になし」と書く
+
+### PR 作成後のフォーマットチェック
+
+PR 作成後、以下のコマンドでフォーマット準拠を検証する。NG が出た場合は `gh pr edit` で修正し、再度チェックする:
+
+```bash
+gh pr view <PR番号> --repo <repo> --json title,body > /tmp/pr-format.json
+python3 - <<'EOF'
+import json, re, sys
+d = json.load(open('/tmp/pr-format.json'))
+title, body = d['title'], d['body']
+errs = []
+if not re.match(r'^(Add|Update) (skill|rule|prompt): \S+$', title):
+    errs.append(f'タイトルが "Add skill: <name>" / "Update skill: <name>" 形式でない: {title!r}')
+headers = re.findall(r'^## (.+?)\s*$', body, re.M)
+if headers != ['Summary', '実行イメージ', '備考']:
+    errs.append(f'セクションが Summary / 実行イメージ / 備考 の 3 つちょうどでない: {headers}')
+else:
+    summary, image, _notes = re.split(r'^## .+$', body, flags=re.M)[1:]
+    bullets = [l.strip()[2:] for l in summary.splitlines() if l.strip().startswith('- ')]
+    if not 1 <= len(bullets) <= 3:
+        errs.append(f'Summary の箇条書きが {len(bullets)} 個 (1〜3 個にする)')
+    errs += [f'Summary 50 文字超: {b!r}' for b in bullets if len(b) > 50]
+    nums = [re.sub(r'^\s*\d+\.\s*', '', l) for l in image.splitlines() if re.match(r'\s*\d+\.', l)]
+    if not nums:
+        errs.append('実行イメージに番号付き箇条書きがない')
+    errs += [f'実行イメージ 100 文字超: {n!r}' for n in nums if len(n) > 100]
+print('\n'.join(errs) if errs else 'PR format OK')
+sys.exit(1 if errs else 0)
+EOF
+```
+
+作成された PR の URL とフォーマットチェック結果をユーザーに報告する。
 
 ## エラー時の対応
 
