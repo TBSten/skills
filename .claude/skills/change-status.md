@@ -2,12 +2,13 @@
 name: change-status
 description: >
   このリポジトリ (tbsten/skills) の既存 skill / rule の status を変更するためのスキル。
-  status は WIP / Experimental / Active / Active-Prime の 4 値。
+  status は WIP / Experimental / Active / Active-Prime / Archived の 5 値。
   SSoT (skill は SKILL.md の metadata.status、rule は詳細ドキュメント rules/<name>.md の frontmatter status) と
   README.md / README.ja.md のステータス列を同期して更新する。
   このスキルはリポジトリのコントリビューター向けであり、skill / rule の利用者向けではない。
   Use when requested: "status を変更", "ステータスを変更", "Active にする", "Experimental に戻す",
-  "WIP から昇格", "change status", "定番にする", "Active-Prime に上げる", "ステータスを上げる".
+  "WIP から昇格", "change status", "定番にする", "Active-Prime に上げる", "ステータスを上げる",
+  "Archived にする", "アーカイブする", "archive".
 ---
 
 # change-status: skill / rule の status 変更
@@ -22,6 +23,7 @@ description: >
 | `Experimental` | 🧪 | 使えるはずだが、しっかり検証はされていない |
 | `Active` | 🟢 | プロダクションレディで実用的に使える |
 | `Active-Prime` | 💎 | Active かつ定番として愛用している |
+| `Archived` | ❌ | 役目を終えた・メンテナンスされていない |
 
 ## SSoT (status の保存場所)
 
@@ -54,7 +56,7 @@ README.md / README.ja.md のステータス列は **frontmatter を正とした�
 
 1. **種別** — skill か rule か
 2. **名前** — kebab-case (例: `kotlin-tuple`, `kmp-error-handling`)
-3. **新しい status** — `WIP` / `Experimental` / `Active` / `Active-Prime` のいずれか。4 値以外が指定されたら差し戻す
+3. **新しい status** — `WIP` / `Experimental` / `Active` / `Active-Prime` / `Archived` のいずれか。5 値以外が指定されたら差し戻す
 
 対象ファイルが存在することを確認する:
 - skill → `skills/<name>/SKILL.md`
@@ -78,6 +80,16 @@ README.md / README.ja.md のステータス列は **frontmatter を正とした�
 
 両ファイルとも忘れずに更新する。
 
+#### Archived の場合の特例
+
+新 status が `Archived` の場合は、ステータスセルの更新ではなくエントリの移動を行う:
+
+1. 通常テーブル (⭐️ Available Skills / 📝 Available Rules) から該当 `<tr>...</tr>` を削除する
+2. README 末尾 (🤝 Contribute セクションの下) の `<details>` 内 Archived テーブルに、ステータス `❌ Archived` で同じ行を追加する
+3. Archived テーブルが無ければ `<details><summary> ❌ Archived Skills / Rules </summary>` セクションごと新規作成する
+
+逆に `Archived` から他の status へ戻す場合は、Archived テーブルから通常テーブルへ行を戻す。
+
 ### Step 4: 差分確認と報告
 
 1. `git diff` で変更内容を確認し、SSoT と README のステータスが一致していることを確認する
@@ -87,5 +99,5 @@ README.md / README.ja.md のステータス列は **frontmatter を正とした�
 ## 注意点
 
 - frontmatter (SSoT) と README のステータスは **常に一致** させる。片方だけの更新は禁止
-- status は 4 値のみ。表記ゆれ (`active`, `WIP中` 等) を許さない
+- status は 5 値のみ。表記ゆれ (`active`, `WIP中` 等) を許さない
 - 複数の skill / rule をまとめて変更する場合は、1 件ずつ Step 2-3 を繰り返す

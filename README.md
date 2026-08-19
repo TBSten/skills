@@ -4,7 +4,7 @@
 
 [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skills and rules collection by TBSten.
 
-> **Status:** 🌱 WIP · 🧪 Experimental · 🟢 Active · 💎 Active-Prime
+> **Status:** 🌱 WIP · 🧪 Experimental · 🟢 Active · 💎 Active-Prime · ❌ Archived
 
 ## ⭐️ Available Skills
 

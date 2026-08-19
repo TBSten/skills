@@ -51,9 +51,11 @@ TBSten の Claude Code skills・rules コレクションリポジトリ。
 | `Experimental` | 🧪 | 使えるはずだが、しっかり検証はされていない |
 | `Active` | 🟢 | プロダクションレディで実用的に使える |
 | `Active-Prime` | 💎 | Active かつ定番として愛用している |
+| `Archived` | ❌ | 役目を終えた・メンテナンスされていない |
 
 - **SSoT**: skill は `SKILL.md` の `metadata.status`、rule は `rules/<name>.md` の frontmatter `status`
 - README.md / README.ja.md の Status 列は SSoT のミラー (絵文字+ラベル表示)。必ず一致させる
+- `Archived` の skill / rule は README の通常テーブルには載せず、🤝 Contribute セクション下の `<details>` (Archived 一覧) に移動する
 - 新規追加時のデフォルトは `Experimental`
 - status の変更は `.claude/skills/change-status.md` スキルで行う
 - `as=<name>` オプションで保存名を変更可能

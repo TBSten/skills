@@ -4,7 +4,7 @@
 
 TBSten の [Claude Code](https://docs.anthropic.com/en/docs/claude-code) スキル・ルールコレクション。
 
-> **ステータス:** 🌱 WIP ・ 🧪 Experimental ・ 🟢 Active ・ 💎 Active-Prime
+> **ステータス:** 🌱 WIP ・ 🧪 Experimental ・ 🟢 Active ・ 💎 Active-Prime ・ ❌ Archived
 
 ## ⭐️ 利用可能なスキル
 
