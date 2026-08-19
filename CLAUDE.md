@@ -70,7 +70,7 @@ TBSten の Claude Code skills・rules コレクションリポジトリ。
 | 🟢 | Kotlin / Android アプリ開発 | Kotlin / Android App Development |
 | 🟣 | Kotlin ライブラリ/ツール開発 | Kotlin Library / Tool Development |
 | 🔵 | Web フロントエンド | Web Frontend |
-| ⚫ | Git / GitHub | Git / GitHub |
+| ⚫️ | Git / GitHub | Git / GitHub |
 
 - **SSoT**: skill は `SKILL.md` の `metadata.group`、rule は `rules/<name>.md` の frontmatter `group`。いずれも日本語グループ名で記載する (絵文字は付けない)
 - README.md / README.ja.md の一覧テーブル先頭の Group / グループ列は SSoT のミラー (英語版は上表の英語名で表示)。必ず一致させる

@@ -98,7 +98,7 @@ rule の所属グループも status と同じく **英語詳細ドキュメン�
 | 🟢 | Kotlin / Android アプリ開発 | Kotlin / Android App Development |
 | 🟣 | Kotlin ライブラリ/ツール開発 | Kotlin Library / Tool Development |
 | 🔵 | Web フロントエンド | Web Frontend |
-| ⚫ | Git / GitHub | Git / GitHub |
+| ⚫️ | Git / GitHub | Git / GitHub |
 
 適切なグループが無い場合は、CLAUDE.md の Group 表とこの表に新グループを追加した上で使う。
 

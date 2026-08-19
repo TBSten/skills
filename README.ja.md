@@ -160,7 +160,7 @@ gh skill install tbsten/skills react-vite-supabase-starter
 <td>React + Vite + TypeScript + Tailwind v4 + shadcn/ui + TanStack Router/Query + Supabase の Web アプリをスキャフォールド</td>
 </tr>
 <tr>
-<td>⚫ Git / GitHub</td>
+<td>⚫️ Git / GitHub</td>
 <td><a href="./skills/exploratory-pr-verification.ja.md">exploratory-pr-verification</a></td>
 <td>
 
