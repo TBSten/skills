@@ -10,6 +10,7 @@ description: >
   "Gradle で Maven Central 公開の設定", "Kotlin ライブラリを公開する設定を追加".
 metadata:
   status: Active
+  group: Kotlin ライブラリ/ツール開発
 ---
 
 # kotlin-maven-central-publish

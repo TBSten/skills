@@ -9,6 +9,7 @@ description: >
   "Supabase 認証付き SPA テンプレート", "react-vite-supabase-starter".
 metadata:
   status: Active
+  group: Web フロントエンド
 ---
 
 # react-vite-supabase-starter

@@ -32,7 +32,8 @@ ARGUMENTS からユーザーが収集したい知見の説明を受け取る。�
 2. **収集対象** — どの知見をスキル化するか。具体的なファイルパスやセクションを特定する
 3. **スキルの対象ユーザー** — どのようなプロジェクト・状況で使われるスキルか
 4. **status** — skill の成熟度 (WIP / Experimental / Active / Active-Prime)。デフォルトは `Experimental`。ユーザーの指示があればそれに従う
-5. **リポジトリ** — デフォルトは `TBSten/skills`。fork を使う場合はユーザーに確認する
+5. **group** — skill の所属グループ (「タスク管理」「Kotlin / Android アプリ開発」「Kotlin ライブラリ/ツール開発」「Web フロントエンド」「Git / GitHub」等)。知見の内容から適切なグループを提案する。全一覧は clone 先の `.claude/skills/add-skill.md` の group 表を正とする
+6. **リポジトリ** — デフォルトは `TBSten/skills`。fork を使う場合はユーザーに確認する
 
 ## Step 2: 知見の収集と整理
 
@@ -77,6 +78,7 @@ ARGUMENTS からユーザーが収集したい知見の説明を受け取る。�
 - **同梱リソース** — サンプルコードやテンプレート等。不要であれば「なし」と明記
 - **対象プロジェクトの前提** — 言語、フレームワーク、ディレクトリ構成等の前提条件
 - **status** — skill の成熟度 (デフォルト `Experimental`)
+- **group** — skill の所属グループ
 
 ユーザーの承認を得てから次のステップに進む。
 
@@ -185,6 +187,7 @@ PR 作成前に以下を確認する。
    - SKILL.md 内で参照しているすべてのファイルが `./skills/<skill-name>/` 配下に存在すること
    - `README.md` と `README.ja.md` の Available Skills テーブルに新しいスキルのエントリが追加されていること
    - SKILL.md の frontmatter に `metadata.status` があり、README のステータス列 (絵文字+ラベル) と一致していること
+   - SKILL.md の frontmatter に `metadata.group` があり、README のグループ列 (英語版は英語グループ名) と一致していること。行が同じグループの既存行のまとまりに挿入されていること
 2. **SKILL.md の word count が 5,000 words 以下か** — `wc -w` で確認。超える場合は詳細を references/ に分離する
 3. **SKILL.md と references/ に情報重複がないか** — SKILL.md には概要・手順のみ、詳細コード例は references/ に分離
 4. **example/ 内の import が整合しているか** — `grep -r "^import"` でプロジェクト固有依存が残っていないか確認

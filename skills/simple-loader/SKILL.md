@@ -12,6 +12,7 @@ description: >
   For Kotlin/KMP + Compose Multiplatform projects that need structured async data loading with state management.
 metadata:
   status: Active
+  group: Kotlin / Android アプリ開発
 ---
 
 # SimpleLoader Generation Skill

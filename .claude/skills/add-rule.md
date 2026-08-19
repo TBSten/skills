@@ -43,6 +43,7 @@ rules/<rule-name>/
 1. **rule 名** — kebab-case。`rules/<rule-name>/` のディレクトリ名として使用
 2. **ルールの内容** — Claude Code にどのような振る舞いを指示するルールか
 3. **参照ファイルの有無** — ルールが参照するテンプレートやサンプルコード等があるか。ある場合、インストール時にユーザーのカレントディレクトリに配置されることを考慮してパスを設計する
+4. **グループ** — どのグループに属する rule か。「group (必須)」セクションの表から選ぶ
 
 ### Step 2: ディレクトリとファイルの作成
 
@@ -69,6 +70,7 @@ rule の成熟度は **英語詳細ドキュメント `rules/<rule-name>.md` の
 ```yaml
 ---
 status: Experimental
+group: <グループ名>
 ---
 # <rule-name> Rule
 ```
@@ -85,16 +87,37 @@ status: Experimental
 新規追加時のデフォルトは `Experimental` (ユーザーの指示があればそれに従う)。
 既存 rule の status を後から変更する場合は `change-status` スキルを使う。
 
+#### group (必須)
+
+rule の所属グループも status と同じく **英語詳細ドキュメント `rules/<rule-name>.md` の frontmatter** に、
+**日本語グループ名** で記載する (`.ja.md` には付けず、英語版を SSoT とする)。値は以下のいずれか:
+
+| グループ (ja) | Group (en) |
+|---|---|
+| タスク管理 | Task Management |
+| Kotlin / Android アプリ開発 | Kotlin / Android App Development |
+| Kotlin ライブラリ/ツール開発 | Kotlin Library / Tool Development |
+| Web フロントエンド | Web Frontend |
+| Git / GitHub | Git / GitHub |
+
+適切なグループが無い場合は、CLAUDE.md の Group 表とこの表に新グループを追加した上で使う。
+
 ### Step 3: README の更新
 
 `README.md` と `README.ja.md` の **Available Rules** テーブルに行を追加する。
-既存の行のフォーマットに厳密に合わせること。テーブルには Install と Description の間に
-**Status** (日本語版は **ステータス**) 列がある。ステータスセルは `絵文字 + 半角スペース + status ラベル`
-で記載する (例: `🧪 Experimental`, `🟢 Active`)。詳細ドキュメントの `status` frontmatter と必ず一致させる。
+既存の行のフォーマットに厳密に合わせること。テーブルは先頭に **Group** (日本語版は **グループ**) 列があり、
+Install と Description の間に **Status** (日本語版は **ステータス**) 列がある。
+
+- **行の挿入位置**: テーブルの行はグループごとにまとまっている。新しい行はテーブル末尾ではなく、
+  同じグループの既存行のまとまりの末尾に挿入する (そのグループの行がまだ無ければ「group (必須)」の表の順に従った位置に挿入する)
+- **グループセル**: 詳細ドキュメントの `group` frontmatter と必ず一致させる。英語版 README では表の英語名 (Group (en)) を使う
+- **ステータスセル**: `絵文字 + 半角スペース + status ラベル` で記載する (例: `🧪 Experimental`, `🟢 Active`)。
+  詳細ドキュメントの `status` frontmatter と必ず一致させる
 
 **README.md テンプレート:**
 ````html
 <tr>
+<td>Group in English</td>
 <td><a href="./rules/<rule-name>.md"><rule-name></a></td>
 <td>
 
@@ -111,6 +134,7 @@ curl -fsSL https://rules.tbsten.me/i | bash -s -- <rule-name>
 **README.ja.md テンプレート:**
 ````html
 <tr>
+<td>日本語グループ名</td>
 <td><a href="./rules/<rule-name>.ja.md"><rule-name></a></td>
 <td>
 
@@ -138,3 +162,4 @@ curl -fsSL https://rules.tbsten.me/i | bash -s -- <rule-name>
 - テーブルは HTML `<table>` タグで記述し、Install 列のコマンドは ```sh code block で記載する
 - 参照ファイルのパス設計時は、ユーザーのプロジェクトルートに展開されることを考慮する
 - status は `rules/<rule-name>.md` の frontmatter を SSoT とし、README のステータス列と必ず一致させる (RULE.md には書かない)
+- group も `rules/<rule-name>.md` の frontmatter (日本語グループ名) を SSoT とし、README のグループ列 (英語版は英語名) と必ず一致させる (RULE.md には書かない)

@@ -59,3 +59,21 @@ TBSten の Claude Code skills・rules コレクションリポジトリ。
 - 新規追加時のデフォルトは `Experimental`
 - status の変更は `.claude/skills/change-status.md` スキルで行う
 - `as=<name>` オプションで保存名を変更可能
+
+## Group
+
+各 skill / rule には所属グループを持たせ、README の一覧テーブルはグループごとにまとめて表示する。
+
+| グループ (ja) | Group (en) |
+|---|---|
+| タスク管理 | Task Management |
+| Kotlin / Android アプリ開発 | Kotlin / Android App Development |
+| Kotlin ライブラリ/ツール開発 | Kotlin Library / Tool Development |
+| Web フロントエンド | Web Frontend |
+| Git / GitHub | Git / GitHub |
+
+- **SSoT**: skill は `SKILL.md` の `metadata.group`、rule は `rules/<name>.md` の frontmatter `group`。いずれも日本語グループ名で記載する
+- README.md / README.ja.md の一覧テーブル先頭の Group / グループ列は SSoT のミラー (英語版は上表の英語名で表示)。必ず一致させる
+- テーブルの行は上表のグループ順に並べ、同じグループの行は隣接させる (行の追加は該当グループのまとまりの中に挿入する)
+- 新規追加時は既存グループから選ぶ。適切なグループが無ければ上表に新グループを追加した上で使う
+- 🤝 Contribute セクションの skill (contribute-skill / contribute-rule) はグループ対象外

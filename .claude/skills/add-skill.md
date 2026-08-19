@@ -38,6 +38,7 @@ skills/<skill-name>/
 2. **スキルの目的** — 何を生成・実行するスキルか。具体的なユースケースを把握する
 3. **トリガーフレーズ** — ユーザーがどのような発話でこのスキルを呼び出すか
 4. **必要なリソース** — scripts / references / assets / example のうち何が必要か
+5. **グループ** — どのグループに属する skill か。「group (必須)」セクションの表から選ぶ
 
 ### Step 2: SKILL.md の作成
 
@@ -56,6 +57,7 @@ description: >
   - Use when requested: "トリガーフレーズ1", "フレーズ2", ...
 metadata:
   status: Experimental
+  group: <グループ名>
 ---
 ```
 
@@ -74,6 +76,20 @@ description は第三者視点で記述する (例: "This skill should be used w
 
 新規追加時のデフォルトは `Experimental` (ユーザーの指示があればそれに従う)。
 既存 skill の status を後から変更する場合は `change-status` スキルを使う。
+
+#### group (必須)
+
+`metadata.group` に skill の所属グループを **日本語グループ名** で記載する。値は以下のいずれか:
+
+| グループ (ja) | Group (en) |
+|---|---|
+| タスク管理 | Task Management |
+| Kotlin / Android アプリ開発 | Kotlin / Android App Development |
+| Kotlin ライブラリ/ツール開発 | Kotlin Library / Tool Development |
+| Web フロントエンド | Web Frontend |
+| Git / GitHub | Git / GitHub |
+
+適切なグループが無い場合は、CLAUDE.md の Group 表とこの表に新グループを追加した上で使う。
 
 #### Markdown 本文
 
@@ -117,13 +133,19 @@ example コードのパッケージ名は以下の規約に従う:
 ### Step 5: README の更新
 
 `README.md` と `README.ja.md` の **Available Skills** テーブルに行を追加する。
-既存の行のフォーマットに厳密に合わせること。テーブルには Install と Description の間に
-**Status** (日本語版は **ステータス**) 列がある。ステータスセルは `絵文字 + 半角スペース + status ラベル`
-で記載する (例: `🧪 Experimental`, `🟢 Active`)。frontmatter の `metadata.status` と必ず一致させる。
+既存の行のフォーマットに厳密に合わせること。テーブルは先頭に **Group** (日本語版は **グループ**) 列があり、
+Install と Description の間に **Status** (日本語版は **ステータス**) 列がある。
+
+- **行の挿入位置**: テーブルの行はグループごとにまとまっている。新しい行はテーブル末尾ではなく、
+  同じグループの既存行のまとまりの末尾に挿入する (そのグループの行がまだ無ければ「group (必須)」の表の順に従った位置に挿入する)
+- **グループセル**: frontmatter の `metadata.group` と必ず一致させる。英語版 README では表の英語名 (Group (en)) を使う
+- **ステータスセル**: `絵文字 + 半角スペース + status ラベル` で記載する (例: `🧪 Experimental`, `🟢 Active`)。
+  frontmatter の `metadata.status` と必ず一致させる
 
 **README.md テンプレート:**
 ````html
 <tr>
+<td>Group in English</td>
 <td><a href="./skills/<skill-name>.md"><skill-name></a></td>
 <td>
 
@@ -140,6 +162,7 @@ gh skill install tbsten/skills <skill-name>
 **README.ja.md テンプレート:**
 ````html
 <tr>
+<td>日本語グループ名</td>
 <td><a href="./skills/<skill-name>.ja.md"><skill-name></a></td>
 <td>
 
@@ -167,3 +190,4 @@ gh skill install tbsten/skills <skill-name>
 - description は Claude Code がスキル発動を判断する最重要情報。具体的なトリガーフレーズを含めること
 - SKILL.md と references で情報を重複させない (Single Source of Truth)
 - status は SKILL.md の `metadata.status` を SSoT とし、README のステータス列と必ず一致させる
+- group は SKILL.md の `metadata.group` (日本語グループ名) を SSoT とし、README のグループ列 (英語版は英語名) と必ず一致させる

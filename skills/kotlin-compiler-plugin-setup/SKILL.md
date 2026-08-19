@@ -14,6 +14,7 @@ description: >
   "Gradle plugin で compiler plugin をラップ", "compiler plugin の integration test をセットアップ".
 metadata:
   status: Active
+  group: Kotlin ライブラリ/ツール開発
 ---
 
 # Kotlin Compiler Plugin Setup

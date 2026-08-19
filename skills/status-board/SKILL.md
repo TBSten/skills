@@ -11,6 +11,7 @@ description: >
   "ステータスボード", "進捗を図にして", "何が止まってるか見たい", "PR の詰まりを可視化".
 metadata:
   status: Experimental
+  group: タスク管理
 ---
 
 # status-board
