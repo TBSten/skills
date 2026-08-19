@@ -147,6 +147,19 @@ gh skill install tbsten/skills intellij-plugin-dev
 <td>Tooling and verification-channel reference for agent-driven IntelliJ plugin dev</td>
 </tr>
 <tr>
+<td></td>
+<td><a href="./skills/ksp-plugin-setup.md">ksp-plugin-setup</a></td>
+<td>
+
+```sh
+gh skill install tbsten/skills ksp-plugin-setup
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>Scaffold a KSP plugin project (runtime/ksp/test, kctfork goldens, Konsist)</td>
+</tr>
+<tr>
 <td>🔵 Web Frontend</td>
 <td><a href="./skills/react-vite-supabase-starter.md">react-vite-supabase-starter</a></td>
 <td>
@@ -350,6 +363,19 @@ Fetch https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/prompts/ko
 </td>
 <td>🧪 Experimental</td>
 <td>Set up Maven Central publishing for Kotlin/KMP (prompt version of the skill)</td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./prompts/ksp-plugin-setup.md">ksp-plugin-setup</a></td>
+<td>
+
+```
+Fetch https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/prompts/ksp-plugin-setup/PROMPT.md and follow its instructions
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>Scaffold a KSP plugin project (prompt version of the skill)</td>
 </tr>
 <tr>
 <td>🔵 Web Frontend</td>
