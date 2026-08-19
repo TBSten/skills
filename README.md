@@ -27,7 +27,7 @@ gh skill install tbsten/skills local-ticket-system
 
 </td>
 <td>✅ Active</td>
-<td>Markdown-based local ticket management system with task, bug, and chapter tickets</td>
+<td>Markdown-based local ticket management with task, bug, and chapter tickets</td>
 </tr>
 <tr>
 <td></td>
@@ -40,7 +40,7 @@ gh skill install tbsten/skills status-board
 
 </td>
 <td>🧪 Experimental</td>
-<td>Collapse everything in flight — GitHub PRs and issues, local branches, and the open questions that only exist in the conversation — into one standalone HTML page: a dependency-graph SVG plus an epic-by-epic kanban, designed so "waiting on a human" and "the next move" read at a glance; ships ask boxes that collect answers in the browser, exports a figure with only the Shift-clicked tickets lifted out so it drops straight into a PR, and is tuned for speed (one GraphQL round trip, defaults pre-filled, self-verification bundled into the output)</td>
+<td>Collapse PRs, issues, branches, and open questions into one kanban + graph HTML</td>
 </tr>
 <tr>
 <td>🟢 Kotlin / Android App Development</td>
@@ -66,7 +66,7 @@ gh skill install tbsten/skills simple-loader
 
 </td>
 <td>✅ Active</td>
-<td>Sealed interface state machine for async data loading in Kotlin/Compose Multiplatform</td>
+<td>Sealed interface state machine for async data loading in Kotlin/Compose MP</td>
 </tr>
 <tr>
 <td></td>
@@ -92,7 +92,7 @@ gh skill install tbsten/skills kmp-snapshot-testing-setup
 
 </td>
 <td>✅ Active</td>
-<td>Set up snapshot testing infrastructure (Kotest PBT + Turbine) for KMP + Compose projects</td>
+<td>Set up snapshot testing (Kotest PBT + Turbine) for KMP + Compose projects</td>
 </tr>
 <tr>
 <td>🟣 Kotlin Library / Tool Development</td>
@@ -105,7 +105,7 @@ gh skill install tbsten/skills kotlin-compiler-plugin-setup
 
 </td>
 <td>✅ Active</td>
-<td>Set up a Kotlin Compiler Plugin project with multi-module Gradle structure, buildSrc, unit tests (kctfork), and integration tests</td>
+<td>Set up a Kotlin Compiler Plugin project (buildSrc, kctfork, integration tests)</td>
 </tr>
 <tr>
 <td></td>
@@ -118,7 +118,7 @@ gh skill install tbsten/skills kotlin-compiler-plugin-dev
 
 </td>
 <td>✅ Active</td>
-<td>Develop and review Kotlin Compiler Plugins using research data from 30+ existing plugins; also covers adding/removing supported Kotlin versions in projects with compat module layer or source set separation</td>
+<td>Develop and review Kotlin Compiler Plugins with research from 30+ plugins</td>
 </tr>
 <tr>
 <td></td>
@@ -131,7 +131,7 @@ gh skill install tbsten/skills kotlin-maven-central-publish
 
 </td>
 <td>✅ Active</td>
-<td>Set up Maven Central publishing for Kotlin/KMP projects with Vanniktech Maven Publish, GPG signing, and GitHub Actions</td>
+<td>Set up Maven Central publishing for Kotlin/KMP (Vanniktech, GPG, GitHub Actions)</td>
 </tr>
 <tr>
 <td></td>
@@ -144,7 +144,7 @@ gh skill install tbsten/skills intellij-plugin-dev
 
 </td>
 <td>🌱 WIP</td>
-<td>Tooling & workflow reference for building IntelliJ Platform / Android Studio plugins agent-driven — decomposes verification into 6 channels anchored on headless functional tests (Kotlin Analysis API) and headless PNG self-review (renderComposeScene + Jewel); covers the tool window, gutter line markers, editor following, PSI insertion (codegen), VRT golden, Driver smoke, and build/since-until wiring</td>
+<td>Tooling and verification-channel reference for agent-driven IntelliJ plugin dev</td>
 </tr>
 <tr>
 <td>🔵 Web Frontend</td>
@@ -157,7 +157,7 @@ gh skill install tbsten/skills react-vite-supabase-starter
 
 </td>
 <td>✅ Active</td>
-<td>Scaffold a React + Vite + TypeScript + Tailwind v4 + shadcn/ui + TanStack Router/Query + Supabase web app</td>
+<td>Scaffold a React + Vite + Tailwind v4 + shadcn/ui + TanStack + Supabase web app</td>
 </tr>
 <tr>
 <td>⚫️ Git / GitHub</td>
@@ -170,7 +170,7 @@ gh skill install tbsten/skills exploratory-pr-verification
 
 </td>
 <td>✅ Active</td>
-<td>Operational rules for multi-subagent exploratory PR verification on Kotlin projects (PDCA / MCP / ticket bookkeeping / PR comment etiquette / loop termination)</td>
+<td>Rules for multi-subagent exploratory PR verification on Kotlin projects</td>
 </tr>
 <tr>
 <td></td>
@@ -183,7 +183,7 @@ gh skill install tbsten/skills exploratory-nightly-verification
 
 </td>
 <td>✅ Active</td>
-<td>60-minute single-shot exploratory verification of a Kotlin project's main branch from a nightly CI job, with Markdown-file-based findings and zero side effects</td>
+<td>60-min single-shot exploratory verification of main from a nightly CI job</td>
 </tr>
 <tr>
 <td></td>
@@ -196,7 +196,7 @@ gh skill install tbsten/skills pr-fix-loop
 
 </td>
 <td>✅ Active</td>
-<td>Drive multiple GitHub PRs to green in parallel — one loop pass classifies each failing CI check (transient / lint / binary-compat / build / test) and delegates to a fix-ci-* skill, handles review and issue comments end to end, and chains rebases for stacked PRs; pairs with a /loop driver for unattended runs</td>
+<td>Drive many PRs to green: classify CI failures, handle comments, chain rebases</td>
 </tr>
 <tr>
 <td></td>
@@ -209,7 +209,7 @@ gh skill install tbsten/skills github-get-attachment-url
 
 </td>
 <td>✅ Active</td>
-<td>Upload local files to GitHub and get their user-attachments URLs (or Markdown) without creating an issue, via a bundled deterministic Python + Playwright runner</td>
+<td>Get user-attachments URLs for local files without creating an issue</td>
 </tr>
 </table>
 
@@ -235,7 +235,7 @@ curl -fsSL https://rules.tbsten.me/i | \
 
 </td>
 <td>✅ Active</td>
-<td>Snapshot PBT testing rule for Kotlin Multiplatform projects with Kotest + Turbine</td>
+<td>Snapshot PBT testing rule for KMP projects with Kotest + Turbine</td>
 </tr>
 <tr>
 <td></td>
@@ -249,7 +249,7 @@ curl -fsSL https://rules.tbsten.me/i | \
 
 </td>
 <td>✅ Active</td>
-<td>Error handling and warning detection rule for Kotlin Multiplatform + Compose projects</td>
+<td>Error handling and warning detection rule for KMP + Compose projects</td>
 </tr>
 <tr>
 <td></td>
@@ -263,7 +263,7 @@ curl -fsSL https://rules.tbsten.me/i | \
 
 </td>
 <td>✅ Active</td>
-<td>4-layer architecture (App/UI/Domain/Data) rule for Kotlin Multiplatform + Compose projects</td>
+<td>4-layer architecture (App/UI/Domain/Data) rule for KMP + Compose projects</td>
 </tr>
 </table>
 
