@@ -300,6 +300,72 @@ curl -fsSL https://rules.tbsten.me/i | bash -s -- kmp-snapshot-testing -r=abc123
 
 </details>
 
+## 💬 利用可能なプロンプト
+
+スキルをインストールせずに使える一回限りのプロンプト集。「実行」列のプロンプトをコピーして Claude Code に貼り付けると実行できます。
+
+<table>
+<tr>
+<th>グループ</th>
+<th>プロンプト</th>
+<th>実行</th>
+<th>ステータス</th>
+<th>説明</th>
+</tr>
+<tr>
+<td>🟢 Kotlin / Android アプリ開発</td>
+<td><a href="./prompts/kmp-snapshot-testing-setup.ja.md">kmp-snapshot-testing-setup</a></td>
+<td>
+
+```
+https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/prompts/kmp-snapshot-testing-setup/PROMPT.md を取得して、その指示に従って実行して
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>KMP + Compose 向けスナップショットテスト基盤のセットアップ (skill のプロンプト版)</td>
+</tr>
+<tr>
+<td>🟣 Kotlin ライブラリ/ツール開発</td>
+<td><a href="./prompts/kotlin-compiler-plugin-setup.ja.md">kotlin-compiler-plugin-setup</a></td>
+<td>
+
+```
+https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/prompts/kotlin-compiler-plugin-setup/PROMPT.md を取得して、その指示に従って実行して
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>Kotlin Compiler Plugin プロジェクトのセットアップ (skill のプロンプト版)</td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./prompts/kotlin-maven-central-publish.ja.md">kotlin-maven-central-publish</a></td>
+<td>
+
+```
+https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/prompts/kotlin-maven-central-publish/PROMPT.md を取得して、その指示に従って実行して
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>Kotlin/KMP 向け Maven Central 公開設定 (skill のプロンプト版)</td>
+</tr>
+<tr>
+<td>🔵 Web フロントエンド</td>
+<td><a href="./prompts/react-vite-supabase-starter.ja.md">react-vite-supabase-starter</a></td>
+<td>
+
+```
+https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/prompts/react-vite-supabase-starter/PROMPT.md を取得して、その指示に従って実行して
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>React + Vite + Supabase の Web アプリをスキャフォールド (skill のプロンプト版)</td>
+</tr>
+</table>
+
 ## 🤝 スキル / ルールの貢献
 
 以下の skills を使用してこのリポジトリへの Pull Request を作成してください。
@@ -334,5 +400,17 @@ gh skill install tbsten/skills contribute-rule
 </td>
 <td>✅ Active</td>
 <td>プロジェクトの知見をルールとしてパッケージし TBSten/skills に PR を作成</td>
+</tr>
+<tr>
+<td><a href="./skills/contribute-prompt.ja.md">contribute-prompt</a></td>
+<td>
+
+```sh
+gh skill install tbsten/skills contribute-prompt
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>プロジェクトの知見をプロンプトとしてパッケージし TBSten/skills に PR を作成</td>
 </tr>
 </table>

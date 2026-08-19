@@ -300,6 +300,72 @@ curl -fsSL https://rules.tbsten.me/i | bash -s -- kmp-snapshot-testing -r=abc123
 
 </details>
 
+## 💬 Available Prompts
+
+One-shot prompts that need no skill installation. Copy the prompt in the Run column and paste it into Claude Code.
+
+<table>
+<tr>
+<th>Group</th>
+<th>Prompt</th>
+<th>Run</th>
+<th>Status</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>🟢 Kotlin / Android App Development</td>
+<td><a href="./prompts/kmp-snapshot-testing-setup.md">kmp-snapshot-testing-setup</a></td>
+<td>
+
+```
+Fetch https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/prompts/kmp-snapshot-testing-setup/PROMPT.md and follow its instructions
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>Set up KMP + Compose snapshot testing (prompt version of the skill)</td>
+</tr>
+<tr>
+<td>🟣 Kotlin Library / Tool Development</td>
+<td><a href="./prompts/kotlin-compiler-plugin-setup.md">kotlin-compiler-plugin-setup</a></td>
+<td>
+
+```
+Fetch https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/prompts/kotlin-compiler-plugin-setup/PROMPT.md and follow its instructions
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>Set up a Kotlin Compiler Plugin project (prompt version of the skill)</td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./prompts/kotlin-maven-central-publish.md">kotlin-maven-central-publish</a></td>
+<td>
+
+```
+Fetch https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/prompts/kotlin-maven-central-publish/PROMPT.md and follow its instructions
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>Set up Maven Central publishing for Kotlin/KMP (prompt version of the skill)</td>
+</tr>
+<tr>
+<td>🔵 Web Frontend</td>
+<td><a href="./prompts/react-vite-supabase-starter.md">react-vite-supabase-starter</a></td>
+<td>
+
+```
+Fetch https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/prompts/react-vite-supabase-starter/PROMPT.md and follow its instructions
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>Scaffold a React + Vite + Supabase web app (prompt version of the skill)</td>
+</tr>
+</table>
+
 ## 🤝 Contribute Skills / Rules
 
 Use the following skills to create a Pull Request to this repository.
@@ -334,5 +400,17 @@ gh skill install tbsten/skills contribute-rule
 </td>
 <td>✅ Active</td>
 <td>Package project knowledge as a rule and create a PR to TBSten/skills</td>
+</tr>
+<tr>
+<td><a href="./skills/contribute-prompt.md">contribute-prompt</a></td>
+<td>
+
+```sh
+gh skill install tbsten/skills contribute-prompt
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>Package project knowledge as a prompt and create a PR to TBSten/skills</td>
 </tr>
 </table>

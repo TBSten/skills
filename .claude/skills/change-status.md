@@ -1,19 +1,19 @@
 ---
 name: change-status
 description: >
-  このリポジトリ (tbsten/skills) の既存 skill / rule の status を変更するためのスキル。
+  このリポジトリ (tbsten/skills) の既存 skill / rule / prompt の status を変更するためのスキル。
   status は WIP / Experimental / Active / Active-Prime / Archived の 5 値。
-  SSoT (skill は SKILL.md の metadata.status、rule は詳細ドキュメント rules/<name>.md の frontmatter status) と
+  SSoT (skill は SKILL.md の metadata.status、rule / prompt は詳細ドキュメント rules/<name>.md / prompts/<name>.md の frontmatter status) と
   README.md / README.ja.md のステータス列を同期して更新する。
-  このスキルはリポジトリのコントリビューター向けであり、skill / rule の利用者向けではない。
+  このスキルはリポジトリのコントリビューター向けであり、skill / rule / prompt の利用者向けではない。
   Use when requested: "status を変更", "ステータスを変更", "Active にする", "Experimental に戻す",
   "WIP から昇格", "change status", "定番にする", "Active-Prime に上げる", "ステータスを上げる",
   "Archived にする", "アーカイブする", "archive".
 ---
 
-# change-status: skill / rule の status 変更
+# change-status: skill / rule / prompt の status 変更
 
-このリポジトリの既存 skill / rule の status を変更し、SSoT と README を同期する。
+このリポジトリの既存 skill / rule / prompt の status を変更し、SSoT と README を同期する。
 
 ## status の定義
 
@@ -45,6 +45,8 @@ description: >
   # <rule-name> Rule
   ```
   - `rules/<name>.ja.md` には frontmatter を付けない。英語版を正 (SSoT) とする。
+- **prompt**: `prompts/<name>.md` (英語詳細ドキュメント) 先頭の frontmatter `status` (rule と同じ形式)
+  - `prompts/<name>.ja.md` には frontmatter を付けない。英語版を正 (SSoT) とする。
 
 README.md / README.ja.md のステータス列は **frontmatter を正としたミラー**。frontmatter を変更したら必ず README も同じ status に更新する。
 
@@ -54,13 +56,14 @@ README.md / README.ja.md のステータス列は **frontmatter を正とした�
 
 以下を確認する。ユーザーの指示から明確に読み取れる項目は確認を省略してよい。
 
-1. **種別** — skill か rule か
+1. **種別** — skill / rule / prompt のいずれか
 2. **名前** — kebab-case (例: `kotlin-tuple`, `kmp-error-handling`)
 3. **新しい status** — `WIP` / `Experimental` / `Active` / `Active-Prime` / `Archived` のいずれか。5 値以外が指定されたら差し戻す
 
 対象ファイルが存在することを確認する:
 - skill → `skills/<name>/SKILL.md`
 - rule → `rules/<name>.md`
+- prompt → `prompts/<name>.md`
 
 ### Step 2: SSoT の更新
 
@@ -69,13 +72,14 @@ README.md / README.ja.md のステータス列は **frontmatter を正とした�
   - `metadata:` ブロックが無ければ frontmatter の閉じ `---` の直前に追加する
 - **rule**: `rules/<name>.md` の frontmatter `status` を更新する
   - frontmatter が無ければファイル先頭に `---\nstatus: <new>\n---\n\n` を追加する
+- **prompt**: `prompts/<name>.md` の frontmatter `status` を更新する (rule と同様)
 
 ### Step 3: README の更新
 
 `README.md` と `README.ja.md` の該当エントリのステータスセルを更新する。
 
-1. 対象名を含む行 (`<a href="./skills/<name>...">` または `<a href="./rules/<name>...">`) を探す
-2. その行の直後にある install セルの次の `<td>...Active...</td>` 等のステータスセルを、新しい `<td><絵文字> <status></td>` に置き換える
+1. 対象名を含む行 (`<a href="./skills/<name>...">` / `<a href="./rules/<name>...">` / `<a href="./prompts/<name>...">`) を探す
+2. その行の直後にある install / 実行セルの次の `<td>...Active...</td>` 等のステータスセルを、新しい `<td><絵文字> <status></td>` に置き換える
 3. セル表示は `絵文字 + 半角スペース + status ラベル` (例: `✅ Active`, `🧪 Experimental`)
 
 両ファイルとも忘れずに更新する。
@@ -84,7 +88,7 @@ README.md / README.ja.md のステータス列は **frontmatter を正とした�
 
 新 status が `Archived` の場合は、ステータスセルの更新ではなくエントリの移動を行う:
 
-1. 通常テーブル (⭐️ Available Skills / 📝 Available Rules) から該当 `<tr>...</tr>` を削除する
+1. 通常テーブル (⭐️ Available Skills / 📝 Available Rules / 💬 Available Prompts) から該当 `<tr>...</tr>` を削除する
    - 削除する行がグループ先頭行 (グループセルに `絵文字 + グループ名` が入っている行) の場合は、直後の同グループ行の空グループセルにその内容を移す
 2. README 末尾 (🤝 Contribute セクションの下) の `<details>` 内 Archived テーブルに、ステータス `❌ Archived` で同じ行を追加する
 3. Archived テーブルが無ければ `<details><summary> ❌ Archived Skills / Rules </summary>` セクションごと新規作成する
@@ -101,4 +105,4 @@ README.md / README.ja.md のステータス列は **frontmatter を正とした�
 
 - frontmatter (SSoT) と README のステータスは **常に一致** させる。片方だけの更新は禁止
 - status は 5 値のみ。表記ゆれ (`active`, `WIP中` 等) を許さない
-- 複数の skill / rule をまとめて変更する場合は、1 件ずつ Step 2-3 を繰り返す
+- 複数の skill / rule / prompt をまとめて変更する場合は、1 件ずつ Step 2-3 を繰り返す
