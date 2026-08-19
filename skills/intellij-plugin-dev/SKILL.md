@@ -14,6 +14,7 @@ description: >
   "プラグインの build 配線 / since-until", "Driver スモーク", "AS vs IDEA の build スキュー".
 metadata:
   status: WIP
+  group: Kotlin ライブラリ/ツール開発
 ---
 
 # IntelliJ Platform プラグイン開発の進め方 (エージェント主導)

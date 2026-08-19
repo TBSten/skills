@@ -10,6 +10,7 @@ description: >
   "チャプターを作成", "epic を作成", "local ticket system", "setup ticket management".
 metadata:
   status: Active
+  group: タスク管理
 ---
 
 # local-ticket-system

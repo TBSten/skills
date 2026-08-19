@@ -12,6 +12,7 @@ description: >
   For KMP + Compose Multiplatform projects using Gradle with build-logic convention plugins.
 metadata:
   status: Active
+  group: Kotlin / Android アプリ開発
 ---
 
 # KMP Snapshot Testing Setup

@@ -12,6 +12,7 @@ description: >
   "complex PR を 5 並列で深掘り".
 metadata:
   status: Active
+  group: Git / GitHub
 ---
 
 # Exploratory PR Verification — Operational Rules

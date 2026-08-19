@@ -1,5 +1,6 @@
 ---
 status: Active
+group: Kotlin / Android アプリ開発
 ---
 
 # kmp-snapshot-testing Rule

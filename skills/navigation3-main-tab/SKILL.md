@@ -11,6 +11,7 @@ description: >
   "implement bottom tabs with Navigation 3".
 metadata:
   status: Active
+  group: Kotlin / Android アプリ開発
 ---
 
 # navigation3-main-tab

@@ -12,6 +12,7 @@ description: >
   "exploratory-nightly", "60 分 budget で main を探索", "夜間 main quality scan".
 metadata:
   status: Active
+  group: Git / GitHub
 ---
 
 # Exploratory Nightly Verification

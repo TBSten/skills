@@ -9,6 +9,7 @@ description: >
   For Kotlin/KMP projects where Pair/Triple is not enough for multi-element grouping.
 metadata:
   status: Active
+  group: Kotlin / Android アプリ開発
 ---
 
 # Kotlin Tuple Utility Generation Skill

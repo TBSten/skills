@@ -12,6 +12,7 @@ description: >
   PRs", "複数 PR を見ながら修正", "PR ループ", "stacked PR を順番に green に".
 metadata:
   status: Active
+  group: Git / GitHub
 ---
 
 # pr-fix-loop

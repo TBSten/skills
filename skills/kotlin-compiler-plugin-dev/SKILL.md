@@ -24,6 +24,7 @@ description: >
   "IrDeclarationOrigin が patch で変わった", "ShadowJar で compat module を束ねたい".
 metadata:
   status: Active
+  group: Kotlin ライブラリ/ツール開発
 ---
 
 # Kotlin Compiler Plugin Dev

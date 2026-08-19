@@ -21,7 +21,7 @@ description: >
 |---|---|---|
 | `WIP` | 🌱 | 作成中だけど一旦出してみた |
 | `Experimental` | 🧪 | 使えるはずだが、しっかり検証はされていない |
-| `Active` | 🟢 | プロダクションレディで実用的に使える |
+| `Active` | ✅ | プロダクションレディで実用的に使える |
 | `Active-Prime` | 💎 | Active かつ定番として愛用している |
 | `Archived` | ❌ | 役目を終えた・メンテナンスされていない |
 
@@ -76,7 +76,7 @@ README.md / README.ja.md のステータス列は **frontmatter を正とした�
 
 1. 対象名を含む行 (`<a href="./skills/<name>...">` または `<a href="./rules/<name>...">`) を探す
 2. その行の直後にある install セルの次の `<td>...Active...</td>` 等のステータスセルを、新しい `<td><絵文字> <status></td>` に置き換える
-3. セル表示は `絵文字 + 半角スペース + status ラベル` (例: `🟢 Active`, `🧪 Experimental`)
+3. セル表示は `絵文字 + 半角スペース + status ラベル` (例: `✅ Active`, `🧪 Experimental`)
 
 両ファイルとも忘れずに更新する。
 
@@ -85,6 +85,7 @@ README.md / README.ja.md のステータス列は **frontmatter を正とした�
 新 status が `Archived` の場合は、ステータスセルの更新ではなくエントリの移動を行う:
 
 1. 通常テーブル (⭐️ Available Skills / 📝 Available Rules) から該当 `<tr>...</tr>` を削除する
+   - 削除する行がグループ先頭行 (グループセルに `絵文字 + グループ名` が入っている行) の場合は、直後の同グループ行の空グループセルにその内容を移す
 2. README 末尾 (🤝 Contribute セクションの下) の `<details>` 内 Archived テーブルに、ステータス `❌ Archived` で同じ行を追加する
 3. Archived テーブルが無ければ `<details><summary> ❌ Archived Skills / Rules </summary>` セクションごと新規作成する
 
