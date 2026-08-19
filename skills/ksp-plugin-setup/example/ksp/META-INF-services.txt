@@ -1,0 +1,5 @@
+Copy this single line into:
+
+  <project-name>-ksp/src/main/resources/META-INF/services/com.google.devtools.ksp.processing.SymbolProcessorProvider
+
+com.example.ksppluginsetup.ksp.ExampleSymbolProcessorProvider

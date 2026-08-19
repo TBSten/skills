@@ -147,6 +147,19 @@ gh skill install tbsten/skills intellij-plugin-dev
 <td>IntelliJ / Android Studio プラグインをエージェント主導で開発するためのツーリング・検証リファレンス</td>
 </tr>
 <tr>
+<td></td>
+<td><a href="./skills/ksp-plugin-setup.ja.md">ksp-plugin-setup</a></td>
+<td>
+
+```sh
+gh skill install tbsten/skills ksp-plugin-setup
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>KSP プラグインを 3 モジュール構成でスキャフォールド (kctfork golden + Konsist)</td>
+</tr>
+<tr>
 <td>🔵 Web フロントエンド</td>
 <td><a href="./skills/react-vite-supabase-starter.ja.md">react-vite-supabase-starter</a></td>
 <td>
