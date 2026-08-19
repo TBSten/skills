@@ -1,5 +1,5 @@
 ---
-name: add-prompt
+name: contribute-prompt
 description: >
   このリポジトリ (tbsten/skills) に新しい一回限りのプロンプト (prompt) を追加、または既存 prompt を更新するためのスキル。
   prompt のディレクトリ構成、PROMPT.md の作成、詳細ドキュメントの配置、README テーブルの更新までを一貫して行う。
@@ -10,7 +10,7 @@ description: >
   "プロンプトを更新", "update prompt", "スキルをプロンプト化", "プロンプトとして公開".
 ---
 
-# add-prompt: Prompt の追加・更新
+# contribute-prompt: Prompt の追加・更新
 
 このリポジトリに新しい prompt を追加、または既存 prompt を更新する。
 

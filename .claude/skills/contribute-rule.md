@@ -1,5 +1,5 @@
 ---
-name: add-rule
+name: contribute-rule
 description: >
   このリポジトリ (tbsten/skills) に新しい Claude Code rule を追加、または既存 rule を更新するためのスキル。
   rule のディレクトリ構成、RULE.md の作成、参照ファイルの配置、README テーブルの更新までを一貫して行う。
@@ -9,7 +9,7 @@ description: >
   "ルールを更新", "update rule", "ルールの修正", "ルールの内容を変更".
 ---
 
-# add-rule: Rule の追加・更新
+# contribute-rule: Rule の追加・更新
 
 このリポジトリに新しい rule を追加、または既存 rule を更新する。
 

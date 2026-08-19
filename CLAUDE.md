@@ -53,7 +53,7 @@ TBSten の Claude Code skills・rules コレクションリポジトリ。
 - 参照ファイルは prompts/ にコピーせず、既存 skill 等のファイルを raw.githubusercontent.com URL で参照する (多数の場合は sparse clone を案内)
 - `prompts/<prompt-name>.md` / `<prompt-name>.ja.md` で詳細ドキュメントを用意
 - status / group は英語詳細ドキュメント `prompts/<prompt-name>.md` の frontmatter に記載 (PROMPT.md には書かない)
-- 追加・更新は `.claude/skills/add-prompt.md` スキルで行う (既存 skill のプロンプト化手順もそこに記載)
+- 追加・更新は `.claude/skills/contribute-prompt.md` スキルで行う (既存 skill のプロンプト化手順もそこに記載)
 
 ## Status
 

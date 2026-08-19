@@ -32,7 +32,7 @@ ARGUMENTS からユーザーが収集したい知見の説明を受け取る。�
 2. **収集対象** — どの知見をスキル化するか。具体的なファイルパスやセクションを特定する
 3. **スキルの対象ユーザー** — どのようなプロジェクト・状況で使われるスキルか
 4. **status** — skill の成熟度 (WIP / Experimental / Active / Active-Prime)。デフォルトは `Experimental`。ユーザーの指示があればそれに従う
-5. **group** — skill の所属グループ (「タスク管理」「Kotlin / Android アプリ開発」「Kotlin ライブラリ/ツール開発」「Web フロントエンド」「Git / GitHub」等)。知見の内容から適切なグループを提案する。全一覧は clone 先の `.claude/skills/add-skill.md` の group 表を正とする
+5. **group** — skill の所属グループ (「タスク管理」「Kotlin / Android アプリ開発」「Kotlin ライブラリ/ツール開発」「Web フロントエンド」「Git / GitHub」等)。知見の内容から適切なグループを提案する。全一覧は clone 先の `.claude/skills/contribute-skill.md` の group 表を正とする
 6. **リポジトリ** — デフォルトは `TBSten/skills`。fork を使う場合はユーザーに確認する
 
 ## Step 2: 知見の収集と整理
@@ -82,7 +82,7 @@ ARGUMENTS からユーザーが収集したい知見の説明を受け取る。�
 
 ユーザーの承認を得てから次のステップに進む。
 
-## Step 3: ワークディレクトリの準備と add-skill.md の読み込み
+## Step 3: ワークディレクトリの準備と contribute-skill.md の読み込み
 
 1. ワークディレクトリを準備する:
 
@@ -97,14 +97,14 @@ git clone --depth 1 https://github.com/<repo>.git /tmp/contribute-skill-<skill-n
 2. clone したリポジトリ内のスキル作成ガイドを読み込む:
 
 ```
-/tmp/contribute-skill-<skill-name>/.claude/skills/add-skill.md
+/tmp/contribute-skill-<skill-name>/.claude/skills/contribute-skill.md
 ```
 
-add-skill.md を読み込んだ後、以下のように統合する:
+contribute-skill.md を読み込んだ後、以下のように統合する:
 
-- **add-skill.md の Step 1 (確認事項)**: contribute-skill の Step 1-2 で既に完了。スキップする
-- **add-skill.md の Step 2 (SKILL.md 作成)**: フォーマット・構成ルールに従う。内容は contribute-skill の Step 2 で整理した知見を使う
-- **add-skill.md の Step 3-5 (リソース配置・ドキュメント・README)**: そのまま従う
+- **contribute-skill.md の Step 1 (確認事項)**: contribute-skill の Step 1-2 で既に完了。スキップする
+- **contribute-skill.md の Step 2 (SKILL.md 作成)**: フォーマット・構成ルールに従う。内容は contribute-skill の Step 2 で整理した知見を使う
+- **contribute-skill.md の Step 3-5 (リソース配置・ドキュメント・README)**: そのまま従う
 
 ガイドが見つからない場合は、以下の「フォールバック」セクションに従う。
 
@@ -133,12 +133,12 @@ example にコードを配置する前に以下を確認・実行する:
    - フレームワーク標準 (`androidx.*`, `react` 等) → そのまま
    - プロジェクト固有ユーティリティ → 標準的な代替に置換、または example に同梱
    - プロジェクト固有アノテーション → 削除
-3. **パッケージ名の抽象化**: `com.example.<skill-name-without-hyphens>` に統一 (add-skill.md のパッケージ名規約に準拠)
+3. **パッケージ名の抽象化**: `com.example.<skill-name-without-hyphens>` に統一 (contribute-skill.md のパッケージ名規約に準拠)
 4. **置換結果をユーザーに提示**: 何を何に置換したかの一覧を示し、承認を得る
 
 ## Step 4: スキルファイルの作成
 
-clone した `/tmp/contribute-skill-<skill-name>/` 内で、add-skill.md の手順に従い以下を作成する。
+clone した `/tmp/contribute-skill-<skill-name>/` 内で、contribute-skill.md の手順に従い以下を作成する。
 Step 2 で整理した知見をもとに、SKILL.md の各セクションを埋めていく。
 
 1. `skills/<skill-name>/SKILL.md` — frontmatter (name, description) + 手順書
@@ -303,7 +303,7 @@ EOF
 
 ## フォールバック
 
-add-skill.md が clone 先に存在しない場合、以下の最低限の構成で作成する:
+contribute-skill.md が clone 先に存在しない場合、以下の最低限の構成で作成する:
 
 1. `skills/<skill-name>/SKILL.md` に YAML frontmatter (name, description) + 手順を記述
 2. `skills/<skill-name>.md` / `<skill-name>.ja.md` に概要・使い方・前提条件を記述

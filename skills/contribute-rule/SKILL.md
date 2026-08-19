@@ -36,7 +36,7 @@ ARGUMENTS からユーザーが収集したい知見の説明を受け取る。�
 3. **ルールの対象ユーザー** — どのようなプロジェクト・状況で適用されるルールか
 4. **参照ファイルの有無** — ルールが参照するテンプレートやサンプルコード等があるか
 5. **status** — rule の成熟度 (WIP / Experimental / Active / Active-Prime)。デフォルトは `Experimental`。ユーザーの指示があればそれに従う
-6. **group** — rule の所属グループ (「タスク管理」「Kotlin / Android アプリ開発」「Kotlin ライブラリ/ツール開発」「Web フロントエンド」「Git / GitHub」等)。知見の内容から適切なグループを提案する。全一覧は clone 先の `.claude/skills/add-rule.md` の group 表を正とする
+6. **group** — rule の所属グループ (「タスク管理」「Kotlin / Android アプリ開発」「Kotlin ライブラリ/ツール開発」「Web フロントエンド」「Git / GitHub」等)。知見の内容から適切なグループを提案する。全一覧は clone 先の `.claude/skills/contribute-rule.md` の group 表を正とする
 7. **リポジトリ** — デフォルトは `TBSten/skills`。fork を使う場合はユーザーに確認する
 
 ## Step 2: 知見の収集と整理
@@ -71,7 +71,7 @@ ARGUMENTS からユーザーが収集したい知見の説明を受け取る。�
 
 ユーザーの承認を得てから次のステップに進む。
 
-## Step 3: ワークディレクトリの準備と add-rule.md の読み込み
+## Step 3: ワークディレクトリの準備と contribute-rule.md の読み込み
 
 1. ワークディレクトリを準備する:
 
@@ -86,15 +86,15 @@ git clone --depth 1 https://github.com/<repo>.git /tmp/contribute-rule-<rule-nam
 2. clone したリポジトリ内のルール作成ガイドを読み込む:
 
 ```
-/tmp/contribute-rule-<rule-name>/.claude/skills/add-rule.md
+/tmp/contribute-rule-<rule-name>/.claude/skills/contribute-rule.md
 ```
 
-add-rule.md を読み込んだ後、以下のように統合する:
+contribute-rule.md を読み込んだ後、以下のように統合する:
 
-- **add-rule.md の Step 1 (確認事項)**: contribute-rule の Step 1-2 で既に完了。スキップする
-- **add-rule.md の Step 2 (ディレクトリとファイルの作成)**: 構成ルールに従う。内容は contribute-rule の Step 2 で整理した知見を使う
-- **add-rule.md の Step 2.5 (詳細ドキュメントの作成)**: そのまま従う
-- **add-rule.md の Step 3 (README の更新)**: そのまま従う
+- **contribute-rule.md の Step 1 (確認事項)**: contribute-rule の Step 1-2 で既に完了。スキップする
+- **contribute-rule.md の Step 2 (ディレクトリとファイルの作成)**: 構成ルールに従う。内容は contribute-rule の Step 2 で整理した知見を使う
+- **contribute-rule.md の Step 2.5 (詳細ドキュメントの作成)**: そのまま従う
+- **contribute-rule.md の Step 3 (README の更新)**: そのまま従う
 
 ガイドが見つからない場合は、以下の「フォールバック」セクションに従う。
 
@@ -114,7 +114,7 @@ WebFetch 等で上記の skill-creator SKILL.md を取得し、以下の観点�
 
 ## Step 4: ルールファイルの作成
 
-clone した `/tmp/contribute-rule-<rule-name>/` 内で、add-rule.md の手順に従い以下を作成する。
+clone した `/tmp/contribute-rule-<rule-name>/` 内で、contribute-rule.md の手順に従い以下を作成する。
 Step 2 で整理した知見をもとに RULE.md を記述する。
 
 1. `rules/<rule-name>/RULE.md` — ルール本体。YAML frontmatter は不要。命令形 (imperative) で記述する
@@ -278,7 +278,7 @@ EOF
 
 ## フォールバック
 
-add-rule.md が clone 先に存在しない場合、以下の最低限の構成で作成する:
+contribute-rule.md が clone 先に存在しない場合、以下の最低限の構成で作成する:
 
 1. `rules/<rule-name>/RULE.md` にルールの内容を記述
 2. 参照ファイルがあれば同ディレクトリに配置
