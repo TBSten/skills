@@ -365,6 +365,19 @@ Fetch https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/prompts/ko
 <td>Set up Maven Central publishing for Kotlin/KMP (prompt version of the skill)</td>
 </tr>
 <tr>
+<td></td>
+<td><a href="./prompts/ksp-plugin-setup.md">ksp-plugin-setup</a></td>
+<td>
+
+```
+Fetch https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/prompts/ksp-plugin-setup/PROMPT.md and follow its instructions
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>Scaffold a KSP plugin project (prompt version of the skill)</td>
+</tr>
+<tr>
 <td>🔵 Web Frontend</td>
 <td><a href="./prompts/react-vite-supabase-starter.md">react-vite-supabase-starter</a></td>
 <td>

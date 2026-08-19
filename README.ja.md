@@ -365,6 +365,19 @@ https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/prompts/kotlin-m
 <td>Kotlin/KMP 向け Maven Central 公開設定 (skill のプロンプト版)</td>
 </tr>
 <tr>
+<td></td>
+<td><a href="./prompts/ksp-plugin-setup.ja.md">ksp-plugin-setup</a></td>
+<td>
+
+```
+https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/prompts/ksp-plugin-setup/PROMPT.md を取得して、その指示に従って実行して
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>KSP プラグインプロジェクトをスキャフォールド (skill のプロンプト版)</td>
+</tr>
+<tr>
 <td>🔵 Web フロントエンド</td>
 <td><a href="./prompts/react-vite-supabase-starter.ja.md">react-vite-supabase-starter</a></td>
 <td>
