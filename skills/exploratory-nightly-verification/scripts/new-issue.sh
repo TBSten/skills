@@ -121,6 +121,24 @@ for f in "$ISSUES_DIR"/[0-9][0-9]-*.md "$SEQ_DIR"/[0-9][0-9]; do
 done
 
 NN=""
+FILE=""
+ISSUE_CREATED=0
+# A claim must not survive a failed run: if the script dies after winning the
+# mkdir below but before the issue file is fully written, the orphan
+# reservation would make every later call skip this number and summary.sh's
+# numbering-gap lint would reject the run. Roll the claim (and any partially
+# written file) back unless the issue file was created successfully. Rolling
+# back never introduces duplicates: the number is only released when no issue
+# file exists for it, so a later claimer of the same NN is the sole owner.
+release_claim_on_failure() {
+  if [ "$ISSUE_CREATED" -eq 1 ] || [ -z "$NN" ]; then return 0; fi
+  if [ -n "$FILE" ]; then rm -f "$FILE" 2>/dev/null || true; fi
+  rmdir "$SEQ_DIR/$NN" 2>/dev/null || true
+}
+trap release_claim_on_failure EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
 i=$((max + 1))
 while [ "$i" -le 99 ]; do
   cand=$(printf '%02d' "$i")
@@ -151,5 +169,6 @@ cat > "$FILE" <<EOF
 ## Fix proposal (optional)
 - (optional: candidate fixes; delete this section if none)
 EOF
+ISSUE_CREATED=1
 
 printf '%s\n' "$FILE"
