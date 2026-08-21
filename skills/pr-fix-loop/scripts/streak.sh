@@ -33,10 +33,13 @@ require_cmd jq
 
 STREAK_FILE="${PR_FIX_LOOP_STREAK_FILE:-.local/tmp/pr-fix-loop-streak.txt}"
 LIMIT="${PR_FIX_LOOP_STREAK_LIMIT:-5}"
+# Only canonical positive integers (^[1-9][0-9]*$): 0 would report
+# terminate=true even on a 'changed' pass, and leading zeros ('07') are not
+# valid JSON numbers so the jq --argjson call below would fail.
 case "$LIMIT" in
-  ''|*[!0-9]*) die "invalid PR_FIX_LOOP_STREAK_LIMIT: '$LIMIT'" \
-    "the streak limit must be a positive integer" \
-    "unset PR_FIX_LOOP_STREAK_LIMIT or set it to a number (default 5)" ;;
+  ''|*[!0-9]*|0*) die "invalid PR_FIX_LOOP_STREAK_LIMIT: '$LIMIT'" \
+    "the streak limit must be a positive integer without leading zeros" \
+    "unset PR_FIX_LOOP_STREAK_LIMIT or set it to a positive integer (default 5)" ;;
 esac
 
 mkdir -p "$(dirname "$STREAK_FILE")"
