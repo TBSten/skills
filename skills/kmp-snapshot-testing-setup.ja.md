@@ -18,6 +18,18 @@ gh skill install tbsten/skills kmp-snapshot-testing-setup
 スナップショットテスト基盤をセットアップして。
 ```
 
+## インストールの仕組み
+
+ファイル配置・置換は `scripts/install.sh` が一括で行う
+(必須: `--project` / `--package`、任意: `--module-path`, `--ui-module-path`,
+`--skip-compose`, `--dry-run`, `--force`)。script は冪等で、再実行しても
+catalog エントリや `settings.gradle.kts` の include が二重追記されることはなく、
+`--force` なしで既存ファイルを上書きしない。実行結果は末尾に 1 行 JSON
+(conflicts / warnings / manual follow-ups) で出力される。
+その後、AI エージェントがプロジェクト固有のフォローアップ
+(build-logic への serialization plugin classpath 追加、`AppTheme` / `WithTestGraph` の調整、
+catalog alias の整合) とビルド確認を行う。
+
 ## セットアップされるもの
 
 ### ビルドロジック (Convention Plugins)
@@ -32,8 +44,12 @@ gh skill install tbsten/skills kmp-snapshot-testing-setup
 
 | モジュール | 主要コンポーネント |
 |---|---|
-| `core/testing/snapshot` | ProjectConfig, shouldMatchSnapshot, StateHolderSnapshotPbtSpec, LogicSnapshotPbtSpec, KotlinCodeFormat, PBT ユーティリティ |
-| `ui/core/testing` | ComposeSnapshotPbtSpec, runComposableSnapshotTest |
+| `core/testing/snapshot` | build.gradle.kts (テンプレート), ProjectConfig, shouldMatchSnapshot, StateHolderSnapshotPbtSpec, LogicSnapshotPbtSpec, KotlinCodeFormat, PBT ユーティリティ |
+| `ui/core/testing` | build.gradle.kts (テンプレート), ComposeSnapshotPbtSpec, runComposableSnapshotTest |
+
+どちらのモジュールも install script が `settings.gradle.kts` への include 追記と
+version catalog (`gradle/libs.versions.toml` の kotest / turbine / kotlinx-serialization /
+coroutines-test エントリ) への追記まで行う。
 
 ### シェルスクリプト
 
