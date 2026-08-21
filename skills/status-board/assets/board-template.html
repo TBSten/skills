@@ -165,6 +165,10 @@ a{color:var(--text-link)} a:hover{color:var(--text-link-hover)}
       background:var(--tbs-sky-100);border:1px solid var(--border-subtle);
       border-radius:6px;cursor:pointer;line-height:1}
 .zbtn.wide{width:auto;height:26px;padding:0 10px;font-size:11px}
+.zbtn.on{background:var(--tbs-sky-300);border-color:var(--tbs-navy-800)}
+/* 図だけの全画面。Fullscreen API は file:// やユーザー操作の制約で失敗する環境があるため、
+   どこでも確実に動く fixed のオーバーレイで覆う（カンバン・詳細はこの下に隠れる） */
+.card.map-full{position:fixed;inset:0;z-index:50;border-radius:0;border:0}
 .pane{flex:1 1 auto;min-height:0;position:relative;background:var(--tbs-sky-50);overflow:hidden}
 .pane svg{display:block;cursor:grab;touch-action:none}
 .pane svg.grabbing{cursor:grabbing}
@@ -380,6 +384,7 @@ const S = {
   hidden:{},                       /* status id -> true で非表示 */
   collapsed:Object.fromEntries(STATUSES.filter(s => s.collapsedByDefault).map(s => [s.id, true])),
   folded:{},                       /* epic id -> true で 1 ノードに畳む */
+  fullMap:false,                   /* 図だけの全画面表示 */
   q:'',
   view:{ k:1, tx:24, ty:24 },
   vw:1000, vh:430,
@@ -956,11 +961,12 @@ function shell() {
   <div class="chips" id="chips"></div>
   <div class="main">
     <div class="left">
-      <section class="card">
+      <section class="card" id="map-card">
         <div class="map-bar">
           <button class="zbtn" data-zoom="out">−</button>
           <button class="zbtn" data-zoom="in">＋</button>
           <button class="zbtn wide" data-zoom="fit">全体</button>
+          <button class="zbtn wide" id="btn-fullmap">全画面</button>
         </div>
         <div class="pane" id="pane">
           <svg id="svg" width="100%" height="100%">${DEFS}<g id="zoomG"></g></svg>
@@ -1066,6 +1072,16 @@ function measure(forceFit) {
   if (forceFit || !S.fitted || (resized && !S.touched)) fitStart();
 }
 
+/* 図だけの全画面。もう一度押すか Esc で戻る。パン / ズーム / 選択は通常どおり効く */
+function toggleFullMap(on) {
+  const next = on === undefined ? !S.fullMap : !!on;
+  if (next === S.fullMap) return;
+  S.fullMap = next;
+  els.mapCard.classList.toggle('map-full', next);
+  els.btnFull.classList.toggle('on', next);
+  measure(true);   /* パネルの大きさが変わるので全体を出し直す */
+}
+
 /* ══════════════════════════════════════════════════════════════════════════
    9. 書き出し
       畳み状態・フィルタ・縮尺を無視して常に全体・等倍で出す。live DOM の clone では
@@ -1153,6 +1169,8 @@ function init() {
   document.getElementById('app').innerHTML = shell();
   els = {
     pane:document.getElementById('pane'),
+    mapCard:document.getElementById('map-card'),
+    btnFull:document.getElementById('btn-fullmap'),
     svg:document.getElementById('svg'),
     zoomG:document.getElementById('zoomG'),
     chips:document.getElementById('chips'),
@@ -1229,6 +1247,7 @@ function init() {
       if (w === 'in') zoomBy(1.18); else if (w === 'out') zoomBy(1 / 1.18); else fitView();
       return;
     }
+    if (e.target.closest('#btn-fullmap')) { toggleFullMap(); return; }
     const ex = e.target.closest('[data-export]');
     if (ex) { ex.getAttribute('data-export') === 'svg' ? exportSvg() : exportPng(); return; }
     if (e.target.closest('#btn-children')) { S.expanded = !S.expanded; render(); return; }
@@ -1261,6 +1280,9 @@ function init() {
   });
 
   els.q.addEventListener('input', e => { S.q = e.target.value; render(); });
+
+  /* Esc で全画面を解除（全画面でなければ何もしない） */
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') toggleFullMap(false); });
 
   /* --- 確認欄 ---
      打鍵のたびに render すると focus が飛ぶので、input では保存だけ。
@@ -1304,7 +1326,7 @@ function __verify() {
   /* 状態を退避して、最後に必ず戻す */
   const snap = { sel:S.sel.slice(), hover:S.hover, expanded:S.expanded, q:S.q, view:Object.assign({}, S.view),
                  hidden:Object.assign({}, S.hidden), collapsed:Object.assign({}, S.collapsed),
-                 folded:Object.assign({}, S.folded), scrollTop:els.kanban.scrollTop };
+                 folded:Object.assign({}, S.folded), fullMap:S.fullMap, scrollTop:els.kanban.scrollTop };
   try {
     /* --- 静的 --- */
     check(__errors.length === 0, `コンソールエラー ${__errors.length} 件: ${__errors.slice(0, 3).join(' / ')}`);
@@ -1358,6 +1380,16 @@ function __verify() {
     check(outside.length === 0, `「全体」で収まらないノード: ${outside.map(n => n.dataset.node).join(', ')}`);
     info.fitK = Number(S.view.k.toFixed(3));
     info.compact = S.view.k < COMPACT_K;
+
+    /* 全画面トグルで図パネルがビューポートを占有し、解除で復帰する。
+       比較はスクロールバーを除いた clientWidth / clientHeight（fixed が覆う範囲）に対して行う */
+    const vp = document.documentElement;
+    toggleFullMap(true);
+    const fm = els.mapCard.getBoundingClientRect();
+    check(fm.x <= 1 && fm.y <= 1 && fm.width >= vp.clientWidth - 1 && fm.height >= vp.clientHeight - 1,
+          `全画面で図がビューポートを占有しない: ${Math.round(fm.width)}x${Math.round(fm.height)}`);
+    toggleFullMap(false);
+    check(els.mapCard.getBoundingClientRect().height < vp.clientHeight - 1, '全画面を解除しても元に戻らない');
 
     const onMap = ITEMS.filter(i => i.col !== undefined && i.kanban !== false);
     const first = onMap[0];
@@ -1484,6 +1516,7 @@ function __verify() {
   } catch (e) {
     fail.push('検証中に例外: ' + (e && e.stack ? e.stack.split('\n')[0] : e));
   } finally {
+    toggleFullMap(snap.fullMap);
     Object.assign(S, { sel:snap.sel, hover:snap.hover, expanded:snap.expanded, q:snap.q,
                        hidden:snap.hidden, collapsed:snap.collapsed, folded:snap.folded });
     els.q.value = snap.q;

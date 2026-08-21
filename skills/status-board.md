@@ -32,6 +32,7 @@ Drag to pan and wheel to zoom; zooming out triggers **semantic zoom**, dropping 
 whole chain stays readable. Clicking an epic label folds that group into a single node and reroutes
 its dependency edges. The graph alone can be exported as SVG or PNG — and Shift-clicking several
 tickets exports **a view with only those lifted out of the rest** (see below).
+A 全画面 (fullscreen) button expands the graph alone to fill the viewport; press it again or Esc to return.
 
 Two things are designed to be unmissable: the 🙋 hexagon (waiting on a human) and the gold
 `NEXT n` flag (the next move).
