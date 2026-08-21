@@ -1178,6 +1178,7 @@ function select(id, from, additive) {
      sel      … 選択中の item id（選択順）
      hide     … チップで非表示にした status id
      collapse … 畳んだカンバン列の status id。既定と違うときだけ付く（空 = 全部展開）
+     q        … 検索語（空なら付かない）
      full     … 1 なら図だけの全画面
 
    同期は replaceState で行い、履歴は汚さない。location.search / URLSearchParams は
@@ -1194,6 +1195,7 @@ function syncUrl() {
     put('hide', Object.keys(S.hidden).filter(k => S.hidden[k]).join(' '));
     const col = Object.keys(S.collapsed).filter(k => S.collapsed[k]).sort().join(' ');
     if (col === DEFAULT_COLLAPSED) p.delete('collapse'); else p.set('collapse', col);
+    put('q', S.q);
     put('full', S.fullMap ? '1' : '');
     const qs = p.toString();
     history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
@@ -1207,6 +1209,7 @@ function restoreFromUrl() {
     if (p.has('sel')) S.sel = ids('sel').filter(id => byId[id]);
     if (p.has('hide')) S.hidden = Object.fromEntries(ids('hide').filter(isStatusId).map(id => [id, true]));
     if (p.has('collapse')) S.collapsed = Object.fromEntries(ids('collapse').filter(isStatusId).map(id => [id, true]));
+    if (p.has('q')) S.q = p.get('q') || '';
     out.full = p.get('full') === '1';
   } catch { /* パースに失敗したら既定の表示で開く */ }
   return out;
@@ -1231,6 +1234,7 @@ function init() {
     q:document.getElementById('q'),
     btnChildren:document.getElementById('btn-children')
   };
+  els.q.value = S.q;                         /* URL から復元した検索語を入力欄にも出す */
   render();
   if (fromUrl.full) toggleFullMap(true);
 
@@ -1381,6 +1385,14 @@ function __verify() {
                  hidden:Object.assign({}, S.hidden), collapsed:Object.assign({}, S.collapsed),
                  folded:Object.assign({}, S.folded), fullMap:S.fullMap, scrollTop:els.kanban.scrollTop };
   try {
+    /* URL から復元したフィルタ（検索語・非表示チップ・畳み）が残っていると、件数や
+       点灯のチェックの前提が崩れる。検証はいったん素の状態に戻してから行う
+       （元の表示は finally が snap から復元する）。 */
+    S.sel = []; S.hover = null; S.q = ''; S.hidden = {}; S.folded = {};
+    S.collapsed = Object.fromEntries(STATUSES.filter(s => s.collapsedByDefault).map(s => [s.id, true]));
+    els.q.value = '';
+    render();
+
     /* --- 静的 --- */
     check(__errors.length === 0, `コンソールエラー ${__errors.length} 件: ${__errors.slice(0, 3).join(' / ')}`);
     check(document.body.scrollWidth - document.body.clientWidth === 0, 'body に横スクロールが出ている');
