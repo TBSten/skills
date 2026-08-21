@@ -11,6 +11,9 @@ paths:
 - @docs/test/snapshot-test.md
 - @docs/test/compose-snapshot-test.md
 
+新規テストの骨格は `docs/test/templates/` のテンプレートをコピーして TODO を埋めること
+(ゼロから書かない)。
+
 ## セットアップ
 
 スナップショットテスト基盤がまだセットアップされていない場合

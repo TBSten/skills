@@ -10,64 +10,19 @@
 - ViewModel および StateHolder で Domain の UseCase, Model を使用して UI の状態管理を行う。
 - Navigation で画面のインプットと他画面へのアウトプット（画面遷移など）の interface を定義する。
 
+> **新規 feature の追加**: 雛形 (Screen / ViewModel / Navigation) は手書きせず
+> `bash tools/kmp-layered-architecture/new-feature.sh <FeatureName> <package>` で
+> [templates/feature/](./templates/feature/) から生成する。既存ファイルへの追記
+> (settings.gradle.kts, ui/navigation の各ファイル) は script が印字するスニペットに従う。
+
 ## Composable
 
 - public にする唯一の Composable として Screen を定義する。
 - 読みやすい単位で Component に分割する。コンポーネントに分割した際は component/ ディレクトリにコンポーネントのファイルを配置する。
 - 強制ではないが、Screen > (Section/TopBar/BottomBar) > Screen specified component > Util component という構成でコンポーネント階層を作ると良い。
-
-```kt
-@Composable
-fun HomeScreen(
-    viewModel: HomeViewModel = metroViewModel(),
-) {
-    val state1 by viewModel.state1.collectAsStateWithLifecycle()
-    // ...
-
-    HomeScreen(
-        state1 = state1,
-        // ...
-    )
-}
-
-@Composable
-internal fun HomeScreen(
-    state1: HomeState1,
-    // ...
-) {
-    // TODO implement UI by states
-}
-
-// Previews
-
-private data class HomeScreenParams(
-    val state1: HomeState1,
-    // ...
-)
-
-private class HomeScreenParamsProvider : MapPreviewParameterProvider<HomeScreenParams>(
-    "Loaded" to HomeScreenParams(
-        state1 = /* TODO */,
-        // ...
-    ),
-    "Loading" to HomeScreenParams(
-        state1 = /* TODO */,
-        // ...
-    ),
-)
-
-@Preview
-@Composable
-private fun HomeScreenPreview(
-    @PreviewParameter(HomeScreenParamsProvider::class)
-    params: HomeScreenParams,
-) = PreviewRoot {
-    HomeScreen(
-        state1 = params.state1,
-        // ...
-    )
-}
-```
+- 構成 (public Screen + internal Screen + Preview + MapPreviewParameterProvider) は
+  [templates/feature/\_\_Feature\_\_Screen.kt](./templates/feature/__Feature__Screen.kt) の形に従う。
+  新規作成時は new-feature.sh で生成し、TODO を埋める。
 
 ## ViewModel, StateHolder
 
@@ -82,6 +37,8 @@ private fun HomeScreenPreview(
     - EventHolder ... ViewModel -> UI にイベントを伝える必要がある際の状態管理。
     - HandleError, HandleWarning ... エラーハンドリング・不正な状態の検出時のハンドリング。
     - Navigator ... 画面遷移を簡素化するための StateHolder。
+- 雛形は [templates/feature/\_\_Feature\_\_ViewModel.kt](./templates/feature/__Feature__ViewModel.kt)
+  (new-feature.sh で生成)。StateHolder との組み合わせ方は以下の例を参照。
 
 ```kt
 @Inject
@@ -118,7 +75,8 @@ open class AppConfigLoaderImpl(
 
 ### 各画面での定義 (Navigation.kt)
 
-各 feature モジュールの Navigation.kt に Navigator の plain interface を定義する。
+各 feature モジュールの Navigation.kt に Navigator の plain interface を定義する
+(雛形: [templates/feature/Navigation.kt](./templates/feature/Navigation.kt))。
 
 ```kt
 // ui/feature/home/Navigation.kt
@@ -127,6 +85,9 @@ interface HomeNavigator {
     fun toAppConfig()
 }
 ```
+
+以降の Screen 定義 / AppNavigator / AppNavigation / DI への画面追加スニペットは
+new-feature.sh が stdout に印字するので、それに従って追記する。
 
 ### Screen 定義 (Screen.kt)
 

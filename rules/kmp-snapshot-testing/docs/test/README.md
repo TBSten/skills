@@ -24,6 +24,18 @@
 ./gradlew jvmTest -Ppbt.iteration.count=100
 ```
 
+`tools/snapshot-diff.sh` が無い場合は `kmp-snapshot-testing-setup` skill (`gh skill install tbsten/skills kmp-snapshot-testing-setup`) で導入する。
+
+## テスト骨格テンプレート
+
+新規テストは [templates/](./templates/) の骨格をコピーして TODO を埋める (ゼロから書かない):
+
+| テンプレート | 用途 |
+|---|---|
+| `templates/__Target__PbtSnapshotTest.kt` | StateHolder / ViewModel の PBT スナップショット |
+| `templates/__Target__LogicPbtSnapshotTest.kt` | ロジック・関数の PBT スナップショット |
+| `templates/__Target__ComposeSnapshotPbt.kt` | Compose UI の PBT スナップショット |
+
 ## テストモジュール構成
 
 ```
