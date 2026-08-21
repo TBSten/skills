@@ -67,7 +67,7 @@ The selection and view filters are kept in the URL query (`?sel=…`), so copyin
   row drills into that single ticket; ✕ drops it from the selection
 - With a selection active, `SVG` / `PNG` exports **the whole graph with only the selected tickets
   lifted out**: everything except the selection and its direct neighbours sinks to a faint wash,
-  and only edges whose *both* endpoints are selected stay bold
+  and the edges touching a selected ticket — even with only one selected endpoint — stay bold
 
 Pasting the entire graph leaves the reader guessing which part you mean. Select the few tickets that
 matter and the exported figure **drops straight into a PR or issue description**. It keeps the full
