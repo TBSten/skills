@@ -439,4 +439,16 @@ gh skill install tbsten/skills contribute-prompt
 <td>🧪 Experimental</td>
 <td>プロジェクトの知見をプロンプトとしてパッケージし TBSten/skills に PR を作成</td>
 </tr>
+<tr>
+<td><a href="./skills/contribute-batch.ja.md">contribute-batch</a></td>
+<td>
+
+```sh
+gh skill install tbsten/skills contribute-batch
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>複数の知見を skill / rule / prompt に仕分けし TBSten/skills に 1 つの PR を作成</td>
+</tr>
 </table>

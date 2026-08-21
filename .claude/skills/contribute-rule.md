@@ -34,6 +34,54 @@ rules/<rule-name>/
 
 この仕組みを理解した上でファイルを配置すること。
 
+## AI 責務最小化 (script 化)
+
+skill / rule / prompt は、実行時に AI Agent が実装・作業・判断する範囲を最小限にする。
+決定的な作業は事前に用意した script に寄せ、AI には判断が必要な部分だけを残す。
+(このセクションの共通部分は contribute-skill.md / contribute-rule.md / contribute-prompt.md で同期して更新する)
+
+### 判断基準
+
+| script に寄せる (決定的な作業) | AI に残す (判断が必要な作業) |
+|---|---|
+| scaffold・テンプレート展開 | プロジェクト状況の把握と設計判断 |
+| ファイルのコピー・リネーム・配置 | script に渡す入力値 (名前・パス・オプション) の決定 |
+| sed 等による一括置換 | ユーザーへの確認・提案 |
+| 順序が決まっているコマンド列 | script が失敗した時の原因分析と対処 |
+| 成果物の検証 (ファイル存在・フォーマット・整合性チェック) | 検証 NG 時の修正内容の判断 |
+
+「入力が同じなら結果が一意に決まる手順」を prose で AI に指示している箇所は、script 化の対象。
+逆に、状況依存の判断まで script に押し込んで柔軟性を失わせない。
+
+### script の同梱と参照 (rule)
+
+- script は参照ファイルとして `rules/<rule-name>/` 配下に置く。install.sh が RULE.md 以外を**相対パスのままユーザーのカレントディレクトリにコピー**するため、`rules/<rule-name>/tools/<rule-name>/<script>` のようにユーザープロジェクトを汚しにくいパスで設計する
+- install.sh は `curl -o` で保存するだけで**実行権限を付けない**。RULE.md 内の実行例は必ず `bash tools/<rule-name>/<script>.sh` / `node tools/<rule-name>/<script>.mjs` のようにインタープリタ明示で書く (`./<script>` 形式は動かない)
+- RULE.md からはユーザーのプロジェクトルート基準の相対パスで参照し、「script を読解・書き換え・再実装せず、そのまま実行する」と明記する
+- 既存例 (skill 側だが同じ思想): `skills/github-get-attachment-url/`、`skills/status-board/`
+
+### script の品質要件
+
+- bash は `set -euo pipefail` で始める
+- 引数・前提条件を冒頭で検証し、失敗時は「何が・なぜ・どう直すか」が分かるエラーメッセージを stderr に出して非 0 で終了する
+- 成功時の出力は AI が判定しやすい形式にする (要点のみ。可能なら `OK` 行や JSON)
+- 冪等にする (再実行しても壊れない)。破壊的操作は明示フラグを必須にする
+
+### PR 前セルフレビュー: AI 責務最小化チェックリスト
+
+PR 作成前に以下を確認する:
+
+- [ ] 決定的な手順 (scaffold / コピー / 置換 / 決まったコマンド列 / 検証) が prose で AI に委ねられていないか。該当があれば script 化したか
+- [ ] script 化した作業の手順が本文 (SKILL.md / RULE.md / PROMPT.md) に重複記述されていないか (script を SSoT とする)
+- [ ] 本文に「script を読解・書き換え・再実装せず、そのまま実行する」旨を明記したか
+- [ ] script は失敗時に「何が・なぜ・どう直すか」が分かるエラーメッセージを出して非 0 終了するか
+- [ ] script は冪等か。破壊的操作は明示フラグ必須になっているか
+- [ ] script の入力 (引数・環境変数) が本文で定義され、AI の仕事が「入力値の決定」だけになっているか
+- [ ] AI に残した作業は本当に判断が必要か (状況把握 / 設計判断 / ユーザー確認 / エラー分析のいずれかに該当するか)
+- [ ] 逆に、判断が必要な部分まで script に押し込んで柔軟性を失っていないか
+- [ ] script の参照パスが配布形態に合っているか (skill: `${CLAUDE_SKILL_DIR}/scripts/`、rule: カレント展開後の相対パス + インタープリタ明示、prompt: raw URL 取得)
+- [ ] 検証も script 化されているか。AI の目視確認だけに頼っていないか
+
 ## 新規追加の手順
 
 ### Step 1: ユーザーへの確認
@@ -166,3 +214,4 @@ curl -fsSL https://rules.tbsten.me/i | bash -s -- <rule-name>
 - status は `rules/<rule-name>.md` の frontmatter を SSoT とし、README のステータス列と必ず一致させる (RULE.md には書かない)
 - group も `rules/<rule-name>.md` の frontmatter (日本語グループ名) を SSoT とし、README のグループ列 (英語版は英語名) と必ず一致させる (RULE.md には書かない)。グループセルの記載はグループ先頭行のみ (絵文字付き)、継続行は空セル
 - README の説明列は最大 80 文字。収まらない詳細は詳細ドキュメント側に書く
+- 決定的な手順は prose で書かず script 化する。「AI 責務最小化 (script 化)」セクションのチェックリストを PR 前に実施する

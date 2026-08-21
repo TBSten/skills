@@ -439,4 +439,16 @@ gh skill install tbsten/skills contribute-prompt
 <td>🧪 Experimental</td>
 <td>Package project knowledge as a prompt and create a PR to TBSten/skills</td>
 </tr>
+<tr>
+<td><a href="./skills/contribute-batch.md">contribute-batch</a></td>
+<td>
+
+```sh
+gh skill install tbsten/skills contribute-batch
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>Triage knowledge into skills / rules / prompts and open one PR to TBSten/skills</td>
+</tr>
 </table>
