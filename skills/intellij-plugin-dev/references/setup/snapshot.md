@@ -19,7 +19,8 @@
 ## 自動ゲート (目視の自己弁護を排す)
 
 `PreviewMain` / `PreviewChecks` が update・verify 双方で走らせる不変条件。golden 比較の手前で
-silent な劣化を止める。
+silent な劣化を止める。実装 (SSoT): `example/src/preview/kotlin/com/example/plugin/preview/PreviewMain.kt`
++ `PreviewChecks.kt`。
 
 - **透明角の自動検査**: render root が theme surface を塗らないと透明背景 PNG になり、暗い viewer で
   黒 marker / 薄線 / table header が消える。**四隅 pixel を含め alpha=255 を検査**し、透明角があれば
@@ -36,8 +37,6 @@ preview の純粋な出力チェック (alpha / stale 削除など、Compose に
 **preview の output (compiled class) だけ** を testImplementation に足す (standalone Compose 依存は載せ
 ない → bundled Compose との二重ロードを避ける)。
 
-```kotlin
-dependencies {
-    testImplementation(sourceSets["preview"].output)  // PreviewChecks 等を test から叩く。Compose 依存は載せない
-}
-```
+実体は `example/build.gradle.kts` の `testImplementation(sourceSets["preview"].output)` (SSoT)。
+test 側の例: `example/src/test/kotlin/com/example/plugin/PreviewOutputGateTest.kt`
+(透明角検出 / expected filename set / changed・new・missing 分類を PreviewChecks 単体で検証)。

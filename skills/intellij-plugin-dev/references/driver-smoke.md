@@ -4,9 +4,10 @@
 チェックポイントに置く (毎イテレーションではない)。機能テスト + `renderComposeScene` snapshot で
 担保しきれない「ロードされた・tool window が開いた・クリックが効く」レベルを見る。
 
-> **この Driver 層は推奨レシピであり、多くのプラグインでは未配線** — 現状の `build.gradle.kts` に
-> `integrationTest` source set / `testIdeUi` task は無い (`./gradlew tasks` にも出ない)。推奨レシピの
-> 雛形として使い、下記を配線したら **最低 1 本の smoke が非ゼロ件で走る**ことまで確認する。
+> **この Driver 層は推奨レシピであり、多くのプラグインでは未配線** — 同梱の `example/` の
+> `build.gradle.kts` にも `integrationTest` source set / `testIdeUi` task は無い (`./gradlew tasks` にも
+> 出ない)。推奨レシピの雛形として使い、下記を配線したら **最低 1 本の smoke が非ゼロ件で走る**ことまで
+> 確認する。
 > SKILL 本体のコマンド一覧に "実コマンド" として載せない (未実装を green と誤認させないため)。
 
 ## 2 層構成 (機能テスト 厚く + Driver 薄く)

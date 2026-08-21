@@ -6,7 +6,8 @@ description: >
   6 チャネルに分解し、正しさ = ヘッドレス機能テスト (Kotlin Analysis API)、見た目 = headless PNG
   自己目視 (renderComposeScene + standalone Jewel) の 2 本を主軸に据える。tool window (Jewel/Compose)、
   gutter line marker、エディタ追従、ノード→ソースのナビ、PSI 挿入 (コード生成)、headless preview + VRT
-  golden、Driver スモーク、build/since-until 配線をカバーする。
+  golden、Driver スモーク、build/since-until 配線をカバーする。example scaffold 一式
+  (scripts/scaffold.sh で新規プラグインの土台を生成) を同梱。
   Use when requested: "IntelliJ プラグインを作りたい", "IntelliJ Platform plugin dev",
   "Jewel/Compose で tool window", "addComposeTab", "Analysis API がテストで動かない",
   "注釈の型引数が取れない", "renderComposeScene で見た目確認", "VRT golden を組む",
@@ -74,9 +75,39 @@ IDE プラグインは「実装したものを IDE に入れて手で触る」�
   実 IDE と非忠実になる問題があり、Jewel standalone はテーマ忠実なので採用。
 - Remote Robot (レガシー UI テスト) は不採用。実 IDE 駆動は Driver (`testIdeUi`) を使う。
 
+## example scaffold (実ファイルの SSoT) と scripts/scaffold.sh
+
+references の snippet を整合する 1 プロジェクトに束ねた実ファイルが `example/`
+(パッケージ `com.example.plugin`、独立 Gradle ビルド一式: build 配線 / plugin.xml /
+tool window + 共有 Composable / `PreviewMain.kt`+`PreviewChecks.kt` / AA テスト harness)。
+**新規プラグインの土台は snippet の転記で再構築せず、`scripts/scaffold.sh` を実行して
+example から生成する** (example がコード片の SSoT。references は設計解説と実ファイルへの参照)。
+
+```sh
+skills/intellij-plugin-dev/scripts/scaffold.sh \
+  --dest <plugin-module-dir> \
+  --package com.acme.myplugin \
+  --plugin-id com.acme.myplugin \
+  --plugin-name "My Plugin" \
+  [--dry-run] [--force]
+```
+
+- **script は読解・書き換え・再実装せず、そのまま実行する**。失敗したら stderr の
+  `ERROR / why / fix` に従って引数を直して再実行する。既存ファイルは `--force` を明示しない
+  限り上書きしない (冪等)。末尾 1 行の JSON (`{"ok":true,...}`) で成否を判定する。
+- 生成後にやること:
+  1. `// CUSTOMIZE` / `TODO(CUSTOMIZE)` マーカーを自分のプラグインに合わせて埋める
+     (UI 本体 = `src/shared/.../ui/`、preview matrix = `PreviewMain.kt` の `scenarios`、
+     表示名や説明 = `plugin.xml`、Compose Multiplatform 版 = `gradle/libs.versions.toml`)。
+  2. Gradle wrapper は同梱していない → 既存 wrapper を使うか `gradle wrapper` で生成。
+  3. `./gradlew buildPlugin` (初回は SDK DL で ~4〜5 分) → `./gradlew test` →
+     `./gradlew updatePreview` で golden を初回生成し `snapshots/preview/` を commit。
+     以後の日々の回し方は `references/headless-preview.md` の「推奨ワークフロー」。
+- Driver 層 (`references/driver-smoke.md`) は example でも未配線の雛形のまま (推奨レシピ)。
+
 ## reference の索引
 
-必要な観点だけ開く。
+必要な観点だけ開く。コード片の実体 (SSoT) は上記 `example/`。
 
 | ファイル | いつ読む |
 |---|---|

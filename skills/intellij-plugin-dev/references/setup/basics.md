@@ -4,9 +4,13 @@
 Gradle Plugin (v2) 前提。preview / snapshot / test 固有の配線は `setup/preview.md` / `setup/snapshot.md`
 と各 usage reference (`analysis-api-testing.md` / `driver-smoke.md`) 側。
 
-参照実装例: `<plugin-module>/build.gradle.kts` + `settings.gradle.kts`。
+実ファイル (SSoT): `example/build.gradle.kts` / `example/settings.gradle.kts` /
+`example/gradle/libs.versions.toml` / `example/gradle.properties`。**snippet を転記して再構築せず、
+`scripts/scaffold.sh` で example から生成する** (SKILL.md「example scaffold」)。
 
 ## バージョンの塊 (実証済み)
+
+SSoT は `example/gradle/libs.versions.toml` (scaffold 後は生成先の toml)。塊ごと更新する。
 
 | 項目 | 値 | 備考 |
 |---|---|---|
@@ -39,23 +43,19 @@ Kotlin Gradle Plugin を複数版併用できず、プラグインは「ター�
 
 ## dependencies (要点)
 
-```kotlin
-dependencies {
-    intellijPlatform {
-        intellijIdea("2026.1")                       // build 261 = 2026.1 (AS Quail 2026.1.1 と同世代)
-        bundledPlugin("org.jetbrains.kotlin")        // Analysis API (K2) 同梱 = 追加依存なしで analyze{}/KaSession が載る
-        // Jewel/Compose/Skiko は 261 バンドルを引く (自前 Compose を持たない)。
-        bundledModule("intellij.platform.jewel.foundation")
-        bundledModule("intellij.platform.jewel.ui")
-        bundledModule("intellij.platform.jewel.ideLafBridge")
-        bundledModule("intellij.libraries.compose.runtime.desktop")
-        bundledModule("intellij.libraries.compose.foundation.desktop")  // compile classpath に runtime を伝播しないので明示
-        bundledModule("intellij.libraries.skiko")
-        testFramework(TestFrameworkType.Platform)    // BasePlatformTestCase など (詳細は analysis-api-testing.md)
-    }
-    testImplementation("junit:junit:4.13.2")         // 2.0.0-rc1 以降 Platform は JUnit4 を供給しない。BasePlatformTestCase は JUnit4 系
-}
-```
+実体は `example/build.gradle.kts` の `dependencies { intellijPlatform { ... } }` (SSoT)。構成の意図:
+
+- `intellijIdea("2026.1")` — build 261 (AS Quail 2026.1.1 と同世代)。
+- `bundledPlugin("org.jetbrains.kotlin")` — Analysis API (K2) 同梱 = 追加依存なしで
+  `analyze{}`/`KaSession` が載る。
+- `bundledModule(...)` ×6 (jewel.foundation / jewel.ui / jewel.ideLafBridge /
+  compose.runtime.desktop / compose.foundation.desktop / skiko) — Jewel/Compose/Skiko は 261
+  バンドルを引く (自前 Compose を持たない)。`compose.foundation.desktop` は compile classpath に
+  runtime を伝播しないので明示。
+- `testFramework(TestFrameworkType.Platform)` — `BasePlatformTestCase` など (詳細は
+  `analysis-api-testing.md`)。
+- `testImplementation("junit:junit:4.13.2")` — 2.0.0-rc1 以降 Platform は JUnit4 を供給しない
+  (`BasePlatformTestCase` は JUnit4 系)。
 
 - `plugin.xml` 側にも同名モジュールを `<dependencies><module name="..."/>` で宣言し、plugin
   classloader から解決させる (`bundledModule(...)` と対を成す)。plugin.xml の最小登録は
@@ -68,19 +68,14 @@ dependencies {
 
 ## K2 強制と since/until build
 
-```kotlin
-kotlin { jvmToolchain(21) }
-intellijPlatform {
-    buildSearchableOptions = false                  // 小さい plugin は省く (headless IDE 起動を避ける)
-    pluginConfiguration {
-        ideaVersion {
-            sinceBuild = "261"                       // floor = build 261 (AS Quail 2026.1.1 / IJ 2026.1)
-            untilBuild = provider { null }           // AS の追従遅れ・将来の 261.x を締め出さない
-        }
-    }
-}
-tasks.test { systemProperty("idea.kotlin.plugin.use.k2", "true") }  // AA を K2 で動かす。test では useJUnitPlatform() を付けない (JUnit4)
-```
+実体は `example/build.gradle.kts` の `kotlin {}` / `intellijPlatform {}` / `tasks.test` (SSoT)。要点:
+
+- `kotlin { jvmToolchain(21) }` (JBR 21)。
+- `buildSearchableOptions = false` — 小さい plugin は省く (headless IDE 起動を避ける)。
+- `sinceBuild = "261"` (floor) / `untilBuild = provider { null }` — AS の追従遅れ・将来の 261.x を
+  締め出さない (下記の注意)。
+- `tasks.test { systemProperty("idea.kotlin.plugin.use.k2", "true") }` — AA を K2 で動かす。
+  test に `useJUnitPlatform()` を付けない (JUnit4)。
 
 - K2 対応宣言は `plugin.xml` の `<supportsKotlinPluginMode supportsK2="true"/>` も必要。
 - **`untilBuild = null` は上限無し = 全ての将来 build に互換と宣言する**ことに注意 (コメントの「261.x」

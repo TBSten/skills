@@ -18,32 +18,22 @@
 - `ToolWindowFactory` + `DumbAware` を実装し、`plugin.xml` に `<toolWindow anchor="right" ...>` で登録。
 - Compose UI のホストは **`ToolWindow.addComposeTab("…") { … }`** (内部で `JewelComposePanel` +
   `enableNewSwingCompositing`)。この中の Composable を preview と共有する (`headless-preview.md`)。
+- 実ファイル: `example/src/main/kotlin/com/example/plugin/ExampleToolWindowFactory.kt` + 共有
+  Composable `example/src/shared/kotlin/com/example/plugin/ui/ExampleToolWindowContent.kt`。
 
 ## 2. plugin.xml 登録
 
-```xml
-<depends>com.intellij.modules.platform</depends>
-<depends>org.jetbrains.kotlin</depends>   <!-- Analysis API 同梱。将来 optional + config-file に分離可 -->
+完成形の実ファイル (SSoT): `example/src/main/resources/META-INF/plugin.xml`。要点:
 
-<!-- bundledModule(...) と対を成す v2 module dependency。plugin classloader から解決させる -->
-<dependencies>
-    <module name="intellij.platform.jewel.foundation"/>
-    <module name="intellij.platform.jewel.ui"/>
-    <module name="intellij.platform.jewel.ideLafBridge"/>
-    <module name="intellij.libraries.compose.runtime.desktop"/>
-    <module name="intellij.libraries.compose.foundation.desktop"/>
-    <module name="intellij.libraries.skiko"/>
-</dependencies>
-
-<extensions defaultExtensionNs="org.jetbrains.kotlin">
-    <supportsKotlinPluginMode supportsK2="true"/>
-</extensions>
-<extensions defaultExtensionNs="com.intellij">
-    <toolWindow id="…" anchor="right" factoryClass="…ToolWindowFactory"/>
-    <!-- gutter アイコン (line marker) -->
-    <codeInsight.lineMarkerProvider language="kotlin" implementationClass="…GutterLineMarkerProvider"/>
-</extensions>
-```
+- `<depends>com.intellij.modules.platform</depends>` + `<depends>org.jetbrains.kotlin</depends>`
+  (Analysis API 同梱。将来 optional + config-file に分離可)。
+- `<dependencies><module name="..."/></dependencies>` ×6 — `bundledModule(...)` と対を成す v2
+  module dependency。plugin classloader から解決させる (`setup/basics.md`)。
+- `<supportsKotlinPluginMode supportsK2="true"/>` (defaultExtensionNs="org.jetbrains.kotlin")。
+- `<toolWindow id="…" anchor="right" factoryClass="…ToolWindowFactory"/>`。
+- gutter アイコンは `<codeInsight.lineMarkerProvider language="kotlin"
+  implementationClass="…GutterLineMarkerProvider"/>` — example ではコメントアウトの雛形
+  (実装を足したら有効化する)。
 
 - **gutter line marker**: `LineMarkerProvider.collectSlowLineMarkers` で PSI を歩き、**リーフ要素**
   (`KtClass.nameIdentifier` / 注釈の `calleeExpression...referencedNameElement`) を鍵にマーカーを付ける。
