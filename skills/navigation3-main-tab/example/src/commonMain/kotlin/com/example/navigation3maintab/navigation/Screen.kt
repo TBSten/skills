@@ -6,6 +6,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 sealed interface Screen
 
+// CUSTOMIZE: プロジェクトの画面定義に合わせて Screen を変更する
+
 @Serializable
 data object Home : Screen
 
@@ -24,6 +26,7 @@ data object Settings : Screen
  */
 
 /** [Screen] に対応する [MainTab] を返す。タブ画面でなければ null。 */
+// CUSTOMIZE: Screen → MainTab のマッピングをタブ構成に合わせて変更する
 val Screen.mainTabOrNull: MainTab?
     get() = when (this) {
         Home -> MainTab.Home
@@ -33,6 +36,7 @@ val Screen.mainTabOrNull: MainTab?
     }
 
 /** [MainTab] に対応する [Screen] を返す。 */
+// CUSTOMIZE: MainTab → Screen のマッピングをタブ構成に合わせて変更する
 val MainTab.screen: Screen
     get() = when (this) {
         MainTab.Home -> Home

@@ -28,13 +28,13 @@ metadata:
 
 1. **対象モジュール** — SimpleLoader を配置するモジュール (例: `ui/core`, `shared`)
 2. **パッケージ名** — 既存の構成から推定し提案
-3. **生成ファイル** — 以下から選択 (デフォルト: 全て)
-   - [x] `SimpleLoader.kt` + `SimpleLoaderFactory.kt` — コア (必須)
-   - [x] `SimpleLoaderExt.kt` — 拡張関数 (`dataOrNull`, `exceptionOrNull`)
-   - [x] `SimpleLoaderLogger.kt` — ロギング
-   - [x] `IllegalStateTransitionHandler.kt` — 不正遷移ハンドラ
-   - [x] `SimpleLoaderWithPartialData.kt` — 部分データ対応
-   - [x] UI ヘルパー (`View.kt`, `AnimatedView.kt`, `InitialLoadingView.kt`, `InitialErrorView.kt`)
+3. **生成ファイル (parts)** — 以下から選択 (デフォルト: 全て)
+   - [x] `core` — `SimpleLoader.kt` + `SimpleLoaderFactory.kt` (必須)
+   - [x] `logger` — `SimpleLoaderLogger.kt` (core が参照するため必須)
+   - [x] `handler` — `IllegalStateTransitionHandler.kt` (core が参照するため必須)
+   - [x] `ext` — `SimpleLoaderExt.kt` (`dataOrNull`, `exceptionOrNull`)
+   - [x] `partial` — `SimpleLoaderWithPartialData.kt` (部分データ対応)
+   - [x] `ui` — UI ヘルパー (`View.kt`, `AnimatedView.kt`, `InitialLoadingView.kt`, `InitialErrorView.kt`)
 
 ### スキップ条件
 
@@ -51,21 +51,28 @@ metadata:
    - Android/JVM: `<module>/src/main/kotlin/`
 3. 既存の Loader 系クラスがないか検索
 
-### Step 2: コアファイルの生成
+### Step 2: install script の実行
 
-`example/` 内のファイルをコピーし、パッケージ名を `sed` で置換する。
+`${CLAUDE_SKILL_DIR}/scripts/install.sh` を実行する。
+script を読解・書き換え・再実装せず、そのまま実行する。
 
 ```bash
-cp <EXAMPLE_DIR>/simple/*.kt <TARGET_DIR>/simple/
-cp <EXAMPLE_DIR>/IllegalStateTransitionHandler.kt <TARGET_DIR>/
-sed -i '' 's/package me\.tbsten\.simpleloader/package <USER_PACKAGE>/g' <TARGET_DIR>/**/*.kt
-sed -i '' 's/import me\.tbsten\.simpleloader\./import <USER_PACKAGE>./g' <TARGET_DIR>/**/*.kt
+"${CLAUDE_SKILL_DIR}/scripts/install.sh" \
+  --package <USER_PACKAGE> \
+  --dest <TARGET_DIR> \
+  --parts core,logger,handler,ext,partial,ui  # 確認事項 3 の選択。省略時は全て
 ```
+
+- `--dest` は `--package` に対応するソースディレクトリ (例: `shared/src/commonMain/kotlin/com/myapp/loader`)
+- `core` / `logger` / `handler` は相互参照のため常に生成される (省略しても自動追加)
+- 既存ファイルがあるとエラーで停止する。ユーザーが上書きを明示した場合のみ `--force` を付けて再実行
+- `--dry-run` で書き込みなしに生成予定を確認できる
+- 成功時は stdout 最終行に 1 行 JSON (`{"ok":true,...}`) が出力される。失敗時は stderr の `FIX:` に従う
 
 生成されるファイル構成:
 
 ```
-<target>/loader/
+<TARGET_DIR>/
 ├── IllegalStateTransitionHandler.kt
 └── simple/
     ├── SimpleLoader.kt           # interface + State sealed interface + Impl + Fake

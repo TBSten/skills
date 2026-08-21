@@ -19,7 +19,7 @@ MainTabSceneStrategy  ← Checks NavEntry.metadata for MainTab
     ↓
 MainTabScene          ← Fixed key → preserves Scaffold across tab switches
     ↓
-MainTabScreen         ← ViewModel + Scaffold + NavigationBar
+MainTabScreen         ← Scaffold + NavigationBar
     ↓
 NavEntry.Content()    ← Actual tab content (Home, Chat, MyPage, etc.)
 ```
@@ -90,6 +90,7 @@ making full-screen displays trivial.
 
 | File | Description |
 |---|---|
+| `scripts/install.sh` | Copies the example tree into your project with package rename (`--package` / `--dest`) |
 | `example/.../maintab/MainTab.kt` | Tab enum |
 | `example/.../maintab/MainTabNavigator.kt` | Navigator interface |
 | `example/.../maintab/MainTabScene.kt` | Scene implementation |
