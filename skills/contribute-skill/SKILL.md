@@ -105,6 +105,7 @@ contribute-skill.md を読み込んだ後、以下のように統合する:
 - **contribute-skill.md の Step 1 (確認事項)**: contribute-skill の Step 1-2 で既に完了。スキップする
 - **contribute-skill.md の Step 2 (SKILL.md 作成)**: フォーマット・構成ルールに従う。内容は contribute-skill の Step 2 で整理した知見を使う
 - **contribute-skill.md の Step 3-5 (リソース配置・ドキュメント・README)**: そのまま従う
+- **contribute-skill.md の「AI 責務最小化 (script 化)」**: Step 4 のリソース設計時に従う。決定的な手順は scripts/ に script 化する
 
 ガイドが見つからない場合は、以下の「フォールバック」セクションに従う。
 
@@ -202,6 +203,7 @@ Step 3 で参照した skill-creator のベストプラクティスに照らし�
 2. **Progressive Disclosure** — SKILL.md 本文が 500 行以下に収まっているか。詳細は references/ に分離されているか
 3. **命令形で記述されているか** — 「〜してください」ではなく「〜する」の形式
 4. **リソース構成が適切か** — 不要なディレクトリが作られていないか。references/ と example/ の役割が混在していないか
+5. **AI 責務最小化** — contribute-skill.md の「PR 前セルフレビュー: AI 責務最小化チェックリスト」を実施したか
 
 問題が見つかった場合は修正してからユーザーに報告する。
 

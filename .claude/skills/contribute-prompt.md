@@ -27,7 +27,8 @@ prompts/
 ├── <prompt-name>.md      # 詳細ドキュメント (英語、frontmatter に status / group)
 ├── <prompt-name>.ja.md   # 詳細ドキュメント (日本語、frontmatter なし)
 └── <prompt-name>/
-    └── PROMPT.md          # プロンプト本体 (frontmatter なし)
+    ├── PROMPT.md          # プロンプト本体 (frontmatter なし)
+    └── scripts/           # AI が判断せずそのまま実行する決定的な script (任意、raw URL で配布される)
 ```
 
 ## PROMPT.md の書き方
@@ -56,6 +57,63 @@ prompts/
    (複数ファイルのコピーは sparse clone からのコピー指示にする)
 3. 「このスキル」等の自己言及は「このプロンプト」に置き換える。手順・表・チェックリストの内容は変えない
 4. skill 本体は削除しない。skill と prompt は併存し、参照ファイルは skill 側 (SSoT) を共有する
+
+## AI 責務最小化 (script 化)
+
+skill / rule / prompt は、実行時に AI Agent が実装・作業・判断する範囲を最小限にする。
+決定的な作業は事前に用意した script に寄せ、AI には判断が必要な部分だけを残す。
+(このセクションの共通部分は contribute-skill.md / contribute-rule.md / contribute-prompt.md で同期して更新する)
+
+### 判断基準
+
+| script に寄せる (決定的な作業) | AI に残す (判断が必要な作業) |
+|---|---|
+| scaffold・テンプレート展開 | プロジェクト状況の把握と設計判断 |
+| ファイルのコピー・リネーム・配置 | script に渡す入力値 (名前・パス・オプション) の決定 |
+| sed 等による一括置換 | ユーザーへの確認・提案 |
+| 順序が決まっているコマンド列 | script が失敗した時の原因分析と対処 |
+| 成果物の検証 (ファイル存在・フォーマット・整合性チェック) | 検証 NG 時の修正内容の判断 |
+
+「入力が同じなら結果が一意に決まる手順」を prose で AI に指示している箇所は、script 化の対象。
+逆に、状況依存の判断まで script に押し込んで柔軟性を失わせない。
+
+### script の同梱と参照 (prompt)
+
+- PROMPT.md は raw URL で単体取得され、ファイルは何も配置されない。script も raw URL で取得して実行させる。基本形:
+
+  ```sh
+  curl -fsSL https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/<script のリポジトリ内パス> -o /tmp/<prompt-name>-<script 名>
+  bash /tmp/<prompt-name>-<script 名> <引数>
+  ```
+
+  1 行の `curl -fsSL <raw URL> | bash -s -- <引数>` でもよいが、取得と実行を分けると失敗箇所の切り分けと実行前の内容確認がしやすい
+- script の置き場所 (SSoT):
+  - 既存 skill のプロンプト化の場合 → skill 側の `skills/<skill-name>/scripts/` を raw URL で参照する (prompts/ にコピーしない)
+  - prompt 専用の script の場合 → `prompts/<prompt-name>/scripts/` に置く (PROMPT.md と同様 raw URL で配布される。「参照ファイルを prompts/ にコピーしない」規約は既存ファイルの複製を禁じるものであり、prompt が SSoT となる新規 script はここに置いてよい)
+- script が複数ある場合は sparse clone を案内し、clone 先のパスで実行させる
+- PROMPT.md には「script を読解・書き換え・再実装せず、そのまま実行する」と明記する
+
+### script の品質要件
+
+- bash は `set -euo pipefail` で始める
+- 引数・前提条件を冒頭で検証し、失敗時は「何が・なぜ・どう直すか」が分かるエラーメッセージを stderr に出して非 0 で終了する
+- 成功時の出力は AI が判定しやすい形式にする (要点のみ。可能なら `OK` 行や JSON)
+- 冪等にする (再実行しても壊れない)。破壊的操作は明示フラグを必須にする
+
+### PR 前セルフレビュー: AI 責務最小化チェックリスト
+
+PR 作成前に以下を確認する:
+
+- [ ] 決定的な手順 (scaffold / コピー / 置換 / 決まったコマンド列 / 検証) が prose で AI に委ねられていないか。該当があれば script 化したか
+- [ ] script 化した作業の手順が本文 (SKILL.md / RULE.md / PROMPT.md) に重複記述されていないか (script を SSoT とする)
+- [ ] 本文に「script を読解・書き換え・再実装せず、そのまま実行する」旨を明記したか
+- [ ] script は失敗時に「何が・なぜ・どう直すか」が分かるエラーメッセージを出して非 0 終了するか
+- [ ] script は冪等か。破壊的操作は明示フラグ必須になっているか
+- [ ] script の入力 (引数・環境変数) が本文で定義され、AI の仕事が「入力値の決定」だけになっているか
+- [ ] AI に残した作業は本当に判断が必要か (状況把握 / 設計判断 / ユーザー確認 / エラー分析のいずれかに該当するか)
+- [ ] 逆に、判断が必要な部分まで script に押し込んで柔軟性を失っていないか
+- [ ] script の参照パスが配布形態に合っているか (skill: `${CLAUDE_SKILL_DIR}/scripts/`、rule: カレント展開後の相対パス + インタープリタ明示、prompt: raw URL 取得)
+- [ ] 検証も script 化されているか。AI の目視確認だけに頼っていないか
 
 ## 詳細ドキュメント (必須)
 
@@ -159,3 +217,4 @@ https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/prompts/<prompt-
 - status / group は `prompts/<prompt-name>.md` の frontmatter を SSoT とし、README と必ず一致させる (PROMPT.md には書かない)
 - グループセルの記載はグループ先頭行のみ (絵文字付き)、継続行は空セル
 - README の説明列は最大 80 文字。収まらない詳細は詳細ドキュメント側に書く
+- 決定的な手順は prose で書かず script 化する。「AI 責務最小化 (script 化)」セクションのチェックリストを PR 前に実施する

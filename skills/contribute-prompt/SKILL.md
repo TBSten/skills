@@ -80,6 +80,7 @@ git clone --depth 1 https://github.com/<repo>.git /tmp/contribute-prompt-<prompt
 contribute-prompt.md を読み込んだ後、以下のように統合する:
 
 - **contribute-prompt.md の「PROMPT.md の書き方」「詳細ドキュメント」「README の更新」**: そのまま従う。内容は contribute-prompt の Step 2 で整理した知見を使う
+- **contribute-prompt.md の「AI 責務最小化 (script 化)」**: Step 4 で決定的な手順を script 化し、raw URL 取得で実行させる
 
 ガイドが見つからない場合は、以下の「フォールバック」セクションに従う。
 
@@ -119,6 +120,7 @@ PR 作成前に以下を確認する。
 4. **status / group の SSoT 一致** — `prompts/<prompt-name>.md` の frontmatter と README のステータス列・グループ列が一致していること。グループセルはグループ先頭行のみ絵文字付きで記載・継続行は空セルになっていること
 5. **README の説明セルが 80 文字以内であること** (収まらない詳細は詳細ドキュメント側に書く)
 6. **命令形で記述されているか** — 「〜してください」ではなく「〜する」の形式
+7. **AI 責務最小化** — contribute-prompt.md の「PR 前セルフレビュー: AI 責務最小化チェックリスト」を実施したか
 
 問題が見つかった場合は修正してからユーザーに報告する。
 

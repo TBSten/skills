@@ -20,12 +20,62 @@ skills/<skill-name>/
 ├── SKILL.md              # スキル本体 (YAML frontmatter + Markdown 手順書、必須)
 ├── references/            # Claude がコンテキストに読み込む参照ドキュメント (任意)
 ├── example/               # サンプルコード。コピー元として利用される場合がある (任意)
-└── assets/                # 出力に使用されるファイル (テンプレート等、任意)
+├── assets/                # 出力に使用されるファイル (テンプレート等、任意)
+└── scripts/               # AI が判断せずそのまま実行する決定的な script (任意)
 ```
 
 詳細ドキュメントは `skills/` ディレクトリ直下に配置:
 - `skills/<skill-name>.md` — スキル詳細ドキュメント (英語)
 - `skills/<skill-name>.ja.md` — スキル詳細ドキュメント (日本語)
+
+## AI 責務最小化 (script 化)
+
+skill / rule / prompt は、実行時に AI Agent が実装・作業・判断する範囲を最小限にする。
+決定的な作業は事前に用意した script に寄せ、AI には判断が必要な部分だけを残す。
+(このセクションの共通部分は contribute-skill.md / contribute-rule.md / contribute-prompt.md で同期して更新する)
+
+### 判断基準
+
+| script に寄せる (決定的な作業) | AI に残す (判断が必要な作業) |
+|---|---|
+| scaffold・テンプレート展開 | プロジェクト状況の把握と設計判断 |
+| ファイルのコピー・リネーム・配置 | script に渡す入力値 (名前・パス・オプション) の決定 |
+| sed 等による一括置換 | ユーザーへの確認・提案 |
+| 順序が決まっているコマンド列 | script が失敗した時の原因分析と対処 |
+| 成果物の検証 (ファイル存在・フォーマット・整合性チェック) | 検証 NG 時の修正内容の判断 |
+
+「入力が同じなら結果が一意に決まる手順」を prose で AI に指示している箇所は、script 化の対象。
+逆に、状況依存の判断まで script に押し込んで柔軟性を失わせない。
+
+### script の同梱と参照 (skill)
+
+- `skills/<skill-name>/scripts/` に配置する。`gh skill install` はディレクトリを丸ごとコピーするため、そのままユーザーに届く
+- SKILL.md からは `${CLAUDE_SKILL_DIR}/scripts/<script>` (この SKILL.md があるディレクトリ基準) で実行させる
+- SKILL.md には「script を読解・書き換え・再実装せず、そのまま実行する」と明記する
+- ユーザーのプロジェクト側に配置して使わせる script は `scripts/` ではなく `example/` に置き、コピー指示にする
+- 既存例: `skills/github-get-attachment-url/` (scripts/run.sh をそのまま実行)、`skills/status-board/` (scripts/*.mjs)、`skills/kmp-snapshot-testing-setup/example/tools/` (プロジェクト配置型)
+
+### script の品質要件
+
+- bash は `set -euo pipefail` で始める
+- 引数・前提条件を冒頭で検証し、失敗時は「何が・なぜ・どう直すか」が分かるエラーメッセージを stderr に出して非 0 で終了する
+- 成功時の出力は AI が判定しやすい形式にする (要点のみ。可能なら `OK` 行や JSON)
+- 冪等にする (再実行しても壊れない)。破壊的操作は明示フラグを必須にする
+
+### PR 前セルフレビュー: AI 責務最小化チェックリスト
+
+PR 作成前に以下を確認する:
+
+- [ ] 決定的な手順 (scaffold / コピー / 置換 / 決まったコマンド列 / 検証) が prose で AI に委ねられていないか。該当があれば script 化したか
+- [ ] script 化した作業の手順が本文 (SKILL.md / RULE.md / PROMPT.md) に重複記述されていないか (script を SSoT とする)
+- [ ] 本文に「script を読解・書き換え・再実装せず、そのまま実行する」旨を明記したか
+- [ ] script は失敗時に「何が・なぜ・どう直すか」が分かるエラーメッセージを出して非 0 終了するか
+- [ ] script は冪等か。破壊的操作は明示フラグ必須になっているか
+- [ ] script の入力 (引数・環境変数) が本文で定義され、AI の仕事が「入力値の決定」だけになっているか
+- [ ] AI に残した作業は本当に判断が必要か (状況把握 / 設計判断 / ユーザー確認 / エラー分析のいずれかに該当するか)
+- [ ] 逆に、判断が必要な部分まで script に押し込んで柔軟性を失っていないか
+- [ ] script の参照パスが配布形態に合っているか (skill: `${CLAUDE_SKILL_DIR}/scripts/`、rule: カレント展開後の相対パス + インタープリタ明示、prompt: raw URL 取得)
+- [ ] 検証も script 化されているか。AI の目視確認だけに頼っていないか
 
 ## 新規追加の手順
 
@@ -113,6 +163,7 @@ Step 1 で特定したリソースを配置する:
 - **references/** — Claude が作業中に参照するドキュメント (スキーマ定義、API仕様等)
 - **example/** — コピー元として使うサンプルコード
 - **assets/** — 出力に使うテンプレートや画像等
+- **scripts/** — AI が判断せずそのまま実行する決定的な script (「AI 責務最小化 (script 化)」セクション参照)
 
 不要なディレクトリは作成しない。
 
@@ -194,3 +245,4 @@ gh skill install tbsten/skills <skill-name>
 - status は SKILL.md の `metadata.status` を SSoT とし、README のステータス列と必ず一致させる
 - group は SKILL.md の `metadata.group` (日本語グループ名) を SSoT とし、README のグループ列 (英語版は英語名) と必ず一致させる。グループセルの記載はグループ先頭行のみ (絵文字付き)、継続行は空セル
 - README の説明列は最大 80 文字。収まらない詳細は詳細ドキュメント側に書く
+- 決定的な手順は prose で書かず script 化する。「AI 責務最小化 (script 化)」セクションのチェックリストを PR 前に実施する
