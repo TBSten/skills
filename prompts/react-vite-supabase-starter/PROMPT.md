@@ -2,256 +2,66 @@
 
 このプロンプトは [TBSten/skills](https://github.com/TBSten/skills) の `prompts/react-vite-supabase-starter` として配布されている一回限りのプロンプト。React + Vite + TypeScript + Tailwind CSS v4 + shadcn/ui + TanStack Router + TanStack Query + Supabase のスタックで、認証・ルーティング・データアクセス層・レイアウト・テスト環境を一式備えた新規 Web アプリ (pnpm workspace モノレポ) をスキャフォールドする。
 
-## 参照ファイルの取得方法
+セットアップ手順の SSoT は skill 内の `scripts/scaffold.sh`。
+**script を読解・書き換え・再実装せず、そのまま実行すること。**
 
-このプロンプトが参照するファイルは GitHub リポジトリ [TBSten/skills](https://github.com/TBSten/skills) にある。
+## Step 1: スキル一式の取得 (sparse clone)
 
-- 単一ファイル: `https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/<パス>` を WebFetch や curl で取得する
-- ディレクトリの一覧: `https://api.github.com/repos/TBSten/skills/contents/<パス>` で取得する
-- このプロンプトはファイル数が多いので sparse clone でまとめて取得するのが速い:
+scaffold script が example/ 一式を参照するため、sparse clone でスキルを丸ごと取得する:
 
 ```sh
 git clone --depth 1 --filter=blob:none --sparse https://github.com/TBSten/skills.git /tmp/tbsten-skills
 git -C /tmp/tbsten-skills sparse-checkout set skills/react-vite-supabase-starter
 ```
 
-以降の手順では、sparse clone 後のパス `/tmp/tbsten-skills/skills/react-vite-supabase-starter/` を `<starter>/` と表記する。sparse clone しない場合は、`<starter>/<パス>` を `https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/skills/react-vite-supabase-starter/<パス>` に読み替えて個別に取得すること。
+以降、`/tmp/tbsten-skills/skills/react-vite-supabase-starter/` を `<starter>/` と表記する。
 
-## Usage
+## Step 2: 確認事項ヒアリング
 
 以下を確認してから開始する:
 
 1. **プロジェクト名** — kebab-case (例: `my-app`)
 2. **アプリ名** — UI に表示する名前 (例: 「マイアプリ」)
-3. **テーマカラー** — プライマリカラーの hex 値。指定がなければデフォルト (#8F5A3C) を使用
-4. **Supabase の利用有無** — 不要なら認証・Supabase 関連コードをスキップ
+3. **テーマカラー** — プライマリカラーの hex 値。指定がなければデフォルト (`#8F5A3C`) を使用
+4. **Supabase の利用有無** — 不要なら `--no-supabase` を付け、出力される除去手順に従う
 
-## Step 1: プロジェクト作成
+## Step 3: scaffold.sh 実行
 
-```bash
-mkdir <project-name> && cd <project-name>
-pnpm init
+```sh
+bash <starter>/scripts/scaffold.sh \
+  --name <project-name> \
+  --app-name "<アプリ名>" \
+  --primary "#RRGGBB"
 ```
 
-ルートの `package.json` を作成する:
+- 生成先はカレントの `./<project-name>` (変更するときだけ `--dest <dir>`)
+- **ネットワーク必須** (pnpm install + shadcn/ui コンポーネント生成)。オフライン時は `--skip-install` で
+  ファイル配置だけ行い、出力される ACTION_REQUIRED のコマンドを後で実行する
+- 既存ファイルは上書きしない (冪等)。上書きしたいときだけ `--force`
+- `--dry-run` で配置予定ファイルと実行予定ステップを事前確認できる
+- 失敗時は `ERROR / why / fix` が stderr に出て非 0 終了する。fix の指示に従って復旧する
+  (どの Step で止まったかはログの `== Step N:` 見出しで分かる)
+- 正常終了時は末尾に 1 行 JSON (`{"ok":true,...}`) が出る
+- ACTION_REQUIRED が出力されたら、その内容 (追加コマンドの実行や Supabase 除去) を必ず実施する
 
-```json
-{
-  "name": "<project-name>",
-  "private": true,
-  "scripts": {
-    "dev": "pnpm --filter web dev",
-    "build": "pnpm --filter web build",
-    "test": "pnpm --filter web test",
-    "lint": "pnpm --filter web lint"
-  }
-}
+## Step 4: 動作確認
+
+```sh
+cd <project-name>
+pnpm test    # vitest (サンプルテスト付き)
+pnpm build   # tsc -b + vite build
 ```
 
-`pnpm-workspace.yaml` を作成する:
+両方 green になることを確認してから次へ進む。`pnpm lint` も通る状態で生成される。
 
-```yaml
-packages:
-  - "apps/*"
-  - "packages/*"
-```
+## Step 5: 要件に合わせた調整
 
-## Step 2: Vite + React アプリの作成
-
-```bash
-mkdir -p apps/web && cd apps/web
-pnpm create vite . --template react-ts
-```
-
-`<starter>/example/config/` 内のファイルを参照し、以下を設定する:
-
-1. **vite.config.ts** — `@` パスエイリアス + Tailwind CSS vite プラグイン
-2. **tsconfig.json** / **tsconfig.app.json** / **tsconfig.node.json** — strict + パスエイリアス
-3. **eslint.config.js** — flat config + React Hooks + React Refresh
-4. **vitest.config.ts** — jsdom + globals + setup file
-5. **playwright.config.ts** — E2E テスト設定
-
-## Step 3: 依存パッケージのインストール
-
-```bash
-# Core
-pnpm add react react-dom
-
-# Routing & State
-pnpm add @tanstack/react-router @tanstack/react-query
-
-# Supabase (省略可)
-pnpm add @supabase/supabase-js
-
-# UI
-pnpm add tailwindcss@latest @tailwindcss/vite shadcn radix-ui
-pnpm add class-variance-authority clsx tailwind-merge tw-animate-css
-pnpm add lucide-react sonner next-themes
-pnpm add @fontsource-variable/inter
-
-# Dev
-pnpm add -D @vitejs/plugin-react typescript @types/react @types/react-dom @types/node
-pnpm add -D @eslint/js eslint typescript-eslint eslint-plugin-react-hooks eslint-plugin-react-refresh globals
-pnpm add -D vitest jsdom @testing-library/jest-dom @testing-library/react @testing-library/user-event
-pnpm add -D @playwright/test
-```
-
-## Step 4: shadcn/ui の初期化
-
-`<starter>/example/config/components.json` を参照して `components.json` を配置する。
-
-```bash
-PATH="/tmp/pnpm-shim:$PATH" npx shadcn@latest init
-```
-
-必要な UI コンポーネントを追加する:
-
-```bash
-PATH="/tmp/pnpm-shim:$PATH" npx shadcn@latest add button card input dialog table badge select label sonner
-```
-
-## Step 5: テーマ・グローバルスタイルの設定
-
-`<starter>/example/src/index.css` を参照して `src/index.css` を作成する。
-ユーザーが指定したテーマカラーで `--primary` を差し替える。
-
-## Step 6: コアインフラの配置
-
-`<starter>/example/src/` 以下のファイルを参照し、以下を作成する。
-ユーザーのプロジェクト要件に合わせて調整すること。
-
-### 6.1 ユーティリティ (`src/lib/`)
-
-- **utils.ts** — `cn()` (clsx + tailwind-merge)
-- **toast.ts** — `showSuccess()` / `showError()` ラッパー
-- **logger.ts** — 構造化ロガー
-- **error-messages.ts** — エラーコード→ユーザー向けメッセージ変換
-- **setup-error-handlers.ts** — グローバルエラーハンドラ
-- **query-client.ts** — TanStack Query の QueryClient 設定
-- **use-mutate.ts** — 汎用 Mutation Hook (トースト + キャッシュ無効化)
-
-### 6.2 Supabase クライアント (`src/lib/`) ※Supabase 利用時のみ
-
-- **supabase.ts** — Supabase クライアント初期化
-- **api.ts** — ApiError + handleSupabaseResult
-
-### 6.3 認証 (`src/auth/`) ※Supabase 利用時のみ
-
-- **auth-context.tsx** — 認証コンテキスト (セッション復元 + 状態監視)
-
-### 6.4 データアクセス層 (`src/data/`) ※Supabase 利用時のみ
-
-- **data/auth/use-login.ts** — ログイン Hook のサンプル
-- **data/auth/use-user-profile.ts** — プロフィール取得 Hook のサンプル
-
-`src/data/<domain>/` ディレクトリパターンで、画面からの直接 Supabase アクセスを禁止する。
-`<starter>/references/data-layer-pattern.md` を参照すること。
-
-### 6.5 ルーティング (`src/router.tsx`)
-
-TanStack Router で型安全なルーティングを構成する。`<starter>/example/src/router.tsx` を参照。
-以下を含む:
-
-- ルーターコンテキスト (user, queryClient 等)
-- 認証ガード (`beforeLoad`)
-- レイアウトルート
-
-### 6.6 エントリポイント
-
-- **main.tsx** — グローバルエラーハンドラ登録 + React DOM レンダリング
-- **App.tsx** — プロバイダ構成 (ErrorBoundary → QueryClient → Auth → Router)
-
-## Step 7: レイアウト・共通コンポーネント
-
-`<starter>/example/src/components/` を参照して以下を作成する:
-
-- **layout/app-layout.tsx** — ヘッダー + メインコンテンツ + Toaster
-- **layout/header.tsx** — アプリ名 + ナビゲーション + ログアウト
-- **layout/nav-link.tsx** — アクティブ状態検知付きナビリンク
-- **error-boundary.tsx** — React Error Boundary
-- **page-title.tsx** — ページ見出し (h1)
-- **loading-spinner.tsx** — ローディングスピナー
-- **mutate-button.tsx** — ローディング付きアクションボタン
-
-## Step 8: サンプルページ
-
-最低限のページを作成して動作確認する:
-
-- `/login` — ログインページ
-- `/` — ホーム (認証必須)
-- 500 / 404 エラーページ
-
-## Step 9: テスト環境
-
-1. `src/test/setup.ts` — `@testing-library/jest-dom/vitest` のインポート
-2. サンプルテストファイルを1つ作成して `pnpm test` で動作確認する
-3. `pnpm build` でビルドが通ることを確認する
-
-## Step 10: 環境変数
-
-`.env.local` (git 管理外) を作成する:
-
-```env
-VITE_SUPABASE_URL=http://localhost:54321
-VITE_SUPABASE_ANON_KEY=<your-anon-key>
-```
-
-`src/vite-env.d.ts` で型定義する:
-
-```typescript
-interface ImportMetaEnv {
-  readonly VITE_SUPABASE_URL: string;
-  readonly VITE_SUPABASE_ANON_KEY: string;
-}
-```
-
-## ディレクトリ構成 (完成形)
-
-```
-<project-name>/
-├── package.json
-├── pnpm-workspace.yaml
-└── apps/web/
-    ├── package.json
-    ├── vite.config.ts
-    ├── vitest.config.ts
-    ├── tsconfig.json / tsconfig.app.json / tsconfig.node.json
-    ├── eslint.config.js
-    ├── components.json
-    ├── playwright.config.ts
-    ├── index.html
-    └── src/
-        ├── main.tsx
-        ├── App.tsx
-        ├── router.tsx
-        ├── index.css
-        ├── vite-env.d.ts
-        ├── auth/
-        │   └── auth-context.tsx
-        ├── pages/
-        │   ├── login.tsx
-        │   └── ...
-        ├── components/
-        │   ├── layout/ (app-layout, header, nav-link)
-        │   ├── ui/    (shadcn/ui)
-        │   ├── error-boundary.tsx
-        │   ├── page-title.tsx
-        │   ├── loading-spinner.tsx
-        │   └── mutate-button.tsx
-        ├── data/
-        │   └── <domain>/ (use-*.ts hooks)
-        ├── lib/
-        │   ├── supabase.ts
-        │   ├── api.ts
-        │   ├── query-client.ts
-        │   ├── utils.ts
-        │   ├── use-mutate.ts
-        │   ├── toast.ts
-        │   ├── logger.ts
-        │   ├── error-messages.ts
-        │   └── setup-error-handlers.ts
-        ├── hooks/
-        │   └── use-debounce.ts
-        └── test/
-            └── setup.ts
-```
+- **環境変数**: `apps/web/.env.local` の `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` を実値に書き換える
+- **データアクセス層**: 画面コンポーネントから supabase を直接 import しない。
+  `src/data/<domain>/` の hook 経由にする (`<starter>/references/data-layer-pattern.md` を参照)。
+  サンプル: `data/auth/use-login.ts` (Mutation) / `data/auth/use-user-profile.ts` (Query)
+- **テーマ**: `src/index.css` の CSS 変数 (`--primary` / `--accent` / `--ring` など) で全体を制御
+- **ページ追加**: `src/pages/` にコンポーネントを作り、`src/router.tsx` にルートを追加
+- **UI コンポーネント追加**: `cd apps/web && pnpm dlx shadcn@latest add <component>`
+- **Supabase を使わない場合**: `<starter>/SKILL.md` の「Supabase を使わない場合」の手順で
+  関連コードを除去し、`pnpm test && pnpm build` で確認する

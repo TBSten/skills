@@ -23,31 +23,48 @@ This skill provides a complete project scaffold for building modern SPAs with:
 - **Playwright** for E2E tests
 - **pnpm workspace** monorepo structure
 
+The single source of truth for setup is `scripts/scaffold.sh`: it places the entire
+self-contained `example/` (which compiles as-is), substitutes the project name, app
+display name, and primary color, runs `pnpm install`, generates shadcn/ui components,
+and creates the `.env.local` template — in one deterministic run. The AI executes the
+script as-is instead of reimplementing the steps.
+
+```sh
+scripts/scaffold.sh --name <project> --app-name "<display name>" --primary "#RRGGBB"
+# + --dest <dir> / --no-supabase / --skip-install / --dry-run / --force
+```
+
 ## What Gets Generated
 
 ```
 <project>/
 ├── package.json              # Workspace root
 ├── pnpm-workspace.yaml
+├── .gitignore
 └── apps/web/
-    ├── Config files          # vite, tsconfig, eslint, shadcn, playwright
+    ├── Config files          # vite, vitest, tsconfig, eslint, shadcn, playwright
+    ├── index.html
+    ├── .env.local(.example)
     └── src/
         ├── main.tsx          # Entry point with global error handlers
         ├── App.tsx           # Provider stack (ErrorBoundary > Query > Auth > Router)
-        ├── router.tsx        # Type-safe routes with auth guards
+        ├── router.tsx        # Type-safe routes with auth guards + 404/500
         ├── index.css         # Tailwind theme (customizable colors)
         ├── auth/             # Supabase auth context
+        ├── pages/            # login / home / not-found / error
         ├── components/       # Layout, shared components, shadcn/ui
         ├── data/             # Data access hooks (Supabase abstracted)
         ├── lib/              # Utilities (query-client, logger, toast, etc.)
         └── hooks/            # Generic hooks (useDebounce, etc.)
 ```
 
+After scaffolding, `pnpm test`, `pnpm build`, and `pnpm lint` all pass out of the box.
+
 ## Key Patterns
 
 ### Data Access Layer
 
-Page components never import Supabase directly. All data operations go through hooks in `src/data/<domain>/`. See `references/data-layer-pattern.md` for details.
+Page components never import Supabase directly. All data operations go through hooks in `src/data/<domain>/` (samples: `use-login.ts`, `use-user-profile.ts`). See `references/data-layer-pattern.md` for details.
 
 ### Auth Flow
 
@@ -57,12 +74,13 @@ Page components never import Supabase directly. All data operations go through h
 
 ### Theming
 
-CSS variables in `index.css` control the entire color scheme. Change `--primary`, `--accent`, and `--ring` to match your brand.
+CSS variables in `index.css` control the entire color scheme. `scaffold.sh --primary` sets `--primary` and `--ring`; change `--accent` and others to match your brand.
 
 ## Prerequisites
 
 - Node.js 20+
 - pnpm 9+
+- Network access (`pnpm install` + shadcn/ui generation; use `--skip-install` to place files only)
 - Supabase project (if using auth/database)
 
 ## Usage
@@ -71,4 +89,4 @@ CSS variables in `index.css` control the entire color scheme. Change `--primary`
 /react-vite-supabase-starter
 ```
 
-The skill will ask for project name, app display name, and theme color, then generate the full project scaffold.
+The skill asks for the project name, app display name, theme color, and whether to use Supabase, then runs `scripts/scaffold.sh` and verifies `pnpm test` / `pnpm build`. Without Supabase, the script emits an ACTION_REQUIRED checklist and the AI removes the auth-related code afterwards.

@@ -14,243 +14,133 @@ metadata:
 
 # react-vite-supabase-starter
 
-React + Vite + TypeScript + Tailwind CSS v4 + shadcn/ui + Supabase の技術スタックで新規 Web アプリを立ち上げる。
+React + Vite + TypeScript + Tailwind CSS v4 + shadcn/ui + TanStack Router + TanStack Query + Supabase の技術スタックで新規 Web アプリを立ち上げる。
 
-## Usage
+セットアップ手順の SSoT は `scripts/scaffold.sh`。
+**script を読解・書き換え・再実装せず、そのまま実行すること。**
+example/ は「コピーすればコンパイルが通る」自己完結の雛形で、script がその配置・置換を一括で行う。
+
+## Step 1: 確認事項ヒアリング
 
 以下を確認してから開始する:
 
 1. **プロジェクト名** — kebab-case (例: `my-app`)
 2. **アプリ名** — UI に表示する名前 (例: 「マイアプリ」)
-3. **テーマカラー** — プライマリカラーの hex 値。指定がなければデフォルト (#8F5A3C) を使用
-4. **Supabase の利用有無** — 不要なら認証・Supabase 関連コードをスキップ
+3. **テーマカラー** — プライマリカラーの hex 値。指定がなければデフォルト (`#8F5A3C`) を使用
+4. **Supabase の利用有無** — 不要なら後述「Supabase を使わない場合」の除去を行う
 
-## Step 1: プロジェクト作成
-
-```bash
-mkdir <project-name> && cd <project-name>
-pnpm init
-```
-
-ルートの `package.json` を作成:
-
-```json
-{
-  "name": "<project-name>",
-  "private": true,
-  "scripts": {
-    "dev": "pnpm --filter web dev",
-    "build": "pnpm --filter web build",
-    "test": "pnpm --filter web test",
-    "lint": "pnpm --filter web lint"
-  }
-}
-```
-
-`pnpm-workspace.yaml` を作成:
-
-```yaml
-packages:
-  - "apps/*"
-  - "packages/*"
-```
-
-## Step 2: Vite + React アプリの作成
+## Step 2: scaffold.sh 実行
 
 ```bash
-mkdir -p apps/web && cd apps/web
-pnpm create vite . --template react-ts
+bash <このスキルのディレクトリ>/scripts/scaffold.sh \
+  --name <project-name> \
+  --app-name "<アプリ名>" \
+  --primary "#RRGGBB"
 ```
 
-example/config/ 内のファイルを参照し、以下を設定:
+- 生成先はカレントの `./<project-name>` (変更するときだけ `--dest <dir>`)
+- **ネットワーク必須** (pnpm install + shadcn/ui コンポーネント生成)。オフライン時は `--skip-install` で
+  ファイル配置だけ行い、出力される ACTION_REQUIRED のコマンドを後で実行する
+- 既存ファイルは上書きしない (冪等)。上書きしたいときだけ `--force`
+- `--dry-run` で配置予定ファイルと実行予定ステップを事前確認できる
+- 失敗時は `ERROR / why / fix` が stderr に出て非 0 終了する。fix の指示に従って復旧する
+  (どの Step で止まったかはログの `== Step N:` 見出しで分かる)
+- 正常終了時は末尾に 1 行 JSON (`{"ok":true,...}`) が出る
 
-1. **vite.config.ts** — `@` パスエイリアス + Tailwind CSS vite プラグイン
-2. **tsconfig.json** / **tsconfig.app.json** / **tsconfig.node.json** — strict + パスエイリアス
-3. **eslint.config.js** — flat config + React Hooks + React Refresh
-4. **vitest.config.ts** — jsdom + globals + setup file
-5. **playwright.config.ts** — E2E テスト設定
+script が行うこと (Step 1〜6): example/ 全ファイルの配置、`<project-name>` / `<app-name>` /
+`--primary` (index.css の `--primary` と `--ring`) の置換、`pnpm install`、
+`pnpm dlx shadcn@latest add button card input dialog table badge select label sonner`
+(components.json 配置済みのため `shadcn init` は不要)、`.env.local` 雛形生成。
 
-## Step 3: 依存パッケージのインストール
+## Step 3: 動作確認
 
 ```bash
-# Core
-pnpm add react react-dom
-
-# Routing & State
-pnpm add @tanstack/react-router @tanstack/react-query
-
-# Supabase (省略可)
-pnpm add @supabase/supabase-js
-
-# UI
-pnpm add tailwindcss@latest @tailwindcss/vite shadcn radix-ui
-pnpm add class-variance-authority clsx tailwind-merge tw-animate-css
-pnpm add lucide-react sonner next-themes
-pnpm add @fontsource-variable/inter
-
-# Dev
-pnpm add -D @vitejs/plugin-react typescript @types/react @types/react-dom @types/node
-pnpm add -D @eslint/js eslint typescript-eslint eslint-plugin-react-hooks eslint-plugin-react-refresh globals
-pnpm add -D vitest jsdom @testing-library/jest-dom @testing-library/react @testing-library/user-event
-pnpm add -D @playwright/test
+cd <project-name>
+pnpm test    # vitest (サンプルテスト付き)
+pnpm build   # tsc -b + vite build
 ```
 
-## Step 4: shadcn/ui の初期化
+両方 green になることを確認してから次へ進む。`pnpm lint` も通る状態で生成される。
 
-example/config/components.json を参照して `components.json` を配置する。
+## Step 4: 要件に合わせた調整
 
-```bash
-PATH="/tmp/pnpm-shim:$PATH" npx shadcn@latest init
-```
+- **環境変数**: `apps/web/.env.local` の `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` を実値に書き換える
+- **データアクセス層**: 画面コンポーネントから supabase を直接 import しない。
+  `src/data/<domain>/` の hook 経由にする (references/data-layer-pattern.md を参照)。
+  サンプル: `data/auth/use-login.ts` (Mutation) / `data/auth/use-user-profile.ts` (Query)
+- **テーマ**: `src/index.css` の CSS 変数 (`--primary` / `--accent` / `--ring` など) で全体を制御
+- **ページ追加**: `src/pages/` にコンポーネントを作り、`src/router.tsx` にルートを追加
+- **UI コンポーネント追加**: `cd apps/web && pnpm dlx shadcn@latest add <component>`
+- **アプリ名の変更**: `src/components/layout/header.tsx` の `APP_NAME` と `index.html` の `<title>`
 
-必要な UI コンポーネントを追加:
+### Supabase を使わない場合
 
-```bash
-PATH="/tmp/pnpm-shim:$PATH" npx shadcn@latest add button card input dialog table badge select label sonner
-```
+`--no-supabase` を付けても配置は Supabase あり構成のまま行われ、除去手順が
+ACTION_REQUIRED として出力される (script の分岐を単純に保つための v1 仕様)。
+以下を AI が実施する:
 
-## Step 5: テーマ・グローバルスタイルの設定
-
-example/src/index.css を参照して `src/index.css` を作成する。
-ユーザーが指定したテーマカラーで `--primary` を差し替える。
-
-## Step 6: コアインフラの配置
-
-example/src/ 以下のファイルを参照し、以下を作成する。
-ユーザーのプロジェクト要件に合わせて調整すること。
-
-### 6.1 ユーティリティ (`src/lib/`)
-
-- **utils.ts** — `cn()` (clsx + tailwind-merge)
-- **toast.ts** — `showSuccess()` / `showError()` ラッパー
-- **logger.ts** — 構造化ロガー
-- **error-messages.ts** — エラーコード→ユーザー向けメッセージ変換
-- **setup-error-handlers.ts** — グローバルエラーハンドラ
-- **query-client.ts** — TanStack Query の QueryClient 設定
-- **use-mutate.ts** — 汎用 Mutation Hook (トースト + キャッシュ無効化)
-
-### 6.2 Supabase クライアント (`src/lib/`) ※Supabase 利用時のみ
-
-- **supabase.ts** — Supabase クライアント初期化
-- **api.ts** — ApiError + handleSupabaseResult
-
-### 6.3 認証 (`src/auth/`) ※Supabase 利用時のみ
-
-- **auth-context.tsx** — 認証コンテキスト (セッション復元 + 状態監視)
-
-### 6.4 データアクセス層 (`src/data/`) ※Supabase 利用時のみ
-
-- **data/auth/use-login.ts** — ログイン Hook のサンプル
-- **data/auth/use-user-profile.ts** — プロフィール取得 Hook のサンプル
-
-`src/data/<domain>/` ディレクトリパターンで、画面からの直接 Supabase アクセスを禁止する。
-references/data-layer-pattern.md を参照すること。
-
-### 6.5 ルーティング (`src/router.tsx`)
-
-TanStack Router で型安全なルーティングを構成する。example/src/router.tsx を参照。
-以下を含む:
-
-- ルーターコンテキスト (user, queryClient 等)
-- 認証ガード (`beforeLoad`)
-- レイアウトルート
-
-### 6.6 エントリポイント
-
-- **main.tsx** — グローバルエラーハンドラ登録 + React DOM レンダリング
-- **App.tsx** — プロバイダ構成 (ErrorBoundary → QueryClient → Auth → Router)
-
-## Step 7: レイアウト・共通コンポーネント
-
-example/src/components/ を参照して以下を作成:
-
-- **layout/app-layout.tsx** — ヘッダー + メインコンテンツ + Toaster
-- **layout/header.tsx** — アプリ名 + ナビゲーション + ログアウト
-- **layout/nav-link.tsx** — アクティブ状態検知付きナビリンク
-- **error-boundary.tsx** — React Error Boundary
-- **page-title.tsx** — ページ見出し (h1)
-- **loading-spinner.tsx** — ローディングスピナー
-- **mutate-button.tsx** — ローディング付きアクションボタン
-
-## Step 8: サンプルページ
-
-最低限のページを作成して動作確認する:
-
-- `/login` — ログインページ
-- `/` — ホーム (認証必須)
-- 500 / 404 エラーページ
-
-## Step 9: テスト環境
-
-1. `src/test/setup.ts` — `@testing-library/jest-dom/vitest` のインポート
-2. サンプルテストファイルを1つ作成して `pnpm test` で動作確認
-3. `pnpm build` でビルドが通ることを確認
-
-## Step 10: 環境変数
-
-`.env.local` (git 管理外) を作成:
-
-```env
-VITE_SUPABASE_URL=http://localhost:54321
-VITE_SUPABASE_ANON_KEY=<your-anon-key>
-```
-
-`src/vite-env.d.ts` で型定義:
-
-```typescript
-interface ImportMetaEnv {
-  readonly VITE_SUPABASE_URL: string;
-  readonly VITE_SUPABASE_ANON_KEY: string;
-}
-```
+1. 削除: `src/lib/supabase.ts`, `src/lib/api.ts`, `src/auth/`, `src/data/`,
+   `src/pages/login.tsx`, `apps/web/.env.local.example`
+2. 編集:
+   - `App.tsx` — AuthProvider / useAuth / InnerApp の認証状態を除去し RouterProvider を直接描画
+   - `router.tsx` — 認証ガード (`beforeLoad`) と login ルートを除去
+   - `components/layout/header.tsx` — useAuth / Sign out ボタンを除去
+   - `pages/home.tsx` — useAuth / useUserProfile 依存を除去
+   - `vite-env.d.ts` — `VITE_SUPABASE_*` の型定義を除去
+3. `cd apps/web && pnpm remove @supabase/supabase-js`
+4. `pnpm test && pnpm build` で green を確認
 
 ## ディレクトリ構成 (完成形)
 
 ```
 <project-name>/
-├── package.json
+├── package.json              # workspace root (pnpm --filter web ...)
 ├── pnpm-workspace.yaml
+├── .gitignore
 └── apps/web/
     ├── package.json
-    ├── vite.config.ts
-    ├── vitest.config.ts
+    ├── index.html
+    ├── components.json       # shadcn/ui 設定
+    ├── vite.config.ts / vitest.config.ts / playwright.config.ts
     ├── tsconfig.json / tsconfig.app.json / tsconfig.node.json
     ├── eslint.config.js
-    ├── components.json
-    ├── playwright.config.ts
-    ├── index.html
+    ├── .env.local.example / .env.local
     └── src/
-        ├── main.tsx
-        ├── App.tsx
-        ├── router.tsx
-        ├── index.css
+        ├── main.tsx          # エントリポイント (グローバルエラーハンドラ登録)
+        ├── App.tsx           # プロバイダ構成 (ErrorBoundary → Query → Auth → Router)
+        ├── router.tsx        # 型安全ルーティング + 認証ガード + 404/500
+        ├── index.css         # Tailwind v4 テーマ (CSS 変数)
         ├── vite-env.d.ts
         ├── auth/
         │   └── auth-context.tsx
         ├── pages/
-        │   ├── login.tsx
-        │   └── ...
+        │   ├── login.tsx / home.tsx / not-found.tsx / error.tsx
         ├── components/
         │   ├── layout/ (app-layout, header, nav-link)
-        │   ├── ui/    (shadcn/ui)
-        │   ├── error-boundary.tsx
-        │   ├── page-title.tsx
-        │   ├── loading-spinner.tsx
-        │   └── mutate-button.tsx
+        │   ├── ui/    (shadcn/ui — scaffold.sh Step 5 で生成)
+        │   ├── error-boundary.tsx / page-title.tsx
+        │   └── loading-spinner.tsx / mutate-button.tsx
         ├── data/
-        │   └── <domain>/ (use-*.ts hooks)
+        │   └── auth/ (use-login.ts, use-user-profile.ts)
         ├── lib/
-        │   ├── supabase.ts
-        │   ├── api.ts
-        │   ├── query-client.ts
-        │   ├── utils.ts
-        │   ├── use-mutate.ts
-        │   ├── toast.ts
-        │   ├── logger.ts
-        │   ├── error-messages.ts
-        │   └── setup-error-handlers.ts
+        │   ├── supabase.ts / api.ts
+        │   ├── query-client.ts / use-mutate.ts
+        │   ├── utils.ts / utils.test.ts
+        │   └── toast.ts / logger.ts / error-messages.ts / setup-error-handlers.ts
         ├── hooks/
         │   └── use-debounce.ts
         └── test/
             └── setup.ts
 ```
+
+## example/ と配置先のマッピング
+
+| example/ | 配置先 |
+|---|---|
+| `root/gitignore` | `.gitignore` |
+| `root/*` | `/` (workspace root) |
+| `web/env.local.example` | `apps/web/.env.local.example` (+ `.env.local` 生成) |
+| `web/*` | `apps/web/` |
+| `config/*` | `apps/web/` |
+| `src/**` | `apps/web/src/**` |
+| (script が生成) shadcn add | `apps/web/src/components/ui/` |

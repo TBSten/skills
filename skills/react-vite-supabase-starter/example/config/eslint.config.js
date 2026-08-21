@@ -20,4 +20,12 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
+  {
+    // shadcn/ui の生成コードはコンポーネント以外 (cva の variants 等) も
+    // export するため react-refresh ルールの対象から外す
+    files: ["src/components/ui/**"],
+    rules: {
+      "react-refresh/only-export-components": "off",
+    },
+  },
 ]);
