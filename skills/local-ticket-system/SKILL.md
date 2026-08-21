@@ -25,17 +25,19 @@ metadata:
 - 既存のチケットシステムにタスク・バグ・チャプターチケットを追加したい
 - チケットのステータスを変更したい (done / closed / archived / deferred への移動)
 
+決定的な作業 (ディレクトリ作成・テンプレートコピー・連番算出・ファイル移動) は `scripts/` の script が行う。**script を読解・書き換え・再実装せず、そのまま実行する。** AI の責務は判断が必要な部分 — 種別の判断 (Step 2)、絵文字・タイトル・本文の記入 — に限る。各 script は失敗時に stderr へ `ERROR:` / `WHY:` / `FIX:` を出力するので、失敗したら `FIX:` に従う。
+
 ## Step 1: セットアップ (初回のみ)
 
-プロジェクトに `.local/ticket/` が存在しない場合、以下を実行する。
+プロジェクトルートで `${CLAUDE_SKILL_DIR}/scripts/setup.sh` を実行する。
 
-1. `.local/ticket/` ディレクトリを作成
-2. `assets/about.md` を `.local/ticket/about.md` としてコピー
-3. `assets/task-0xx-template.md` を `.local/ticket/task-0xx-template.md` としてコピー
-4. `assets/chapter-template.md` を `.local/ticket/chapter-template.md` としてコピー
-5. `.gitignore` に `.local/` が含まれていなければ追加
+```bash
+"${CLAUDE_SKILL_DIR}/scripts/setup.sh"
+```
 
-既に `.local/ticket/` が存在する場合はスキップする。
+- `.local/ticket/` の作成、テンプレート (about.md / task / bug / chapter) のコピー、`done/` `closed/` `archived/` `deferred/` の作成、`.gitignore` への `.local/` 追記までをまとめて行う
+- 冪等なので `.local/ticket/` が既にあるかの事前確認は不要。既存ファイルは上書きされない
+- 成功時は stdout に 1 行 JSON (`{"ok":true,...}`) が出力される
 
 ## Step 2: チケット種別の判断
 
@@ -64,15 +66,24 @@ metadata:
 
 ## Step 3: チケットの作成
 
-Step 2 で決定した種別に応じてチケットを作成する。
+Step 2 で決定した種別に応じて `${CLAUDE_SKILL_DIR}/scripts/new-ticket.sh` でチケットファイルを作成する。連番の算出とテンプレートのコピーは script が行うので、手動で計算・コピーしない。
 
-### 命名規則
+```bash
+"${CLAUDE_SKILL_DIR}/scripts/new-ticket.sh" <task|bug|chapter> <slug>
+# 例: new-ticket.sh task add-login → .local/ticket/task-042-add-login.md
+```
+
+- slug は小文字英数字とハイフン (例: `add-login`)
+- 成功時は stdout に作成されたチケットのパスが 1 行出力される
+- 作成後、そのファイルを開いて `TODO:` プレースホルダ (絵文字・タイトル・本文) を記入する。ここは AI の責務
+
+### 命名規則 (script が自動適用)
 
 - タスク: `task-{連番3桁}-{slug}.md` (例: `task-001-add-login.md`)
 - バグ: `bug-{連番3桁}-{slug}.md` (例: `bug-001-null-pointer.md`)
 - チャプター: `chapter-{slug}.md` (例: `chapter-multi-tenant.md`)
 
-task / bug の連番は `.local/ticket/` 内の既存チケット (done/, closed/ 含む) から最大番号を取得し +1 する。chapter は連番を使わない。
+task / bug の連番は `.local/ticket/` 内の既存チケット (done/, closed/, deferred/, archived/ 含む) から種別ごとに最大番号を取得し +1 する。chapter は連番を使わない。いずれも new-ticket.sh が自動算出する。
 
 ### タイトル形式
 
@@ -152,7 +163,7 @@ task / bug の連番は `.local/ticket/` 内の既存チケット (done/, closed
 
 ### bug チケットの構成
 
-task の構成に加え、以下を含める:
+テンプレート (`assets/bug-0xx-template.md`) をベースに、task の構成に加えて以下のセクションを含む:
 
 - **再現手順** — 問題を再現する具体的な手順
 - **期待される動作** と **実際の動作**
@@ -210,11 +221,15 @@ task の構成に加え、以下を含める:
 4. **closed**: 動作確認・検証が完了 → `closed/` へ移動
 5. **deferred**: 意図的に後回し → `deferred/` へ移動（再着手の意図あり）
 
-ステータス変更はファイルの移動で行う:
+ステータス変更は `${CLAUDE_SKILL_DIR}/scripts/move-ticket.sh` で行う。`mv` を手で組み立てない:
 
 ```bash
-mv .local/ticket/task-001-add-login.md .local/ticket/done/
+"${CLAUDE_SKILL_DIR}/scripts/move-ticket.sh" <ticket-file> <done|closed|deferred|archived>
+# 例: move-ticket.sh .local/ticket/task-001-add-login.md done
 ```
+
+- 成功時は stdout に 1 行 JSON (`{"ok":true,"from":...,"to":...}`) が出力される
+- chapter を done / closed に移動しようとするとエラーになる (下記ライフサイクル参照)
 
 ### chapter のライフサイクル
 
@@ -230,12 +245,14 @@ chapter は done/closed には移動しない。子チケットの完了が chap
 
 「今のフェーズでは着手しないが、将来再着手する意図がある」チケット・チャプターを置く場所。完了ではなく先送りを意味する。
 
-移動前にチケット内に以下を追記する:
+`move-ticket.sh <ticket-file> deferred` を実行すると、移動前に以下の雛形がチケット末尾へ自動追記される (日付は実行日が入る):
 
 ```markdown
-**Deferred 理由**: <なぜ後回しにするか>
-**再起票 trigger**: <どういう条件で再着手するか>
+**Deferred 理由**: TODO:DeferredReason
+**再起票 trigger**: TODO:ReopenTrigger
 **Deferred 日付**: YYYY-MM-DD
 ```
 
-再着手するときは `deferred/` から `ticket/` 直下に戻す。
+移動後、`deferred/` 内のファイルを開いて `TODO:` プレースホルダを実際の理由・再起票 trigger に書き換える。ここは AI の責務。
+
+再着手するときは `deferred/` から `ticket/` 直下に戻す (`mv` でよい)。

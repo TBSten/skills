@@ -36,36 +36,49 @@ metadata がないエントリは通常の `SinglePaneSceneStrategy` にフォ�
 
 ## 実装手順
 
-### Step 1: MainTab enum の定義
+### Step 1: プロジェクト解析と確認
 
-タブの種類を enum で定義する。`example/` の `MainTab.kt` を参照。
+1. `build.gradle.kts` で前提条件の依存 (Navigation 3, `lifecycle-viewmodel-navigation3`) を確認し、不足があれば追加を提案
+2. 配置先パッケージとソースディレクトリを既存構成から推定し提案
+3. タブ構成 (タブ名・アイコン・対応する Screen) をユーザーの指示や既存コードから把握
 
-### Step 2: MainTabNavigator interface の定義
+### Step 2: install script の実行
 
-タブ切り替えの contract を定義する。`example/` の `MainTabNavigator.kt` を参照。
-各 feature モジュールはこの interface に依存し、具体実装は知らない。
+`${CLAUDE_SKILL_DIR}/scripts/install.sh` を実行する。
+script を読解・書き換え・再実装せず、そのまま実行する。
 
-### Step 3: MainTabScene の実装
+```bash
+"${CLAUDE_SKILL_DIR}/scripts/install.sh" \
+  --package <USER_PACKAGE> \
+  --dest <TARGET_DIR>
+```
 
-Navigation 3 の `Scene<T>` を実装する。`example/` の `MainTabScene.kt` を参照。
+- `--dest` は `--package` に対応するソースディレクトリ (例: `app/src/commonMain/kotlin/com/myapp/nav`)。
+  `<TARGET_DIR>/maintab/` と `<TARGET_DIR>/navigation/` にファイルが配置される
+- 既存ファイルがあるとエラーで停止する。ユーザーが上書きを明示した場合のみ `--force` を付けて再実行
+- `--dry-run` で書き込みなしに生成予定を確認できる
+- 成功時は stdout 最終行に 1 行 JSON (`{"ok":true,...}`) が出力される。失敗時は stderr の `FIX:` に従う
 
-**重要**: `key` を `companion object` 等の固定値にすること。
-これによりタブ切り替え時に Scene インスタンスが再利用され、Scaffold + NavigationBar が維持される。
+### Step 3: CUSTOMIZE 箇所の適合
 
-### Step 4: MainTabSceneStrategy の実装
+生成ファイルの「必ずプロジェクトに合わせて書き換える箇所」には `// CUSTOMIZE:` コメントが付いている。
 
-`SceneStrategy<T>` を実装する。`example/` の `MainTabSceneStrategy.kt` を参照。
+```bash
+grep -rn "CUSTOMIZE:" <TARGET_DIR>
+```
 
-- `NavEntry.metadata` から `MainTab` を取り出す
-- タブ画面なら `MainTabScene` を返し、そうでなければ `null` を返してチェーン先にフォールバック
-- `mainTab(tab)` ヘルパーで metadata の Map を生成
+で全箇所を列挙し、Step 1 で把握したタブ構成に合わせて編集する:
 
-### Step 5: MainTabScaffold (UI) の実装
+- `MainTab.kt` — タブ enum のエントリ
+- `MainTabScaffold.kt` — タブのアイコン・ラベル
+- `MainTabScreen.kt` — 必要なら ViewModel の DI 注入
+- `Screen.kt` — Screen 定義と Screen ↔ MainTab 双方向マッピング (`references/screen-tab-mapping.md` を参照)
+- `AppNavigation.kt` — entryProvider のエントリと各画面 Composable の呼び出し
+- `AppNavigator.kt` — 初期画面
 
-Material3 `NavigationBar` + `NavigationBarItem` でタブバーを構築する。
-`example/` の `MainTabScaffold.kt` を参照。タブのアイコン・ラベルはプロジェクトに合わせて変更する。
+### Step 4: 既存 NavDisplay への統合
 
-### Step 6: AppNavigation での統合
+プロジェクトに既に NavDisplay / Navigator の実装がある場合は、生成された `AppNavigation.kt` / `AppNavigator.kt` を丸ごと使わず、既存実装に統合する (プロジェクト構成に応じて判断が必要)。
 
 `NavDisplay` の `sceneStrategy` に `MainTabSceneStrategy` をチェーンの先頭に配置する:
 
@@ -87,33 +100,26 @@ entry<Home>(
 }
 ```
 
-### Step 7: switchTab ロジック
+`AppNavigator` の `switchTab` はバックスタック内の最後のタブ画面を in-place 置換する。
+生成された `AppNavigator.kt` に実装済み。ロジックの解説は `references/switch-tab-logic.md` を参照。
 
-`AppNavigator` の `switchTab` でバックスタック内の最後のタブ画面を in-place 置換する。
-`references/switch-tab-logic.md` を参照。
-
-### Step 8: Screen ↔ MainTab マッピング
-
-Screen sealed interface に `mainTabOrNull` 拡張プロパティ、
-MainTab に `screen` 拡張プロパティを定義して双方向マッピングを集約する。
-`references/screen-tab-mapping.md` を参照。
+統合後、プロジェクトのビルドタスク (例: `./gradlew :<module>:compileKotlinJvm` / `:<module>:compileDebugKotlin`) で確認する。
 
 ## ファイル構成 (生成物)
 
 ```
-ui/feature/mainTab/
-├── MainTab.kt                # タブ enum
-├── MainTabNavigator.kt       # Navigator interface
-├── MainTabScreen.kt          # Composable (ViewModel + Scaffold)
-├── MainTabViewModel.kt       # ViewModel
-├── MainTabScaffold.kt        # Scaffold + NavigationBar UI
-├── MainTabScene.kt           # Scene<T> 実装
-└── MainTabSceneStrategy.kt   # SceneStrategy<T> 実装
-
-ui/navigation/
-├── Screen.kt                 # Screen sealed interface + MainTab マッピング
-├── AppNavigation.kt          # NavDisplay 統合
-└── AppNavigator.kt           # バックスタック管理 + switchTab
+<TARGET_DIR>/
+├── maintab/
+│   ├── MainTab.kt                # タブ enum
+│   ├── MainTabNavigator.kt       # Navigator interface
+│   ├── MainTabScreen.kt          # Composable (Scaffold ラップ)
+│   ├── MainTabScaffold.kt        # Scaffold + NavigationBar UI
+│   ├── MainTabScene.kt           # Scene<T> 実装
+│   └── MainTabSceneStrategy.kt   # SceneStrategy<T> 実装
+└── navigation/
+    ├── Screen.kt                 # Screen sealed interface + MainTab マッピング
+    ├── AppNavigation.kt          # NavDisplay 統合
+    └── AppNavigator.kt           # バックスタック管理 + switchTab
 ```
 
 ## カスタマイズポイント

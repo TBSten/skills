@@ -5,7 +5,7 @@ import androidx.compose.runtime.Composable
 @Composable
 fun MainTabScreen(
     currentTab: MainTab,
-    // Inject ViewModel via your DI framework if needed
+    // CUSTOMIZE: 必要なら DI フレームワーク経由で ViewModel を注入する
     onTabSelected: (MainTab) -> Unit = {},
     content: @Composable () -> Unit,
 ) {

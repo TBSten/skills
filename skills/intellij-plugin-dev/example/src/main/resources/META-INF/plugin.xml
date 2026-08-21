@@ -1,0 +1,38 @@
+<!-- references/ide-integration.md §2 の完成形 (SSoT)。CUSTOMIZE マーカーを自分のプラグインに合わせて埋める -->
+<idea-plugin>
+    <id>com.example.plugin</id>          <!-- CUSTOMIZE: プラグイン ID -->
+    <name>Example Plugin</name>          <!-- CUSTOMIZE: 表示名 -->
+    <vendor>Example</vendor>             <!-- CUSTOMIZE -->
+    <!-- CUSTOMIZE: 説明を書き換える -->
+    <description><![CDATA[
+        Example plugin scaffold: Jewel/Compose tool window + Kotlin Analysis API frontend.
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+    <!-- Analysis API 同梱。将来 optional + config-file に分離可 (ide-integration.md) -->
+    <depends>org.jetbrains.kotlin</depends>
+
+    <!-- build.gradle.kts の bundledModule(...) と対を成す v2 module dependency。
+         plugin classloader から解決させる (setup/basics.md) -->
+    <dependencies>
+        <module name="intellij.platform.jewel.foundation"/>
+        <module name="intellij.platform.jewel.ui"/>
+        <module name="intellij.platform.jewel.ideLafBridge"/>
+        <module name="intellij.libraries.compose.runtime.desktop"/>
+        <module name="intellij.libraries.compose.foundation.desktop"/>
+        <module name="intellij.libraries.skiko"/>
+    </dependencies>
+
+    <!-- K2 対応宣言 (tasks.test の idea.kotlin.plugin.use.k2 とセット — setup/basics.md) -->
+    <extensions defaultExtensionNs="org.jetbrains.kotlin">
+        <supportsKotlinPluginMode supportsK2="true"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="Example" anchor="right" factoryClass="com.example.plugin.ExampleToolWindowFactory"/>
+        <!-- TODO(CUSTOMIZE): gutter line marker を実装したら有効化する (ide-integration.md §2 の
+             LineMarkerProvider レシピ参照。example には実装を同梱していない)
+        <codeInsight.lineMarkerProvider language="kotlin" implementationClass="com.example.plugin.ExampleGutterLineMarkerProvider"/>
+        -->
+    </extensions>
+</idea-plugin>

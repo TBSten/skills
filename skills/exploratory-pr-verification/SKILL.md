@@ -51,15 +51,36 @@ Reflection flow:
 2. Commit immediately (do not batch at PR-creation time)
 3. Briefly acknowledge to the user that the rule has been recorded
 
+## Bundled scripts & templates (run as-is)
+
+Let `SKILL_ROOT` be the directory containing this SKILL.md (in Claude Code:
+`${CLAUDE_SKILL_DIR}`; when vendored into a repo, `.claude/skills/exploratory-pr-verification`).
+The deterministic parts of this workflow are implemented as scripts. **Run them as-is — do not
+read them to re-derive their logic, do not rewrite them, and do not hand-roll replacements.**
+They require `bash`, `git`, `jq`, and an authenticated `gh` (for `pr-state.sh`).
+
+| Script / template | Purpose |
+|-------------------|---------|
+| `scripts/init-exploration.sh <pr-id>` | Scaffold `.local/tmp/exploratory-pr-<id>/` (problems subdirs, log, gradle-isolation) + the FINAL-SUMMARY.md skeleton incl. the cluster-family table |
+| `scripts/new-ticket.sh --cat N --severity P0..P3 --slug <slug> --id <pr-id> [--iter N]` | Atomically allocate the next `NNNN` (parallel-safe across all 5 cats) and generate the ticket skeleton; prints the file path |
+| `scripts/pr-state.sh <pr>` | One JSON snapshot: force-push detection, new commits, maintainer-latency band (§16 table built in), own-comment count vs the 8/12 thresholds, unresolved review threads (paginated) |
+| `templates/kick-prompts/cat1.md … cat5.md` | Per-cat subagent kick prompts with required reading, cat role, touch-domain constraints, and ticket-script usage embedded — the orchestrator only substitutes `<id>` and `<iter>` |
+
 ## 1. Overall workflow
 
 1. **Re-read SKILL.md** (every loop start — the user may have appended new rules)
-2. **State check**: `git fetch origin <branch>` + `git rev-list --count HEAD..origin/<branch>` (force-push detection)
-3. **Hard reset if needed** (`git reset --hard origin/<branch>`); revert working tree first if dirty
-4. **Kick N (default 5) explore subagents in parallel** (cat1–cat5; all `run_in_background: true`)
-5. **Receive completion notifications one by one**; aggregate findings
-6. **Post a PR comment only for P0/P1 findings** that are not duplicates of previous comments
-7. **Loop termination handling (§17)**: walk the checklist; if unmet → kick next iteration; if met → close
+2. **First iteration only**: run `"$SKILL_ROOT/scripts/init-exploration.sh" <pr-id>`
+3. **State check**: run `"$SKILL_ROOT/scripts/pr-state.sh" <pr>` — force-push detection, new
+   commits, maintainer latency, own-comment budget, unresolved threads in one JSON
+4. **Hard reset if needed** (`git reset --hard origin/<branch>`) when the JSON reports
+   `forcePushSuspected` or new commits; revert working tree first if dirty
+5. **Kick N (default 5) explore subagents in parallel** — build each prompt from
+   `templates/kick-prompts/cat<N>.md`, substituting only `<id>` / `<iter>`
+   (all `run_in_background: true`)
+6. **Receive completion notifications one by one**; aggregate findings
+7. **Post a PR comment only for P0/P1 findings** that are not duplicates of previous comments
+   (check `ownComments.state` from `pr-state.sh` first)
+8. **Loop termination handling (§17)**: walk the checklist; if unmet → kick next iteration; if met → close
 
 ⚠️ **Do not stop.** Constraint A applies. The check is mechanical — see §17.
 
@@ -78,6 +99,10 @@ Each iteration kicks the categories in parallel, each with **autonomous angle-se
 cat5 can rotate to other angles once saturated. [references/category-roles.md](references/category-roles.md)
 lists comparison-target ideas per project genre (Kotlin DSL / Android library / Compose library /
 KMP library / server framework / build tooling / etc.).
+
+Kick each cat with its template from `templates/kick-prompts/cat<N>.md` — the required-reading
+list, role, touch-domain constraint, and ticket-script usage are embedded; the orchestrator
+substitutes only `<id>` and `<iter>`.
 
 ## 3. PDCA cycle for dynamic verification
 
@@ -124,9 +149,13 @@ adapt the check accordingly.)
 
 ## 6. Ticket bookkeeping
 
-See [references/ticket-format.md](references/ticket-format.md) for: number prefix scheme,
-subdirectory layout (`active` / `resolved/` / `methodology/` / `non-pr/`), file format,
-deduplication policy, and the parallel-subagent number-reservation scheme.
+**Every ticket is created via `scripts/new-ticket.sh`** — hand-writing a ticket file or inventing
+a number is forbidden. The script allocates numbers atomically, so five parallel cats can file
+tickets simultaneously with no reservation ranges and no renumbering.
+
+See [references/ticket-format.md](references/ticket-format.md) for: the numbering contract,
+subdirectory layout (`active` / `resolved/` / `methodology/` / `non-pr/`), file format, severity
+guidelines, and deduplication policy.
 
 ## 7. PR comments
 
@@ -183,7 +212,7 @@ If the user changes the deadline mid-run (e.g. "let's cut at 17:00 instead of mi
 
 1. **Update wake-ups immediately**: delete any existing deadline cron / scheduled wakeup; create
    a new one ~3 min before the new deadline (one-shot)
-2. **Recompute ticket-number reservation**: fewer remaining iterations may justify dropping to
+2. **Re-plan the iteration shape**: fewer remaining iterations may justify dropping to
    sequential mode (see below)
 3. **Re-walk §17 termination checklist** with the new deadline — early termination may now apply
 4. **In-flight subagents**: decide whether to wait or kill based on remaining budget
@@ -201,7 +230,8 @@ The orchestrator should `date`-check remaining time before kicking and pick the 
 
 ## 11. Required reading (every cat)
 
-Each subagent prompt must direct the cat to read, in order:
+The kick-prompt templates (`templates/kick-prompts/cat<N>.md`) already embed this list — use
+them. Each subagent prompt must direct the cat to read, in order:
 
 - This SKILL.md (`<repo-root>/.claude/skills/exploratory-pr-verification/SKILL.md`) — first
 - `.local/tmp/exploratory-pr-<id>/FINAL-SUMMARY.md` (the latest snapshot)
@@ -277,16 +307,18 @@ and prior iteration logs to avoid duplicates. The orchestrator does not ask the 
 
 ## 14. Maintainer-response watching
 
-- At iteration start: `git fetch && git rev-list --count HEAD..origin/<branch>`
-- Non-zero → hard reset, run `git show --stat` on the new commit(s), reconcile against existing tickets
+- At iteration start: run `"$SKILL_ROOT/scripts/pr-state.sh" <pr>` (wraps the
+  fetch + rev-list bookkeeping; `git.newCommitCount` / `git.newCommits` are the signal)
+- New commits → hard reset, run `git show --stat` on the new commit(s), reconcile against existing tickets
 - Tickets resolved by maintainer fixes move to `_resolved-` → `resolved/`
 
 ### Rebase-squash / force-push handling
 
-If history shows a squash (multiple known commits collapsed into one):
+`pr-state.sh` reports `git.forcePushSuspected` / `git.knownHashMissing` (known local commits
+vanished from the remote branch while it moved). When it fires:
 
 1. `git log --oneline origin/<branch> -10`
-2. Verify whether known commit hashes have **disappeared** (e.g. `feat! + chore(bcv)!: ...` collapsed)
+2. Confirm which known commit hashes have **disappeared** (e.g. `feat! + chore(bcv)!: ...` collapsed)
 3. Update tickets that referenced the old hash to the new hash (preserve traceability)
 4. Rerun the key dynamic checks (primary test task, sample-app launch) to confirm behavior unchanged
 5. `git reset --hard origin/<branch>`
@@ -310,7 +342,9 @@ The latency from **comment posted → maintainer reaction** reveals their engage
 A latency drop (e.g. 9h → 40min) signals the maintainer entering an active phase — typically
 deadline-driven, which means it's time to consider closing the exploration.
 
-Track via `gh pr view <NNN> --json comments --jq '.comments[-1].createdAt'` at each iteration end.
+Track via `"$SKILL_ROOT/scripts/pr-state.sh" <pr>` at each iteration end — the
+`maintainerLatency` object carries the last non-self comment time, the band, and this table's
+recommended action.
 
 ## 17. Loop-termination check (run after every 5-cat completion)
 

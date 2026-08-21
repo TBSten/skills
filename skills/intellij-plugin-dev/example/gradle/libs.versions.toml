@@ -1,0 +1,31 @@
+# references/setup/basics.md「バージョンの塊 (実証済み)」の SSoT。
+# ターゲット IDE を変えるときはこの塊ごと更新する (個別にずらすと bundled Kotlin / Jewel と齟齬が出る)。
+
+[versions]
+# IntelliJ Platform Gradle Plugin (v2)。settings.gradle.kts の plugins block と一致させる
+# (settings の plugins block からは version catalog を参照できないため、settings 側にも記載がある)。
+intellijPlatformGradlePlugin = "2.18.1"
+# ビルド SDK: intellijIdea("2026.1") = build 261 (IU ブランチに解決。AS Quail 2026.1.1 と同世代)。
+# intellijIdeaCommunity は 253 以降解決不可 (統合ディストリ — setup/basics.md)
+intellijIdea = "2026.1"
+# 「261 同梱 Kotlin 以下でビルドする」制約 (setup/basics.md)。Compose Compiler plugin も同版
+kotlin = "2.3.0"
+# TODO(CUSTOMIZE): references に記載の無い創作部分。preview (standalone Compose Desktop) 用の
+# Compose Multiplatform 版。上の Kotlin 版と互換のあるリリースに合わせて調整する
+composeMultiplatform = "1.9.0"
+# standalone Jewel は "<jewel>-<jewelForIde>" の 2 要素で artifact version を組む (setup/preview.md)。
+# jewelForIde は com.jetbrains.intellij.platform:icons の version にも使う
+jewel = "0.37.0"
+jewelForIde = "261.26222.65"
+# 2.0.0-rc1 以降 Platform は JUnit4 を供給しない。BasePlatformTestCase は JUnit4 系 (setup/basics.md)
+junit4 = "4.13.2"
+
+[libraries]
+junit4 = { module = "junit:junit", version.ref = "junit4" }
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+# Compose Compiler (Kotlin と揃える — setup/basics.md)
+kotlin-compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+# preview の standalone Compose Desktop 用 (setup/preview.md)
+compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }

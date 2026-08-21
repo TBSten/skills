@@ -31,8 +31,8 @@ SimpleLoader provides a sealed interface-based state machine for managing async 
 | `SimpleLoader.kt` | Core interface, State sealed interface, Impl, FakeSimpleLoader | Required |
 | `SimpleLoaderFactory.kt` | Factory interface for creating instances | Required |
 | `SimpleLoaderExt.kt` | Extension functions (`dataOrNull`, `dataOr`, `exceptionOrNull`) | Optional |
-| `SimpleLoaderLogger.kt` | Pluggable logging via `fun interface` | Optional |
-| `IllegalStateTransitionHandler.kt` | Policy for illegal transitions (throw/warning/noOp) | Optional |
+| `SimpleLoaderLogger.kt` | Pluggable logging via `fun interface` | Required (referenced by core) |
+| `IllegalStateTransitionHandler.kt` | Policy for illegal transitions (throw/warning/noOp) | Required (referenced by core) |
 | `SimpleLoaderWithPartialData.kt` | Partial data support during loading (e.g., progress) | Optional |
 | UI helpers (`View.kt`, `AnimatedView.kt`, etc.) | Compose UI state rendering with animations | Optional |
 
@@ -100,6 +100,7 @@ This skill is part of [TBSten/skills](https://github.com/TBSten/skills).
 ```
 skills/simple-loader/
 ├── SKILL.md              ← Installed by `gh skill install`
+├── scripts/install.sh    ← Copies example into your project with package rename
 ├── example/              ← Template source files
 └── references/           ← Usage pattern documentation
 ```

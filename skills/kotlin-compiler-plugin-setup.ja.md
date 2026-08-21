@@ -18,6 +18,10 @@ gh skill install tbsten/skills kotlin-compiler-plugin-setup
 Kotlin compiler plugin のプロジェクトをセットアップして。
 ```
 
+## 動作の仕組み
+
+スキルは `scripts/scaffold.sh` を実行する。この script は `example/` の完全なプロジェクト skeleton — build ファイルに加え、実パッケージ `com.example.compilerpluginsetup` + `Example` クラス prefix で書かれた Kotlin ソース (CommandLineProcessor、CompilerPluginRegistrar、IR/FIR extension、no-op transformer、kctfork テストヘルパー、integration test のエントリポイント) — をコピーし、プロジェクト名・パッケージ・Group ID・Plugin ID に置換・rename する。エージェントは script をそのまま実行し (ドキュメントからのコード転記はしない)、生成結果をレビューしてビルドを確認する。
+
 ## セットアップされるもの
 
 ### プロジェクト構成

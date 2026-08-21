@@ -7,6 +7,12 @@ A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skill that scaff
 three modules, a four-layer processor, a golden-file test harness, and architecture rules that keep
 the shape from drifting afterwards.
 
+The mechanical work — copying `example/`, remapping directories into source sets, substituting
+every placeholder, renaming the `Greeting*` / `Example*` files and installing the rules — is done
+deterministically by `scripts/scaffold.sh` (with `--dry-run` / `--force` / `--skip-*` options), and
+`scripts/verify.sh` runs the four build checks with logs saved under `.local/tmp/`. The agent only
+confirms the inputs, runs the scripts, reviews the placed files and reads the first goldens.
+
 A one-shot version that needs no install is available as the
 [`ksp-plugin-setup` prompt](../prompts/ksp-plugin-setup.md).
 

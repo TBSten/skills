@@ -2,6 +2,9 @@
 
 Maven Central に公開するアーティファクトの署名に必要な GPG 鍵の生成・エクスポート手順。
 
+> **NOTE**: この手順は `scripts/setup-secrets.sh` が自動化している。通常は script を実行すればよく、
+> この文書は script が使えない環境（gpg / gh が無い等）でのフォールバック手動手順・背景説明として参照する。
+
 ## 1. GPG 鍵の生成
 
 ```bash

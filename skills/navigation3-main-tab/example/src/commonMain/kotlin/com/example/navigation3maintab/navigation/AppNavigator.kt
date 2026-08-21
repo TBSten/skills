@@ -10,6 +10,7 @@ interface AppNavigator : MainTabNavigator {
 }
 
 class AppNavigatorImpl : AppNavigator {
+    // CUSTOMIZE: 初期画面をプロジェクトに合わせて変更する
     override val backstack = mutableStateListOf<Screen>(Home)
 
     override val currentTab: MainTab?

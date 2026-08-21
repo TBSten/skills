@@ -31,8 +31,8 @@ SimpleLoader は、非同期データ読み込みを sealed interface ベース�
 | `SimpleLoader.kt` | コア interface、State sealed interface、Impl、FakeSimpleLoader | 必須 |
 | `SimpleLoaderFactory.kt` | インスタンス生成用 Factory interface | 必須 |
 | `SimpleLoaderExt.kt` | 拡張関数 (`dataOrNull`, `dataOr`, `exceptionOrNull`) | 任意 |
-| `SimpleLoaderLogger.kt` | `fun interface` によるプラガブルなロギング | 任意 |
-| `IllegalStateTransitionHandler.kt` | 不正遷移時のポリシー (throw/warning/noOp) | 任意 |
+| `SimpleLoaderLogger.kt` | `fun interface` によるプラガブルなロギング | 必須 (core が参照) |
+| `IllegalStateTransitionHandler.kt` | 不正遷移時のポリシー (throw/warning/noOp) | 必須 (core が参照) |
 | `SimpleLoaderWithPartialData.kt` | ローディング中の部分データ対応 (プログレス等) | 任意 |
 | UI ヘルパー (`View.kt`, `AnimatedView.kt` 等) | Compose UI での状態表示とアニメーション遷移 | 任意 |
 
@@ -100,6 +100,7 @@ val fakeLoader = FakeSimpleLoader<List<String>>(
 ```
 skills/simple-loader/
 ├── SKILL.md              ← `gh skill install` でインストールされる
+├── scripts/install.sh    ← example をパッケージ置換付きでプロジェクトにコピーする
 ├── example/              ← テンプレートソースファイル
 └── references/           ← 利用パターンドキュメント
 ```

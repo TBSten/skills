@@ -36,21 +36,48 @@ and the prompt cache is not blown every time). When you observe **N consecutive 
 > classification heuristics in [`references/failure-classification.md`](references/failure-classification.md)
 > are keyed on generic job/log patterns.
 
+## Scripts (the deterministic core — run as-is)
+
+The deterministic parts of every pass are implemented as executable scripts in
+[`scripts/`](scripts/). Run them via `${CLAUDE_SKILL_DIR}/scripts/<name>` (in Claude Code
+`${CLAUDE_SKILL_DIR}` is the directory containing this SKILL.md; otherwise substitute the
+skill's install path). **Do not read the scripts to re-derive their commands, do not modify
+them, and do not re-implement their logic inline — execute them and read their JSON.**
+They are the single source of truth for pagination, classification patterns, rebase mechanics,
+and streak persistence; hand-transcribing any of it is how data gets silently dropped.
+
+| Script | Step | One line |
+|--------|------|----------|
+| `fetch-pr-state.sh <pr...>` | 3 | Preflight + batch-fetch per-PR state (checks, threads, comments — fully paginated) |
+| `classify-failure.sh <runId> <jobId>` | 4 | Fetch one failing job's log and classify it (transient → lint → binary → test → build → unknown) |
+| `rebase-pass.sh <pr...>` | 1 & 6 | Rebase every PR onto its own latest base, stacks in topological order |
+| `resolve-thread.sh <threadId> [commit]` | 5 | Resolve one inline review thread |
+| `mark-comment-handled.sh <commentId> <commit...>` | 5 | Wrap one issue comment in the handled marker |
+| `streak.sh <no-change\|changed>` | 7 | Persist the no-change streak; report `terminate` |
+
+Shared contract: stdout is **one line of JSON** (multi-PR scripts emit a JSON array); progress
+and errors go to stderr; on failure the script exits non-zero with a
+"what / why / how to fix" message — relay that message to the user and stop the pass (or defer
+the PR) as it says. All scripts are idempotent, so re-running after a partial pass is safe.
+
+With the scripts in charge of the mechanics, **your job per pass collapses to**: run scripts →
+read JSON → delegate to `fix-ci-*` / write the fix → commit & push → resolve/mark → report.
+
 ## Prerequisites
 
-`git` and `gh` (GitHub CLI) must work locally. Verify with `gh auth status`; if it fails, report
-to the user and abort the pass. See [`references/operations.md`](references/operations.md) for the
-full operational contract (owner/repo derivation, dirty-worktree abort, log-fetch timing, rerun
-blocking, commit granularity).
+`git`, `gh` (GitHub CLI), and `jq` must work locally (the scripts check all three and verify
+`gh auth status`; on failure they exit with the fix instruction — report it to the user and
+abort the pass). See [`references/operations.md`](references/operations.md) for the operational
+contract (dirty-worktree abort, log-fetch timing, rerun blocking, commit granularity).
 
 ## Input
 
 - A **list of PR numbers** (one or more, space-separated). e.g. `179 180 181`
 - If omitted, derive the single PR for the current branch via `gh pr view --json number`
 
-Branch name, base branch, and stack relationships are read **every pass** via
-`gh pr view <num> --json headRefName,baseRefName` — never held as a static mapping in the input,
-so the loop follows reorders / rebases / branch renames automatically.
+Branch name, base branch, and stack relationships are read **every pass** by the scripts —
+never held as a static mapping in the input, so the loop follows reorders / rebases / branch
+renames automatically.
 
 ## Workflow (one pass)
 
@@ -59,28 +86,21 @@ nothing can be done, still advance the others). Steps are a natural-number seque
 
 ### Step 1: Rebase the latest base into each PR branch
 
-At the top of the pass, `git fetch origin`, then rebase each PR branch **onto the latest of its own
-`baseRefName`** — which is the **parent PR branch** for a stack, or the **default branch**
-otherwise, so it differs per PR. This prevents a PR branch from going stale when its base moves
-under it (a sibling PR merged this session, a dependabot bump, another collaborator's merge).
-
 ```bash
-git fetch origin
-for pr in $PR_LIST; do
-  read -r branch base <<<"$(gh pr view "$pr" --json headRefName,baseRefName -q '.headRefName + " " + .baseRefName')"
-  git checkout "$branch"
-  git fetch origin "$branch" "$base"
-  git reset --hard "origin/$branch"   # match remote first
-  if ! git merge-base --is-ancestor "origin/$base" HEAD; then
-    git rebase "origin/$base" || { git rebase --abort; echo "[PR #$pr] rebase conflict, defer to next pass"; continue; }
-    git push --force-with-lease origin "$branch"
-  fi
-done
+"${CLAUDE_SKILL_DIR}/scripts/rebase-pass.sh" $PR_LIST
 ```
 
-On conflict, `git rebase --abort` and report "deferred to next pass" — never auto-merge. For a
-stack, the `baseRefName` **is** the parent PR's `headRefName`; if the parent is not yet merged,
-rebase the parent to latest first, then the child. Process in topological order.
+The script fetches origin, reads each PR's branch/base, orders stacks topologically
+(parent before child), and per PR: matches the local branch to remote, rebases onto the latest
+of **its own base** only when behind, and pushes with `--force-with-lease`. On conflict it
+aborts the rebase and defers — never auto-merges. Read the JSON array:
+
+- `action: "clean"` — already up to date, nothing pushed
+- `action: "rebased"` — rebased and pushed
+- `action: "conflict-deferred"` — see `detail`; report "deferred to next pass" and move on
+
+This prevents a PR branch from going stale when its base moves under it (a sibling PR merged
+this session, a dependabot bump, another collaborator's merge).
 
 ### Step 2: Commit tidy-up (optional; fires at ≥ 10 commits ahead of base)
 
@@ -101,106 +121,111 @@ Ordering vs. stacks (Step 6): **tidy parent → push parent → rebase child →
 
 ### Step 3: Fetch all PR state in one batch
 
-`gh pr view` is cheap; collect everything at once:
-
 ```bash
-for pr in $PR_LIST; do
-  gh pr view "$pr" --json statusCheckRollup,state,headRefName,baseRefName,mergeable
-done
+"${CLAUDE_SKILL_DIR}/scripts/fetch-pr-state.sh" $PR_LIST
 ```
 
-Derive owner/repo once (`gh repo view --json owner,name -q '.owner.login + "/" + .name'`, prefer
-`origin`) and reuse. Also fetch **both** comment kinds — a PR has **inline review threads** and
-**conversation-level issue comments**, and both must be checked. Both APIs paginate; page through
-them. See [`references/review-handling.md`](references/review-handling.md) for the exact GraphQL /
-REST queries and the "unhandled" predicate.
+Preflight (gh auth, dirty-worktree abort, owner/repo derivation) is built in. The script pages
+through **both** comment kinds — inline review threads (GraphQL) and conversation-level issue
+comments (REST) — so nothing is silently dropped on busy PRs. Read the JSON array; per PR:
+
+- `failingChecks: [{jobId, jobName, runId}]` — input for Step 4
+- `inProgress` — number of checks still running (for the report table)
+- `unresolvedThreads: [{id, path, line, firstComment}]` — input for Step 5-A
+- `unhandledIssueComments: [{id, excerpt}]` — input for Step 5-B
+- `stackParent` — the parent PR number when this PR stacks on another listed PR, else `null`
 
 ### Step 4: Classify failing checks and delegate
 
-Walk each PR's `statusCheckRollup`; for every job with `conclusion == "FAILURE"`, determine the
-failure kind using the ordered heuristics in
-[`references/failure-classification.md`](references/failure-classification.md)
-(transient → lint → binary → test → build). Then delegate:
+For **every** entry in a PR's `failingChecks`:
 
-| Kind | Delegate to |
-|------|-------------|
-| transient infra (toolchain redirect / 5xx / runner image / network timeout) | `gh run rerun <runId> --failed` (rejected while the workflow is in-progress — defer to next pass) |
-| lint (`ktlintCheck`, `eslint`, …) | `fix-ci-lint` skill |
-| binary compat (`apiCheck` / BCV) | `fix-ci-binary` skill |
-| build (`compileKotlin` / `assembleDebug` / …) | `fix-ci-build` skill |
-| test (`jvmTest` / `jsBrowserTest` / `iosTest` / …) | `fix-ci-test` skill |
+```bash
+"${CLAUDE_SKILL_DIR}/scripts/classify-failure.sh" <runId> <jobId>
+```
+
+The script fetches the job log and applies the ordered heuristics of
+[`references/failure-classification.md`](references/failure-classification.md)
+(transient → lint → binary → test → build → unknown; the trailing `> Task :xxx: FAILED` task
+name is the truth, the job name is display only). Read `{kind, taskName, evidence, delegate,
+logTail}` and act:
+
+| `kind` | Your action |
+|--------|-------------|
+| `transient` | `gh run rerun <runId> --failed` (rejected while the workflow is in-progress — defer to next pass) |
+| `lint` | delegate to `fix-ci-lint` skill |
+| `binary` | delegate to `fix-ci-binary` skill |
+| `build` | delegate to `fix-ci-build` skill |
+| `test` | delegate to `fix-ci-test` skill |
+| `unknown` | **your judgment** — present `logTail` and the job URL to the user; do not attempt a blind fix |
 
 The `fix-ci-*` names are a **naming scheme, not a hard dependency**. If the matching skill does
-**not** exist in the current repo, fetch the failing job's log tail
-(`gh api /repos/$OWNER/$REPO/actions/jobs/<jobId>/logs`), summarize the cause, and report to the
-user — do **not** run off and hand-fix. Do each PR's fix on its own branch (`git checkout <headRefName>`).
+**not** exist in the current repo, summarize `evidence` + `logTail` and report to the user — do
+**not** run off and hand-fix. Do each PR's fix on its own branch (`git checkout <headRef>`).
 
 ### Step 5: Handle unresolved review / issue comments
 
-Full procedure in [`references/review-handling.md`](references/review-handling.md). In brief:
+Conventions in [`references/review-handling.md`](references/review-handling.md). In brief, for
+each item from Step 3's JSON — fix → commit → push, then:
 
-- **inline review thread** → fix per thread, push, then `resolveReviewThread` mutation
-- **issue-level comment** (no resolve mechanism on GitHub) → mark handled by wrapping the body in a
-  collapsible `<details><summary>…</summary>` marker with the fixing commit hash appended (a
-  convention this skill establishes; the marker text is a project choice)
-- **Miss-prevention**: scan issue comments every pass; any comment lacking the handled-marker counts
-  the same as `unresolved ≥ 1` toward Step 7's "changed" verdict
+- **inline review thread** (`unresolvedThreads`):
+  `"${CLAUDE_SKILL_DIR}/scripts/resolve-thread.sh" <threadId> [commitHash]`
+- **issue-level comment** (`unhandledIssueComments`; no native resolve on GitHub):
+  `"${CLAUDE_SKILL_DIR}/scripts/mark-comment-handled.sh" <commentId> <commitHash...>` — wraps
+  the body in the collapsible handled marker with the fixing commit(s) appended
+- **Miss-prevention**: `fetch-pr-state.sh` re-scans both kinds every pass; anything still listed
+  counts the same as `unresolved ≥ 1` toward Step 7's "changed" verdict
 
 ### Step 6: Stack rebase chain
 
-If a PR's `baseRefName` points at **another PR's branch** (= that PR's `headRefName`), it is a
-stack (e.g. `#181.baseRefName == #180.headRefName` → #181 stacks on #180). After pushing a commit
-to the parent, rebase and force-push the child:
+`rebase-pass.sh` already processes stacks in **topological order** (Step 3's `stackParent`
+shows the relationships). After pushing a fix commit to a **parent** PR during Steps 4–5,
+run the script again to chain the children:
 
 ```bash
-git checkout <child.headRefName>
-git rebase <parent.headRefName>
-git push --force-with-lease origin <child.headRefName>   # only if the rebase was clean
+"${CLAUDE_SKILL_DIR}/scripts/rebase-pass.sh" $PR_LIST
 ```
 
-On conflict, give up for this pass and report — never auto-merge. Process stacks in **topological
-order**: finish the parent's fix + push before rebasing the child.
+It is idempotent — untouched PRs report `clean`, children of the pushed parent report
+`rebased`, conflicts report `conflict-deferred` (give up for this pass and report — never
+auto-merge).
 
 ### Step 7: Termination check
 
-Re-derive (or reuse Step 3) state and classify the pass as **"no-change"** or **"changed"**:
+Classify the pass as **"no-change"** or **"changed"**:
 
-- **no-change** = every PR has `failures == [] && unresolved_review_threads == 0 &&
-  unhandled_issue_comments == 0` **and** you pushed no new commit this pass
+- **no-change** = every PR has `failingChecks == [] && unresolvedThreads == [] &&
+  unhandledIssueComments == []` **and** you pushed no new commit this pass
 - otherwise = **changed**
 
-To avoid chatter under a `/loop` driver, **exit after the no-change streak reaches N (default 5)**;
-any "changed" pass resets the streak. Persist the streak so it survives across passes:
+Then persist the verdict:
 
 ```bash
-STREAK_FILE=.local/tmp/pr-fix-loop-streak.txt
-mkdir -p "$(dirname "$STREAK_FILE")"
-prev=$(cat "$STREAK_FILE" 2>/dev/null || echo 0)
-[[ "$LOOP_OUTCOME" == "no-change" ]] && next=$((prev + 1)) || next=0
-echo "$next" > "$STREAK_FILE"
-if (( next >= 5 )); then
-  echo "[pr-fix-loop] 5 consecutive no-change passes — terminating"
-  rm -f "$STREAK_FILE"   # clean start next invocation
-fi
+"${CLAUDE_SKILL_DIR}/scripts/streak.sh" no-change   # or: changed
 ```
 
-Always append **`(no-change streak: N/5)`** to the end-of-pass report; at `5/5`, state "terminating"
-explicitly. Whether the user stops `/loop` itself is their call, but the skill treats `5/5` as a
+Read `{streak, limit, terminate}`. Any "changed" pass resets the streak; the streak survives
+across passes (file under `.local/tmp/`), so a `/loop` driver stops cleanly. When `terminate`
+is `true` (default limit 5), state "terminating" explicitly — the streak file is already
+cleaned for the next invocation.
+
+Always append **`(no-change streak: N/limit)`** to the end-of-pass report. Whether the user
+stops `/loop` itself is their call, but the skill treats `terminate: true` as a
 "nothing left to do" signal.
 
 ## References
 
-- [`references/failure-classification.md`](references/failure-classification.md) — Step 4 CI
-  failure-kind heuristics (ordered transient → lint → binary → test → build, with false-positive notes)
-- [`references/review-handling.md`](references/review-handling.md) — Step 5 review-thread /
-  issue-comment fetch, fix, resolve, and the handled-marker wrap convention; pagination
-- [`references/operations.md`](references/operations.md) — `gh` prerequisites, owner/repo
-  derivation, dirty-worktree abort, log-fetch timing, rerun blocking, non-interactive rebase,
-  cross-platform `stat`, commit granularity
+- [`references/failure-classification.md`](references/failure-classification.md) — what
+  `classify-failure.sh` implements: the ordered kinds, per-kind signals, and false-positive
+  caveats (read to sanity-check verdicts and to judge `unknown`)
+- [`references/review-handling.md`](references/review-handling.md) — Step 5 conventions:
+  the handled-marker wrap, commit↔thread association, per-point commits, miss-prevention
+- [`references/operations.md`](references/operations.md) — operational contract: script
+  preflight (auth / dirty worktree / owner-repo), log-fetch timing, rerun blocking,
+  non-interactive rebase, cross-platform `stat`, commit granularity, pagination background
 
 ## Output (end of each pass)
 
-Close each pass with one short table:
+Close each pass with one short table (columns map straight onto `fetch-pr-state.sh` fields):
 
 ```
 | PR  | failures | in-progress | unresolved | action |
@@ -216,4 +241,5 @@ The final line carries the current streak, e.g.:
 - `changed (CI in progress, streak reset) — recheck next pass`
 - `no-change (streak 5/5) — terminating`
 
-At `5/5`, state "terminating" on that line and delete the streak file (see Step 7 snippet).
+At `terminate: true`, state "terminating" on that line (the script has already removed the
+streak file).

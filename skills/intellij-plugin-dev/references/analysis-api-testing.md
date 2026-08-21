@@ -4,7 +4,9 @@
 `BasePlatformTestCase` の fixture 上でヘッドレスにテストする。実 UI (Swing/Compose パネル) では
 なく **パネルが呼ぶ純ロジック (AA→model→IR→ナビ先)** を分解してアサートするのがコツ。
 
-参照実装例: `<plugin-module>/src/test/.../SpecAnalysisSpikeTest.kt`。
+実ファイル (SSoT): `example/src/test/kotlin/com/example/plugin/AnalysisTestBase.kt` (harness:
+`ignoreUnrelatedLoggedErrors` / `runReadActionBlocking`) + `ExampleAnalysisTest.kt` (土台レシピの実装)。
+snippet から再構築せず `scripts/scaffold.sh` で example から生成する (SKILL.md)。
 
 ## 土台のレシピ
 
@@ -38,6 +40,8 @@ internal class MySpecAnalysisTest : BasePlatformTestCase() {
 }
 ```
 
+- この形の実ファイルは `ExampleAnalysisTest.kt` (example が SSoT)。`runReadActionBlocking` /
+  `ignoreUnrelatedLoggedErrors` は `AnalysisTestBase.kt` に定義してある。
 - **K2 強制**: `tasks.test { systemProperty("idea.kotlin.plugin.use.k2", "true") }` + `plugin.xml` の
   `<supportsKotlinPluginMode supportsK2="true"/>` (`setup/basics.md`)。
 - **read action + EDT**: テストは EDT なので `runReadActionBlocking { allowAnalysisOnEdt { analyze(...) } }`
@@ -61,7 +65,7 @@ analyze(content) {
 
 - plugin モジュールは runtime 注釈に依存を持たないので、**注釈スタブを fixture 内ソースとして同梱**する
   (KSP テストの注釈スタブと同型)。FQN を本物と合わせて `classId` 判定を通す。
-- **spike のスタブと parity fixture を区別する**: `SpecAnalysisSpikeTest.kt` の `ANNOTATION_STUB`
+- **spike のスタブと parity fixture を区別する**: `ExampleAnalysisTest.kt` (example) の `ANNOTATION_STUB`
   は AA 解決を実証する**最小 spike** で、実 runtime とは差がある (`Unit::class`↔`Nothing::class` /
   `KClass<*>`↔`KClass<out State>` / `@Retention(SOURCE)`・`@Repeatable`・`A : Any` bound の欠落)。
   production frontend の正しさを担保する fixture にはそのままコピーせず、**実 runtime 定義から生成した
@@ -78,21 +82,8 @@ analyze(content) {
   VFS listener が tearDown の fixture 削除で初期化失敗 → logged error → テスト失敗になる。
   `tearDown()` を `LoggedErrorProcessor` で包み、既知の無害カテゴリ (`Vue` / `Lsp` /
   `stale file ids`) だけ握り潰す。抑制は**例外型/category/known issue に限定**し、実装由来エラーは
-  隠さない。
-
-```kotlin
-private fun ignoreUnrelatedLoggedErrors(block: () -> Unit) {
-    LoggedErrorProcessor.executeWith<Throwable>(object : LoggedErrorProcessor() {
-        override fun processError(category: String, message: String, details: Array<out String>, t: Throwable?): Set<Action> {
-            val text = "$category $message ${t?.stackTraceToString().orEmpty()}"
-            val ignorable = listOf("Vue", "Lsp", "stale file ids").any { text.contains(it, ignoreCase = true) }
-            return if (ignorable) emptySet() else super.processError(category, message, details, t)
-        }
-    }) { block() }
-}
-```
-
-- **上の substring 一致は spike の最小策で、本番テストには広すぎる**: category + message + stacktrace を
+  隠さない。実装 (SSoT): `AnalysisTestBase.ignoreUnrelatedLoggedErrors` (example)。
+- **この substring 一致は spike の最小策で、本番テストには広すぎる**: category + message + stacktrace を
   連結した文字列への部分一致なので、新規の実装エラーの message/stack に `Lsp` 等が偶然含まれるだけで
   `emptySet()` になり失敗へ昇格しなくなる。production では **logger category の完全一致 + 例外 class +
   既知 message prefix の組み合わせ**へ絞り、**抑制した件数/内容をテスト出力に残す**。既知パターン以外は

@@ -21,6 +21,7 @@ This skill sets up a `.local/ticket/` directory structure for managing tasks, bu
 - **Lifecycle management** — Tasks/bugs: active → `done/` → `closed/`. Chapters: active → split into tasks → `archived/`. Intentional deferral → `deferred/`
 - **Emoji prefix titles** — Tickets carry a leading emoji prefix (e.g. `🗑️ Remove dead code`, `✨ Add login`, `🐛 Null pointer in user lookup`) for at-a-glance categorization
 - **Template-based** — Consistent ticket format with built-in checklist items
+- **Script-driven operations** — Bundled scripts handle the deterministic work (directory setup, sequence numbering, status moves); the AI focuses on judgment (ticket type, emoji, title, body)
 - **Language/framework agnostic** — Works with any project type
 
 ## Directory Structure
@@ -29,6 +30,7 @@ This skill sets up a `.local/ticket/` directory structure for managing tasks, bu
 .local/ticket/
 ├── about.md              # Operating rules
 ├── task-0xx-template.md  # Task ticket template
+├── bug-0xx-template.md   # Bug ticket template
 ├── chapter-template.md   # Chapter template
 ├── task-xxx-*.md         # Active task tickets
 ├── bug-xxx-*.md          # Active bug tickets
@@ -38,6 +40,16 @@ This skill sets up a `.local/ticket/` directory structure for managing tasks, bu
 ├── archived/             # Archived chapters (all child tickets completed)
 └── deferred/             # Deferred tickets (intentionally postponed)
 ```
+
+## Scripts
+
+The deterministic work is handled by bundled scripts (run them as-is; no need to read or reimplement them). On failure they print `ERROR:` / `WHY:` / `FIX:` to stderr.
+
+| Script | Usage |
+|--------|-------|
+| `scripts/setup.sh` | Idempotent one-shot setup: creates `.local/ticket/` with the status subdirectories, copies the templates, and adds `.local/` to `.gitignore` if missing |
+| `scripts/new-ticket.sh <task\|bug\|chapter> <slug>` | Computes the next sequence number (scanning `done/` `closed/` `deferred/` `archived/` too, per type) and creates the ticket from its template; prints the created path |
+| `scripts/move-ticket.sh <file> <done\|closed\|deferred\|archived>` | Moves a ticket between statuses; for `deferred`, appends the reason block skeleton (with today's date) before moving |
 
 ## Ticket Types
 
@@ -67,12 +79,12 @@ This skill sets up a `.local/ticket/` directory structure for managing tasks, bu
 
 ### deferred/ rules
 
-Before moving, append the following to the ticket:
+`scripts/move-ticket.sh <file> deferred` appends the following skeleton (with today's date) to the ticket before moving it; fill in the TODO placeholders afterwards:
 
 ```markdown
-**Deferred reason**: <why it's being postponed>
-**Re-open trigger**: <what condition would bring it back>
-**Deferred date**: YYYY-MM-DD
+**Deferred 理由**: TODO:DeferredReason
+**再起票 trigger**: TODO:ReopenTrigger
+**Deferred 日付**: YYYY-MM-DD
 ```
 
 To resume, move the ticket back from `deferred/` to `ticket/`.

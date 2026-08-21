@@ -32,6 +32,24 @@ but differs significantly:
 | Side effects | posts PR comments | **none** (read-only) |
 | Loop / reentry | yes (multiple iterations) | no |
 
+## Bundled scripts (run as-is)
+
+Let `SKILL_ROOT` be the directory containing this SKILL.md (in Claude Code: `${CLAUDE_SKILL_DIR}`).
+The deterministic parts of this workflow are implemented as scripts. **Run them as-is — do not
+read them to re-derive their logic, do not rewrite them, and do not hand-roll replacements.**
+They require `bash`, `git`, `curl`, and `jq` (`jq` for `summary.sh` / `check-upstream.sh`).
+
+| Script | Purpose |
+|--------|---------|
+| `scripts/init-run.sh` | Scaffold `.local/tmp/exploratory-nightly-<date>/{issues,tmp}`, record the start epoch, print `{"date","commit","dir","startedAt"}` |
+| `scripts/new-issue.sh <cat1..cat5> <P0..P3> <slug> [title]` | Atomically allocate the next `<NN>` (parallel-safe, gapless) and generate the issue skeleton with all metadata lines prefilled; prints the file path |
+| `scripts/summary.sh` | Aggregate `issues/*.md` into SUMMARY.md (§7 format) and report format lint as JSON |
+| `scripts/check-upstream.sh` | Fetch the cat4 upstream sources, diff against `libs.versions.toml` / the Gradle wrapper, print `[{"tool","latest","project","drift"}]` |
+
+All of them accept `--date YYYYMMDD` (default: today). Capture `date` from the `init-run.sh`
+output and pass it explicitly to every later call — that keeps a run that crosses midnight in
+one directory.
+
 ## 0. Invariants (do not violate)
 
 | # | Rule | Why |
@@ -44,19 +62,21 @@ but differs significantly:
 ## 1. Workflow (PDCA compressed into 60 minutes)
 
 1. **Environment confirmation (~3 min)**
-   - `pwd` / `git rev-parse HEAD` / `git status --short`
+   - Run `"$SKILL_ROOT/scripts/init-run.sh"` — note `date` / `dir` / `commit` from its JSON
+   - `git status --short` for a dirty-tree sanity check
    - Note the current versions from `gradle/libs.versions.toml` or equivalent
 2. **Plan (~5 min)**
    - Read [`references/categories.md`](references/categories.md), pick the cat1 → cat5 order
    - Note a per-cat time budget in TodoWrite or a scratch list
 3. **Sequential exploration (~50 min)**
    - cat1 → cat2 → cat3 → cat4 → cat5, ~8–10 min each
-   - For every finding, **write the issue file immediately** in the fixed format
+   - For every finding, **immediately create the issue file with `scripts/new-issue.sh`**
+     (hand-writing an issue file is forbidden), then fill in its body sections
    - One file written → next finding
 4. **Final formatting (50–58 min)**
-   - Re-read all issue files: deduplicate, polish titles, tighten the `## 詳細` body
-   - Write `.local/tmp/exploratory-nightly-<date>/SUMMARY.md` with count + per-category /
-     per-severity breakdown
+   - Re-read all issue files: deduplicate, polish titles, tighten the `## Detail` body
+   - Run `"$SKILL_ROOT/scripts/summary.sh" --date <date>` — it writes SUMMARY.md and reports
+     format lint as JSON; fix any lint findings and re-run until `"ok": true`
 5. **Termination report (~60 min)**
    - Final message: "wrote N issues, wrote SUMMARY.md". That's all.
 
@@ -70,8 +90,9 @@ Summary:
   README ↔ docs consistency
 - **cat3 — Dynamic build / test**: run the project's primary `test` task (and integration / docs
   variants if present); capture failures and warnings
-- **cat4 — Upstream release watching**: Kotlin / Compose Multiplatform / Gradle / AGP releases vs.
-  the project's `libs.versions.toml`
+- **cat4 — Upstream release watching**: run `scripts/check-upstream.sh` for the
+  Kotlin / Compose Multiplatform / Gradle / AGP / AndroidX drift table; your only judgment is
+  whether a drifted release announces breaking changes (P1) or not (P2)
 - **cat5 — Comparison / leftover angles**: sibling-library comparison, residual TODO grep,
   semver / BCP review, sample-app launch sanity
 
@@ -79,6 +100,15 @@ Parallelism is **off** — single CI VM with a 60-minute budget cannot afford pa
 contention. Sequential is the safe default.
 
 ## 3. Issue Markdown format
+
+**Every issue file must be created via `scripts/new-issue.sh` — never hand-write one.** The
+script owns the path, the atomic gapless numbering, the H1, and the metadata lines; you own only
+the body sections (`## Reproduction`, `## Detail`, optional `## Fix proposal`):
+
+```sh
+"$SKILL_ROOT/scripts/new-issue.sh" cat2 P1 bcv-baseline-drift "BCV baseline diverges" --date <date>
+# → prints .local/tmp/exploratory-nightly-<date>/issues/<NN>-bcv-baseline-drift.md
+```
 
 Full spec in [`references/issue-format.md`](references/issue-format.md). Required fields:
 
@@ -117,7 +147,10 @@ P0 / P1: write the issue immediately when found. P2 / P3: write if time allows.
   - Long tasks: `timeout 8m <cmd>` to protect the 60-min budget
   - Always redirect to `.local/tmp/exploratory-nightly-<date>/tmp/<ts>-<cmd>.log` —
     don't truncate with `grep` / `head` on the live stream
-- `WebFetch`: Kotlin / Compose / Gradle / AGP release pages (cat4)
+- `Bash` + `scripts/check-upstream.sh`: cat4 version-drift table (deterministic; no manual WebFetch
+  of version pages)
+- `WebFetch`: release **notes** of versions that `check-upstream.sh` reports as drifted
+  (cat4 breaking-change judgment only)
 - `WebSearch`: cat5 leftover-angle exploration
 
 The `.local/tmp/exploratory-nightly-<date>/tmp/` log files are **not** artifact-preserved by
@@ -126,14 +159,18 @@ into the issue file before the job ends.
 
 ## 6. Unexpected-failure handling
 
-- `WebFetch` rate-limit / failure → write that fact itself as a P3 issue, proceed to the next category
+- A `check-upstream.sh` entry with `"drift": "error"` (rate limit / fetch failure) or a `WebFetch`
+  failure → write that fact itself as a P3 issue, proceed to the next category
 - Gradle task failure → write as P1 (or P2 if the failure is clearly CI-environment-specific)
 - This SKILL.md fails to load → the wrapping CI step's `if: always()` should still surface the failure;
   no recovery in the skill itself
 
 ## 7. Termination
 
-After the exploration loop ends, write `.local/tmp/exploratory-nightly-<date>/SUMMARY.md`:
+After the exploration loop ends, run `"$SKILL_ROOT/scripts/summary.sh" --date <date>`. It writes
+`.local/tmp/exploratory-nightly-<date>/SUMMARY.md` (shape below) and prints a JSON report with a
+`lint` array; fix any lint findings (dedup, body polish) and re-run until `"ok": true`. Do not
+write SUMMARY.md by hand.
 
 ```markdown
 # Nightly Exploration Summary

@@ -1,20 +1,27 @@
 ---
 name: failure-classification
 description: >
-  CI failure-kind heuristics used in pr-fix-loop Step 4. Try in order —
-  transient infra (toolchain redirect / 5xx / network) → lint (ktlintCheck / eslint) →
-  binary compat (apiCheck / BCV) → test (jvmTest / jsBrowserTest / iosTest) →
-  build (compileKotlin / assembleDebug) → unknown — and take the first match. Transient is first
-  so a "rerun-only, don't touch code" failure is never misrouted to a code-fixing skill. Lists
-  job-name / log-signature / delegate-skill per kind, plus false-positive notes (warning vs fail,
-  job name vs task name).
+  Explanation of the CI failure-kind heuristics implemented by scripts/classify-failure.sh
+  (pr-fix-loop Step 4). Ordered transient infra (toolchain redirect / 5xx / network) →
+  lint (ktlintCheck / eslint) → binary compat (apiCheck / BCV) → test (jvmTest / jsBrowserTest /
+  iosTest) → build (compileKotlin / assembleDebug) → unknown; first match wins. Transient is
+  first so a "rerun-only, don't touch code" failure is never misrouted to a code-fixing skill.
+  Read this to sanity-check the script's verdict and to judge kind "unknown" — do not re-apply
+  the patterns by hand.
 ---
 
 # Failure classification heuristics
 
-When a CI job is `conclusion == "FAILURE"`, decide the kind. Try top-to-bottom and take the first
-match. Transient infra is **first** because that kind is fixed by a rerun alone, without touching
-code — so it must never be misrouted to a `fix-ci-*` code-fixing skill.
+**These heuristics are implemented by `scripts/classify-failure.sh` — run the script, don't
+pattern-match logs yourself.** This document explains the decision order and its caveats so you
+can sanity-check a verdict, read the `evidence` array, and exercise judgment on
+`kind: "unknown"` (the one case the script deliberately leaves to you).
+
+The script tries the kinds top-to-bottom and takes the first match. Transient infra is **first**
+because that kind is fixed by a rerun alone, without touching code — so it must never be
+misrouted to a `fix-ci-*` code-fixing skill. For kinds 2–5 the script trusts the trailing
+`> Task :xxx: FAILED` line above all: **the task name is the truth, the job name is display
+only** (see caveats).
 
 ## 1. Transient infra failure
 
@@ -24,33 +31,28 @@ Any of these phrases in the job log ⇒ transient infra:
 - `Could not GET 'https://...'` / `Could not HEAD 'https://...'`
 - `Received status code 5\d\d` (502 / 503 / 504)
 - CI action failures like `Failed to download` / `connection reset`
-- Cache restore failure (`Failed to restore`) — **unless** the build proceeded and failed later for
-  another reason, in which case classify by that reason
+- Cache restore failure (`Failed to restore`) — **unless** the build proceeded and failed later
+  for another reason (a `> Task :*: FAILED` line exists), in which case the script classifies by
+  that task instead
 - Runner startup failure (`The runner has received a shutdown signal`)
 - `npm ERR! network` / `EAI_AGAIN` / `ECONNRESET`
 - Registry/daemon pull failure (network flavor, not an auth `pull access denied`)
 
-Action: `gh run rerun <runId> --failed`. If it fails because the workflow is still in-progress,
-**defer to the next pass**.
+Your action on `kind: "transient"`: `gh run rerun <runId> --failed`. If it fails because the
+workflow is still in-progress, **defer to the next pass**.
 
 ## 2. Lint
 
-Job-name / log signatures:
-
-- Job name contains `Lint` / `ktlint` / `eslint` / `Format`
-- Log has `ktlintCheck FAILED` / `Lint task FAILED`
-- Log has a lint-rule violation line (e.g. ktlint `standard:` prefixed)
-- An `eslint --fix`-fixable error pattern
+Failed-task names like `ktlintCheck` / `lintDebug` / `spotlessCheck`; job names containing
+`Lint` / `Format`; log signatures like `ktlintCheck FAILED`, a ktlint rule violation line
+(`(standard:...)`), or an `eslint --fix`-fixable error pattern.
 
 Delegate to: **fix-ci-lint** skill (if present in the project).
 
 ## 3. Binary compatibility
 
-Job-name / log signatures:
-
-- Job name contains `Validate Binary Compatibility` / `apiCheck` / `BCV`
-- Log has `Task :*:apiCheck FAILED`
-- Log has `API check failed for project` followed by a `--- / +++ / @@` diff
+Failed task `apiCheck` (BCV); job names containing `Validate Binary Compatibility` / `BCV`;
+log signature `API check failed for project` followed by a `--- / +++ / @@` diff.
 
 Delegate to: **fix-ci-binary** skill (assumed to know how to regenerate via `apiDump`).
 
@@ -61,13 +63,10 @@ handles that, or pr-fix-loop instructs it explicitly.
 
 ## 4. Test
 
-Job-name / log signatures:
-
-- Job name contains `Test` / `jvmTest` / `jsBrowserTest` / `wasmJsBrowserTest` /
-  `iosSimulatorArm64Test` / `testDebugUnitTest`
-- Log has `> Task :*:test FAILED`
-- Log has `org.opentest4j.AssertionFailedError` / `java.lang.AssertionError` / a test-framework
-  multi-assertion error
+Failed-task names ending in `Test` / `Tests` (`jvmTest`, `jsBrowserTest`, `wasmJsBrowserTest`,
+`iosSimulatorArm64Test`, `testDebugUnitTest`, `allTests`); job names containing `Test`; log
+signatures `org.opentest4j.AssertionFailedError` / `java.lang.AssertionError` / a test-framework
+multi-assertion error.
 
 Delegate to: **fix-ci-test** skill.
 
@@ -77,28 +76,28 @@ transient (a rerun candidate).
 
 ## 5. Build
 
-Job-name / log signatures:
-
-- Job name contains `Publish to Maven Local` / `Build` / `Compile` / `assembleDebug` / `assembleRelease`
-- Log has `> Task :*:compileKotlin* FAILED` / `Could not resolve all dependencies`
-- Log has `Unresolved reference` / `Type mismatch` (compile error)
+Failed-task names starting with `compile` / `assemble` / `build` / `publish`
+(`compileKotlin*`, `assembleDebug`, `assembleRelease`); job names containing `Build` /
+`Compile` / `Publish to Maven Local`; log signatures `Could not resolve all dependencies`,
+`Unresolved reference`, `Type mismatch` (compile error).
 
 Delegate to: **fix-ci-build** skill. Build errors border lint / test / binary-compat; depending on
 root cause another skill may need to take over. Let fix-ci-build re-classify as needed.
 
 ## 6. Unknown
 
-No match ⇒ unknown: **report to the user only**, do not attempt a fix. Present the last ~50 log
-lines and the job URL.
+No match ⇒ the script returns `kind: "unknown"` with `delegate: null` and does **not** guess.
+This is where your judgment comes in: present the `logTail` (last ~50 lines) and the job URL to
+the user — do not attempt a blind fix.
 
 ## Heuristic caveats
 
-This is coarse pattern-matching and has false positives:
+This is coarse pattern-matching and has false positives — reasons to glance at `evidence`
+before delegating:
 
-- A `Test JS` job that emits a `warning` line is **warn, not fail** — find the job's true failure
-  line separately
-- A test whose name merely contains the phrase "binary compatibility" is not `apiCheck` — combine
-  the **task name** (`*:apiCheck` vs `*:test`) with the job name; the job name is for display, the
-  task name is the truth
-
-When unsure, always locate the trailing `> Task :*: FAILED` line and re-classify by task name.
+- A `Test JS` job that emits a `warning` line is **warn, not fail** — the true failure line may
+  be elsewhere in `logTail`
+- A test whose name merely contains the phrase "binary compatibility" is not `apiCheck`. The
+  script therefore keys on the trailing `> Task :*: FAILED` **task name** first and only falls
+  back to job-name/log signatures when no failed task line exists — the job name is for
+  display, the task name is the truth

@@ -18,6 +18,10 @@ gh skill install tbsten/skills kotlin-compiler-plugin-setup
 Set up a Kotlin compiler plugin project.
 ```
 
+## How It Works
+
+The skill runs `scripts/scaffold.sh`, which copies the complete project skeleton from `example/` — build files plus ready-made Kotlin sources (CommandLineProcessor, CompilerPluginRegistrar, IR/FIR extensions, a no-op transformer, a kctfork test helper, and integration-test entry points), written with the real package `com.example.compilerpluginsetup` and an `Example` class prefix — and replaces/renames everything to your project name, package, group ID, and plugin ID. The agent executes the script as-is (no manual transcription of code from docs), reviews the generated files, and verifies the build.
+
 ## What Gets Set Up
 
 ### Project Structure

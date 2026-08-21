@@ -20,7 +20,7 @@ MainTabSceneStrategy  ← NavEntry.metadata から MainTab を判定
     ↓
 MainTabScene          ← 固定 key → タブ切り替え時に Scaffold を維持
     ↓
-MainTabScreen         ← ViewModel + Scaffold + NavigationBar
+MainTabScreen         ← Scaffold + NavigationBar
     ↓
 NavEntry.Content()    ← 実際のタブコンテンツ (Home, Chat, MyPage 等)
 ```
@@ -89,6 +89,7 @@ Navigation 3 の公式レシピでは、トップレベルの `Scaffold` で `Na
 
 | ファイル | 説明 |
 |---|---|
+| `scripts/install.sh` | example ツリーをパッケージ置換付きでプロジェクトにコピーする (`--package` / `--dest`) |
 | `example/.../maintab/MainTab.kt` | タブ enum |
 | `example/.../maintab/MainTabNavigator.kt` | Navigator interface |
 | `example/.../maintab/MainTabScene.kt` | Scene 実装 |

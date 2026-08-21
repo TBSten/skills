@@ -1,5 +1,6 @@
-package buildsrc.convention
-
+// NOTE: buildSrc/src/main/kotlin/ 直下に配置する。package 宣言を付けると
+// precompiled script plugin の ID が「パッケージ名.publish-convention」に変わり
+// id("publish-convention") で適用できなくなるため、package 宣言は付けないこと。
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import com.vanniktech.maven.publish.SonatypeHost
 

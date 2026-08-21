@@ -8,6 +8,7 @@
 .local/ticket/
   about.md                # 本ファイル（運用ルール）
   task-0xx-template.md    # タスクチケットテンプレート
+  bug-0xx-template.md     # バグチケットテンプレート
   chapter-template.md     # チャプターテンプレート
   task-xxx-*.md           # 作業中のタスクチケット
   bug-xxx-*.md            # 作業中のバグチケット

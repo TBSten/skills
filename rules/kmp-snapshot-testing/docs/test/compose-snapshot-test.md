@@ -36,24 +36,8 @@ class AppButtonSnapshotTest : FreeSpec({
 
 Density・ScreenSize・SystemTheme の組み合わせと PBT 入力で網羅テストする。
 
-```kt
-class AppConfigScreenSnapshotPbt : ComposeSnapshotPbtSpec1<Unit, suspend () -> MergedAppConfig>(
-    genA = { Arb.suspendFunction(returns = Arb.mergedAppConfig()).withSuspendFunctionLabel() },
-    content = { getAppConfig ->
-        AppConfigScreen(
-            viewModel = remember {
-                AppConfigViewModel(
-                    appConfigLoader = object :
-                        AppConfigLoader by SimpleLoaderFactory.Default.create(
-                            this,
-                            load = { getAppConfig() },
-                        ) {},
-                )
-            },
-        )
-    },
-)
-```
+新規作成時は [templates/\_\_Target\_\_ComposeSnapshotPbt.kt](./templates/__Target__ComposeSnapshotPbt.kt)
+をコピーして TODO を埋める (骨格をゼロから書かない)。
 
 **ポイント**:
 

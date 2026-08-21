@@ -47,7 +47,7 @@ private fun MainTabNavigationBar(
     }
 }
 
-// Customize icons and labels for your project
+// CUSTOMIZE: タブのアイコンをプロジェクトに合わせて変更する
 private val MainTab.icon: ImageVector
     get() = when (this) {
         MainTab.Home -> Icons.Default.Home
@@ -55,6 +55,7 @@ private val MainTab.icon: ImageVector
         MainTab.MyPage -> Icons.Default.Person
     }
 
+// CUSTOMIZE: タブのラベルをプロジェクトに合わせて変更する (文字列リソース化も検討)
 private val MainTab.label: String
     get() = when (this) {
         MainTab.Home -> "Home"

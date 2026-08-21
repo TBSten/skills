@@ -32,6 +32,16 @@ This is a **path-triggered rule**. When snapshot test code or test infrastructur
 | `core/testing/**/*.kt` | Core test infrastructure |
 | `ui/core/testing/**/*.kt` | UI test infrastructure |
 
+### Test skeleton templates
+
+New tests start from the skeletons in `docs/test/templates/` (copy & fill the TODOs) instead of having the AI write the boilerplate from scratch:
+
+| Template | For |
+|---|---|
+| `templates/__Target__PbtSnapshotTest.kt` | StateHolder / ViewModel PBT snapshot tests |
+| `templates/__Target__LogicPbtSnapshotTest.kt` | Logic / function PBT snapshot tests |
+| `templates/__Target__ComposeSnapshotPbt.kt` | Compose UI PBT snapshot tests |
+
 ## Installed files
 
 | File | Description |
@@ -40,6 +50,9 @@ This is a **path-triggered rule**. When snapshot test code or test infrastructur
 | `docs/test/README.md` | Testing strategy overview |
 | `docs/test/snapshot-test.md` | Snapshot PBT testing guide (state holders, logic) |
 | `docs/test/compose-snapshot-test.md` | Compose UI snapshot testing guide |
+| `docs/test/templates/*.kt` | Test skeleton templates (copy & fill the TODOs) |
+
+> **Note:** Re-running the installer overwrites the installed files, including any local customizations you made under `docs/test/`.
 
 ## Related
 

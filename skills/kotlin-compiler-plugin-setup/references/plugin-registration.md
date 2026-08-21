@@ -1,28 +1,24 @@
 # Plugin Registration Patterns
 
-Kotlin Compiler Plugin の登録に必要な 2 つのクラスのパターン。
+Kotlin Compiler Plugin の登録に必要なクラスの設計解説。
+**完全なコードは `example/compiler-plugin/src/main/kotlin/com/example/compilerpluginsetup/` 配下の実ファイルが SSoT** (scaffold.sh がコピー・置換する)。
+
+| クラス | 実ファイル | 役割 |
+|---|---|---|
+| `ExampleCommandLineProcessor` | `example/.../ExampleCommandLineProcessor.kt` | Plugin ID の宣言と CLI オプション定義 |
+| `ExampleRegistrar` | `example/.../ExampleRegistrar.kt` | FIR / IR extension の登録 (`supportsK2 = true`) |
+| `ExampleIrExtension` | `example/.../ExampleIrExtension.kt` | IR (backend) extension のエントリポイント |
+| `ExampleTransformer` | `example/.../ExampleTransformer.kt` | IR 変換本体 (skeleton は no-op) |
+| `ExampleFirExtensionRegistrar` | `example/.../fir/ExampleFirExtensionRegistrar.kt` | FIR (frontend) extension の登録 (skeleton は空) |
 
 ## CommandLineProcessor
 
-Plugin ID を宣言し、CLI オプションを定義する。`@AutoService` で META-INF/services に自動登録される。
-
-```kotlin
-package <your-package>
-
-import com.google.auto.service.AutoService
-import org.jetbrains.kotlin.compiler.plugin.AbstractCliOption
-import org.jetbrains.kotlin.compiler.plugin.CommandLineProcessor
-
-@AutoService(CommandLineProcessor::class)
-class <YourPlugin>CommandLineProcessor : CommandLineProcessor {
-    override val pluginId: String = "<your-plugin-id>"
-    override val pluginOptions: Collection<AbstractCliOption> = emptyList()
-}
-```
+- `pluginId` を宣言し、CLI オプションを定義する
+- `@AutoService(CommandLineProcessor::class)` で `META-INF/services` に自動登録される (auto-service-ksp が生成)
 
 ### CLI オプションの追加
 
-Gradle plugin から compiler plugin に設定を渡す場合:
+Gradle plugin から compiler plugin に設定を渡す場合、`AbstractCliOption` を companion object に定義して `pluginOptions` から返す:
 
 ```kotlin
 companion object {
@@ -37,32 +33,13 @@ companion object {
 override val pluginOptions: Collection<AbstractCliOption> = listOf(OPTION_ENABLED)
 ```
 
+受け取った値の処理には `processOption` を override する。Gradle 側の渡し方は `gradle-plugin-impl.md` を参照。
+
 ## CompilerPluginRegistrar
 
-FIR extension と IR extension を登録する。K2 compiler をサポートする場合は `supportsK2 = true` を設定。
-
-```kotlin
-package <your-package>
-
-import com.google.auto.service.AutoService
-import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
-import org.jetbrains.kotlin.compiler.plugin.CompilerPluginRegistrar
-import org.jetbrains.kotlin.config.CompilerConfiguration
-import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrarAdapter
-
-@AutoService(CompilerPluginRegistrar::class)
-class <YourPlugin>Registrar : CompilerPluginRegistrar() {
-    override val pluginId: String = "<your-plugin-id>"
-    override val supportsK2: Boolean = true
-
-    override fun ExtensionStorage.registerExtensions(configuration: CompilerConfiguration) {
-        // FIR extension (frontend validation, early error reporting)
-        FirExtensionRegistrarAdapter.registerExtension(<YourPlugin>FirExtensionRegistrar())
-        // IR extension (backend code transformation)
-        IrGenerationExtension.registerExtension(<YourPlugin>IrExtension(configuration))
-    }
-}
-```
+- `ExtensionStorage.registerExtensions` で FIR extension (`FirExtensionRegistrarAdapter.registerExtension`) と IR extension (`IrGenerationExtension.registerExtension`) を登録する
+- K2 compiler をサポートする場合は `supportsK2 = true` を設定
+- **注意**: `CompilerPluginRegistrar` に `pluginId` プロパティは存在しない (宣言するとコンパイルエラー)。Plugin ID は `CommandLineProcessor` 側で宣言する
 
 ### FIR vs IR の使い分け
 
@@ -74,35 +51,12 @@ class <YourPlugin>Registrar : CompilerPluginRegistrar() {
 - FIR checker はベストエフォート (try-catch で囲む) にし、失敗しても IR phase でフォールバック
 - IR extension のみでも compiler plugin は動作する (FIR は任意)
 
-## IrGenerationExtension の実装
+## IrGenerationExtension / Transformer
 
-```kotlin
-package <your-package>
+- `generate()` で `moduleFragment.transform(<Transformer>, null)` を呼び、`IrElementTransformerVoid` 継承の Transformer に変換を実装する
+- skeleton の `ExampleTransformer` は no-op。`visitCall` / `visitFunction` 等を override して変換を実装する
 
-import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
-import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
-import org.jetbrains.kotlin.config.CompilerConfiguration
-import org.jetbrains.kotlin.ir.declarations.IrModuleFragment
+## FirExtensionRegistrar
 
-class <YourPlugin>IrExtension(
-    private val configuration: CompilerConfiguration,
-) : IrGenerationExtension {
-    override fun generate(moduleFragment: IrModuleFragment, pluginContext: IrPluginContext) {
-        moduleFragment.transform(<YourPlugin>Transformer(pluginContext), null)
-    }
-}
-```
-
-## FirExtensionRegistrar の実装
-
-```kotlin
-package <your-package>.fir
-
-import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrar
-
-class <YourPlugin>FirExtensionRegistrar : FirExtensionRegistrar() {
-    override fun ExtensionRegistrarContext.configurePlugin() {
-        +::< YourPlugin>FirChecker
-    }
-}
-```
+- `configurePlugin()` 内で `+::YourFirCheckersExtension` 形式で FIR extension を登録する
+- skeleton の `ExampleFirExtensionRegistrar` は何も登録しない (FIR は任意のため)

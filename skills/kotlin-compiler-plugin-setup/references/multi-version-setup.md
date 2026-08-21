@@ -1,7 +1,7 @@
 # Multi-Kotlin Version Support: 初期セットアップ
 
 Kotlin Compiler Plugin で複数 Kotlin バージョンを 1 つの JAR でサポートする。
-バージョン追加・削除の継続的な作業は `add-support-kotlin-version` スキルを使う。
+バージョン追加・削除の継続的な作業は `kotlin-compiler-plugin-dev` スキル (Step 6) を使う。
 
 ---
 
@@ -35,7 +35,7 @@ compiler-plugin/
 3. `build.gradle.kts` で `KOTLIN_VERSION` 環境変数またはバージョンカタログ値を読み、適合するソースディレクトリを `sourceSets["main"].kotlin.srcDir(...)` で追加
 4. K2 向け `CompilerPluginRegistrar` に `supportsK2 = true` を設定
 
-詳細コード: `add-support-kotlin-version` スキルの `references/source-set-separation.md`
+詳細コード: `kotlin-compiler-plugin-dev` スキルの `references/source-set-separation.md`
 
 ---
 
@@ -83,7 +83,7 @@ tasks.shadowJar {
 }
 ```
 
-詳細コード: `add-support-kotlin-version` スキルの `references/compat-module-setup.md`
+詳細コード: `kotlin-compiler-plugin-dev` スキルの `references/compat-module-setup.md`
 
 ---
 
@@ -100,7 +100,7 @@ jobs:
       - run: ./gradlew :compiler-plugin:test -Ptest.kotlin=${{ matrix.kotlin }}
 ```
 
-kctfork バージョンマップと CI YAML の詳細: `add-support-kotlin-version` スキルの `references/ci-matrix.md`
+kctfork バージョンマップと CI YAML の詳細: `kotlin-compiler-plugin-dev` スキルの `references/ci-matrix.md`
 
 ---
 
@@ -131,4 +131,4 @@ plugins {
 - [ ] BCV 設定 (runtime がある場合)
 - [ ] 全対象バージョンでテスト GREEN 確認
 
-バージョン追加・削除の継続作業 → `add-support-kotlin-version` スキルへ
+バージョン追加・削除の継続作業 → `kotlin-compiler-plugin-dev` スキル (Step 6) へ

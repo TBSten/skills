@@ -49,8 +49,18 @@ This skill helps you:
 | `references/reflection-shim.md` | Reflection shim to absorb small API drift without a new compat module |
 | `references/troubleshooting.md` | Failure pattern → root cause → remediation table |
 
+## Bundled assets
+
+Ready-to-copy files for target projects that lack the multi-version test infrastructure (the skill copies them as-is instead of hand-writing equivalents):
+
+| File | Copy to | Description |
+|---|---|---|
+| `assets/scripts/compiler-plugin-test.sh` | `scripts/` (+ `chmod +x`) | Per-version test runner; `--all` loops over the SSOT and reports failing versions |
+| `assets/scripts/supported-kotlin-versions.txt` | `scripts/` | SSOT template for supported Kotlin versions (edit to match the project) |
+| `assets/workflows/compiler-plugin-test.yml` | `.github/workflows/` | SSOT-driven dynamic CI matrix (resolve + test jobs) |
+
 ## Prerequisites
 
 - A Kotlin project with compiler plugin source code (or a plan to create one)
-- For supported-version add/remove, the project must already have multi-version infrastructure (compat module layer or source set separation). For initial setup, see the `kotlin-compiler-plugin-setup` skill (Step 10)
+- For supported-version add/remove, the project must already have multi-version infrastructure (compat module layer or source set separation). For initial setup, see the `kotlin-compiler-plugin-setup` skill (Step 4: Multi-Kotlin Version Support)
 - Optional: deepwiki MCP server configured for enhanced source code exploration

@@ -28,6 +28,7 @@ fun AppNavigation(
                 .then(SinglePaneSceneStrategy())
         },
         entryProvider = entryProvider {
+            // CUSTOMIZE: タブ画面のエントリをタブ構成に合わせて変更し、各画面の Composable を呼び出す
             // Tab screens — metadata tells MainTabSceneStrategy to wrap with NavigationBar
             entry<Home>(
                 metadata = MainTabSceneStrategy.mainTab(MainTab.Home),
@@ -47,6 +48,7 @@ fun AppNavigation(
                 // MyPageScreen()
             }
 
+            // CUSTOMIZE: 非タブ画面のエントリをプロジェクトの画面に合わせて変更する
             // Non-tab screens — no metadata, falls through to SinglePaneSceneStrategy
             entry<Settings> { screen ->
                 // SettingsScreen()

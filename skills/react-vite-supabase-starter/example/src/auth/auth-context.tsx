@@ -21,6 +21,8 @@ const AuthContext = createContext<AuthContextType>({
   signOut: async () => {},
 });
 
+// AuthProvider と対で使う hook を同居させるため react-refresh ルールを除外する
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   return useContext(AuthContext);
 }

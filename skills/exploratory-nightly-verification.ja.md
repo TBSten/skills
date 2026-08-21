@@ -56,9 +56,25 @@ cat1 → cat5 を sequential に walk して 60 分以内に発見を Markdown i
 
 詳細は [`categories.md`](./exploratory-nightly-verification/references/categories.md)。
 
+## 同梱スクリプト
+
+決定的な処理は script として同梱しており (`bash` / `git` / `curl` / `jq`)、 agent は毎晩
+ロジックを再発明せず script をそのまま実行する:
+
+| Script | 役割 |
+|--------|------|
+| `scripts/init-run.sh` | run ディレクトリの scaffold + 開始 epoch 記録 + `{"date","commit","dir","startedAt"}` 出力 |
+| `scripts/new-issue.sh <catN> <P0..P3> <slug> [title]` | 次の `<NN>` をアトミックに採番 (並列安全・gapless) して issue 雛形を生成 |
+| `scripts/summary.sh` | `issues/*.md` を集計して SUMMARY.md を生成 + format lint を JSON 報告 |
+| `scripts/check-upstream.sh` | cat4 の上流ソースを取得して version drift 表 `[{"tool","latest","project","drift"}]` を出力 |
+
+issue の採番・metadata 行・SUMMARY.md・上流 version 比較は script の責務。 AI は issue 本文の
+記述と breaking change 判定だけを担う。
+
 ## Issue ファイル format
 
-各発見は `.local/tmp/exploratory-nightly-<date>/issues/<NN>-<slug>.md` へ:
+各発見は `scripts/new-issue.sh` で生成する (手書き禁止)。 パスは
+`.local/tmp/exploratory-nightly-<date>/issues/<NN>-<slug>.md` で、 AI は本文 section だけを埋める:
 
 ```markdown
 # <短いタイトル>
@@ -90,7 +106,7 @@ Slack / Discord / GitHub Issue 同期を欲しい場合は、 別 CI step が `.
 ## 前提条件
 
 - Git 管理された Kotlin / Gradle プロジェクト (Android / JVM / KMP / Compose / server-side)
-- CI 環境で `gh` CLI 利用可能
+- CI 環境で `gh` CLI 利用可能。 同梱 script 用に `jq` + `curl` も必要
 - `.local/` が `.gitignore` 済み
 - skill を driving する CI workflow ファイル (例: `.github/workflows/nightly-checking.yml`) を
   schedule で回す

@@ -99,7 +99,7 @@ IrGenerationExtension → アノテーション付き要素の IR を直接変�
 ## Multi-Version Support アーキテクチャ
 
 複数の Kotlin バージョンを 1 つの JAR でサポートするための 2 つのアーキテクチャパターン。
-バージョン追加・削除の具体的な手順は `add-support-kotlin-version` スキルを使う。
+バージョン追加・削除の具体的な手順は `kotlin-compiler-plugin-dev` スキル (Step 6) を使う。
 
 ### バージョニング戦略
 

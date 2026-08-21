@@ -8,27 +8,19 @@ run smoothly.
 ## Numbering
 
 - Four-digit prefix (`#0001`, `#0102`, …)
-- Issue the next number after the current max: `ls problems/ | grep -E "^[0-9]{4}-" | sort | tail -1`
-- If two parallel cats happen to issue the same number, the later one renumbers (rename the file
-  and update the H1 inside)
+- **Numbers are allocated only by `scripts/new-ticket.sh`.** It scans `problems/` — including
+  `resolved/` / `methodology/` / `non-pr/`, so moved tickets keep their numbers reserved — and
+  claims the next number atomically. Five parallel cats can create tickets simultaneously with
+  no collisions, no per-cat reservation ranges, and no renumbering.
+- Never hand-write a ticket file or invent a number. Create, then fill in the body:
 
-## Per-cat reservation
+```sh
+"$SKILL_ROOT/scripts/new-ticket.sh" --id <pr-id> --cat 3 --iter 7 --severity P2 --slug gradle-cache-race
+# → prints .local/tmp/exploratory-pr-<id>/problems/NNNN-gradle-cache-race.md
+```
 
-Per iteration, the orchestrator allocates a 3-number range to each cat to prevent collisions
-during parallel writes:
-
-- cat1: `NNNN+0` … `NNNN+2`
-- cat2: `NNNN+3` … `NNNN+5`
-- cat3: `NNNN+6` … `NNNN+8`
-- cat4: `NNNN+9` … `NNNN+11`
-- cat5: `NNNN+12` … `NNNN+14`
-
-Each cat usually uses 1–2 of its reserved slots — full saturation of all three is rare and
-typically a sign to switch to a different angle. Unused numbers do **not** roll forward; the
-next iteration starts a fresh reservation from the new current-max.
-
-If collisions still happen (out-of-band raise during file write), the later writer renumbers
-and updates its own H1; the cluster ordering can absorb gaps.
+The script prefills the H1, `## Severity`, and `## Owner`; the cat fills in `## Location` /
+`## Detail` / `## Fix proposal` (and `## Dynamic evidence` where relevant).
 
 ## Directory layout
 
@@ -63,7 +55,7 @@ P0 / P1 / P2 / P3
 
 ## Owner
 
-cat1 (iter 14) — autonomous source-code exploration
+cat1 (iter 14) — source-code static analysis
 
 ## Location
 
@@ -107,11 +99,6 @@ Severity is **not frozen at issuance time**. Re-evaluate when:
   Consider clustering it into an existing ticket family.
 - Severity labels are reassessed at each iteration's end (and during the close-time cluster
   analysis) — do not lock them at issuance time.
-
-## Why renumber rather than skip
-
-Cluster analysis at close time walks `problems/` in numeric order. Gaps are fine; duplicates are
-not. The renumber-on-collision rule favors a clean linear sequence per cat-reservation block.
 
 ## FINAL-SUMMARY linkage
 

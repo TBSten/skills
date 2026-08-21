@@ -130,16 +130,9 @@ cat5 ROI drops to one P3 ticket per iteration.
 cat5 must include sibling-library comparison from iter 1. Past lesson in SKILL.md §12 — late
 rotation caused a P-level mis-assignment that persisted 12+ iterations.
 
-## Number-reservation scheme across cats
+## Ticket numbering across cats
 
-To avoid ticket-number collisions across the five parallel cats, the orchestrator pre-allocates
-a per-cat range each iteration (see [ticket-format.md](ticket-format.md)):
-
-- cat1: `NNNN+0` … `NNNN+2`
-- cat2: `NNNN+3` … `NNNN+5`
-- cat3: `NNNN+6` … `NNNN+8`
-- cat4: `NNNN+9` … `NNNN+11`
-- cat5: `NNNN+12` … `NNNN+14`
-
-Each cat typically uses 1–2 of its reserved range. Unused numbers roll over to the next iteration's
-reservation.
+Ticket numbers are allocated atomically by `scripts/new-ticket.sh` — each cat simply calls the
+script when filing a ticket. There is no reservation scheme and no renumbering; parallel cats
+cannot collide. See [ticket-format.md](ticket-format.md) for the numbering contract and file
+format.

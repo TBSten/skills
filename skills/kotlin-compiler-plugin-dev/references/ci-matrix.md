@@ -14,189 +14,37 @@ CI matrix を **行ベースのテキストファイル** (= SSOT) から `fromJ
 
 ## SSOT (`scripts/supported-kotlin-versions.txt`)
 
-```
-# SSOT for the Kotlin versions this compiler plugin supports.
-# One version per line (blank lines and lines starting with `#` are comments).
-# CI workflows and compiler-plugin-test scripts read this file.
-#
-# Supported range: Kotlin 2.1.20 and later.
-#   The compiler plugin uses the unified `IrMemberAccessExpression.arguments` API
-#   that landed in 2.1.20; older versions cannot load the plugin.
-#
-# To add a new version:
-#   1. Append a line below.
-#   2. Verify locally with `./scripts/compiler-plugin-test.sh <new-version>`.
-#   3. If API drift requires it, add a new compat module.
-2.1.20
-2.1.21
-2.2.0
-2.2.10
-2.2.20
-2.2.21
-2.3.0
-2.3.10
-2.3.20
-2.3.21
-2.4.0-Beta2
-```
+**実ファイル (テンプレート): [`../assets/scripts/supported-kotlin-versions.txt`](../assets/scripts/supported-kotlin-versions.txt)**
 
-書式ルール: 空行と `#` 始まりはコメント扱い。 CI 側で `grep -vE '^[[:space:]]*(#|$)'` で除外する。
+対象プロジェクトに無ければこのファイルを `<project-root>/scripts/supported-kotlin-versions.txt` にコピーし、実際のサポートバージョン・サポート範囲コメントに合わせて編集する。
+
+書式ルール: 1 行 1 バージョン。空行と `#` 始まりはコメント扱い。 CI 側で `grep -vE '^[[:space:]]*(#|$)'` で除外する。ファイル冒頭コメントにはサポート範囲の根拠 (どの API に依存して最小バージョンが決まったか) とバージョン追加手順を書いておく。
 
 ---
 
-## GitHub Actions Workflow 完全テンプレート
+## GitHub Actions Workflow
 
-`.github/workflows/pull-request.yml`:
+**実ファイル (汎用部分のテンプレート): [`../assets/workflows/compiler-plugin-test.yml`](../assets/workflows/compiler-plugin-test.yml)**
 
-```yaml
-name: Pull Request Check
-on:
-  pull_request:
-  push:
-    branches:
-      - main
+対象プロジェクトに compiler-plugin テストの workflow が無ければ、このファイルを `<project-root>/.github/workflows/compiler-plugin-test.yml` にコピーする (既存の `pull-request.yml` がある場合は 2 つの job をそこにマージしてもよい)。中身は:
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+1. **`resolve-supported-kotlin-versions`** — SSOT を `grep -vE '^[[:space:]]*(#|$)' | jq -R . | jq -sc .` で JSON 配列化して outputs に載せる
+2. **`compiler-plugin-test`** — `fromJSON` で dynamic matrix 展開し、各バージョンで `./scripts/compiler-plugin-test.sh "${{ matrix.kotlin }}"` を実行。`fail-fast: false` 必須 (RC/Beta が落ちても stable の結果を視認できる)
 
-jobs:
-  # ----------------------------------------------------------
-  # 1. Lint / Binary compatibility / 通常 unit test (baseline Kotlin)
-  # ----------------------------------------------------------
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-      - uses: gradle/actions/setup-gradle@v5
-      - run: ./gradlew ktlintCheck --warning-mode all
-
-  validate-binary-compatibility:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-      - uses: gradle/actions/setup-gradle@v5
-      - run: ./gradlew apiCheck --warning-mode all
-
-  test:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: Jvm
-            test_task: jvmTest
-            os: ubuntu-latest
-            kotest_tags: '!PBT'
-          - name: JS
-            test_task: jsBrowserTest
-            os: ubuntu-latest
-          - name: Wasm JS
-            test_task: wasmJsBrowserTest
-            os: ubuntu-latest
-          - name: Android Debug
-            test_task: testDebugUnitTest
-            os: ubuntu-latest
-          - name: iOS
-            test_task: iosSimulatorArm64Test
-            os: macos-latest
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-      - uses: gradle/actions/setup-gradle@v5
-      - name: Test Library
-        run: |
-          ./gradlew ${{ matrix.test_task }} \
-            ${{ matrix.kotest_tags && format('-Dkotest.tags="{0}"', matrix.kotest_tags) || '' }} \
-            --warning-mode all
-
-  # ----------------------------------------------------------
-  # 2. SSOT → JSON 配列 (matrix 入力用)
-  # ----------------------------------------------------------
-  resolve-supported-kotlin-versions:
-    name: Resolve Kotlin compat versions
-    runs-on: ubuntu-latest
-    outputs:
-      list: ${{ steps.read.outputs.list }}
-    steps:
-      - uses: actions/checkout@v4
-      - id: read
-        shell: bash
-        run: |
-          # Drop blank lines and comments, then turn the remaining lines into a JSON array.
-          list=$(grep -vE '^[[:space:]]*(#|$)' scripts/supported-kotlin-versions.txt | jq -R . | jq -sc .)
-          echo "list=$list" >> "$GITHUB_OUTPUT"
-          echo "Supported Kotlin versions: $list"
-
-  # ----------------------------------------------------------
-  # 3. 全 Kotlin バージョン × compiler-plugin テスト (matrix)
-  # ----------------------------------------------------------
-  compiler-plugin-test:
-    needs: resolve-supported-kotlin-versions
-    strategy:
-      fail-fast: false        # 必須 — RC/Beta が落ちても stable の結果を視認できる
-      matrix:
-        kotlin: ${{ fromJSON(needs.resolve-supported-kotlin-versions.outputs.list) }}
-    runs-on: ubuntu-latest
-    name: Compiler Plugin Kotlin ${{ matrix.kotlin }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-      - uses: gradle/actions/setup-gradle@v5
-      - name: Test compiler-plugin against Kotlin ${{ matrix.kotlin }}
-        run: ./scripts/compiler-plugin-test.sh "${{ matrix.kotlin }}"
-```
+lint / binary compatibility (`apiCheck`) / baseline Kotlin での通常 unit test (JVM / JS / Wasm / Android / iOS のターゲット matrix) はプロジェクト固有のため、このテンプレートには含めていない。実例は [TBSten/compose-preview-lab/.github/workflows/pull-request.yml](https://github.com/TBSten/compose-preview-lab/blob/main/.github/workflows/pull-request.yml) を参照。
 
 ---
 
 ## Per-Version Test Script (`scripts/compiler-plugin-test.sh`)
 
-```bash
-#!/usr/bin/env bash
-# Run the compiler-plugin tests against a single Kotlin version.
-#
-# Usage: ./scripts/compiler-plugin-test.sh <kotlin-version>
-# Example: ./scripts/compiler-plugin-test.sh 2.3.21
-set -euo pipefail
+**実ファイル: [`../assets/scripts/compiler-plugin-test.sh`](../assets/scripts/compiler-plugin-test.sh)**
 
-VERSION="${1:?Usage: compiler-plugin-test.sh <kotlin-version> (e.g. 2.3.21, 2.4.0-Beta2)}"
+対象プロジェクトに無ければこのファイルを `<project-root>/scripts/compiler-plugin-test.sh` にコピーして `chmod +x` する。
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "$ROOT_DIR"
+- `./scripts/compiler-plugin-test.sh <kotlin-version>` — 単一バージョンのテスト。`-Ptest.kotlin` で kctfork が使う kotlin-compiler-embeddable を差し替える (`compiler-plugin/build.gradle.kts` が `resolutionStrategy.force` に反映する — 後述)
+- `./scripts/compiler-plugin-test.sh --all` — SSOT の全バージョンを順に実行し、失敗バージョン一覧を末尾に出力 (local で CI 相当の確認をする時に使う)
 
-LOG_DIR=".local/tmp"
-mkdir -p "$LOG_DIR"
-LOG="$LOG_DIR/compiler-plugin-test-${VERSION}-$(date +%s).log"
-
-echo "[compiler-plugin-test] === Kotlin $VERSION ==="
-echo "[compiler-plugin-test] log: $LOG"
-
-# Override the kotlin-compiler-embeddable version that kctfork drives via -Ptest.kotlin.
-# compiler-plugin/build.gradle.kts feeds this into resolutionStrategy.force.
-./gradlew \
-    :compiler-plugin:test \
-    --rerun-tasks \
-    -Ptest.kotlin="$VERSION" \
-    --continue 2>&1 | tee "$LOG"
-
-echo "[compiler-plugin-test] $VERSION OK"
-```
-
-`--rerun-tasks` 必須。 Gradle build cache が `-Ptest.kotlin` を input として認識しないため、 同じテストタスクを別 Kotlin で走らせる時 `UP-TO-DATE` で skip される事故を防ぐ。
+`--rerun-tasks` 必須 (script 内で常に付与)。 Gradle build cache が `-Ptest.kotlin` を input として認識しないため、 同じテストタスクを別 Kotlin で走らせる時 `UP-TO-DATE` で skip される事故を防ぐ。
 
 ---
 

@@ -3,8 +3,10 @@
 Jewel/Compose の UI を **IDE を起動せず** PNG に焼き、エージェントが画像として目視する。同一マシンで
 描画がバイト決定的なので、golden 比較 (VRT: Visual Regression Test) のゲートも掛けられる。
 
-参照実装例: `<plugin-module>/src/preview/.../PreviewMain.kt` (+ `PreviewVrt` / `PreviewChecks` / gradle の
-`updatePreview` / `verifyPreview`)。
+実ファイル (SSoT): `example/src/preview/kotlin/com/example/plugin/preview/PreviewMain.kt`
+(harness: render → gallery → 自動ゲート → golden 同期/比較/report) + `PreviewChecks.kt` (純出力ゲート)
++ `example/build.gradle.kts` の `updatePreview` / `verifyPreview`。snippet から再構築せず
+`scripts/scaffold.sh` で example から生成する (SKILL.md)。
 
 ## 中核レシピ
 
@@ -24,6 +26,8 @@ val image = renderComposeScene(width = w, height = h) {   // androidx.compose.ui
 File(out).writeBytes(image.encodeToData(EncodedImageFormat.PNG)!!.bytes)   // org.jetbrains.skia.Image
 ```
 
+- この形の実ファイルは `PreviewMain.kt` の `renderScenario` (example が SSoT。scenario matrix も
+  そこの `scenarios` を CUSTOMIZE する)。
 - **plugin 本体は同じ Composable を `addComposeTab` でホストする** (`ide-integration.md`)。preview と
   plugin でテーマ wrapper だけが違うので、PNG は出荷物に忠実。
 - gradle: `previewImplementation(compose.desktop.currentOs)` + standalone Jewel。`uiTestJUnit4` は不要。

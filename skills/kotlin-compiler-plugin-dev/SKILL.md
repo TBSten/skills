@@ -186,7 +186,7 @@ mcp__deepwiki__ask_question
 
 ## Step 6: サポート Kotlin バージョンの追加・削除
 
-既に複数バージョン対応基盤 (compat module layer または source set separation) を持つ Kotlin Compiler Plugin プロジェクトに対して、サポート対象 Kotlin バージョンを追加・削除する。基盤の初期セットアップは `kotlin-compiler-plugin-setup` の Step 10 を参照。
+既に複数バージョン対応基盤 (compat module layer または source set separation) を持つ Kotlin Compiler Plugin プロジェクトに対して、サポート対象 Kotlin バージョンを追加・削除する。基盤の初期セットアップは `kotlin-compiler-plugin-setup` の Step 4 (Multi-Kotlin Version Support) を参照。
 
 ### 概要
 
@@ -196,6 +196,16 @@ mcp__deepwiki__ask_question
 ### ワークフロー
 
 詳細手順 (要件確認 → 既存 module で対応可能か判定 → 新 compat module 追加 (delegation pattern) → SSOT 更新 → CI matrix / kctfork / Compose マップ / README 更新 → テスト切り分け → ドキュメント反映) は **[`references/multi-version-workflow.md`](references/multi-version-workflow.md)** を参照。
+
+### テスト基盤の配布 (assets)
+
+対象プロジェクトに以下が無ければ、本 skill の `assets/` からコピーする。**script は読解・書き換え・再実装せず、そのまま実行する** (SSOT のバージョン一覧のみプロジェクトに合わせて編集する):
+
+| 対象プロジェクトのパス | コピー元 | 備考 |
+|---|---|---|
+| `scripts/compiler-plugin-test.sh` | `assets/scripts/compiler-plugin-test.sh` | コピー後 `chmod +x`。`<version>` 単体 / `--all` (SSOT 全バージョン + 失敗一覧) |
+| `scripts/supported-kotlin-versions.txt` | `assets/scripts/supported-kotlin-versions.txt` | SSOT。実際のサポートバージョンに合わせて編集 |
+| `.github/workflows/compiler-plugin-test.yml` | `assets/workflows/compiler-plugin-test.yml` | 既存 `pull-request.yml` への job マージも可 |
 
 ### よく使う詳細リファレンス
 

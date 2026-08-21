@@ -1,0 +1,23 @@
+# SSOT for the Kotlin versions this compiler plugin supports.
+# One version per line (blank lines and lines starting with `#` are comments).
+# CI workflows and compiler-plugin-test scripts read this file.
+#
+# Supported range: Kotlin 2.1.20 and later.
+#   The compiler plugin uses the unified `IrMemberAccessExpression.arguments` API
+#   that landed in 2.1.20; older versions cannot load the plugin.
+#
+# To add a new version:
+#   1. Append a line below.
+#   2. Verify locally with `./scripts/compiler-plugin-test.sh <new-version>`.
+#   3. If API drift requires it, add a new compat module.
+2.1.20
+2.1.21
+2.2.0
+2.2.10
+2.2.20
+2.2.21
+2.3.0
+2.3.10
+2.3.20
+2.3.21
+2.4.0-Beta2

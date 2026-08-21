@@ -19,6 +19,7 @@ Data ---------+
     - 本実装は interface 名 + `Impl`
     - Fake は `Fake` + interface 名
 - Layer 間の依存関係は事前にこのドキュメントで定義されたものから外れないようにする。Layer 内に閉じた依存関係は特に制限しない。
+- これらの規約 (層間依存・Providers 命名・Impl/Fake 命名) は [templates/ArchitectureConventionTest.kt](./templates/ArchitectureConventionTest.kt) を jvmTest に配置して Konsist で機械検証する。
 
 ## Layers
 

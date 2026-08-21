@@ -4,65 +4,22 @@
 
 kctfork は Kotlin ソースをインメモリでコンパイルし、結果を検証するライブラリ。
 
-### 基本セットアップ
+**compile ヘルパー (`compile` / `shouldCompileOk` / `loadTopLevelField`) と正常系テストの完全なコードは
+`example/compiler-plugin/src/test/kotlin/com/example/compilerpluginsetup/ExampleCompilerTest.kt` が SSoT**
+(scaffold.sh がコピー・置換する)。
 
-```kotlin
-import com.tschuchort.compiletesting.JvmCompilationResult
-import com.tschuchort.compiletesting.KotlinCompilation
-import com.tschuchort.compiletesting.SourceFile
-import io.kotest.core.spec.style.FunSpec
-import io.kotest.matchers.shouldBe
-import io.kotest.matchers.string.shouldContain
+### ヘルパーの設計
 
-class <YourPlugin>Test : FunSpec({
+| ヘルパー | 役割 |
+|---|---|
+| `compile(source, dumpIr)` | `compilerPluginRegistrars` に自プラグインを登録してインメモリコンパイル |
+| `shouldCompileOk()` | `ExitCode.OK` を検証、失敗時は `messages` 込みで AssertionError |
+| `loadTopLevelField(name, pkg)` | 生成クラスをクラスローダーでロードし、トップレベルプロパティの値をリフレクション取得 |
 
-    fun compile(source: String, dumpIr: Boolean = false): JvmCompilationResult =
-        KotlinCompilation().apply {
-            sources = listOf(SourceFile.kotlin("Source.kt", source))
-            compilerPluginRegistrars = listOf(<YourPlugin>Registrar())
-            inheritClassPath = true
-            jvmTarget = "21"
-            messageOutputStream = System.out
-            if (dumpIr) kotlincArguments = listOf("-Xphases-to-dump-after=IrVerification")
-        }.compile()
-
-    fun JvmCompilationResult.shouldCompileOk(): JvmCompilationResult {
-        if (exitCode != KotlinCompilation.ExitCode.OK) {
-            throw AssertionError("Compilation failed:\n$messages")
-        }
-        return this
-    }
-
-    fun JvmCompilationResult.loadTopLevelField(
-        name: String,
-        pkg: String? = null,
-    ): Any? {
-        val className = if (pkg != null) "$pkg.SourceKt" else "SourceKt"
-        return classLoader.loadClass(className)
-            .getDeclaredField(name)
-            .also { it.isAccessible = true }
-            .get(null)
-    }
-})
-```
-
-### 正常系テスト
-
-コンパイル成功を検証し、リフレクションで変換結果の値を取得する:
-
-```kotlin
-test("default value is captured") {
-    val result = compile("""
-        package com.example.test
-        import <your-package>.runtime.<yourFunction>
-        fun target(x: String = "hello") {}
-        val v = <yourFunction><String>(::target, "x")
-    """.trimIndent())
-
-    result.shouldCompileOk()
-    result.loadTopLevelField("v", pkg = "com.example.test") shouldBe "hello"
-}
-```
+テストカテゴリ:
+1. **正常系** — 変換が正しく適用されるケース
+2. **エラー系** — コンパイルエラーが期待されるケース (`ExitCode.COMPILATION_ERROR`)
+3. **エッジケース** — 型バリエーション、ネスト、複数パラメータ等
 
 ### エラー系テスト
 
@@ -80,7 +37,7 @@ test("non-existent function causes compile error") {
 }
 ```
 
-### 複数テストの assertSoftly
+### 複数アサーションの assertSoftly
 
 関連する複数アサーションをまとめて検証:
 
@@ -97,83 +54,24 @@ test("multiple parameters") {
 
 ### IR ダンプによるデバッグ
 
-変換結果の IR を確認したい場合、`dumpIr = true` を渡す:
-
-```kotlin
-test("debug IR output") {
-    compile("""...""", dumpIr = true).shouldCompileOk()
-    // stdout に IR ダンプが出力される
-}
-```
+変換結果の IR を確認したい場合、`compile(source, dumpIr = true)` を使う
+(`-Xphases-to-dump-after=IrVerification` が付与され、stdout に IR がダンプされる)。
 
 ## Integration Test
 
 実際の Gradle プロジェクトとして compiler plugin を適用し、エンドツーエンドで検証する。
+**build ファイルと Main.kt の完全なコードは example の実ファイルが SSoT**:
 
-### test-jvm (JVM 単体)
+| モジュール | 実ファイル |
+|---|---|
+| test-jvm (JVM 単体) | `example/integration-test/test-jvm/build.gradle.kts` + `src/main/kotlin/.../testapp/Main.kt` |
+| test-kmp (KMP: JVM + JS) | `example/integration-test/test-kmp/build.gradle.kts` + `src/commonMain/kotlin/.../testapp/Main.kt` |
 
-```kotlin
-// integration-test/test-jvm/build.gradle.kts
-plugins {
-    id("buildsrc.convention.kotlin-jvm")
-    application
-}
+### 設計ポイント
 
-dependencies {
-    implementation(project(":runtime"))
-    kotlinCompilerPluginClasspath(project(":compiler-plugin"))
-}
-
-application {
-    mainClass = "<your-package>.testapp.MainKt"
-}
-```
-
-### test-kmp (Kotlin Multiplatform)
-
-```kotlin
-// integration-test/test-kmp/build.gradle.kts
-plugins {
-    kotlin("multiplatform")
-}
-
-kotlin {
-    jvm {
-        mainRun {
-            mainClass = "<your-package>.testapp.MainKt"
-        }
-    }
-    js(IR) {
-        nodejs()
-        binaries.executable()
-    }
-
-    sourceSets {
-        commonMain.dependencies {
-            implementation(project(":runtime"))
-        }
-    }
-}
-
-dependencies {
-    kotlinCompilerPluginClasspath(project(":compiler-plugin"))
-}
-```
-
-KMP の integration test では commonMain にテストコードを配置し、各ターゲットで compiler plugin の変換が正しく適用されることを確認する。
-
-### Main.kt
-
-```kotlin
-package <your-package>.testapp
-
-fun main() {
-    // compiler plugin の変換結果を実行時に検証
-    val result = // ... compiler plugin が変換した値
-    check(result == expectedValue) { "Expected $expectedValue, got $result" }
-    println("OK: $result")
-}
-```
+- **test-jvm**: `kotlin-jvm` convention + `application` プラグイン。`kotlinCompilerPluginClasspath(project(":compiler-plugin"))` で compiler plugin を直接適用し、`application { mainClass = ... }` で実行可能にする
+- **test-kmp**: `kotlin("multiplatform")` (JVM + JS)。`kotlinCompilerPluginClasspath` は全ターゲットに適用される。commonMain に runtime 依存とテストコードを配置し、各ターゲットで変換を確認する
+- **Main.kt**: `check()` で実行時に値を検証する。`check()` 失敗はプロセスの非ゼロ終了になるため CI でも検出可能
 
 ### 実行方法
 
@@ -184,5 +82,3 @@ fun main() {
 # KMP (JVM ターゲット)
 ./gradlew :integration-test:test-kmp:jvmRun
 ```
-
-`check()` が失敗するとプロセスが非ゼロ終了コードで終了するため、CI でも検出可能。

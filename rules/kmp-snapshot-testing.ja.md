@@ -27,6 +27,16 @@ curl -fsSL https://rules.tbsten.me/i | \
 | `core/testing/**/*.kt` | コアテスト基盤 |
 | `ui/core/testing/**/*.kt` | UI テスト基盤 |
 
+### テスト骨格テンプレート
+
+新規テストは AI にボイラープレートをゼロから書かせるのではなく、`docs/test/templates/` の骨格をコピーして TODO を埋めます:
+
+| テンプレート | 用途 |
+|---|---|
+| `templates/__Target__PbtSnapshotTest.kt` | StateHolder / ViewModel の PBT スナップショットテスト |
+| `templates/__Target__LogicPbtSnapshotTest.kt` | ロジック・関数の PBT スナップショットテスト |
+| `templates/__Target__ComposeSnapshotPbt.kt` | Compose UI の PBT スナップショットテスト |
+
 ## インストールされるファイル
 
 | ファイル | 説明 |
@@ -35,6 +45,9 @@ curl -fsSL https://rules.tbsten.me/i | \
 | `docs/test/README.md` | テスト戦略の概要 |
 | `docs/test/snapshot-test.md` | スナップショット PBT テストガイド (状態ホルダー、ロジック) |
 | `docs/test/compose-snapshot-test.md` | Compose UI スナップショットテストガイド |
+| `docs/test/templates/*.kt` | テスト骨格テンプレート (コピーして TODO を埋める) |
+
+> **注意:** 再インストールするとインストールされるファイルは上書きされます。`docs/test/` 以下へのローカルなカスタマイズも上書きされる点に注意してください。
 
 ## 関連
 

@@ -5,6 +5,8 @@
 ```
 core/testing/snapshot/          # 値・StateHolder・ロジック PBT テスト基盤
 ├── ProjectConfig.kt            # Kotest 設定 (Dispatchers, PBT 反復数, レポーター)
+├── core/
+│   └── PrintOnlyDebug.kt       # デバッグ時のみ出力するログヘルパー
 ├── snapshot/
 │   ├── ShouldMatchSnapshot.kt  # shouldMatchSnapshot() — 値スナップショット
 │   ├── SnapshotSpec.kt         # FreeSpec 基底クラス

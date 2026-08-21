@@ -9,5 +9,5 @@ dependencies {
 }
 
 application {
-    mainClass = "<your-package>.testapp.MainKt"
+    mainClass = "com.example.compilerpluginsetup.testapp.MainKt"
 }

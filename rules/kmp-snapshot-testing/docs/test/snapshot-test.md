@@ -36,43 +36,8 @@ listOf(
 
 ランダムな入力 x アクション列の組み合わせで状態遷移を網羅テストする。
 
-```kt
-class SomeViewModelPbtSnapshotTest :
-    StateHolderSnapshotPbtSpec1<SomeViewModel, suspend () -> List<SomeData>>(
-        // 1. 入力値の Arb を作成 (ラベル付き)
-        {
-            Arb.suspendFunction(returns = Arb.list(Arb.someData()))
-                .withSuspendFunctionLabel()
-        },
-        // 2. テスト対象の公開メソッドを action として登録
-        actions = {
-            "reloadInitial" { reloadInitial() }
-            "refresh" { refresh() }
-        },
-        // 3. doSnapshot でテスト対象を構築し、状態を登録
-        doSnapshot = { loadFn ->
-            val loader = SomeLoaderImpl(
-                someUseCase = { loadFn() },
-                simpleLoaderFactory = SimpleLoaderFactory.Default,
-            ).forTest()
-            val handleError = HandleErrorForTest()
-            val navigator = TestSomeNavigator()
-
-            SomeViewModel(
-                someLoader = loader,
-                navigator = navigator,
-                handleError = handleError,
-            ).also {
-                // StateFlow は stateFlow で登録 (全遷移を記録)
-                stateFlow("loadState") { it.loadState }
-                // 非 Flow の値は state で登録 (アクション実行後のスナップショット)
-                state("logEntries") { loader.logEntries.toList() }
-                state("illegalStateTransitions") { loader.illegalStateTransitions.toList() }
-                state("handleError.errors") { handleError.errors }
-            }
-        },
-    )
-```
+新規作成時は [templates/\_\_Target\_\_PbtSnapshotTest.kt](./templates/__Target__PbtSnapshotTest.kt)
+をコピーして TODO を埋める (骨格をゼロから書かない)。
 
 **ポイント**:
 
@@ -112,15 +77,8 @@ class SomeLoaderPbtSnapshotTest :
 StateHolder でも Compose でもないロジック・関数の出力をランダム入力でスナップショットする。
 UseCase・Cache・ユーティリティ関数などの純粋なロジックに使う。
 
-```kt
-class MyUseCasePbtSnapshotTest : LogicSnapshotPbtSpec1<String>(
-    { Arb.basicString().withLabel { it } },
-    doSnapshot = { input ->
-        val result = runCatching { MyUseCaseImpl()(input) }
-        output("result") { result }
-    },
-)
-```
+新規作成時は [templates/\_\_Target\_\_LogicPbtSnapshotTest.kt](./templates/__Target__LogicPbtSnapshotTest.kt)
+をコピーして TODO を埋める (骨格をゼロから書かない)。
 
 **ポイント**:
 
