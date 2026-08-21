@@ -32,6 +32,7 @@ Drag to pan and wheel to zoom; zooming out triggers **semantic zoom**, dropping 
 whole chain stays readable. Clicking an epic label folds that group into a single node and reroutes
 its dependency edges. The graph alone can be exported as SVG or PNG — and Shift-clicking several
 tickets exports **a view with only those lifted out of the rest** (see below).
+A 全画面 (fullscreen) button expands the graph alone to fill the viewport; press it again or Esc to return.
 
 Two things are designed to be unmissable: the 🙋 hexagon (waiting on a human) and the gold
 `NEXT n` flag (the next move).
@@ -60,21 +61,22 @@ detail panel: the question and the answer.
 
 **Shift-click to select several tickets.** It works the same in the graph and in the kanban; a plain
 click still selects exactly one.
+The selection and view filters are kept in the URL query (`?sel=…`), so copying the URL shares the same view.
 
 - While more than one is selected, the detail panel becomes **a list of the selection**. Clicking a
   row drills into that single ticket; ✕ drops it from the selection
 - With a selection active, `SVG` / `PNG` exports **the whole graph with only the selected tickets
-  lifted out**: everything else sinks to a faint wash, and only edges whose *both* endpoints are
-  selected stay bold
+  lifted out**: everything except the selection and its direct neighbours sinks to a faint wash,
+  and the edges touching a selected ticket — even with only one selected endpoint — stay bold
 
 Pasting the entire graph leaves the reader guessing which part you mean. Select the few tickets that
 matter and the exported figure **drops straight into a PR or issue description**. It keeps the full
 graph rather than cropping so the reader still sees where those tickets sit in the whole.
 
-Highlighting runs in three tiers: **what you selected stays full strength, its immediate neighbours
-sit at an intermediate wash, everything else sinks.** Hovering lights the graph by the same rule.
-Neighbours are kept because dropping them loses what a ticket connects to; they are not brought to
-full strength because then the outline would be the only clue as to which ones you actually picked.
+Highlighting runs in two tiers: **what you selected and its immediate neighbours (upstream and
+downstream) stay full strength, everything else sinks.** Hovering lights the graph by the same rule.
+Neighbours are kept because dropping them loses what a ticket connects to; the coin-coloured
+outline and the bold edges still mark which ones you actually picked.
 
 It does not walk the dependency edges to light the whole connected component — in a single-file
 stack that would light everything from one click, leaving nothing to narrow down.
