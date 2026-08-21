@@ -1014,6 +1014,7 @@ function render() {
   });
   els.side.innerHTML = detailMarkup();
   els.btnChildren.classList.toggle('on', S.expanded);
+  syncUrl();                                  /* 表示状態を URL に反映（履歴は汚さない） */
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -1080,6 +1081,7 @@ function toggleFullMap(on) {
   els.mapCard.classList.toggle('map-full', next);
   els.btnFull.classList.toggle('on', next);
   measure(true);   /* パネルの大きさが変わるので全体を出し直す */
+  syncUrl();
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -1161,11 +1163,53 @@ function select(id, from, additive) {
   }
 }
 
+/* ---- 表示状態と URL の同期 ------------------------------------------------
+   選択とフィルターを query parameter に持ち、URL をコピーすれば同じ表示のまま共有できる。
+   値は空白区切り（URL 上は + に見える）。カンマ区切りで手書きしても読める。
+
+     sel      … 選択中の item id（選択順）
+     hide     … チップで非表示にした status id
+     collapse … 畳んだカンバン列の status id。既定と違うときだけ付く（空 = 全部展開）
+     full     … 1 なら図だけの全画面
+
+   同期は replaceState で行い、履歴は汚さない。location.search / URLSearchParams は
+   protocol に依存しないので file:// でも動くが、replaceState を拒む環境に備えて
+   失敗は黙って握りつぶす（URL 共有ができないだけで、ボード自体は普通に使える）。
+   知らない id はロード時に捨てるので、古い URL を開いても壊れない。 */
+const DEFAULT_COLLAPSED = STATUSES.filter(s => s.collapsedByDefault).map(s => s.id).sort().join(' ');
+const isStatusId = id => STATUSES.some(s => s.id === id);
+function syncUrl() {
+  try {
+    const p = new URLSearchParams(location.search);   /* 知らないパラメータは残す */
+    const put = (k, v) => { if (v) p.set(k, v); else p.delete(k); };
+    put('sel', S.sel.join(' '));
+    put('hide', Object.keys(S.hidden).filter(k => S.hidden[k]).join(' '));
+    const col = Object.keys(S.collapsed).filter(k => S.collapsed[k]).sort().join(' ');
+    if (col === DEFAULT_COLLAPSED) p.delete('collapse'); else p.set('collapse', col);
+    put('full', S.fullMap ? '1' : '');
+    const qs = p.toString();
+    history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
+  } catch { /* 書けなくても機能はそのまま */ }
+}
+function restoreFromUrl() {
+  const out = { full:false };
+  try {
+    const p = new URLSearchParams(location.search);
+    const ids = k => (p.get(k) || '').split(/[\s,]+/).filter(Boolean);
+    if (p.has('sel')) S.sel = ids('sel').filter(id => byId[id]);
+    if (p.has('hide')) S.hidden = Object.fromEntries(ids('hide').filter(isStatusId).map(id => [id, true]));
+    if (p.has('collapse')) S.collapsed = Object.fromEntries(ids('collapse').filter(isStatusId).map(id => [id, true]));
+    out.full = p.get('full') === '1';
+  } catch { /* パースに失敗したら既定の表示で開く */ }
+  return out;
+}
+
 /* ══════════════════════════════════════════════════════════════════════════
    11. 初期化とイベント（すべて委譲）
    ══════════════════════════════════════════════════════════════════════════ */
 function init() {
   document.title = META.title || 'status board';
+  const fromUrl = restoreFromUrl();          /* 選択・フィルターを URL から復元してから描く */
   document.getElementById('app').innerHTML = shell();
   els = {
     pane:document.getElementById('pane'),
@@ -1180,6 +1224,7 @@ function init() {
     btnChildren:document.getElementById('btn-children')
   };
   render();
+  if (fromUrl.full) toggleFullMap(true);
 
   /* --- 図: ホバー --- */
   els.svg.addEventListener('mouseover', e => {
@@ -1403,6 +1448,9 @@ function __verify() {
       const outside = nodesOf().filter(n => n.dataset.node !== first.id && !sets1.near.has(n.dataset.node));
       check(!outside.length || outside.every(n => Number(n.getAttribute('opacity')) < 1),
             '選択しても無関係なノードが薄くならない');
+      /* 選択は URL に入る（復元側はリロードが要るので E2E で見る） */
+      check(new URLSearchParams(location.search).get('sel') === first.id,
+            '選択が URL の ?sel= に反映されない');
     }
 
     /* --- 複数選択 --- */

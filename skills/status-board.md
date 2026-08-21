@@ -61,6 +61,7 @@ detail panel: the question and the answer.
 
 **Shift-click to select several tickets.** It works the same in the graph and in the kanban; a plain
 click still selects exactly one.
+The selection and view filters are kept in the URL query (`?sel=…`), so copying the URL shares the same view.
 
 - While more than one is selected, the detail panel becomes **a list of the selection**. Clicking a
   row drills into that single ticket; ✕ drops it from the selection
