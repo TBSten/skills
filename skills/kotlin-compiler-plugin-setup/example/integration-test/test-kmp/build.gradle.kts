@@ -5,7 +5,7 @@ plugins {
 kotlin {
     jvm {
         mainRun {
-            mainClass = "<your-package>.testapp.MainKt"
+            mainClass = "com.example.compilerpluginsetup.testapp.MainKt"
         }
     }
     js(IR) {

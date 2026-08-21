@@ -42,127 +42,67 @@ Kotlin Compiler Plugin のマルチモジュールプロジェクトを一式セ
 
 ## セットアップ手順
 
-### Step 1: プロジェクトルートの作成
+### Step 1: scaffold script の実行
 
-`settings.gradle.kts` を作成する。`example/settings.gradle.kts` を参考にプロジェクト名とモジュール構成を設定。
+`scripts/scaffold.sh` がプロジェクト一式 (build ファイル + Kotlin ソース skeleton) を生成する。
+**script を読解・書き換え・再実装せず、そのまま実行する。**
+
+```bash
+bash <skill-dir>/scripts/scaffold.sh \
+  --dest <project-root> \
+  --name <project-name> \
+  --group-id <group-id> \
+  --plugin-id <plugin-id> \
+  --kotlin-version <kotlin-version>
+```
+
+オプション (詳細は `scaffold.sh --help`):
+
+| オプション | 説明 |
+|---|---|
+| `--dest` / `--name` / `--group-id` | 必須。生成先 / rootProject.name (kebab-case) / Maven groupId |
+| `--plugin-id` | compiler plugin ID (default: `--group-id`) |
+| `--package` | Kotlin パッケージ (default: `--group-id` から `-` を除去) |
+| `--kotlin-version` | Kotlin バージョン (default: example の値) |
+| `--skip-gradle-plugin` / `--skip-integration-test` / `--skip-test` | 確認事項 4 でスコープを絞った場合に使用 |
+| `--dry-run` | 生成予定一覧のみ表示 |
+| `--force` | 既存ファイルを上書き (デフォルトでは上書きしない) |
+
+script は `example/` (実パッケージ `com.example.compilerpluginsetup` + `Example` クラス prefix で書かれた skeleton) をコピーし、`--name` から導出した PascalCase prefix とパッケージ・ID 群に置換・rename する。生成される構成:
 
 ```
 <project-root>/
-├── buildSrc/
-├── compiler-plugin/
-├── gradle-plugin/
-├── runtime/
+├── buildSrc/                  # convention plugins (kotlin-jvm)
+├── compiler-plugin/           # 登録クラス群 + ExampleCompilerTest (kctfork + Kotest)
+├── gradle-plugin/             # KotlinCompilerPluginSupportPlugin
+├── runtime/                   # KMP API 宣言用モジュール
 ├── integration-test/
-│   ├── test-jvm/          # JVM 単体の E2E テスト
-│   └── test-kmp/          # KMP (JVM + JS) の E2E テスト
+│   ├── test-jvm/              # JVM 単体の E2E テスト (Main.kt)
+│   └── test-kmp/              # KMP (JVM + JS) の E2E テスト (Main.kt)
 ├── gradle/libs.versions.toml
 └── settings.gradle.kts
 ```
 
-### Step 2: Version Catalog の作成
+### Step 2: 生成結果のレビュー
 
-`gradle/libs.versions.toml` を作成する。`example/libs.versions.toml` をベースに、以下の依存を含める:
+script の stdout (末尾 1 行の JSON を含む) と生成ファイルを確認する:
 
-| ライブラリ | 用途 |
+1. `settings.gradle.kts` の `rootProject.name` とモジュール構成が意図どおりか
+2. `CommandLineProcessor.pluginId` / `gradlePlugin { create(...) { id = ... } }` が指定した Plugin ID か
+3. `gradle/libs.versions.toml` の Kotlin バージョン
+4. 置換漏れが無いか: `grep -rn "compilerpluginsetup\|Example[A-Z]" <project-root>` がヒットしないこと (script も自動チェック済み)
+
+各生成ファイルの設計解説は references を参照:
+
+| ファイル群 | 解説 |
 |---|---|
-| `kotlin-compiler-embeddable` | Compiler API (compileOnly) |
-| `auto-service-annotations` | META-INF/services 自動生成 |
-| `auto-service-ksp` | AutoService の KSP プロセッサ |
-| `kctfork-core` | KotlinCompilation テスト |
-| `kotest-runner-junit5` | テストランナー |
-| `kotest-assertions-core` | テストアサーション |
-
-### Step 3: buildSrc Convention Plugins の作成
-
-`example/buildSrc/` 内のファイルをコピーし、プロジェクト固有の値を置換する。
-
-生成されるファイル:
-- `buildSrc/build.gradle.kts` — kotlin-dsl プラグイン、Kotlin Gradle Plugin 依存
-- `buildSrc/settings.gradle.kts` — 親の version catalog を再利用
-- `buildSrc/src/main/kotlin/kotlin-jvm.gradle.kts` — JVM toolchain、JUnit5、テストログ設定
+| CommandLineProcessor / Registrar / IrExtension / FirExtensionRegistrar | references/plugin-registration.md |
+| ExampleGradlePlugin (KotlinCompilerPluginSupportPlugin) | references/gradle-plugin-impl.md |
+| ExampleCompilerTest (compile ヘルパー) / integration-test | references/testing-patterns.md |
 
 publish-convention が必要な場合は references/publish-convention.md を参照。
 
-### Step 4: compiler-plugin モジュールの作成
-
-`example/compiler-plugin/build.gradle.kts` をベースに作成する。
-
-重要な設定:
-- `kotlin-compiler-embeddable` は **compileOnly** (コンパイラ本体が提供)
-- `auto-service-annotations` + `auto-service-ksp` で META-INF/services を自動生成
-- `optIn` で `ExperimentalCompilerApi` と `UnsafeDuringIrConstructionAPI` を有効化
-
-#### Plugin 登録ファイルの作成
-
-references/plugin-registration.md を参照して以下を作成:
-
-1. **CommandLineProcessor** — Plugin ID を宣言。`@AutoService(CommandLineProcessor::class)` で自動登録
-2. **CompilerPluginRegistrar** — FIR / IR extension を登録。`supportsK2 = true` を設定
-
-### Step 5: runtime モジュールの作成
-
-`example/runtime/build.gradle.kts` をベースに作成。compiler plugin が提供する API の宣言をここに配置する。
-
-- Kotlin Multiplatform で構成 (JVM, JS, Wasm, Native ターゲット)
-- 関数シグネチャのみ宣言し、実装は compiler plugin が IR 変換で差し替える
-
-### Step 6: gradle-plugin モジュールの作成
-
-`example/gradle-plugin/build.gradle.kts` をベースに作成。
-
-重要な設定:
-- `java-gradle-plugin` プラグインを適用
-- `gradlePlugin { plugins { create(...) } }` でプラグイン ID と実装クラスを登録
-- compiler-plugin と runtime への依存を設定
-- `KotlinCompilerPluginSupportPlugin` を実装して compiler plugin artifact を提供
-
-references/gradle-plugin-impl.md にGradle plugin の実装パターンを記載。
-
-### Step 7: Unit Test のセットアップ
-
-`compiler-plugin/src/test/` に kctfork (KotlinCompilation) を使ったテストを作成する。
-
-references/testing-patterns.md を参照して以下のヘルパーを用意:
-
-```kotlin
-fun compile(source: String): JvmCompilationResult =
-    KotlinCompilation().apply {
-        sources = listOf(SourceFile.kotlin("Source.kt", source))
-        compilerPluginRegistrars = listOf(<YourPluginRegistrar>())
-        inheritClassPath = true
-        jvmTarget = "<java-version>"
-        messageOutputStream = System.out
-    }.compile()
-```
-
-テストカテゴリ:
-1. **正常系** — 変換が正しく適用されるケース
-2. **エラー系** — コンパイルエラーが期待されるケース (`ExitCode.COMPILATION_ERROR`)
-3. **エッジケース** — 型バリエーション、ネスト、複数パラメータ等
-
-### Step 8: Integration Test のセットアップ
-
-2 種類の integration test モジュールを用意する:
-
-#### test-jvm (JVM 単体)
-
-`example/integration-test/test-jvm/build.gradle.kts` をベースに作成。
-
-- `kotlin-jvm` + `application` プラグインで構成
-- `kotlinCompilerPluginClasspath(project(":compiler-plugin"))` で compiler plugin を直接指定
-- `application { mainClass = ... }` で `main()` 関数を実行可能にする
-
-#### test-kmp (Kotlin Multiplatform)
-
-`example/integration-test/test-kmp/build.gradle.kts` をベースに作成。
-
-- `kotlin("multiplatform")` で構成 (JVM + JS ターゲット)
-- `kotlinCompilerPluginClasspath(project(":compiler-plugin"))` で全ターゲットに compiler plugin を適用
-- commonMain に runtime 依存を配置し、各ターゲットで動作確認
-
-両モジュールとも `check()` や `assert()` で実行時に値を検証する。
-
-### Step 9: ビルド確認
+### Step 3: ビルド確認
 
 ```bash
 ./gradlew jvmTest
@@ -170,7 +110,7 @@ fun compile(source: String): JvmCompilationResult =
 ./gradlew :integration-test:test-kmp:jvmRun
 ```
 
-### Step 10: Multi-Kotlin Version Support (上級、任意)
+### Step 4: Multi-Kotlin Version Support (上級、任意)
 
 1 つの JAR で複数の Kotlin バージョン (例: 2.0.0 〜 2.4.x) をサポートしたい場合に実施する。
 
@@ -181,7 +121,7 @@ fun compile(source: String): JvmCompilationResult =
   - **B: Compat Module Layer (metro スタイル)** — ServiceLoader で実装を動的選択。K2+ のパッチ差異の吸収に最適
 
 詳細なセットアップ手順と全コード例は `references/multi-version-setup.md` を参照。
-バージョンの追加・削除の継続的な作業は `add-support-kotlin-version` スキルを使用する。
+バージョンの追加・削除の継続的な作業は `kotlin-compiler-plugin-dev` スキル (Step 6) を使用する。
 
 ## セットアップ完了メッセージ
 
@@ -207,7 +147,7 @@ fun compile(source: String): JvmCompilationResult =
 - integration-test: [SUCCESS / FAILED]
 
 ### 次のステップ
-1. compiler-plugin/src/main/kotlin/ に FIR checker と IR transformer を実装
+1. compiler-plugin/src/main/kotlin/ の <Prefix>Transformer (no-op skeleton) に IR 変換を実装、必要なら <Prefix>FirExtensionRegistrar に FIR checker を登録
 2. runtime/src/commonMain/kotlin/ に公開 API を宣言
-3. compiler-plugin/src/test/ にテストケースを追加
+3. compiler-plugin/src/test/ の <Prefix>CompilerTest にテストケースを追加
 ```

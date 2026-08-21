@@ -11,9 +11,9 @@ dependencies {
 
 gradlePlugin {
     plugins {
-        create("<plugin-short-name>") {
-            id = "<your-plugin-id>"
-            implementationClass = "<your-package>.gradle.<YourGradlePlugin>"
+        create("examplePlugin") {
+            id = "com.example.compilerpluginsetup"
+            implementationClass = "com.example.compilerpluginsetup.gradle.ExampleGradlePlugin"
         }
     }
 }

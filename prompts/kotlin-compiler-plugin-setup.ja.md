@@ -15,19 +15,17 @@ https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/prompts/kotlin-c
 ## What it does
 
 - セットアップ開始前にプロジェクト名・Group ID・Plugin ID・セットアップ範囲・Kotlin/Java バージョンを確認
-- マルチモジュールのプロジェクトルート (`settings.gradle.kts`) と version catalog (`gradle/libs.versions.toml`) を作成
-- buildSrc convention plugins (kotlin-jvm、JUnit5 + テストログ設定) をセットアップ
-- AutoService + KSP 登録付きの compiler-plugin モジュールを作成 (CommandLineProcessor / CompilerPluginRegistrar、`supportsK2 = true`)
-- runtime モジュール (Kotlin Multiplatform API 宣言) と gradle-plugin モジュール (KotlinCompilerPluginSupportPlugin) を作成
-- kctfork (インメモリ KotlinCompilation) + Kotest のユニットテストと、`kotlinCompilerPluginClasspath` を使う JVM/KMP インテグレーションテストモジュールをセットアップ
+- リポジトリを sparse clone し、`scripts/scaffold.sh` をそのまま実行 (手動転記なし)。`example/` の skeleton から、settings + version catalog、buildSrc convention plugins、AutoService + KSP 登録クラス群 (CommandLineProcessor / CompilerPluginRegistrar、`supportsK2 = true`、no-op IR transformer、FIR registrar) 付き compiler-plugin、KMP runtime、gradle-plugin ラッパー (KotlinCompilerPluginSupportPlugin)、kctfork + Kotest のユニットテスト、`kotlinCompilerPluginClasspath` を使う JVM/KMP インテグレーションテストを、名前・パッケージ・ID を全置換した状態で一括生成
+- 生成結果をレビュー (Plugin ID・パッケージ・バージョン・置換漏れ)
 - ビルド確認 (`jvmTest` + インテグレーションテスト実行) を行い、必要に応じて Multi-Kotlin Version Support の戦略も案内
 
 ## Referenced files
 
 プロンプトはローカルのスキルインストールの代わりに、以下を GitHub から取得する:
 
-- [skills/kotlin-compiler-plugin-setup/example/](https://github.com/TBSten/skills/tree/main/skills/kotlin-compiler-plugin-setup/example) — Gradle ビルドファイルのテンプレート (settings、version catalog、buildSrc、各モジュール)
-- [skills/kotlin-compiler-plugin-setup/references/](https://github.com/TBSten/skills/tree/main/skills/kotlin-compiler-plugin-setup/references) — plugin 登録、Gradle plugin 実装、テストパターン、publish convention、multi-version セットアップ
+- [skills/kotlin-compiler-plugin-setup/scripts/scaffold.sh](https://github.com/TBSten/skills/blob/main/skills/kotlin-compiler-plugin-setup/scripts/scaffold.sh) — sparse clone 後にローカル実行する scaffold script
+- [skills/kotlin-compiler-plugin-setup/example/](https://github.com/TBSten/skills/tree/main/skills/kotlin-compiler-plugin-setup/example) — 完全なプロジェクト skeleton (Gradle ビルドファイル + `Example` prefix の Kotlin ソース)
+- [skills/kotlin-compiler-plugin-setup/references/](https://github.com/TBSten/skills/tree/main/skills/kotlin-compiler-plugin-setup/references) — plugin 登録、Gradle plugin 実装、テストパターン、publish convention、multi-version セットアップの設計解説
 
 ## Related
 

@@ -47,10 +47,20 @@
 | `references/reflection-shim.md` | 小さな差分を吸収する reflection shim |
 | `references/troubleshooting.md` | 失敗パターン別の原因と対処 |
 
+## 同梱アセット
+
+複数バージョン対応のテスト基盤が無い対象プロジェクトへそのままコピーする実ファイル (スキルは同等品を手書きせず、これらをそのまま配布する):
+
+| ファイル | コピー先 | 内容 |
+|---|---|---|
+| `assets/scripts/compiler-plugin-test.sh` | `scripts/` (+ `chmod +x`) | バージョン別テスト実行 script。`--all` で SSOT 全バージョンをループし失敗一覧を出力 |
+| `assets/scripts/supported-kotlin-versions.txt` | `scripts/` | サポート Kotlin バージョンの SSOT テンプレート (プロジェクトに合わせて編集) |
+| `assets/workflows/compiler-plugin-test.yml` | `.github/workflows/` | SSOT 駆動 dynamic CI matrix (resolve + test job) |
+
 ## 前提条件
 
 - Kotlin プロジェクトと compiler plugin のソースコード（または作成計画）
-- サポートバージョン追加・削除を行う場合は、複数バージョン対応基盤 (compat module layer または source set separation) が既に存在すること。基盤の初期セットアップは `kotlin-compiler-plugin-setup` の Step 10 を参照
+- サポートバージョン追加・削除を行う場合は、複数バージョン対応基盤 (compat module layer または source set separation) が既に存在すること。基盤の初期セットアップは `kotlin-compiler-plugin-setup` の Step 4 (Multi-Kotlin Version Support) を参照
 - 任意: deepwiki MCP サーバー（設定するとソースコード探索が強化される）
 
 ## インストール

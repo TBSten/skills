@@ -1,0 +1,60 @@
+# Compiler plugin test matrix driven by the SSOT (scripts/supported-kotlin-versions.txt).
+#
+# Copy to <project-root>/.github/workflows/compiler-plugin-test.yml, or merge the two jobs
+# below into an existing pull-request.yml.
+#
+# Requires in the target project (both distributed as assets of the
+# kotlin-compiler-plugin-dev skill):
+#   - scripts/supported-kotlin-versions.txt   (SSOT)
+#   - scripts/compiler-plugin-test.sh         (chmod +x)
+name: Compiler Plugin Test
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ----------------------------------------------------------
+  # 1. SSOT → JSON 配列 (matrix 入力用)
+  # ----------------------------------------------------------
+  resolve-supported-kotlin-versions:
+    name: Resolve Kotlin compat versions
+    runs-on: ubuntu-latest
+    outputs:
+      list: ${{ steps.read.outputs.list }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: read
+        shell: bash
+        run: |
+          # Drop blank lines and comments, then turn the remaining lines into a JSON array.
+          list=$(grep -vE '^[[:space:]]*(#|$)' scripts/supported-kotlin-versions.txt | jq -R . | jq -sc .)
+          echo "list=$list" >> "$GITHUB_OUTPUT"
+          echo "Supported Kotlin versions: $list"
+
+  # ----------------------------------------------------------
+  # 2. 全 Kotlin バージョン × compiler-plugin テスト (dynamic matrix)
+  # ----------------------------------------------------------
+  compiler-plugin-test:
+    needs: resolve-supported-kotlin-versions
+    strategy:
+      fail-fast: false        # 必須 — RC/Beta が落ちても stable の結果を視認できる
+      matrix:
+        kotlin: ${{ fromJSON(needs.resolve-supported-kotlin-versions.outputs.list) }}
+    runs-on: ubuntu-latest
+    name: Compiler Plugin Kotlin ${{ matrix.kotlin }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v5
+      - name: Test compiler-plugin against Kotlin ${{ matrix.kotlin }}
+        run: ./scripts/compiler-plugin-test.sh "${{ matrix.kotlin }}"

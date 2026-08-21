@@ -22,4 +22,4 @@ include(":gradle-plugin")
 include(":integration-test:test-jvm")
 include(":integration-test:test-kmp")
 
-rootProject.name = "<project-name>"
+rootProject.name = "example-plugin"

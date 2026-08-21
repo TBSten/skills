@@ -1,7 +1,7 @@
 # Add/Remove Supported Kotlin Version — Workflow
 
 Kotlin Compiler Plugin のサポート対象 Kotlin バージョンを追加・削除するための詳細ワークフロー。
-本ワークフローはプロジェクトに既に複数バージョン対応基盤（compat module layer または source set separation）が存在することを前提とする。基盤の初期セットアップは `kotlin-compiler-plugin-setup` の Step 10 を参照。
+本ワークフローはプロジェクトに既に複数バージョン対応基盤（compat module layer または source set separation）が存在することを前提とする。基盤の初期セットアップは `kotlin-compiler-plugin-setup` の Step 4 (Multi-Kotlin Version Support) を参照。
 
 `kotlin-compiler-plugin-dev` の Step 6 から本ファイルが参照される。
 
@@ -114,42 +114,13 @@ CI matrix と test script の **唯一のソース**。 ここに 1 行追加す
 
 ### 2-2: CI Matrix (dynamic, fromJSON)
 
-`.github/workflows/pull-request.yml` の `compiler-plugin-test` job は SSOT を JSON 配列に変換して matrix に渡す:
-
-```yaml
-resolve-supported-kotlin-versions:
-  runs-on: ubuntu-latest
-  outputs:
-    list: ${{ steps.read.outputs.list }}
-  steps:
-    - uses: actions/checkout@v4
-    - id: read
-      shell: bash
-      run: |
-        # Drop blank lines and comments, then turn the remaining lines into a JSON array.
-        list=$(grep -vE '^[[:space:]]*(#|$)' scripts/supported-kotlin-versions.txt | jq -R . | jq -sc .)
-        echo "list=$list" >> "$GITHUB_OUTPUT"
-
-compiler-plugin-test:
-  needs: resolve-supported-kotlin-versions
-  strategy:
-    fail-fast: false   # 必須: 一部失敗しても他バージョンの結果を確認
-    matrix:
-      kotlin: ${{ fromJSON(needs.resolve-supported-kotlin-versions.outputs.list) }}
-  runs-on: ubuntu-latest
-  steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-java@v4
-      with: { java-version: '17', distribution: 'temurin' }
-    - uses: gradle/actions/setup-gradle@v5
-    - run: ./scripts/compiler-plugin-test.sh "${{ matrix.kotlin }}"
-```
+CI workflow は SSOT を JSON 配列に変換して matrix に渡す (`resolve-supported-kotlin-versions` job → `compiler-plugin-test` job)。**テンプレート実ファイルは [`../assets/workflows/compiler-plugin-test.yml`](../assets/workflows/compiler-plugin-test.yml)** — 対象プロジェクトに無ければ `.github/workflows/compiler-plugin-test.yml` にコピーする (既存 `pull-request.yml` へのマージも可)。
 
 **ポイント**:
 - `fail-fast: false` 必須。 Beta / RC が失敗しても stable の結果を視認できるようにする
 - `setup-java` の `java-version: 17` は **CI runner JVM の話**。 kctfork が新 JDK の version string をパースできない場合は Gradle 側で `javaToolchains.launcherFor { languageVersion.set(JavaLanguageVersion.of(21)) }` を test task に pin する (= 後述 2-3 の Java 21 pin と関係)
 
-完全な YAML テンプレート / per-version test script は `./ci-matrix.md`。
+解説と Gradle 側の設定は `./ci-matrix.md`。
 
 ### 2-3: kctfork バージョンマップ (compat module の test 用)
 
@@ -211,13 +182,11 @@ Step では `sed -i` で `gradle/libs.versions.toml` の `kotlin = "..."` / `com
 # 単体バージョンテスト (compat module + main JVM テスト)
 ./scripts/compiler-plugin-test.sh 2.4.0-Beta2
 
-# 全バージョン (CI 相当)
-for v in $(grep -vE '^[[:space:]]*(#|$)' scripts/supported-kotlin-versions.txt); do
-  ./scripts/compiler-plugin-test.sh "$v" || echo "FAILED: $v"
-done
+# 全バージョン (CI 相当)。失敗バージョン一覧が末尾に出力される
+./scripts/compiler-plugin-test.sh --all
 ```
 
-スクリプトが存在しない場合は CI 相当のコマンドを手動で実行 (`-Ptest.kotlin=X.Y.Z` + `--rerun-tasks`)。
+対象プロジェクトに `scripts/compiler-plugin-test.sh` が無ければ、本 skill の [`../assets/scripts/compiler-plugin-test.sh`](../assets/scripts/compiler-plugin-test.sh) を `<project-root>/scripts/` にコピーして `chmod +x` する (SSOT `scripts/supported-kotlin-versions.txt` も無ければ [`../assets/scripts/supported-kotlin-versions.txt`](../assets/scripts/supported-kotlin-versions.txt) をコピーし、実際のサポートバージョンに合わせて編集する)。**script は読解・書き換え・再実装せず、そのまま実行する。**
 
 ### 失敗パターン → 対応
 
