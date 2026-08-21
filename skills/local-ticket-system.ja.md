@@ -21,6 +21,7 @@ gh skill install tbsten/skills local-ticket-system
 - **ライフサイクル管理** — task/bug: アクティブ → `done/` → `closed/`。chapter: アクティブ → task に分割 → `archived/`。意図的な先送りは `deferred/`
 - **絵文字 prefix タイトル** — チケットタイトル先頭に絵文字 prefix を付与 (例: `🗑️ 不要なコード削除`、`✨ ログイン機能の追加`、`🐛 null pointer in user lookup`) し、一覧でひと目で分類できる
 - **テンプレートベース** — 共通チェックリスト項目付きの統一フォーマット
+- **script による決定的操作** — 同梱 script が決定的な作業 (ディレクトリ作成・連番算出・ステータス移動) を担当し、AI は判断 (種別・絵文字・タイトル・本文) に専念
 - **言語・フレームワーク不問** — どのプロジェクトでも利用可能
 
 ## ディレクトリ構成
@@ -29,6 +30,7 @@ gh skill install tbsten/skills local-ticket-system
 .local/ticket/
 ├── about.md              # 運用ルール
 ├── task-0xx-template.md  # タスクチケットテンプレート
+├── bug-0xx-template.md   # バグチケットテンプレート
 ├── chapter-template.md   # チャプターテンプレート
 ├── task-xxx-*.md         # 作業中のタスクチケット
 ├── bug-xxx-*.md          # 作業中のバグチケット
@@ -38,6 +40,16 @@ gh skill install tbsten/skills local-ticket-system
 ├── archived/             # アーカイブ済みチャプター
 └── deferred/             # 後回しチケット（意図的に将来に先送り）
 ```
+
+## Scripts
+
+決定的な作業は同梱 script が担当する (読解・再実装せずそのまま実行する)。失敗時は stderr に `ERROR:` / `WHY:` / `FIX:` が出力される。
+
+| Script | 用途 |
+|--------|------|
+| `scripts/setup.sh` | 冪等なワンショットセットアップ: `.local/ticket/` + ステータスサブディレクトリの作成、テンプレートのコピー、`.gitignore` への `.local/` 追記 |
+| `scripts/new-ticket.sh <task\|bug\|chapter> <slug>` | 次の連番を算出 (`done/` `closed/` `deferred/` `archived/` も種別ごとに走査) してテンプレートからチケットを作成し、パスを出力 |
+| `scripts/move-ticket.sh <file> <done\|closed\|deferred\|archived>` | チケットのステータス移動。`deferred` 指定時は理由ブロック雛形 (実行日付き) を追記してから移動 |
 
 ## チケット種別
 
@@ -67,11 +79,11 @@ gh skill install tbsten/skills local-ticket-system
 
 ### deferred/ のルール
 
-移動前にチケット内に以下を追記すること:
+`scripts/move-ticket.sh <file> deferred` を実行すると、移動前に以下の雛形 (日付は実行日) がチケット末尾へ自動追記される。移動後に `TODO:` プレースホルダを実際の内容に書き換える:
 
 ```markdown
-**Deferred 理由**: <なぜ後回しにするか>
-**再起票 trigger**: <どういう条件で再着手するか>
+**Deferred 理由**: TODO:DeferredReason
+**再起票 trigger**: TODO:ReopenTrigger
 **Deferred 日付**: YYYY-MM-DD
 ```
 
