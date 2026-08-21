@@ -1,56 +1,65 @@
 ---
 name: operations
 description: >
-  Operational tips for pr-fix-loop — gh CLI prerequisite, dirty-worktree abort, owner/repo
-  derivation, log-fetch timing, rerun blocking conditions, non-interactive rebase, cross-platform
-  stat, commit granularity, and API pagination. The reference for when pr-fix-loop hits an
-  implementation snag in any of Steps 1–7.
+  Operational contract for pr-fix-loop — what the scripts' preflight enforces (gh auth,
+  dirty-worktree abort, owner/repo derivation), plus the judgment-side tips that stay with the
+  AI: log-fetch timing, rerun blocking conditions, non-interactive rebase, cross-platform stat,
+  commit granularity, and why pagination is non-negotiable. The reference for when pr-fix-loop
+  hits an implementation snag in any of Steps 1–7.
 ---
 
 # pr-fix-loop operational tips
 
-## gh CLI is a hard prerequisite
+The mechanics themselves live in `scripts/` — run them as-is (see SKILL.md "Scripts"). This
+document explains the contract they enforce and the operational judgment that remains with you.
 
-This skill assumes `gh` (GitHub CLI) and `git` work locally. Verify auth up front with
-`gh auth status`. On failure, report to the user immediately and abort this pass.
+## Script contract
 
-## Derive owner / repo from origin
+- **stdout**: exactly one line of JSON per invocation (multi-PR scripts emit a JSON array).
+  Everything human-readable goes to **stderr**.
+- **Failure**: non-zero exit with a `what / why / fix` message on stderr. Relay it to the user;
+  it tells you whether to abort the pass or defer one PR.
+- **Idempotent**: safe to re-run after a partial pass (e.g. `rebase-pass.sh` reports `clean`
+  for PRs it already settled; `mark-comment-handled.sh` leaves an already-wrapped comment alone).
+- **`GH_CMD`**: environment variable that substitutes the `gh` binary — used by tests to inject
+  a stub; leave it unset in normal operation.
+- **`PR_FIX_LOOP_RESOLVED_SUMMARY`**: the handled-marker summary text (default `Resolved`);
+  see review-handling.md. Reader (`fetch-pr-state.sh`) and writer (`mark-comment-handled.sh`)
+  share the value via this variable, so overriding it keeps them consistent.
 
-When only a PR list is given, derive owner/repo:
+## Hard prerequisites: gh, git, jq
 
-```bash
-gh repo view --json owner,name -q '.owner.login + "/" + .name'
-```
+Every script's preflight verifies `git` / `gh` / `jq` exist and `gh auth status` passes. On
+failure it exits with the fix instruction (e.g. `gh auth login`) — report to the user and abort
+this pass.
 
-Prefer `origin` on multi-remote repos. Capture it once per session into `$OWNER` / `$REPO` and
-reuse (as GraphQL `-F` variables and REST path segments) — safer than re-deriving.
+## Owner / repo derivation
 
-## When to abort branch checkout
+Scripts derive owner/repo themselves from the current clone (`gh repo view`); prefer running
+them from a clone whose `origin` points at the GitHub repo. Nothing to pass in — a wrong-repo
+result means the working directory is the wrong clone.
+
+## Dirty-worktree abort
 
 Sequentially checking out several PRs churns the local worktree. To avoid touching the user's
-in-progress work, at pass start run `git status -s` and **abort the skill if the worktree is
-dirty**. (A `--force-on-dirty` flag could be added later if needed; unimplemented for now.)
-
-Alternatively, stash small/short-lived work with `git stash push -u -m "pr-fix-loop temp save"`
-before switching branches and `git stash pop` after — but `pop` can conflict, so only do this for
-genuinely short-lived work.
+in-progress work, `fetch-pr-state.sh` and `rebase-pass.sh` **abort while the worktree is dirty**.
+Resolve it before the pass: commit, or stash small/short-lived work with
+`git stash push -u -m "pr-fix-loop temp save"` and `git stash pop` after — but `pop` can
+conflict, so only do this for genuinely short-lived work.
 
 ## Log-fetch timing
 
-`gh run view --log` may not return until the **whole workflow** finishes. Individual job logs come
-back almost immediately via:
-
-```bash
-gh api "/repos/$OWNER/$REPO/actions/jobs/<jobId>/logs"
-```
-
-Completed jobs' logs are fetchable even while other jobs are still `in_progress`.
+`gh run view --log` may not return until the **whole workflow** finishes, so
+`classify-failure.sh` uses the per-job log endpoint instead: completed jobs' logs are fetchable
+even while other jobs are still `in_progress`. If the script fails with "log not available",
+that job hasn't finished writing its log — defer to the next pass.
 
 ## Rerun timing
 
-`gh run rerun --failed` is **blocked while the workflow is in-progress** (`This workflow is already
-running`). In that case, decide "defer to next pass" and skip this PR's transient-failure handling.
-Sleeping and polling burns the loop's token/time budget.
+`gh run rerun --failed` (your action on `kind: "transient"`) is **blocked while the workflow is
+in-progress** (`This workflow is already running`). In that case, decide "defer to next pass"
+and skip this PR's transient-failure handling. Sleeping and polling burns the loop's token/time
+budget.
 
 ## Commit granularity
 
@@ -67,15 +76,15 @@ a repo-policy ban.
 
 ## Cross-platform stat
 
-`stat -f %m` (BSD/macOS) and `stat -c %Y` (GNU/Linux) are incompatible. For the 24h cooldown
-marker's mtime check, use a portable method — python3 (`os.path.getmtime`) or perl
+`stat -f %m` (BSD/macOS) and `stat -c %Y` (GNU/Linux) are incompatible. For the Step 2 24h
+cooldown marker's mtime check, use a portable method — python3 (`os.path.getmtime`) or perl
 (`(stat shift)[9]`). Plain `stat` is environment-dependent and may not work.
 
-## Pagination
+## Pagination (why fetch-pr-state.sh owns the fetch)
 
-GitHub API default page sizes are small:
-
-- REST (`gh api repos/.../issues/<pr>/comments`): 30 by default → `gh api --paginate` for all pages
-- GraphQL `reviewThreads(first: N)`: N per page → paginate with `pageInfo { hasNextPage endCursor }`
-
-Single-call fetches silently drop data on PRs with 50+ threads or 30+ comments.
+GitHub API default page sizes are small: REST issue comments return 30 per page, GraphQL
+`reviewThreads(first: N)` returns N per page. A single-call fetch **silently drops data** on
+PRs with 50+ threads or 30+ comments — a dropped review comment is a maintainer follow-up that
+never gets handled. `fetch-pr-state.sh` pages through both APIs to completion
+(`--paginate` / `pageInfo { hasNextPage endCursor }`); never hand-roll a one-shot fetch in its
+place.
