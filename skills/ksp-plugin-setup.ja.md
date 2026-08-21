@@ -7,6 +7,12 @@ KSP plugin (Symbol Processor) プロジェクトを [cream.kt](https://github.co
 3 モジュール構成・4 層の processor 設計・golden ファイルによるテスト基盤に加え、作った後も構成が
 崩れないようにアーキテクチャルールを生成先に配置する。
 
+機械的な作業 — `example/` のコピー、ソースセットへのディレクトリ再マッピング、全プレースホルダー
+置換、`Greeting*` / `Example*` 系ファイルの rename、rules の配置 — は `scripts/scaffold.sh`
+(`--dry-run` / `--force` / `--skip-*` オプション付き) が決定的に行い、`scripts/verify.sh` が
+4 つのビルド確認をログ保存 (`.local/tmp/`) 付きで実行する。AI エージェントの責務は、入力の確認・
+script の実行・配置ファイルのレビュー・golden 初回記録の確認だけ。
+
 インストール不要の一回限り版は
 [`ksp-plugin-setup` プロンプト](../prompts/ksp-plugin-setup.ja.md) にある。
 

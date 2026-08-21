@@ -19,19 +19,15 @@ https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/prompts/ksp-plug
 ## What it does
 
 - 開始前にプロジェクト名・パッケージ名/Group ID・最初のアノテーション名・セットアップ範囲・Kotlin/KSP バージョンを確認
-- Gradle 基盤を作成: `settings.gradle.kts`、自プロジェクトの version も持つ version catalog、その catalog を共有する included build `buildLogic`、`ksp.incremental=false` を含む `gradle.properties`
-- runtime モジュール (アノテーション宣言のみ・KMP 全ターゲット・`explicitApi()`) と、`-Xcontext-parameters` 付きの JVM only な ksp モジュールを作成
-- processor を root 3 ファイル + `feature/` · `core/` · `options/` · `util/` でスキャフォールド。依存は一方向、context は層ごとに絞る
-- KSP × KMP workaround 付きの `test` モジュールを作成 (kotest の per-target launcher 用に `*Test` の ksp タスクは残す)
-- テスト基盤をコピー: kctfork による e2e コンパイル、facet 形式の Markdown golden、generator 駆動の snapshot matrix、診断の golden、Konsist アーキテクチャテスト
-- GitHub Actions の matrix CI (と Release トリガの publish workflow) を追加
-- path-scoped な `.claude/rules/*.md` を 5 ファイル生成先に配置し、以後もレイヤリングが強制されるようにする
-- ビルドを確認し、golden の初回記録を行う
+- リポジトリを sparse clone して `scripts/scaffold.sh` を実行する。script が `example/` のコピー・ソースセットへのディレクトリ再マッピング・全プレースホルダー置換・`Greeting*` / `Example*` 系の rename・`META-INF/services` の配置・path-scoped な `.claude/rules/*.md` 5 ファイルの配置を決定的に行う (AI が手作業でコピー・置換しない)
+- スキャフォールドされる内容: Gradle 基盤 (SSoT の version catalog、included build `buildLogic`、`ksp.incremental=false`)、runtime モジュール (アノテーション宣言のみ・KMP 全ターゲット)、JVM only の ksp モジュール (root 3 ファイル + `feature/` · `core/` · `options/` · `util/`、依存は一方向)、KSP × KMP workaround 付きの `test` モジュール、kctfork + golden + Konsist のテスト基盤、GitHub Actions matrix CI
+- 配置ファイル一覧とレイヤリングをレビューし、`scripts/verify.sh` (4 つのビルド確認、ログは `.local/tmp/`) を実行して golden の初回記録と中身の確認を行う
 
 ## Referenced files
 
-プロンプトはローカルのスキルインストールの代わりに、以下を GitHub から取得する:
+プロンプトはローカルのスキルインストールの代わりに、以下を GitHub から sparse clone して使う:
 
+- [skills/ksp-plugin-setup/scripts/](https://github.com/TBSten/skills/tree/main/skills/ksp-plugin-setup/scripts) — `scaffold.sh` (コピー / 置換 / rename の仕様の SSoT) と `verify.sh` (ビルド確認)
 - [skills/ksp-plugin-setup/example/](https://github.com/TBSten/skills/tree/main/skills/ksp-plugin-setup/example) — build ファイル、processor 骨組み、テスト基盤、CI workflow
 - [skills/ksp-plugin-setup/references/](https://github.com/TBSten/skills/tree/main/skills/ksp-plugin-setup/references) — ビルド/CI の詳細、processor の設計判断、テスト基盤ガイド
 - [skills/ksp-plugin-setup/assets/rules/](https://github.com/TBSten/skills/tree/main/skills/ksp-plugin-setup/assets/rules) — `.claude/rules/*.md` のテンプレート
