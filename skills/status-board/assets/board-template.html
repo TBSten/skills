@@ -301,7 +301,7 @@ const GYB = 54;   /* 同上。block の起点の手前だけ広くして、上�
 const CY = 206;   /* レーンの中心線 */
 const M  = 28;    /* 図全体の余白 */
 const COMPACT_K = 0.7;  /* この縮尺を下回ると意味的ズームに入る */
-const K_MIN = 0.3, K_MAX = 2.4;
+const K_MIN = 0.001, K_MAX = 2.4;  /* 最小 0.1% まで引ける */
 
 /* ══════════════════════════════════════════════════════════════════════════
    2. ユーティリティ
@@ -399,22 +399,21 @@ function matches(i) {
                (i.children||[]).map(c => c.title).join(' ')].join(' ').toLowerCase();
   return hay.indexOf(q) >= 0;
 }
-/* 点灯は 3 段。hover でも選択でも同じ規則で光らせる。
+/* 点灯は 2 段。hover でも選択でも同じ規則で光らせる。
 
      lit  = 主役。hover 中のノード、または選択したノード     … 1.0
-     near = lit の隣接                                      … NEAR_OP
+     near = lit の隣接（依存元・依存先）                     … 1.0
      それ以外                                               … 0.2
 
    主役だけを 1.0 にして残りを一律 0.2 に沈めると、前後に何が繋がっているのかが
-   読めなくなる。かといって隣接まで 1.0 にすると、書き出した図で「自分が選んだのは
-   どれか」の手がかりが coin 枠だけになる。3 段にして両方を立てる。
+   読めなくなるので、直接の隣接までは主役と同じ濃さで残す。「自分が選んだのは
+   どれか」は coin 色の選択枠と太くなった依存線で見分ける。
 
    依存チェーン（連結成分）を丸ごと点灯させるやり方は採らない。一本鎖の stack では
    1 件選んだだけでほぼ全点灯になり、絞り込む意味が消えるため。
 
    via は「畳んだエピックのメンバーをその箱に読み替える」写像。畳んだ状態でも
    隣接判定が箱の単位で効くように、呼ぶ側から渡す。 */
-const NEAR_OP = 0.5;
 function litSets(primaryIds, via) {
   const lit = new Set(primaryIds);
   const near = new Set();
@@ -546,6 +545,104 @@ const DEFS = `<defs>
 const txt = (t, x, y, fs, fw, fill, ff, anchor) =>
   `<text x="${x}" y="${y}" font-size="${fs}" font-weight="${fw}" fill="${fill}" font-family="${ff}"${anchor ? ` text-anchor="${anchor}"` : ''}>${esc(t)}</text>`;
 
+/* 畳まれたエピックのメンバーをその箱に読み替える写像。
+   依存線の繋ぎ替えと隣接判定の両方で使う */
+const viaOf = g => id => {
+  const it = byId[id];
+  return (it && it.epic && g.folded[it.epic]) ? 'epic:' + it.epic : id;
+};
+
+/* 依存線 1 本ごとの経路（cubic Bézier）。描画 (svgBody) と並走検出 (__verify) で共有する。
+
+   止めている相手の真下に居るときは、横に回さず下から上へ真っ直ぐ突き上げる。
+   「この未決がこれを止めている」は縦一直線の方が一目で分かるため。
+   畳みや手書きの col で真下に来なかったときは、従来どおりの横向きに落ちる。 */
+function edgeGeoms(g) {
+  const via = viaOf(g);
+  const out = [];
+  EDGES.forEach(e => {
+    const fromId = via(e.from), toId = via(e.to);
+    if (fromId === toId) return;
+    const a = g.map[fromId], b = g.map[toId];
+    if (!a || !b) return;
+    const up = e.kind === 'block' && a.y > b.y + b.h;
+    const sx = up ? a.x + a.w / 2 : a.x + a.w;
+    const sy = up ? a.y            : a.y + a.h / 2;
+    const tx = up ? b.x + b.w / 2 : b.x - 9;
+    const ty = up ? b.y + b.h + 9 : b.y + b.h / 2;
+    const dx = Math.max(38, (tx - sx) * 0.48);
+    const dy = (sy - ty) * 0.42;
+    const p = up
+      ? [[sx, sy], [sx, sy - dy], [tx, ty + dy], [tx, ty]]
+      : [[sx, sy], [sx + dx, sy], [tx - dx, ty], [tx, ty]];
+    out.push({ e, fromId, toId, up, sx, sy, tx, ty, p,
+               d:`M${p[0][0]} ${p[0][1]} C${p[1][0]} ${p[1][1]},${p[2][0]} ${p[2][1]},${p[3][0]} ${p[3][1]}` });
+  });
+  return out;
+}
+
+/* 依存線の並走検出（純関数・DOM 非依存）。
+   2 本の線がほぼ同じ経路を長く並走すると 1 本に見え、どれとどれの依存かが読めなくなる。
+   単なる交差は依存グラフでは避けられないので対象にしない（角度の条件で外れる）。
+   端点を共有する線（扇状の合流・分岐）は設計上必ず近づくので、これも対象外。
+
+   判定: 各線を等分サンプリングし、「相手の線まで OVERLAP_GAP px 以内、かつ向きの差が
+   OVERLAP_ANGLE 度以内」の区間が OVERLAP_RUN px 以上続いた組を返す。
+
+   TODO: 矢尻・エッジラベルが他の依存線に重なる検出は未実装。
+         並走検出で大半は拾えるため、必要になってから足す。 */
+const OVERLAP_GAP = 6;      /* これ以上離れていれば 2 本に見分けられる */
+const OVERLAP_ANGLE = 15;   /* これ以上向きが違えば交差として読める */
+const OVERLAP_RUN = 40;     /* 並走がこの長さを超えたら 1 本に見なす */
+const OVERLAP_SAMPLES = 32;
+function edgeOverlapPairs(geoms) {
+  const N = OVERLAP_SAMPLES;
+  const bez = p => {
+    const pts = [];
+    for (let s = 0; s <= N; s++) {
+      const t = s / N, u = 1 - t;
+      pts.push([u*u*u*p[0][0] + 3*u*u*t*p[1][0] + 3*u*t*t*p[2][0] + t*t*t*p[3][0],
+                u*u*u*p[0][1] + 3*u*u*t*p[1][1] + 3*u*t*t*p[2][1] + t*t*t*p[3][1]]);
+    }
+    return pts;
+  };
+  /* 点 (px,py) から線分 ab までの距離 */
+  const segDist = (px, py, a, b) => {
+    const vx = b[0] - a[0], vy = b[1] - a[1];
+    const t = Math.max(0, Math.min(1, ((px - a[0]) * vx + (py - a[1]) * vy) / (vx * vx + vy * vy || 1)));
+    return Math.hypot(px - a[0] - vx * t, py - a[1] - vy * t);
+  };
+  const minCos = Math.cos(OVERLAP_ANGLE * Math.PI / 180);
+  const polys = geoms.map(g => ({ g, pts:bez(g.p) }));
+  const out = [];
+  for (let i = 0; i < polys.length; i++) for (let j = i + 1; j < polys.length; j++) {
+    const ga = polys[i].g, gb = polys[j].g, A = polys[i].pts, B = polys[j].pts;
+    if (ga.fromId === gb.fromId || ga.fromId === gb.toId ||
+        ga.toId === gb.fromId || ga.toId === gb.toId) continue;
+    let run = 0, best = 0;
+    for (let s = 0; s < N; s++) {
+      const a0 = A[s], a1 = A[s + 1], mx = (a0[0] + a1[0]) / 2, my = (a0[1] + a1[1]) / 2;
+      let bd = Infinity, bk = 0;
+      for (let k = 0; k < N; k++) {
+        const d = segDist(mx, my, B[k], B[k + 1]);
+        if (d < bd) { bd = d; bk = k; }
+      }
+      let ok = bd <= OVERLAP_GAP;
+      if (ok) {
+        const ax = a1[0] - a0[0], ay = a1[1] - a0[1];
+        const bx = B[bk + 1][0] - B[bk][0], by = B[bk + 1][1] - B[bk][1];
+        ok = Math.abs(ax * bx + ay * by) >= minCos * (Math.hypot(ax, ay) || 1) * (Math.hypot(bx, by) || 1);
+      }
+      run = ok ? run + Math.hypot(a1[0] - a0[0], a1[1] - a0[1]) : 0;
+      best = Math.max(best, run);
+    }
+    if (best >= OVERLAP_RUN) {
+      out.push({ a:`${ga.fromId}→${ga.toId}`, b:`${gb.fromId}→${gb.toId}`, len:Math.round(best) });
+    }
+  }
+  return out;
+}
+
 /* opts: { hidden, q, hover, sel, dim, forExport } */
 function svgBody(g, opts) {
   const o = opts || {};
@@ -555,10 +652,7 @@ function svgBody(g, opts) {
   const sset = selSet(sel);
 
   /* 畳まれたエピックのメンバーはその箱に読み替える。線の付け替えと隣接判定の両方で使う */
-  const via = id => {
-    const it = byId[id];
-    return (it && it.epic && g.folded[it.epic]) ? 'epic:' + it.epic : id;
-  };
+  const via = viaOf(g);
 
   /* hover が優先。hover していなければ選択が主役になる */
   const primary = hv ? [hv] : [...sset];
@@ -569,10 +663,7 @@ function svgBody(g, opts) {
     const it = byId[id];                                 /* 畳んだエピックのノードは byId に無い */
     if (it && hidden[it.status]) return 0.1;
     if (it && q && !matches(it)) return 0.14;
-    if (dim && active) {
-      if (lit.has(id)) return 1;
-      return near.has(id) ? NEAR_OP : 0.2;
-    }
+    if (dim && active) return lit.has(id) || near.has(id) ? 1 : 0.2;
     return 1;
   };
 
@@ -589,25 +680,9 @@ function svgBody(g, opts) {
       + `</g></g>`;
   });
 
-  /* --- 依存線。畳まれたエピックのメンバー宛ての線は via でその箱に繋ぎ替わる --- */
+  /* --- 依存線。経路は edgeGeoms と共有（畳まれたエピック宛てはその箱に繋ぎ替わる） --- */
   let labels = '';
-  EDGES.forEach(e => {
-    const fromId = via(e.from), toId = via(e.to);
-    if (fromId === toId) return;
-    const a = g.map[fromId], b = g.map[toId];
-    if (!a || !b) return;
-
-    /* 止めている相手の真下に居るときは、横に回さず下から上へ真っ直ぐ突き上げる。
-       「この未決がこれを止めている」は縦一直線の方が一目で分かるため。
-       畳みや手書きの col で真下に来なかったときは、下の従来どおりの横向きに落ちる。 */
-    const up = e.kind === 'block' && a.y > b.y + b.h;
-
-    const sx = up ? a.x + a.w / 2 : a.x + a.w;
-    const sy = up ? a.y            : a.y + a.h / 2;
-    const tx = up ? b.x + b.w / 2 : b.x - 9;
-    const ty = up ? b.y + b.h + 9 : b.y + b.h / 2;
-    const dx = Math.max(38, (tx - sx) * 0.48);
-    const dy = (sy - ty) * 0.42;
+  edgeGeoms(g).forEach(({ e, fromId, toId, up, sx, sy, tx, ty, d }) => {
     /* 主役に触れている線を太くする。hover でも選択でも同じ規則 */
     const isActive = lit.has(fromId) || lit.has(toId);
     const base = e.kind === 'block' ? C.heart : e.kind === 'idea' ? C.navy300 : C.navy600;
@@ -616,9 +691,6 @@ function svgBody(g, opts) {
     const op = hid ? 0.08 : (dim && active ? (isActive ? 1 : 0.08) : 0.85);
     const dash = e.kind === 'block' ? ' stroke-dasharray="6 5"' : e.kind === 'idea' ? ' stroke-dasharray="2 5"' : '';
     const mk = e.kind === 'block' ? 'block' : e.kind === 'idea' ? 'idea' : 'flow';
-    const d = up
-      ? `M${sx} ${sy} C${sx} ${sy - dy},${tx} ${ty + dy},${tx} ${ty}`
-      : `M${sx} ${sy} C${sx + dx} ${sy},${tx - dx} ${ty},${tx} ${ty}`;
     out += `<path d="${d}" fill="none" stroke="${base}" stroke-width="${isActive ? 2.8 : 1.8}"${dash} stroke-linecap="round" marker-end="url(#ar-${mk})" opacity="${op}"/>`;
     /* 縦向きのときはラベルを出さない。ノード間が詰まっていて置き場所が無く、
        赤い破線 + 上向きの矢尻と 🙋 六角形だけで意味は足りている。 */
@@ -1249,6 +1321,12 @@ function __verify() {
     for (let i = 0; i < fr.length; i++) for (let j = i + 1; j < fr.length; j++)
       check(!hit(fr[i].r, fr[j].r), `エピック枠が重なっている: ${fr[i].id} x ${fr[j].id}`);
 
+    /* 依存線の並走。画面の縮尺・畳みに依らないよう、書き出しと同じ全体レイアウトで見る */
+    const ov = edgeOverlapPairs(edgeGeoms(graph({ compact:false, folded:{} })));
+    check(!ov.length, '依存線が並走して 1 本に見える: '
+      + ov.map(o => `${o.a} と ${o.b}（約 ${o.len}px）`).join(' / '));
+    info.edgeOverlaps = ov.length;
+
     nodesOf().forEach(g => {
       const shape = g.querySelector('rect, polygon'); if (!shape) return;
       const sb = shape.getBoundingClientRect();
@@ -1288,10 +1366,11 @@ function __verify() {
       select(first.id, 'kanban');
       check((document.querySelector('#side h3') || {}).textContent === first.title,
             `ノードを選んでも詳細に出ない: ${first.id}`);
-      /* 選択したノード以外が薄くなる（点灯は選択集合だけ。依存チェーンには広げない） */
-      const outside = nodesOf().filter(n => n.dataset.node !== first.id);
+      /* 選択とその隣接以外が薄くなる（隣接は選択と同じ濃さで残る。依存チェーンには広げない） */
+      const sets1 = litSets([first.id], id => id);
+      const outside = nodesOf().filter(n => n.dataset.node !== first.id && !sets1.near.has(n.dataset.node));
       check(!outside.length || outside.every(n => Number(n.getAttribute('opacity')) < 1),
-            '選択しても他のノードが薄くならない');
+            '選択しても無関係なノードが薄くならない');
     }
 
     /* --- 複数選択 --- */
@@ -1304,14 +1383,14 @@ function __verify() {
       check(rows.length === 2, `複数選択の一覧が 2 行にならない: ${rows.length} 行`);
       check(!!document.querySelector('#side [data-deselect-all]'), '複数選択時に「解除」が出ない');
 
-      /* 点灯は 3 段。選んだもの = 1.0 / その隣接 = NEAR_OP / それ以外 = 0.2 */
+      /* 点灯は 2 段。選んだものとその隣接 = 1.0 / それ以外 = 0.2 */
       const sets = litSets(S.sel, id => id);
       const opOf = n => Number(n.getAttribute('opacity') || 1);
       check(nodesOf().filter(n => sets.lit.has(n.dataset.node)).every(n => opOf(n) === 1),
             '複数選択で選んだノードまで薄くなっている');
       const nearNodes = nodesOf().filter(n => sets.near.has(n.dataset.node));
-      check(nearNodes.every(n => opOf(n) === NEAR_OP),
-            `隣接ノードが中間の濃さにならない: ${nearNodes.map(n => n.dataset.node + '=' + opOf(n)).join(', ')}`);
+      check(nearNodes.every(n => opOf(n) === 1),
+            `隣接ノードが選択と同じ濃さにならない: ${nearNodes.map(n => n.dataset.node + '=' + opOf(n)).join(', ')}`);
       const rest = nodesOf().filter(n => !sets.lit.has(n.dataset.node) && !sets.near.has(n.dataset.node));
       check(rest.every(n => opOf(n) === 0.2),
             `選択とも隣接とも無関係なノードが沈まない: ${rest.map(n => n.dataset.node + '=' + opOf(n)).join(', ')}`);

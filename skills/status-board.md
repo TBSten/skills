@@ -64,17 +64,17 @@ click still selects exactly one.
 - While more than one is selected, the detail panel becomes **a list of the selection**. Clicking a
   row drills into that single ticket; ✕ drops it from the selection
 - With a selection active, `SVG` / `PNG` exports **the whole graph with only the selected tickets
-  lifted out**: everything else sinks to a faint wash, and only edges whose *both* endpoints are
-  selected stay bold
+  lifted out**: everything except the selection and its direct neighbours sinks to a faint wash,
+  and only edges whose *both* endpoints are selected stay bold
 
 Pasting the entire graph leaves the reader guessing which part you mean. Select the few tickets that
 matter and the exported figure **drops straight into a PR or issue description**. It keeps the full
 graph rather than cropping so the reader still sees where those tickets sit in the whole.
 
-Highlighting runs in three tiers: **what you selected stays full strength, its immediate neighbours
-sit at an intermediate wash, everything else sinks.** Hovering lights the graph by the same rule.
-Neighbours are kept because dropping them loses what a ticket connects to; they are not brought to
-full strength because then the outline would be the only clue as to which ones you actually picked.
+Highlighting runs in two tiers: **what you selected and its immediate neighbours (upstream and
+downstream) stay full strength, everything else sinks.** Hovering lights the graph by the same rule.
+Neighbours are kept because dropping them loses what a ticket connects to; the coin-coloured
+outline and the bold edges still mark which ones you actually picked.
 
 It does not walk the dependency edges to light the whole connected component — in a single-file
 stack that would light everything from one click, leaving nothing to narrow down.
