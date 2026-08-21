@@ -27,7 +27,14 @@ export function Header() {
         <nav className="flex flex-1 items-center gap-1">
           <NavLink to="/" icon={Home} label="Home" />
         </nav>
-        <Button variant="ghost" size="sm" onClick={handleSignOut}>
+        {/* md 未満ではテキストが hidden になりアイコンのみのボタンになるため、
+            accessible name を aria-label で常に与える */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleSignOut}
+          aria-label="Sign out"
+        >
           <LogOut className="size-4" />
           <span className="hidden md:inline">Sign out</span>
         </Button>
