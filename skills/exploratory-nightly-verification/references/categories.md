@@ -50,22 +50,24 @@ Each category runs for ~8–10 minutes, sequentially cat1 → cat5.
 
 ## cat4 — Upstream release watching
 
-- **Tools**: `WebFetch`, `Read`
-- **Angles**:
-  - **Kotlin**: `https://github.com/JetBrains/kotlin/releases`
-  - **Compose Multiplatform**: `https://github.com/JetBrains/compose-multiplatform/releases`
-  - **Gradle**: `https://services.gradle.org/versions/current`
-  - **Android Gradle Plugin**: `https://developer.android.com/build/releases/gradle-plugin` or
-    Maven Central
-  - (Optionally) **AndroidX**: `https://developer.android.com/jetpack/androidx/versions`
-- **Output**:
-  - Compare against the project's `gradle/libs.versions.toml` (or equivalent)
+- **Tools**: `Bash` (`scripts/check-upstream.sh`), `WebFetch` (release notes only), `Read`
+- **Procedure**:
+  1. Run `"$SKILL_ROOT/scripts/check-upstream.sh"` — it fetches the five upstream sources
+     deterministically (Kotlin and Compose Multiplatform via the GitHub Releases API, Gradle via
+     `services.gradle.org/versions/current`, AGP via Google Maven metadata for
+     `com.android.tools.build:gradle`, AndroidX via Google Maven metadata for `androidx.core:core`),
+     compares them against `gradle/libs.versions.toml` + `gradle/wrapper/gradle-wrapper.properties`,
+     and prints `[{"tool","latest","project","drift"}]`
+  2. Your judgment is only the last step: for entries with drift `minor` / `major`, `WebFetch` the
+     release **notes** and decide whether a breaking change is announced
+- **Severity mapping**:
   - ≥ 1 minor version drift → P2
   - Breaking change announced in the upstream release notes → P1
+  - `"drift": "error"` entry (rate limit / fetch failure) → P3 issue recording the fact; continue
 - **Notes**:
-  - On `WebFetch` rate limit: retry once, otherwise write the fact as a P3 issue and continue
   - If the project has a multi-version test matrix (e.g. Kotlin 2.3.21 / 2.4.0-Beta2), flag any
-    gap between the matrix and the latest upstream
+    gap between the matrix and the latest upstream (`"drift": "ahead"` entries are the hint that
+    the project is on a pre-release ahead of the stable channel)
 
 ## cat5 — Comparison / leftover angles
 

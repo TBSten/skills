@@ -70,6 +70,18 @@ annotation-processor / compiler plugin / server framework / test library / build
 
 `<id>` は通常 PR 番号、 stacked PR を audit する場合は `186-187` のような range。
 
+## 同梱スクリプト & テンプレート
+
+loop の決定的な処理は script として同梱しており (`bash` / `git` / `jq` / `gh`)、
+orchestrator と各 cat は script をそのまま実行する:
+
+| Script / template | 役割 |
+|-------------------|------|
+| `scripts/init-exploration.sh <pr-id>` | 探索ディレクトリの scaffold + FINAL-SUMMARY.md 雛形 (cluster family 表込み) |
+| `scripts/new-ticket.sh --cat N --severity P0..P3 --slug <slug> --id <pr-id>` | 5 並列 cat 横断のアトミック採番 (予約 range・renumber 不要) + ticket 雛形生成 |
+| `scripts/pr-state.sh <pr>` | force-push 検出 / 新規 commit / メンテナ latency 帯域 / 自コメント数と 8/12 しきい値 / 未 resolve thread 数を 1 JSON で出力 |
+| `templates/kick-prompts/cat1.md 〜 cat5.md` | 各 cat の subagent kick プロンプト雛形 — orchestrator は `<id>` と `<iter>` を差し込むだけ |
+
 ## References
 
 詳細な運用規約は以下に分割:
@@ -78,8 +90,8 @@ annotation-processor / compiler plugin / server framework / test library / build
   担当領域 / angle / MCP driver 対応表、 ジャンル別の比較対象ライブラリ一覧
 - [`pdca-workflow.md`](./exploratory-pr-verification/references/pdca-workflow.md) — 動的検証の
   5 段階 PDCA cycle、 改変可能な設定ファイル surface、 出力確認手法
-- [`ticket-format.md`](./exploratory-pr-verification/references/ticket-format.md) — 番号 scheme、
-  cat 別 reserve range、 ディレクトリ構成、 ファイル format、 重要度 / 重複回避ルール
+- [`ticket-format.md`](./exploratory-pr-verification/references/ticket-format.md) — 採番契約
+  (script が採番)、 ディレクトリ構成、 ファイル format、 重要度 / 重複回避ルール
 - [`pr-comment-policy.md`](./exploratory-pr-verification/references/pr-comment-policy.md) —
   投稿閾値、 cluster policy、 飽和上限、 投稿前必須 PoC、 自己訂正コメント format、
   latency 対応 cadence
@@ -91,7 +103,7 @@ annotation-processor / compiler plugin / server framework / test library / build
 ## 前提条件
 
 - Git 管理された Kotlin / Gradle プロジェクト
-- `gh` CLI 認証済み
+- `gh` CLI 認証済み。 同梱 script 用に `jq` も必要
 - `.local/` が `.gitignore` 済み
 - 検証対象 surface に対応する MCP driver (web = Playwright、 Android = Maestro、
   IDE plugin = IntelliJ-MCP 等) — cat4 でのみ必要

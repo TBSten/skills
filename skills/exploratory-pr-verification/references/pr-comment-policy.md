@@ -25,6 +25,10 @@ When to post a comment, how to phrase it, and how to avoid going noisy on the PR
 8. **Maintainer latency < 1h?** Active fix phase — ROI of cluster comments is high, but noise
    risk also climbs. One concise cluster per iteration is the safe ceiling.
 
+The cumulative own-comment count for steps 6–7 and the latency for step 8 come from
+`scripts/pr-state.sh` (`ownComments.count` / `.state`, `maintainerLatency.band`) — no manual
+counting.
+
 ## Mandatory pre-post dynamic PoC
 
 > **Any PR comment that proposes a fix must first verify the proposal with a dynamic PoC.**

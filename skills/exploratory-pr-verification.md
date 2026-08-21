@@ -72,6 +72,18 @@ All temporary files / logs / sandboxes / tickets live under:
 
 `<id>` is typically the PR number, or a range like `186-187` when auditing stacked PRs.
 
+## Bundled scripts & templates
+
+The deterministic parts of the loop are shipped as scripts (`bash` / `git` / `jq` / `gh`),
+which the orchestrator and cats run as-is:
+
+| Script / template | Purpose |
+|-------------------|---------|
+| `scripts/init-exploration.sh <pr-id>` | Scaffold the exploration directory + FINAL-SUMMARY.md skeleton (cluster-family table included) |
+| `scripts/new-ticket.sh --cat N --severity P0..P3 --slug <slug> --id <pr-id>` | Atomic ticket numbering across all 5 parallel cats (no reservation ranges, no renumbering) + ticket skeleton |
+| `scripts/pr-state.sh <pr>` | One JSON snapshot: force-push detection, new commits, maintainer-latency band, own-comment count vs the 8/12 thresholds, unresolved review threads |
+| `templates/kick-prompts/cat1.md … cat5.md` | Per-cat subagent kick prompts — the orchestrator substitutes only `<id>` and `<iter>` |
+
 ## References
 
 The detailed operational rules are split across:
@@ -81,7 +93,7 @@ The detailed operational rules are split across:
 - [`pdca-workflow.md`](./exploratory-pr-verification/references/pdca-workflow.md) — 5-step PDCA
   cycle for dynamic verification, config-file mutation surface, output-confirmation tactics
 - [`ticket-format.md`](./exploratory-pr-verification/references/ticket-format.md) — numbering
-  scheme, per-cat reservation, directory layout, file format, severity guidelines, dedup
+  contract (script-allocated), directory layout, file format, severity guidelines, dedup
 - [`pr-comment-policy.md`](./exploratory-pr-verification/references/pr-comment-policy.md) —
   posting threshold, cluster policy, saturation limits, mandatory pre-post PoC, self-correction
   format, latency-aware cadence
@@ -93,7 +105,7 @@ The detailed operational rules are split across:
 ## Prerequisites
 
 - Git-managed Kotlin / Gradle project
-- `gh` CLI authenticated
+- `gh` CLI authenticated; `jq` for the bundled scripts
 - `.local/` in `.gitignore`
 - Access to MCP drivers matching the project's target surface (Playwright for web, Maestro for
   Android, IntelliJ-MCP for IDE plugins, etc.) — only required for cat4
