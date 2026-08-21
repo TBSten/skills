@@ -20,22 +20,18 @@ Fetch https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/prompts/ko
 ## What it does
 
 - Collects project info (group ID, version, license, GitHub URL, developer info, target modules)
-- Adds the Vanniktech Maven Publish plugin to `gradle/libs.versions.toml`
-- Creates a buildSrc convention plugin (`publish-convention.gradle.kts`) with Sonatype Central Portal config, conditional GPG signing, and POM metadata
-- Applies the convention plugin to each module to be published
-- Creates a `.github/workflows/publish.yml` workflow triggered on GitHub Releases (with `workflow_dispatch` support)
+- Downloads and runs [`scripts/setup-publish.sh`](https://github.com/TBSten/skills/blob/main/skills/kotlin-maven-central-publish/scripts/setup-publish.sh) via `curl`, which idempotently adds the Vanniktech Maven Publish plugin to `gradle/libs.versions.toml`, generates the buildSrc convention plugin (`publish-convention.gradle.kts`) with placeholders already filled in (GitHub URL, license, and developer info are auto-inferred from `git remote` and the `LICENSE` file), and creates the `.github/workflows/publish.yml` workflow
+- Applies the convention plugin to each module to be published (agent's judgment)
 - Verifies locally with `./gradlew publishToMavenLocal`
-- Guides you through manual setup: GPG key generation, Sonatype Central Portal account, and the 5 required GitHub Secrets
+- Downloads and runs [`scripts/setup-secrets.sh`](https://github.com/TBSten/skills/blob/main/skills/kotlin-maven-central-publish/scripts/setup-secrets.sh), an interactive script covering GPG key generation, keyserver upload, private key export, and registering all 5 GitHub Secrets via `gh secret set` — the only manual step left is issuing the Sonatype Central Portal user token
 
 ## Referenced files
 
-The prompt fetches these from GitHub instead of a local skill install:
+The prompt downloads and runs these scripts from GitHub (run as-is — never rewritten or reimplemented). The setup script fetches the `example/` templates it needs from GitHub raw by itself:
 
-- [example/buildSrc-build.gradle.kts](https://github.com/TBSten/skills/blob/main/skills/kotlin-maven-central-publish/example/buildSrc-build.gradle.kts) — buildSrc build script with the Vanniktech Maven Publish dependency
-- [example/publish-convention.gradle.kts](https://github.com/TBSten/skills/blob/main/skills/kotlin-maven-central-publish/example/publish-convention.gradle.kts) — convention plugin template with placeholders
-- [example/publish.yml](https://github.com/TBSten/skills/blob/main/skills/kotlin-maven-central-publish/example/publish.yml) — GitHub Actions publish workflow template
-- [references/github-secrets.md](https://github.com/TBSten/skills/blob/main/skills/kotlin-maven-central-publish/references/github-secrets.md) — required GitHub Secrets and how to obtain them
-- [references/gpg-setup.md](https://github.com/TBSten/skills/blob/main/skills/kotlin-maven-central-publish/references/gpg-setup.md) — GPG key generation and export instructions
+- [scripts/setup-publish.sh](https://github.com/TBSten/skills/blob/main/skills/kotlin-maven-central-publish/scripts/setup-publish.sh) — one-shot setup of catalog entry, buildSrc convention plugin, and publish workflow
+- [scripts/setup-secrets.sh](https://github.com/TBSten/skills/blob/main/skills/kotlin-maven-central-publish/scripts/setup-secrets.sh) — interactive GPG key + GitHub Secrets setup (supports `--dry-run`)
+- [references/github-secrets.md](https://github.com/TBSten/skills/blob/main/skills/kotlin-maven-central-publish/references/github-secrets.md) / [references/gpg-setup.md](https://github.com/TBSten/skills/blob/main/skills/kotlin-maven-central-publish/references/gpg-setup.md) — fallback manual instructions for environments where the scripts cannot run
 
 ## Related
 

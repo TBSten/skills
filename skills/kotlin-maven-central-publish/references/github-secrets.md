@@ -2,6 +2,10 @@
 
 Maven Central への公開に必要な GitHub Secrets の一覧と取得方法。
 
+> **NOTE**: Secrets の登録（`gh secret set` 5 種）は `scripts/setup-secrets.sh` が自動化している。
+> 通常は script を実行すればよく、この文書は script が使えない環境でのフォールバック手動手順・背景説明として参照する。
+> Sonatype Central Portal の User Token 発行（下記）だけは script 実行時もユーザーの手作業になる。
+
 ## 必要な Secrets
 
 | Secret 名 | 説明 | 取得方法 |

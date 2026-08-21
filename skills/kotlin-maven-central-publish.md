@@ -10,12 +10,10 @@ gh skill install tbsten/skills kotlin-maven-central-publish
 
 ## Overview
 
-This skill automates the setup of Maven Central publishing for Kotlin and Kotlin Multiplatform projects. It creates:
+This skill automates the setup of Maven Central publishing for Kotlin and Kotlin Multiplatform projects. The mechanical setup is done by two bundled scripts, which the agent runs as-is (no reading, rewriting, or reimplementing):
 
-- A **buildSrc convention plugin** (`publish-convention.gradle.kts`) using the Vanniktech Maven Publish plugin
-- A **GitHub Actions workflow** (`publish.yml`) triggered on GitHub Releases
-- Complete **POM metadata** (license, developer info, SCM)
-- **Conditional GPG signing** (active only when keys are available)
+- **`scripts/setup-publish.sh`** — idempotently adds the Vanniktech Maven Publish plugin to the version catalog, generates the buildSrc convention plugin (`publish-convention.gradle.kts`) with placeholders already filled in (GitHub URL, license, and developer info are auto-inferred from `git remote` and the `LICENSE` file), and creates the GitHub Actions workflow. Safe to re-run; never overwrites existing files without `--force`; emits a one-line result JSON.
+- **`scripts/setup-secrets.sh`** — interactive script that generates a GPG key, sends the public key to keyservers, exports the private key, and registers all 5 GitHub Secrets via `gh secret set`. The only remaining manual step is issuing the Sonatype Central Portal user token. Supports `--dry-run`.
 
 ## What Gets Generated
 
@@ -23,6 +21,7 @@ This skill automates the setup of Maven Central publishing for Kotlin and Kotlin
 |---|---|
 | `buildSrc/src/main/kotlin/publish-convention.gradle.kts` | Convention plugin with Sonatype Central Portal config, signing, and POM metadata |
 | `buildSrc/build.gradle.kts` | Updated with Vanniktech Maven Publish dependency |
+| `buildSrc/settings.gradle.kts` | Imports the root version catalog and declares repositories for buildSrc |
 | `gradle/libs.versions.toml` | Updated with Maven Publish plugin version |
 | `.github/workflows/publish.yml` | GitHub Actions workflow for automated publishing |
 
@@ -31,7 +30,7 @@ This skill automates the setup of Maven Central publishing for Kotlin and Kotlin
 - Kotlin project with Gradle and version catalog
 - GitHub repository
 - Sonatype Central Portal account with verified namespace
-- GPG key for artifact signing
+- GPG key for artifact signing (`scripts/setup-secrets.sh` can generate one)
 
 ## Usage
 
@@ -40,7 +39,7 @@ After installation, invoke with:
 - "Set up Maven Central publishing"
 - "publishToMavenLocal できるようにして"
 
-The skill will guide you through collecting project information, generating configuration files, and providing manual setup instructions for secrets and credentials.
+The skill collects project information, runs `scripts/setup-publish.sh` to generate the configuration files, applies the convention plugin to the modules to publish, and runs `scripts/setup-secrets.sh` to set up GPG keys and GitHub Secrets. `references/gpg-setup.md` and `references/github-secrets.md` serve as fallback manual instructions for environments where the scripts cannot run.
 
 ## Key Technical Details
 
