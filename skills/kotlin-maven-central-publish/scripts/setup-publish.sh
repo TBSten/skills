@@ -299,18 +299,32 @@ install_file() {
   fi
 }
 
+kts_escape() {
+  # Kotlin 文字列リテラル用エスケープ。プレースホルダーは全て "..." の中に
+  # 展開されるため、\ / " / $ (文字列テンプレート化を防ぐ) / 改行等を
+  # エスケープしないと生成される .gradle.kts が壊れる。
+  local s=$1
+  s=${s//\\/\\\\}
+  s=${s//\"/\\\"}
+  s=${s//\$/\\\$}
+  s=${s//$'\r'/\\r}
+  s=${s//$'\n'/\\n}
+  s=${s//$'\t'/\\t}
+  printf '%s' "$s"
+}
+
 tpl=$(resolve_template publish-convention.gradle.kts)
 content=$(cat "$tpl")
-content=${content//<PROJECT_DESCRIPTION>/$description}
-content=${content//<GITHUB_URL>/$github_url}
-content=${content//<INCEPTION_YEAR>/$start_year}
-content=${content//<LICENSE_NAME>/$license_name}
-content=${content//<LICENSE_URL>/$license_url}
-content=${content//<DEVELOPER_ID>/$developer_id}
-content=${content//<DEVELOPER_NAME>/$developer_name}
-content=${content//<DEVELOPER_URL>/$developer_url}
-content=${content//<GITHUB_OWNER>/$github_owner}
-content=${content//<GITHUB_REPO>/$github_repo}
+esc=$(kts_escape "$description");    content=${content//<PROJECT_DESCRIPTION>/$esc}
+esc=$(kts_escape "$github_url");     content=${content//<GITHUB_URL>/$esc}
+esc=$(kts_escape "$start_year");     content=${content//<INCEPTION_YEAR>/$esc}
+esc=$(kts_escape "$license_name");   content=${content//<LICENSE_NAME>/$esc}
+esc=$(kts_escape "$license_url");    content=${content//<LICENSE_URL>/$esc}
+esc=$(kts_escape "$developer_id");   content=${content//<DEVELOPER_ID>/$esc}
+esc=$(kts_escape "$developer_name"); content=${content//<DEVELOPER_NAME>/$esc}
+esc=$(kts_escape "$developer_url");  content=${content//<DEVELOPER_URL>/$esc}
+esc=$(kts_escape "$github_owner");   content=${content//<GITHUB_OWNER>/$esc}
+esc=$(kts_escape "$github_repo");    content=${content//<GITHUB_REPO>/$esc}
 printf '%s\n' "$content" > "$TMP_DIR/publish-convention.rendered.gradle.kts"
 if grep -Eq '<[A-Z_]+>' "$TMP_DIR/publish-convention.rendered.gradle.kts"; then
   leftover=$(grep -Eo '<[A-Z_]+>' "$TMP_DIR/publish-convention.rendered.gradle.kts" | sort -u | tr '\n' ' ')
