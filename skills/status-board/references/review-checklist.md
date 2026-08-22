@@ -23,7 +23,7 @@ sleep 1 && cat /tmp/sb-serve.log
 
 ```jsonc
 { "pass": true, "failures": [],
-  "info": { "nodes": 12, "kanban": "11/11", "edgeOverlaps": 0, "fitK": 0.467, "compact": true,
+  "info": { "nodes": 12, "mapWork": 11, "kanban": "11/11", "edgeOverlaps": 0, "fitK": 0.467, "compact": true,
             "tiers": "2/3/7", "multi": "ok", "shiftClick": "ok", "askItems": 2 } }
 ```
 
@@ -36,7 +36,7 @@ sleep 1 && cat /tmp/sb-serve.log
 | --- | --- |
 | 実行時 | コンソールエラー・未処理例外（`window.__errors` に溜めている） |
 | レイアウト | body / html の横スクロール、ノード同士の重なり、エピック枠同士の重なり、依存線同士の並走（ほぼ同一経路を長く重なって走り 1 本に見える。単なる交差と端点を共有する合流・分岐は対象外）、テキストの枠はみ出し、1 ノードの行数過多 |
-| 整合 | カンバンの件数合計 = `items` のうち `kanban !== false` の数、空の `href` |
+| 整合 | カンバンの件数合計 = `items` のうち `kanban !== false` の数、空の `href`、図に作業ノードが 1 件以上ある（カンバンに作業があるのに図がアンカーだけの空図になっていない。`info.mapWork`） |
 | 操作 | ＋ / − で transform が変わる、「全体」で全ノードが収まる、「全画面」で図がビューポートを占有し解除で復帰する、ノード選択で詳細が出る、選択外が薄くなる、選択が URL の `?sel=` に反映される、ステータスチップの絞り込み、検索、エピックの畳み / 展開 |
 | 複数選択 | Shift 併用で 2 件になる、一覧が 2 行出る、カンバンも 2 件光る、✕ で単一表示に戻る、実クリックから `shiftKey` が届いている（`info.shiftClick`） |
 | 点灯の 2 段 | 選択と隣接 = 1.0 / それ以外 = 0.2 になっている（`info.tiers` が `選択/隣接/その他` の件数） |
@@ -66,7 +66,7 @@ sleep 1 && cat /tmp/sb-serve.log
 | --- | --- | --- |
 | ビルドがエピックの col 範囲で止まる | 枠の中に別のノードを置いた | エラーメッセージの「直し方」に従う（`epic` を付けるか col をずらす） |
 | `info.compact` が `true` | 図が縦に長く初期縮尺が 0.7 未満 | `anchorY` を下げすぎない / ノードを減らす |
-| `nodes` が 0〜1 | `col` を持つ items が無い | 主要なチケットに `col` を振る |
+| ビルドが「図に出る作業ノードが 1 つも無い」で止まる / `mapWork` が 0 | `col` を持つ作業 items が無い（古い collect.mjs を使っている場合も疑う） | collect.mjs を再実行する（open PR が無いときは直近 merged PR を自動で図に出す）。会話由来のものは overlay で `col` を振る |
 | 依存線が引けないとエラー | `edges` の端点が `col` を持たない | その端点に `col` を振るか、エッジを消す |
 | NEXT が多すぎて目立たない | `next` を振りすぎ | 3 つまでに絞る |
 

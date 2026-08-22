@@ -191,6 +191,13 @@ for (let grew = true; grew;) {
     if (p && !onMap.has(p.id)) { onMap.add(p.id); grew = true; }
   }
 }
+/* open PR が 1 本も無いと図が main だけの空図になり「何も映っていない」ボードが出る。
+   その場合は期間内の merged PR を図に出し、直近なにが main に入ったかを見せる。 */
+if (onMap.size === 0 && prItems.some(i => i.merged)) {
+  prItems.forEach(i => { if (i.merged) onMap.add(i.id); });
+  notes.push('open PR が無いので、直近 merged PR を図に出した（空図防止）');
+}
+
 const depthOf = (i, seen = new Set()) => {
   if (seen.has(i.id)) return 1;                     /* 循環よけ */
   seen.add(i.id);
