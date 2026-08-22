@@ -40,7 +40,7 @@ gh skill install tbsten/skills status-board
 
 </td>
 <td>🧪 Experimental</td>
-<td>Collapse PRs, issues, branches, and open questions into one kanban + graph HTML</td>
+<td>Collapse work state (PRs, issues, local branches, open questions) into one dependency graph + kanban HTML</td>
 </tr>
 <tr>
 <td>🟢 Kotlin / Android App Development</td>
@@ -53,7 +53,7 @@ gh skill install tbsten/skills kotlin-tuple
 
 </td>
 <td>✅ Active</td>
-<td>Type-safe Tuple utilities for Kotlin/KMP</td>
+<td>Gradle setup that generates type-safe Tuple utilities for Kotlin/KMP</td>
 </tr>
 <tr>
 <td></td>
@@ -66,7 +66,7 @@ gh skill install tbsten/skills simple-loader
 
 </td>
 <td>✅ Active</td>
-<td>Sealed interface state machine for async data loading in Kotlin/Compose MP</td>
+<td>Sealed interface based async data loading state management for Kotlin/Compose MP</td>
 </tr>
 <tr>
 <td></td>
@@ -92,7 +92,7 @@ gh skill install tbsten/skills kmp-snapshot-testing-setup
 
 </td>
 <td>✅ Active</td>
-<td>Set up snapshot testing (Kotest PBT + Turbine) for KMP + Compose projects</td>
+<td>Snapshot testing infrastructure for KMP + Compose projects</td>
 </tr>
 <tr>
 <td>🟣 Kotlin Library / Tool Development</td>
@@ -105,7 +105,7 @@ gh skill install tbsten/skills kotlin-compiler-plugin-setup
 
 </td>
 <td>✅ Active</td>
-<td>Set up a Kotlin Compiler Plugin project (buildSrc, kctfork, integration tests)</td>
+<td>Set up a Kotlin Compiler Plugin project with the essential toolchain</td>
 </tr>
 <tr>
 <td></td>
@@ -118,7 +118,7 @@ gh skill install tbsten/skills kotlin-compiler-plugin-dev
 
 </td>
 <td>✅ Active</td>
-<td>Develop and review Kotlin Compiler Plugins with research from 30+ plugins</td>
+<td>Support developing and reviewing Kotlin Compiler Plugins</td>
 </tr>
 <tr>
 <td></td>
@@ -131,7 +131,7 @@ gh skill install tbsten/skills kotlin-maven-central-publish
 
 </td>
 <td>✅ Active</td>
-<td>Set up Maven Central publishing for Kotlin/KMP (Vanniktech, GPG, GitHub Actions)</td>
+<td>Maven Central publishing setup for Kotlin/KMP</td>
 </tr>
 <tr>
 <td></td>
@@ -157,7 +157,7 @@ gh skill install tbsten/skills ksp-plugin-setup
 
 </td>
 <td>🧪 Experimental</td>
-<td>Scaffold a KSP plugin project (runtime/ksp/test, kctfork goldens, Konsist)</td>
+<td>Scaffold a KSP plugin with a 3-module layout</td>
 </tr>
 <tr>
 <td>🔵 Web Frontend</td>
@@ -170,7 +170,7 @@ gh skill install tbsten/skills react-vite-supabase-starter
 
 </td>
 <td>✅ Active</td>
-<td>Scaffold a React + Vite + Tailwind v4 + shadcn/ui + TanStack + Supabase web app</td>
+<td>Create a React + Vite + Tailwind v4 + shadcn/ui + TanStack + Supabase web app project</td>
 </tr>
 <tr>
 <td>⚫️ Git / GitHub</td>
@@ -222,7 +222,7 @@ gh skill install tbsten/skills github-get-attachment-url
 
 </td>
 <td>✅ Active</td>
-<td>Get user-attachments URLs for local files without creating an issue</td>
+<td>Upload local files to GitHub</td>
 </tr>
 </table>
 
@@ -248,7 +248,7 @@ curl -fsSL https://rules.tbsten.me/i | \
 
 </td>
 <td>✅ Active</td>
-<td>Snapshot PBT testing rule for KMP projects with Kotest + Turbine</td>
+<td>Snapshot PBT testing rule for Kotlin Multiplatform projects</td>
 </tr>
 <tr>
 <td></td>
@@ -262,7 +262,7 @@ curl -fsSL https://rules.tbsten.me/i | \
 
 </td>
 <td>✅ Active</td>
-<td>Error handling and warning detection rule for KMP + Compose projects</td>
+<td>Error handling and warning management for KMP + Compose projects</td>
 </tr>
 <tr>
 <td></td>
@@ -276,7 +276,7 @@ curl -fsSL https://rules.tbsten.me/i | \
 
 </td>
 <td>✅ Active</td>
-<td>4-layer architecture (App/UI/Domain/Data) rule for KMP + Compose projects</td>
+<td>4-layer architecture for KMP + Compose projects</td>
 </tr>
 </table>
 

@@ -40,7 +40,7 @@ gh skill install tbsten/skills status-board
 
 </td>
 <td>🧪 Experimental</td>
-<td>抱えている作業 (PR / issue / ローカルブランチ / 未決事項) を依存グラフ + カンバンの 1 枚 HTML に集約</td>
+<td>作業状態 (PR / issue / ローカルブランチ / 未決事項) を依存グラフ + カンバンの 1 枚 HTML に集約</td>
 </tr>
 <tr>
 <td>🟢 Kotlin / Android アプリ開発</td>
@@ -53,7 +53,7 @@ gh skill install tbsten/skills kotlin-tuple
 
 </td>
 <td>✅ Active</td>
-<td>Kotlin/KMP 向け型安全な Tuple ユーティリティ</td>
+<td>Kotlin/KMP 向け型安全な Tuple ユーティリティを生成する Gradle 設定</td>
 </tr>
 <tr>
 <td></td>
@@ -66,7 +66,7 @@ gh skill install tbsten/skills simple-loader
 
 </td>
 <td>✅ Active</td>
-<td>Kotlin/Compose Multiplatform 向け sealed interface ベースの非同期データ読み込み状態管理ステートマシン</td>
+<td>Kotlin/Compose Multiplatform 向け sealed interface ベースの非同期データ読み込み状態管理</td>
 </tr>
 <tr>
 <td></td>
@@ -92,7 +92,7 @@ gh skill install tbsten/skills kmp-snapshot-testing-setup
 
 </td>
 <td>✅ Active</td>
-<td>KMP + Compose プロジェクト向けスナップショットテスト基盤 (Kotest PBT + Turbine) のセットアップ</td>
+<td>KMP + Compose プロジェクト向けスナップショットテスト基盤</td>
 </tr>
 <tr>
 <td>🟣 Kotlin ライブラリ/ツール開発</td>
@@ -105,7 +105,7 @@ gh skill install tbsten/skills kotlin-compiler-plugin-setup
 
 </td>
 <td>✅ Active</td>
-<td>Kotlin Compiler Plugin プロジェクト (buildSrc / kctfork / 統合テスト) のセットアップ</td>
+<td>基本的なツールチェインを揃えた Kotlin Compiler Plugin プロジェクト のセットアップ</td>
 </tr>
 <tr>
 <td></td>
@@ -118,7 +118,7 @@ gh skill install tbsten/skills kotlin-compiler-plugin-dev
 
 </td>
 <td>✅ Active</td>
-<td>30+ の既存プラグイン調査データをもとに Kotlin Compiler Plugin の開発・レビューを支援</td>
+<td>Kotlin Compiler Plugin の開発・レビューを支援する</td>
 </tr>
 <tr>
 <td></td>
@@ -131,7 +131,7 @@ gh skill install tbsten/skills kotlin-maven-central-publish
 
 </td>
 <td>✅ Active</td>
-<td>Kotlin/KMP 向け Maven Central 公開設定 (Vanniktech + GPG + GitHub Actions)</td>
+<td>Kotlin/KMP 向け Maven Central 公開設定</td>
 </tr>
 <tr>
 <td></td>
@@ -157,7 +157,7 @@ gh skill install tbsten/skills ksp-plugin-setup
 
 </td>
 <td>🧪 Experimental</td>
-<td>KSP プラグインを 3 モジュール構成でスキャフォールド (kctfork golden + Konsist)</td>
+<td>KSP プラグインを 3 モジュール構成でスキャフォールド</td>
 </tr>
 <tr>
 <td>🔵 Web フロントエンド</td>
@@ -170,7 +170,7 @@ gh skill install tbsten/skills react-vite-supabase-starter
 
 </td>
 <td>✅ Active</td>
-<td>React + Vite + Tailwind v4 + shadcn/ui + TanStack + Supabase の Web アプリをスキャフォールド</td>
+<td>React + Vite + Tailwind v4 + shadcn/ui + TanStack + Supabase の Web アプリプロジェクト作成</td>
 </tr>
 <tr>
 <td>⚫️ Git / GitHub</td>
@@ -222,7 +222,7 @@ gh skill install tbsten/skills github-get-attachment-url
 
 </td>
 <td>✅ Active</td>
-<td>Issue を作らずにローカルファイルの user-attachments URL を取得 (Playwright ランナー同梱)</td>
+<td>ローカルファイルを github にアップロード</td>
 </tr>
 </table>
 
@@ -248,7 +248,7 @@ curl -fsSL https://rules.tbsten.me/i | \
 
 </td>
 <td>✅ Active</td>
-<td>Kotlin Multiplatform プロジェクト向けスナップショット PBT テストルール (Kotest + Turbine)</td>
+<td>Kotlin Multiplatform プロジェクト向けスナップショット PBT テストルール</td>
 </tr>
 <tr>
 <td></td>
@@ -262,7 +262,7 @@ curl -fsSL https://rules.tbsten.me/i | \
 
 </td>
 <td>✅ Active</td>
-<td>Kotlin Multiplatform + Compose プロジェクト向けエラーハンドリング・ワーニング検知ルール</td>
+<td>Kotlin Multiplatform + Compose プロジェクト向けエラーハンドリング・警告管理</td>
 </tr>
 <tr>
 <td></td>
@@ -276,7 +276,7 @@ curl -fsSL https://rules.tbsten.me/i | \
 
 </td>
 <td>✅ Active</td>
-<td>Kotlin Multiplatform + Compose プロジェクト向け 4 層アーキテクチャ (App/UI/Domain/Data) ルール</td>
+<td>Kotlin Multiplatform + Compose プロジェクト向け 4 層アーキテクチャ</td>
 </tr>
 </table>
 
