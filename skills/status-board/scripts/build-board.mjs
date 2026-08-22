@@ -20,14 +20,15 @@ const KINDS = ['anchor', 'pr', 'task', 'human', 'idea'];
 
 /* ---- 引数 --------------------------------------------------------------- */
 const argv = process.argv.slice(2);
-let input = null, out = null, overlay = null;
+let input = null, out = null, overlay = null, allowEmptyMap = false;
 for (let i = 0; i < argv.length; i++) {
   if (argv[i] === '-o' || argv[i] === '--out') out = argv[++i];
   else if (argv[i] === '--overlay') overlay = argv[++i];
+  else if (argv[i] === '--allow-empty-map') allowEmptyMap = true;
   else if (!input) input = argv[i];
 }
 if (!input || !out) {
-  console.error('usage: build-board.mjs <board.json> [--overlay <overlay.json>] -o <out.html>');
+  console.error('usage: build-board.mjs <board.json> [--overlay <overlay.json>] [--allow-empty-map] -o <out.html>');
   process.exit(2);
 }
 
@@ -214,8 +215,19 @@ edges.forEach((e, ix) => {
   }
 });
 
-/* 図に出るノードが 1 つも無いのは大抵ミス */
-if (!items.some(i => i.col !== undefined)) warn('col を持つ items が無い。図が空になる');
+/* 図に出る「作業」ノードが無いボードは、カンバンに作業がある限りほぼミス。
+   main などのアンカーだけの図は何も伝えないので、warn ではなくエラーで止める。 */
+{
+  const mapWork = items.filter(i => i.col !== undefined && i.kind !== 'anchor');
+  const kanbanWork = items.filter(i => i.kanban !== false && i.kind !== 'anchor');
+  if (!mapWork.length && kanbanWork.length && !allowEmptyMap) {
+    err(`図に出る作業ノードが 1 つも無い（アンカーのみ）。カンバンには ${kanbanWork.length} 件ある`
+      + ' → 直し方: collect.mjs を再実行する（open PR が無いときは直近 merged PR を自動で図に出す）か、'
+      + '図に出したい item に overlay で col を振る。意図して空の図にするなら --allow-empty-map を付ける');
+  } else if (!items.some(i => i.col !== undefined)) {
+    warn('col を持つ items が無い。図が空になる');
+  }
+}
 
 const urgency = Array.isArray(data.urgency) && data.urgency.length
   ? data.urgency

@@ -59,6 +59,7 @@ echo "OUT=$OUT"
 `collect.mjs` は GraphQL 1 往復で PR / CI / レビュー状態 / 未 resolve コメント / issue /
 ローカルブランチを集め、`status` 判定・stacked PR からの `col` と `edges`・エピック・
 `next` まで入れて `board.json` を書く。**出力の一覧を読むだけでよく、中身を開く必要はない。**
+open PR が 1 本も無いときは直近 merged PR を図に出す（main だけの空図を出さないため）。
 
 `gh` が無ければ git ローカルだけで続行する（その旨が stderr に出る）。
 

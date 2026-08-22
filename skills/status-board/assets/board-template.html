@@ -1051,9 +1051,13 @@ function fitView() {
   S.touched = false; S.fitted = true; S.fitW = S.vw; S.fitH = S.vh;
   setView({ k, tx:(S.vw - g.cw * k) / 2 - g.minX * k, ty:(S.vh - g.ch * k) / 2 - g.minY * k });
 }
-/* 初期表示は高さを合わせて左寄せ。チェーンの先頭が必ず読める状態にする */
+/* 初期表示: 読める縮尺 (COMPACT_K 以上) で全体が入るなら全体フィット。
+   入らないほど大きい図だけ、高さを合わせて左寄せ（チェーンの先頭が必ず読める状態にする）。
+   横に広い図の右端が黙って画面外に切れて「映っていない」ように見えるのを避ける */
 function fitStart() {
   const p = 20;
+  const full = solveFit(gg => Math.max(K_MIN, Math.min(1.06, (S.vw - p * 2) / gg.cw, (S.vh - p * 2) / gg.ch)));
+  if (full.k >= COMPACT_K) { fitView(); return; }
   const { g, k } = solveFit(gg => Math.max(0.52, Math.min(1, (S.vh - p * 2) / gg.ch)));
   S.fitted = true; S.fitW = S.vw; S.fitH = S.vh;
   setView({ k, tx:p - g.minX * k, ty:(S.vh - g.ch * k) / 2 - g.minY * k });
@@ -1395,13 +1399,24 @@ function __verify() {
 
     /* --- 静的 --- */
     check(__errors.length === 0, `コンソールエラー ${__errors.length} 件: ${__errors.slice(0, 3).join(' / ')}`);
-    check(document.body.scrollWidth - document.body.clientWidth === 0, 'body に横スクロールが出ている');
-    check(document.documentElement.scrollWidth - document.documentElement.clientWidth === 0, 'html に横スクロールが出ている');
+    /* .shell の min-width 未満のウィンドウでは横スクロールが出るのが仕様。
+       設計上の下限ぶんだけ許容し、それを超える溢れだけを落とす */
+    const shellMin = parseFloat(getComputedStyle(document.querySelector('.shell')).minWidth) || 0;
+    const overW = Math.max(0, shellMin - document.documentElement.clientWidth);
+    check(document.body.scrollWidth - document.body.clientWidth <= overW, 'body に横スクロールが出ている');
+    check(document.documentElement.scrollWidth - document.documentElement.clientWidth <= overW, 'html に横スクロールが出ている');
 
     const ns = nodesOf().map(g => ({ id:g.dataset.node, r:box(g) }));
     info.nodes = ns.length;
     for (let i = 0; i < ns.length; i++) for (let j = i + 1; j < ns.length; j++)
       check(!hit(ns[i].r, ns[j].r), `ノードが重なっている: ${ns[i].id} x ${ns[j].id}`);
+
+    /* 図が実質空（main などのアンカーだけ）なのにカンバンへ作業が出ているのは、
+       生成側の退化かデータ欠落。「何も映っていない」ボードをここで捕まえる */
+    const mapWork = ITEMS.filter(i => i.col !== undefined && i.kind !== 'anchor').length;
+    info.mapWork = mapWork;
+    check(mapWork > 0 || !ITEMS.some(i => i.kanban !== false && i.kind !== 'anchor'),
+          '図に作業ノードが 1 つも無い（アンカーのみ）。カンバンに作業があるのに図が空');
 
     const fr = [...document.querySelectorAll('#zoomG [data-fold]')]
       .map(g => ({ id:g.dataset.fold, r:box(g.parentNode.querySelector('rect')) }));
@@ -1455,6 +1470,10 @@ function __verify() {
           `全画面で図がビューポートを占有しない: ${Math.round(fm.width)}x${Math.round(fm.height)}`);
     toggleFullMap(false);
     check(els.mapCard.getBoundingClientRect().height < vp.clientHeight - 1, '全画面を解除しても元に戻らない');
+
+    /* 折り畳まれた列（closed など）のカードは DOM に出ず、カンバン側の選択表示を
+       検証できない。ここから先は全列を開いて見る（元の畳み状態は finally が戻す） */
+    S.collapsed = {}; render();
 
     const onMap = ITEMS.filter(i => i.col !== undefined && i.kanban !== false);
     const first = onMap[0];
@@ -1548,11 +1567,15 @@ function __verify() {
           '検索で一致しないノードが薄くならない');
     S.q = ''; render();
 
-    const ep = EPICS.find(e => ITEMS.some(i => i.epic === e.id && i.col !== undefined));
-    if (ep) {
+    /* メンバー 1 件のエピックは畳んでもノード数が 1→1 で減らないため、
+       「メンバー数 → 1 に置き換わる」ことを厳密に見る */
+    const epPick = EPICS.map(e => ({ e, n: ITEMS.filter(i => i.epic === e.id && i.col !== undefined).length }))
+      .filter(x => x.n > 0).sort((a, b) => b.n - a.n)[0];
+    if (epPick) {
+      const ep = epPick.e;
       const before = nodesOf().length;
       S.folded = { [ep.id]:true }; render();
-      check(nodesOf().length < before, `エピックを畳めない: ${ep.id}`);
+      check(nodesOf().length === before - epPick.n + 1, `エピックを畳めない: ${ep.id}`);
       check(!!document.querySelector(`#zoomG [data-node="epic:${ep.id}"]`), `畳んだエピックのノードが出ない: ${ep.id}`);
       S.folded = {}; render();
       check(nodesOf().length === before, `エピックを戻せない: ${ep.id}`);
