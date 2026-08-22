@@ -36,6 +36,7 @@ TBSten の Claude Code skills・rules コレクションリポジトリ。
 - 参照ドキュメントやサンプルコードは同ディレクトリ内に配置
 - `skills/<skill-name>.md` / `<skill-name>.ja.md` で詳細ドキュメントを用意
 - インストール: `gh skill install tbsten/skills <skill-name>`
+- skill の変更を main に取り込んだら、ローカルにインストール済みのコピー (`~/.claude/skills/<skill-name>`) があるか確認し、あれば同期する (再インストール or `scripts/` `assets/` `references/` の rsync)。リポジトリが SSoT で、同期を忘れると修正が実行時に効かない
 
 ## Rules の構成ルール
 
