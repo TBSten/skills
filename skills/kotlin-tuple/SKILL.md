@@ -2,9 +2,10 @@
 name: kotlin-tuple
 description: >
   Generates type-safe Tuple utilities for Kotlin and Kotlin Multiplatform projects.
-  Creates Tuple data classes, tupleOf factories, toList conversion, KSerializer for kotlinx.serialization, type-safe awaitAll, and allNotNullOrNull in one go.
+  Creates Tuple data classes, tupleOf factories, toList conversion, KSerializer for kotlinx.serialization, type-safe awaitAll, a Result-returning awaitAllCatching, and allNotNullOrNull in one go.
   Use when requested: "add Tuple", "generate tupleOf", "type-safe Tuple", "type-safe awaitAll",
   "add allNotNullOrNull", "await multiple Deferred with type safety",
+  "run parallel tasks without one failure cancelling the rest", "awaitAll returning Result",
   "null-check multiple nullable values at once".
   For Kotlin/KMP projects where Pair/Triple is not enough for multi-element grouping.
 metadata:
@@ -35,7 +36,9 @@ Before generating code, confirm the following with the user in **a single messag
      - [x] `Tuple.kt` + `TupleFactory.kt` — Tuple data classes and tupleOf factories (required, always generated)
      - [x] `TupleToList.kt` — `toList()` extension functions
      - [x] `AbstractTupleSerializer.kt` + `TupleSerializer.kt` — KSerializer for kotlinx.serialization
-     - [x] `AwaitAll.kt` — Type-safe awaitAll
+     - [x] `AwaitAll.kt` — Type-safe awaitAll (fail-fast, takes `Deferred`)
+     - [x] `AwaitAllCatching.kt` — `Result`-returning awaitAll: takes `suspend () -> T` blocks so one failure does not cancel the rest
+     - [x] `TupleResult.kt` — `allSuccessOrNull()` / `allSuccessOrFailure()` for a Tuple of `Result`
      - [x] `AllNotNullOrNull.kt` — allNotNullOrNull utility
 
 ### Skipping Confirmation
@@ -87,6 +90,8 @@ I'll generate Tuple utilities. Let me confirm the following:
    - [x] TupleToList.kt (toList() conversion)
    - [x] AbstractTupleSerializer.kt + TupleSerializer.kt (kotlinx.serialization support)
    - [x] AwaitAll.kt (type-safe awaitAll)
+   - [x] AwaitAllCatching.kt (Result-returning awaitAll; partial failures stay isolated)
+   - [x] TupleResult.kt (allSuccessOrNull / allSuccessOrFailure)
    - [x] AllNotNullOrNull.kt (null-safety utility)
    → Uncheck any you don't need
 
@@ -119,6 +124,8 @@ It deterministically produces the same code as the example files for any max Tup
      | TupleToList.kt | `tolist` |
      | AbstractTupleSerializer.kt + TupleSerializer.kt | `serializer` |
      | AwaitAll.kt | `awaitall` |
+     | AwaitAllCatching.kt | `awaitcatching` |
+     | TupleResult.kt | `result` |
      | AllNotNullOrNull.kt | `allnotnull` |
    - The script creates `<TARGET_DIR>`, writes the selected files with the correct package declaration, and prints a single-line JSON result on the last line of stdout
 3. **Handle the result** by exit code / JSON `status`:
@@ -135,8 +142,9 @@ It deterministically produces the same code as the example files for any max Tup
    - If TupleSerializer.kt is included:
      - `kotlinx-serialization` plugin が未設定 → `build.gradle.kts` に追加（公式ドキュメントを参照して正しい設定方法で追加）
      - `kotlinx-serialization-json` dependency が未設定 → `commonMain.dependencies`（KMP）または `dependencies`（JVM/Android）に追加
-   - If AwaitAll.kt is included:
+   - If AwaitAll.kt or AwaitAllCatching.kt is included:
      - `kotlinx-coroutines-core` dependency が未設定 → 同様に追加
+   - TupleResult.kt は stdlib の `Result` のみを使うため追加依存は不要
 5. **Build verification**: Run a compile check to ensure the generated files have no errors:
    - KMP: `./gradlew :<module>:compileKotlinJvm`
    - Android: `./gradlew :<module>:compileDebugKotlin`
@@ -166,6 +174,6 @@ It deterministically produces the same code as the example files for any max Tup
 
 ### Why This Approach
 
-- The Tuple utilities are ~2,600 lines of fully regular, repetitive Kotlin — exactly what a deterministic script generates better than an AI: zero context consumption, no trim/extend mistakes, any N from 4 to 99, and no BSD-`sed` portability issues
+- The Tuple utilities are ~3,100 lines of fully regular, repetitive Kotlin — exactly what a deterministic script generates better than an AI: zero context consumption, no trim/extend mistakes, any N from 4 to 99, and no BSD-`sed` portability issues
 - `example/` remains the golden reference: `scripts/generate.py --self-test` verifies that the generator reproduces it byte-for-byte（メンテナ用。通常の生成フローで実行する必要はない）
-- The reference `.md` files ([tuple-to-list.md](./tuple-to-list.md), [tuple-serializer.md](./tuple-serializer.md), [await-all.md](./await-all.md), [all-not-null-or-null.md](./all-not-null-or-null.md)) document the code patterns for human readers — they are NOT needed during generation
+- The reference `.md` files ([tuple-to-list.md](./tuple-to-list.md), [tuple-serializer.md](./tuple-serializer.md), [await-all.md](./await-all.md), [await-all-catching.md](./await-all-catching.md), [tuple-result.md](./tuple-result.md), [all-not-null-or-null.md](./all-not-null-or-null.md)) document the code patterns for human readers — they are NOT needed during generation
