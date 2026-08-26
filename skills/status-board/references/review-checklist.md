@@ -24,7 +24,8 @@ sleep 1 && cat /tmp/sb-serve.log
 ```jsonc
 { "pass": true, "failures": [],
   "info": { "nodes": 12, "mapWork": 11, "kanban": "11/11", "edgeOverlaps": 0, "fitK": 0.467, "compact": true,
-            "tiers": "2/3/7", "multi": "ok", "shiftClick": "ok", "askItems": 2 } }
+            "tiers": "2/3/7", "multi": "ok", "shiftClick": "ok", "askItems": 2,
+            "trace": "5 nodes", "tour": "3 steps", "keys": "ok" } }
 ```
 
 `failures` は日本語の 1 行メッセージ。**そこに書かれた項目だけ**直して、再ビルド → 2 を
@@ -42,6 +43,10 @@ sleep 1 && cat /tmp/sb-serve.log
 | 点灯の 2 段 | 選択と隣接 = 1.0 / それ以外 = 0.2 になっている（`info.tiers` が `選択/隣接/その他` の件数） |
 | 書き出し | `exportSvgText()` が壊れた SVG を出さない、ノード数が図と一致、選択中は非選択が薄く出る |
 | 確認欄 | textarea が出る、回答が保存される、カンバンに ✓ が出る（テスト値は書き戻して消す） |
+| トレース | 依存のあるチケットの詳細にボタンが出る、下流トレースに直接の依存先が入る、トレース中 = 1.0 / 外 = 0.2、`?trace=` に反映、再押下で解除、解除ボタンが出る（`info.trace`） |
+| NEXT ツアー | 1 歩目が next=1 を選ぶ、進捗がボタンに出る、最後まで行くと終了して選択が解ける（`info.tour`） |
+| シェアカード | `exportCardSvgText()` が 1200×630 の壊れていない SVG を出す、ノード数が図と一致 |
+| キーボード | `/` で検索にフォーカス、`f` で全画面、Esc で解除（`info.keys`） |
 
 ## スクリーンショットで見る（自動化しない）
 

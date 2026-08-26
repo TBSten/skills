@@ -78,8 +78,25 @@ downstream) stay full strength, everything else sinks.** Hovering lights the gra
 Neighbours are kept because dropping them loses what a ticket connects to; the coin-coloured
 outline and the bold edges still mark which ones you actually picked.
 
-It does not walk the dependency edges to light the whole connected component — in a single-file
-stack that would light everything from one click, leaving nothing to narrow down.
+Hover and selection do not walk the dependency edges to light the whole connected component — in a
+single-file stack that would light everything from one click, leaving nothing to narrow down.
+When you do want the whole chain, use the explicit trace below.
+
+## Trace, NEXT tour, and share cards
+
+- **Upstream / downstream trace** — the「⇠ 上流を点灯」/「下流を点灯 ⇢」buttons in the detail
+  panel light everything **transitively** reachable from that ticket (everything else sinks).
+  In a PR stack this answers "what stalls if this is stuck" and "what is this stuck behind" at a
+  glance. Press again, hit Esc, or use the clear button on the graph to exit.
+  Shareable via `?trace=up:<id>` / `?trace=down:<id>` in the URL
+- **NEXT tour** — the「▶ NEXT」button (or the `N` key) walks NEXT 1 → 2 → 3 in order, selecting
+  and centring each so the detail panel shows the ticket you are reading. After the last step it
+  clears the selection and refits the whole graph
+- **Share card** — the「カード」button exports a **1200×630 PNG (OGP aspect ratio)** with the board
+  title and timestamp on top and the graph fitted below. Selection and trace highlighting are baked
+  in, so a "this part right here" card is one click away
+- **Keyboard** — `/` focuses search, `F` toggles fullscreen, `N` steps the tour, `Esc` backs out
+  one layer at a time (fullscreen → trace → tour → selection). `prefers-reduced-motion` is honoured
 
 ## Built for speed
 
