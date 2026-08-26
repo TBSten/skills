@@ -536,8 +536,16 @@ function graph(opts) {
   let maxX = 0, maxY = 0, minX = 1e9, minY = 1e9;
   Object.keys(cols).forEach(c => {
     let cursor = null;
-    /* 安定ソート。block の起点だけを後ろへ回し、それ以外の並びは崩さない */
-    cols[c].sort((p, q) => (blockSrc.has(p.i.id) ? 1 : 0) - (blockSrc.has(q.i.id) ? 1 : 0));
+    /* block の起点は「止めている相手の真下」へ。レーン末尾ではなく相手の直後に差し込む。
+       末尾に回すと、相手と同じレーンに別のノードが居るときにそれが間へ挟まり、
+       上向きの矢印がそのノードの裏を突き抜けてしまう */
+    const base = cols[c].filter(n => !blockSrc.has(n.i.id));
+    cols[c].filter(n => blockSrc.has(n.i.id)).forEach(n => {
+      const tgt = EDGES.filter(e => e.kind === 'block' && e.from === n.i.id).map(e => e.to);
+      const ix = base.findIndex(m => tgt.includes(m.i.id));
+      base.splice(ix >= 0 ? ix + 1 : base.length, 0, n);
+    });
+    cols[c] = base;
     cols[c].forEach(n => {
       const laneX = M + colIdx[Number(c)] * (W + GX);
       const gap = blockSrc.has(n.i.id) ? GYB : GY;
@@ -1586,10 +1594,21 @@ function __verify() {
       check(!hit(fr[i].r, fr[j].r), `エピック枠が重なっている: ${fr[i].id} x ${fr[j].id}`);
 
     /* 依存線の並走。画面の縮尺・畳みに依らないよう、書き出しと同じ全体レイアウトで見る */
-    const ov = edgeOverlapPairs(edgeGeoms(graph({ compact:false, folded:{} })));
+    const gAll = graph({ compact:false, folded:{} });
+    const ov = edgeOverlapPairs(edgeGeoms(gAll));
     check(!ov.length, '依存線が並走して 1 本に見える: '
       + ov.map(o => `${o.a} と ${o.b}（約 ${o.len}px）`).join(' / '));
     info.edgeOverlaps = ov.length;
+
+    /* block の上向き矢印が、起点と相手の間に挟まった別のノードの裏を突き抜けていないか */
+    edgeGeoms(gAll).filter(x => x.up).forEach(x => {
+      const a = gAll.map[x.fromId], b = gAll.map[x.toId];
+      const seg = { x:x.sx - 2, y:b.y + b.h, w:4, h:Math.max(0, a.y - (b.y + b.h)) };
+      gAll.nodes.filter(n => n.i.id !== x.fromId && n.i.id !== x.toId).forEach(n => {
+        check(!(seg.x < n.x + n.w && n.x < seg.x + seg.w && seg.y < n.y + n.h && n.y < seg.y + seg.h),
+              `block の矢印が ${n.i.id} の裏を突き抜けている: ${x.fromId} → ${x.toId}`);
+      });
+    });
 
     nodesOf().forEach(g => {
       const shape = g.querySelector('rect, polygon'); if (!shape) return;
@@ -1683,7 +1702,9 @@ function __verify() {
       const svg = exportSvgText();
       check((svg.match(/data-node=/g) || []).length === ITEMS.filter(i => i.col !== undefined).length,
             '選択中の書き出しでノードが欠けている');
-      check(svg.indexOf('opacity="0.2"') >= 0, '選択中の書き出しで非選択が薄くなっていない');
+      /* 小さいボードでは選択 + 隣接が全ノードを覆い、沈む対象が無いことがある。
+         そのときは opacity="0.2" が出ないのが正しい */
+      check(!rest.length || svg.indexOf('opacity="0.2"') >= 0, '選択中の書き出しで非選択が薄くなっていない');
 
       /* ✕ で 1 件外すと単一表示に戻る */
       const x = document.querySelector('#side [data-deselect]');
