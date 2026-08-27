@@ -18,3 +18,23 @@ suspend fun <A0, A1> awaitAll(
 
 // ... up to TupleN
 ```
+
+Every overload also has a Tuple receiver form, so a Tuple of `Deferred` can be awaited directly:
+
+```kotlin
+suspend fun <A0, A1> Tuple2<Deferred<A0>, Deferred<A1>>.awaitAll(): Tuple2<A0, A1> = awaitAll(first, second)
+
+// ... up to TupleN
+```
+
+```kotlin
+val (name, age, active) = tupleOf(
+    async { fetchName() },
+    async { fetchAge() },
+    async { fetchActive() },
+).awaitAll()
+```
+
+Note that `awaitAll` is fail-fast: if one `Deferred` fails, structured concurrency cancels the
+surrounding scope and the exception is rethrown. To keep going and inspect each outcome
+individually, use `awaitAllCatching` ([await-all-catching.md](./await-all-catching.md)) instead.

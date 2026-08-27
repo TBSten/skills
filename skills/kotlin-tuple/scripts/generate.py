@@ -2,7 +2,8 @@
 """Parametric generator for the kotlin-tuple skill.
 
 Generates Tuple.kt / TupleFactory.kt / TupleToList.kt / AbstractTupleSerializer.kt /
-TupleSerializer.kt / AwaitAll.kt / AllNotNullOrNull.kt for any max Tuple size N,
+TupleSerializer.kt / AwaitAll.kt / AwaitAllCatching.kt / AllNotNullOrNull.kt /
+TupleResult.kt for any max Tuple size N,
 byte-identical to example/ when run with --package com.example.tuple --max 20
 (verified by --self-test).
 

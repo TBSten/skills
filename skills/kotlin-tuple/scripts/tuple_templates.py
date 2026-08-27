@@ -363,6 +363,15 @@ def gen_awaitall(pkg, max_n):
  * )
  * // name: String, age: Int, active: Boolean
  * ```
+ *
+ * Every overload has a Tuple receiver form, so a Tuple of [Deferred] can be awaited directly:
+ * ```kotlin
+ * val (name, age, active) = tupleOf(
+ *     async { fetchName() },
+ *     async { fetchAge() },
+ *     async { fetchActive() },
+ * ).awaitAll()
+ * ```
  */
 package %s
 
@@ -376,6 +385,9 @@ import kotlinx.coroutines.Deferred""" % pkg]
             body = ("/**\n * Awaits a single [Deferred] and wraps the result in a [Tuple1].\n */\n"
                     + body)
         parts.append(body)
+        deferred_types = ", ".join("Deferred<A%d>" % i for i in range(n))
+        parts.append("suspend fun <%s> Tuple%d<%s>.awaitAll(): Tuple%d<%s> = awaitAll(%s)"
+                     % (types(n), n, deferred_types, n, types(n), ", ".join(ords(n))))
     return "\n\n".join(parts) + "\n"
 
 
@@ -446,6 +458,139 @@ fun <A0 : Any> Tuple1<A0?>.allNotNullOrNull(): Tuple1<A0>? {
     return "\n\n".join(parts) + "\n"
 
 
+# ---------------------------------------------------------------- AwaitAllCatching.kt
+
+def gen_awaitcatching(pkg, max_n):
+    parts = ["""/**
+ * Type-safe [awaitAllCatching] functions that never fail as a whole.
+ *
+ * Every block runs concurrently and its outcome is captured in a [Result], so a failure in one
+ * block neither cancels the others nor propagates out of [awaitAllCatching]. The caller decides
+ * what a partial failure means.
+ *
+ * The parameters are `suspend () -> T` blocks rather than `Deferred` values on purpose: a
+ * `Deferred` created by the caller's `async` cancels its parent scope when it fails, which makes
+ * per-element recovery impossible. Creating the coroutines inside this function is what keeps the
+ * failures isolated.
+ *
+ * [CancellationException] is always rethrown, so cancelling the surrounding coroutine still works.
+ *
+ * Usage:
+ * ```kotlin
+ * val (name, age, active) = awaitAllCatching(
+ *     { fetchName() },    // Result<String>
+ *     { fetchAge() },     // Result<Int>
+ *     { fetchActive() },  // Result<Boolean>
+ * )
+ * name.onFailure { log(it) }
+ * val resolvedAge = age.getOrDefault(0)
+ * ```
+ *
+ * The Tuple receiver form needs `suspend {}` literals, because a bare `{ ... }` passed to
+ * `tupleOf` would be inferred as a non-suspending function type:
+ * ```kotlin
+ * val (name, age) = tupleOf(
+ *     suspend { fetchName() },
+ *     suspend { fetchAge() },
+ * ).awaitAllCatching()
+ * ```
+ *
+ * `allSuccessOrNull()` / `allSuccessOrFailure()` (TupleResult.kt) collapse the returned Tuple of
+ * [Result] back into a single value.
+ */
+package %s
+
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope""" % pkg]
+    parts.append("""/**
+ * Runs [block] and captures its outcome in a [Result].
+ *
+ * Unlike [runCatching], [CancellationException] is rethrown instead of being captured as a
+ * failure, so structured concurrency is preserved.
+ */
+private suspend fun <T> runCatchingCancellable(block: suspend () -> T): Result<T> =
+    try {
+        Result.success(block())
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Throwable) {
+        Result.failure(e)
+    }""")
+    for n in range(1, max_n + 1):
+        params = "\n".join("    %s: suspend () -> A%d," % (ordinal(i + 1), i) for i in range(n))
+        result_types = ", ".join("Result<A%d>" % i for i in range(n))
+        vals = "\n".join("    val %sDeferred = async { runCatchingCancellable(%s) }" % (o, o)
+                         for o in ords(n))
+        awaits = ", ".join("%sDeferred.await()" % o for o in ords(n))
+        body = ("suspend fun <%s> awaitAllCatching(\n%s\n): Tuple%d<%s> = coroutineScope {\n"
+                "%s\n    tupleOf(%s)\n}"
+                % (types(n), params, n, result_types, vals, awaits))
+        if n == 1:
+            body = ("/**\n * Runs a single block and wraps its outcome in a [Tuple1] of [Result].\n */\n"
+                    + body)
+        parts.append(body)
+        lambda_types = ", ".join("suspend () -> A%d" % i for i in range(n))
+        parts.append("suspend fun <%s> Tuple%d<%s>.awaitAllCatching(): Tuple%d<%s> =\n"
+                     "    awaitAllCatching(%s)"
+                     % (types(n), n, lambda_types, n, result_types, ", ".join(ords(n))))
+    return "\n\n".join(parts) + "\n"
+
+
+# ---------------------------------------------------------------- TupleResult.kt
+
+def gen_result(pkg, max_n):
+    parts = ["""/**
+ * Utilities for collapsing a Tuple of [Result] values into a single value.
+ *
+ * Designed to pair with `awaitAllCatching` (AwaitAllCatching.kt), which returns
+ * `TupleN<Result<A0>, ..>`, but works with any Tuple of [Result] -- for example one built from
+ * [runCatching].
+ *
+ * Unlike `Result.getOrNull()`, a successful `null` value is preserved: only [Result.isFailure]
+ * decides whether the whole Tuple collapses.
+ *
+ * Usage:
+ * ```kotlin
+ * val results: Tuple2<Result<String>, Result<Int>> = tupleOf(
+ *     runCatching { parseName() },
+ *     runCatching { parseAge() },
+ * )
+ *
+ * val values: Tuple2<String, Int>? = results.allSuccessOrNull()
+ * val single: Result<Tuple2<String, Int>> = results.allSuccessOrFailure()
+ * ```
+ */
+package %s""" % pkg]
+    for n in range(1, max_n + 1):
+        result_types = ", ".join("Result<A%d>" % i for i in range(n))
+        null_args = "\n".join("        %s.getOrElse { return null }," % o for o in ords(n))
+        fail_args = "\n".join("            %s.getOrElse { return Result.failure(it) }," % o
+                              for o in ords(n))
+        or_null = ("fun <%s> Tuple%d<%s>.allSuccessOrNull(): Tuple%d<%s>? {\n"
+                   "    return tupleOf(\n%s\n    )\n}"
+                   % (types(n), n, result_types, n, types(n), null_args))
+        or_failure = ("fun <%s> Tuple%d<%s>.allSuccessOrFailure(): Result<Tuple%d<%s>> {\n"
+                      "    return Result.success(\n        tupleOf(\n%s\n        ),\n    )\n}"
+                      % (types(n), n, result_types, n, types(n), fail_args))
+        if n == 1:
+            or_null = ("/**\n * Returns the success values as a [Tuple1], "
+                       "or `null` if the element is a failure.\n */\n" + or_null)
+            or_failure = ("/**\n * Returns the success values as a [Tuple1], "
+                          "or the failure itself.\n */\n" + or_failure)
+        else:
+            if n == 2:
+                header = "// Tuple2 (= Pair)"
+            elif n == 3:
+                header = "// Tuple3 (= Triple)"
+            else:
+                header = "// Tuple%d" % n
+            or_null = header + "\n\n" + or_null
+        parts.append(or_null)
+        parts.append(or_failure)
+    return "\n\n".join(parts) + "\n"
+
+
 # ---------------------------------------------------------------- parts / files
 
 PART_FILES = {
@@ -455,9 +600,12 @@ PART_FILES = {
     "serializer": [("AbstractTupleSerializer.kt", gen_abstract_serializer),
                    ("TupleSerializer.kt", gen_serializer)],
     "awaitall": [("AwaitAll.kt", gen_awaitall)],
+    "awaitcatching": [("AwaitAllCatching.kt", gen_awaitcatching)],
     "allnotnull": [("AllNotNullOrNull.kt", gen_allnotnull)],
+    "result": [("TupleResult.kt", gen_result)],
 }
-ALL_PARTS = ["tuple", "factory", "tolist", "serializer", "awaitall", "allnotnull"]
+ALL_PARTS = ["tuple", "factory", "tolist", "serializer", "awaitall", "awaitcatching",
+             "allnotnull", "result"]
 REQUIRED_PARTS = ["tuple", "factory"]
 
 

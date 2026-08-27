@@ -22,7 +22,7 @@ That's it! The skill will detect your project structure, confirm settings, and g
 
 ## Features
 
-This skill auto-generates up to 6 files:
+This skill auto-generates up to 8 files:
 
 | File | Description | Required |
 |---|---|---|
@@ -31,6 +31,8 @@ This skill auto-generates up to 6 files:
 | [`TupleToList.kt`](skills/kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/TupleToList.kt) | `toList()` extension functions | Optional |
 | [`AbstractTupleSerializer.kt`](skills/kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/AbstractTupleSerializer.kt) + [`TupleSerializer.kt`](skills/kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/TupleSerializer.kt) | `KSerializer` implementations for kotlinx.serialization | Optional |
 | [`AwaitAll.kt`](skills/kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/AwaitAll.kt) | Type-safe `awaitAll()` for 1–N `Deferred` values | Optional |
+| [`AwaitAllCatching.kt`](skills/kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/AwaitAllCatching.kt) | `awaitAllCatching()` returning a Tuple of `Result` — one failure does not cancel the rest | Optional |
+| [`TupleResult.kt`](skills/kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/TupleResult.kt) | `allSuccessOrNull()` / `allSuccessOrFailure()` for a Tuple of `Result` | Optional |
 | [`AllNotNullOrNull.kt`](skills/kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/AllNotNullOrNull.kt) | `allNotNullOrNull()` top-level and extension functions | Optional |
 
 The max Tuple size (N), target module, and which optional files to generate are all confirmed interactively before generation.
@@ -43,6 +45,8 @@ After installing the skill, Claude Code will automatically activate it when you 
 - "Generate tupleOf"
 - "I need a type-safe awaitAll"
 - "Await multiple Deferred values with type safety"
+- "Run tasks in parallel without one failure cancelling the rest"
+- "I want awaitAll to return Result"
 - "Check multiple nullable values for non-null at once"
 
 The package name and output directory will be inferred from your project structure or confirmed interactively.
@@ -119,6 +123,61 @@ coroutineScope {
 ```
 
 Unlike `kotlinx.coroutines.awaitAll` which returns `List<T>` (requiring a common type), these overloads preserve each element's distinct type by returning a Tuple.
+
+Every overload also has a Tuple receiver form:
+
+```kotlin
+coroutineScope {
+    val (name, age, active) = tupleOf(
+        async { fetchName() },
+        async { fetchAge() },
+        async { fetchActive() },
+    ).awaitAll()
+}
+```
+
+### `awaitAllCatching()` (partial failures stay isolated)
+
+```kotlin
+import com.example.tuple.*
+
+val (name, age) = awaitAllCatching(
+    { fetchName() },  // Result<String>
+    { fetchAge() },   // Result<Int>
+)
+name.onFailure { log(it) }
+val resolvedAge = age.getOrDefault(0)
+```
+
+`awaitAll` is fail-fast: when one `Deferred` fails, structured concurrency cancels the surrounding
+scope and the exception is rethrown. `awaitAllCatching` takes `suspend () -> T` blocks instead and
+starts the coroutines itself, so each outcome is captured in its own `Result` and a failing block
+never cancels its siblings. `CancellationException` is always rethrown, so cancelling the
+surrounding coroutine still works.
+
+The Tuple receiver form needs `suspend {}` literals, because a bare `{ ... }` passed to `tupleOf`
+would be inferred as a non-suspending function type:
+
+```kotlin
+val (name, age) = tupleOf(
+    suspend { fetchName() },
+    suspend { fetchAge() },
+).awaitAllCatching()
+```
+
+### `allSuccessOrNull()` / `allSuccessOrFailure()`
+
+```kotlin
+import com.example.tuple.*
+
+val results = awaitAllCatching({ fetchName() }, { fetchAge() })
+
+val values: Tuple2<String, Int>? = results.allSuccessOrNull()
+val single: Result<Tuple2<String, Int>> = results.allSuccessOrFailure()  // first failure wins
+```
+
+`allSuccessOrNull()` is the `Result` counterpart of `allNotNullOrNull()`. Unlike `getOrNull()`, a
+*successful* `null` value is preserved: only `Result.isFailure` collapses the Tuple.
 
 ### `allNotNullOrNull()`
 
