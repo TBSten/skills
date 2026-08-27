@@ -166,6 +166,10 @@ a{color:var(--text-link)} a:hover{color:var(--text-link-hover)}
       border-radius:6px;cursor:pointer;line-height:1}
 .zbtn.wide{width:auto;height:26px;padding:0 10px;font-size:11px}
 .zbtn.on{background:var(--tbs-sky-300);border-color:var(--tbs-navy-800)}
+.map-lead{display:flex;align-items:center;gap:4px;margin-right:auto}
+#btn-tour{background:var(--tbs-coin);border-color:var(--tbs-navy-800);font-weight:700}
+#btn-tour.on{background:var(--tbs-coin)}
+#btn-trace{border-color:var(--tbs-heart);color:var(--tbs-heart)}
 /* 図だけの全画面。Fullscreen API は file:// やユーザー操作の制約で失敗する環境があるため、
    どこでも確実に動く fixed のオーバーレイで覆う（カンバン・詳細はこの下に隠れる） */
 .card.map-full{position:fixed;inset:0;z-index:50;border-radius:0;border:0}
@@ -237,6 +241,13 @@ a{color:var(--text-link)} a:hover{color:var(--text-link-hover)}
      text-align:left;width:100%;font-family:var(--tbs-font-body)}
 .dep .rel{font-size:10.5px;font-weight:700;white-space:nowrap}
 .dep .t{font-size:13px;color:var(--text-strong);text-align:left}
+/* 上流 / 下流トレース。押すとそのチケットから依存を推移的に辿って点灯する */
+.trace-row{display:flex;gap:6px}
+.trace-btn{flex:1 1 0;font-family:var(--tbs-font-body);font-size:11.5px;font-weight:700;
+           color:var(--tbs-navy-600);background:var(--surface-card);
+           border:1px solid var(--border-subtle);border-radius:999px;padding:5px 10px;cursor:pointer}
+.trace-btn:hover{background:var(--tbs-sky-100)}
+.trace-btn.on{color:#FFFFFF;background:var(--tbs-navy-600);border-color:var(--tbs-navy-800)}
 /* 複数選択中の一覧。1 行 = 1 チケット。行を押すとその 1 件に絞られる */
 .sellist{display:flex;flex-direction:column;gap:6px}
 .selrow{display:flex;align-items:stretch;gap:6px}
@@ -282,6 +293,7 @@ a{color:var(--text-link)} a:hover{color:var(--text-link-hover)}
        box-shadow:4px 4px 0 var(--tbs-navy-800);padding:16px 18px}
 .retro p{margin:0;font-family:var(--tbs-font-pixel);font-size:14px;line-height:1.9;
          letter-spacing:.08em;color:var(--tbs-navy-800)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 
 <script>
@@ -385,6 +397,8 @@ const S = {
   collapsed:Object.fromEntries(STATUSES.filter(s => s.collapsedByDefault).map(s => [s.id, true])),
   folded:{},                       /* epic id -> true で 1 ノードに畳む */
   fullMap:false,                   /* 図だけの全画面表示 */
+  trace:null,                      /* { id, dir:'up'|'down', set:Set } 依存の推移的な点灯 */
+  tour:null,                       /* { ix } NEXT ツアーの現在位置 */
   q:'',
   view:{ k:1, tx:24, ty:24 },
   vw:1000, vh:430,
@@ -429,6 +443,30 @@ function litSets(primaryIds, via) {
     if (lit.has(t) && !lit.has(f)) near.add(f);
   });
   return { lit, near };
+}
+
+/* トレース: id から依存を推移的に辿った集合（起点を含む）。
+   down = これ待ちの側（from → to を順に辿る）/ up = これの前提側（逆向きに辿る）。
+   hover / 選択の点灯は隣接までで止める設計（litSets）を変えず、
+   チェーン全体を見たいときだけ明示的に使う。 */
+function traceSetOf(id, dir) {
+  const set = new Set([id]);
+  let grew = true;
+  while (grew) {
+    grew = false;
+    EDGES.forEach(e => {
+      if (dir === 'down' && set.has(e.from) && !set.has(e.to)) { set.add(e.to); grew = true; }
+      if (dir === 'up' && set.has(e.to) && !set.has(e.from)) { set.add(e.from); grew = true; }
+    });
+  }
+  return set;
+}
+/* 同じ向きをもう一度押すと解除。別の向き・別の起点なら張り替える */
+function setTrace(id, dir) {
+  S.trace = (S.trace && S.trace.id === id && S.trace.dir === dir)
+    ? null
+    : { id, dir, set:traceSetOf(id, dir) };
+  render();
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -498,8 +536,16 @@ function graph(opts) {
   let maxX = 0, maxY = 0, minX = 1e9, minY = 1e9;
   Object.keys(cols).forEach(c => {
     let cursor = null;
-    /* 安定ソート。block の起点だけを後ろへ回し、それ以外の並びは崩さない */
-    cols[c].sort((p, q) => (blockSrc.has(p.i.id) ? 1 : 0) - (blockSrc.has(q.i.id) ? 1 : 0));
+    /* block の起点は「止めている相手の真下」へ。レーン末尾ではなく相手の直後に差し込む。
+       末尾に回すと、相手と同じレーンに別のノードが居るときにそれが間へ挟まり、
+       上向きの矢印がそのノードの裏を突き抜けてしまう */
+    const base = cols[c].filter(n => !blockSrc.has(n.i.id));
+    cols[c].filter(n => blockSrc.has(n.i.id)).forEach(n => {
+      const tgt = EDGES.filter(e => e.kind === 'block' && e.from === n.i.id).map(e => e.to);
+      const ix = base.findIndex(m => tgt.includes(m.i.id));
+      base.splice(ix >= 0 ? ix + 1 : base.length, 0, n);
+    });
+    cols[c] = base;
     cols[c].forEach(n => {
       const laneX = M + colIdx[Number(c)] * (W + GX);
       const gap = blockSrc.has(n.i.id) ? GYB : GY;
@@ -656,12 +702,13 @@ function edgeOverlapPairs(geoms) {
   return out;
 }
 
-/* opts: { hidden, q, hover, sel, dim, forExport } */
+/* opts: { hidden, q, hover, sel, dim, trace, forExport } */
 function svgBody(g, opts) {
   const o = opts || {};
   const hidden = o.hidden || {}, q = (o.q || '').trim();
   const hv = o.hover || null, sel = o.sel || [];
   const dim = o.dim !== false;
+  const trace = o.trace || null;                        /* Set。あれば点灯はトレースが決める */
   const sset = selSet(sel);
 
   /* 畳まれたエピックのメンバーはその箱に読み替える。線の付け替えと隣接判定の両方で使う */
@@ -672,10 +719,17 @@ function svgBody(g, opts) {
   const { lit, near } = litSets(primary, via);
   const active = lit.size ? lit : null;
 
+  /* 畳んだエピックの箱は、メンバーの誰かがトレースに入っていれば点灯扱い */
+  const traceHas = id => !trace ? false
+    : (id.indexOf('epic:') === 0
+        ? ITEMS.some(m => m.epic === id.slice(5) && trace.has(m.id))
+        : trace.has(id));
+
   const opacityFor = id => {
     const it = byId[id];                                 /* 畳んだエピックのノードは byId に無い */
     if (it && hidden[it.status]) return 0.1;
     if (it && q && !matches(it)) return 0.14;
+    if (trace) return traceHas(id) ? 1 : 0.2;
     if (dim && active) return lit.has(id) || near.has(id) ? 1 : 0.2;
     return 1;
   };
@@ -696,12 +750,15 @@ function svgBody(g, opts) {
   /* --- 依存線。経路は edgeGeoms と共有（畳まれたエピック宛てはその箱に繋ぎ替わる） --- */
   let labels = '';
   edgeGeoms(g).forEach(({ e, fromId, toId, up, sx, sy, tx, ty, d }) => {
-    /* 主役に触れている線を太くする。hover でも選択でも同じ規則 */
-    const isActive = lit.has(fromId) || lit.has(toId);
+    /* 主役に触れている線を太くする。hover でも選択でも同じ規則。
+       トレース中は「両端がトレースに入っている線」だけを経路として太くする */
+    const isActive = trace ? (trace.has(e.from) && trace.has(e.to)) : (lit.has(fromId) || lit.has(toId));
     const base = e.kind === 'block' ? C.heart : e.kind === 'idea' ? C.navy300 : C.navy600;
     const s1 = byId[e.from], s2 = byId[e.to];
     const hid = (s1 && hidden[s1.status]) || (s2 && hidden[s2.status]);
-    const op = hid ? 0.08 : (dim && active ? (isActive ? 1 : 0.08) : 0.85);
+    const op = hid ? 0.08
+      : trace ? (isActive ? 1 : 0.08)
+      : (dim && active ? (isActive ? 1 : 0.08) : 0.85);
     const dash = e.kind === 'block' ? ' stroke-dasharray="6 5"' : e.kind === 'idea' ? ' stroke-dasharray="2 5"' : '';
     const mk = e.kind === 'block' ? 'block' : e.kind === 'idea' ? 'idea' : 'flow';
     out += `<path d="${d}" fill="none" stroke="${base}" stroke-width="${isActive ? 2.8 : 1.8}"${dash} stroke-linecap="round" marker-end="url(#ar-${mk})" opacity="${op}"/>`;
@@ -884,6 +941,21 @@ function multiMarkup(ids) {
     + `<div class="side-body"><div class="sellist">${rows}</div></div>`;
 }
 
+/* 上流 / 下流トレースのボタン行。図に出ていて依存線が繋がっているチケットだけに出す。
+   点灯の既定（隣接まで）を変えずに、チェーン全体を見たいときの明示操作にする */
+function traceRow(it) {
+  if (it.col === undefined) return '';
+  const hasUp = EDGES.some(e => e.to === it.id), hasDown = EDGES.some(e => e.from === it.id);
+  if (!hasUp && !hasDown) return '';
+  const on = dir => S.trace && S.trace.id === it.id && S.trace.dir === dir;
+  const btn = (dir, label) =>
+    `<button class="trace-btn${on(dir) ? ' on' : ''}" data-trace="${dir}" data-id="${esc(it.id)}">${label}</button>`;
+  return `<div class="trace-row">`
+    + (hasUp ? btn('up', '⇠ 上流を点灯') : '')
+    + (hasDown ? btn('down', '下流を点灯 ⇢') : '')
+    + `</div>`;
+}
+
 function detailMarkup() {
   const ids = S.sel.filter(id => byId[id]);
   if (!ids.length) return `<div class="empty"><div class="retro"><p>えらんでください....</p></div></div>`;
@@ -924,7 +996,7 @@ function detailMarkup() {
     + sec('子チケット', (it.children || []).map(k =>
         `<div class="subrow"><span class="bullet">▶︎</span><div style="min-width:0">`
         + `<div class="kid-key">${esc(k.key)}</div><div class="kid-title">${esc(k.title)}</div></div></div>`).join(''))
-    + sec('依存', deps.map(d => byId[d.id] ? `<button class="dep" data-item="${esc(d.id)}" data-from="kanban">`
+    + sec('依存', traceRow(it) + deps.map(d => byId[d.id] ? `<button class="dep" data-item="${esc(d.id)}" data-from="kanban">`
         + `<span class="rel" style="color:${d.tone}">${esc(d.rel)}</span>`
         + `<span class="t">${esc(byId[d.id].title)}</span></button>` : '').join(''))
     + sec('関連 PR・ブランチ', (it.links || []).map(l =>
@@ -964,6 +1036,7 @@ function shell() {
       <button class="btn btn-toggle" id="btn-children">子チケット</button>
       <button class="btn" data-export="svg">SVG</button>
       <button class="btn" data-export="png">PNG</button>
+      <button class="btn" data-export="card">カード</button>
     </div>
   </header>
   <div class="chips" id="chips"></div>
@@ -971,6 +1044,10 @@ function shell() {
     <div class="left">
       <section class="card" id="map-card">
         <div class="map-bar">
+          <div class="map-lead">
+            ${ITEMS.some(i => i.next) ? '<button class="zbtn wide" id="btn-tour">▶ NEXT</button>' : ''}
+            <button class="zbtn wide" id="btn-trace" hidden>トレース ✕</button>
+          </div>
           <button class="zbtn" data-zoom="out">−</button>
           <button class="zbtn" data-zoom="in">＋</button>
           <button class="zbtn wide" data-zoom="fit">全体</button>
@@ -990,7 +1067,8 @@ function shell() {
 let els = {};
 function renderMap() {
   const g = graph({ compact:S.view.k < COMPACT_K, folded:S.folded });
-  els.zoomG.innerHTML = svgBody(g, { hidden:S.hidden, q:S.q, hover:S.hover, sel:S.sel, dim:dimOn() });
+  els.zoomG.innerHTML = svgBody(g, { hidden:S.hidden, q:S.q, hover:S.hover, sel:S.sel, dim:dimOn(),
+                                     trace:S.trace && S.trace.set });
   return g;
 }
 function applyView() {
@@ -1022,6 +1100,12 @@ function render() {
   });
   els.side.innerHTML = detailMarkup();
   els.btnChildren.classList.toggle('on', S.expanded);
+  if (els.btnTour) {
+    els.btnTour.classList.toggle('on', !!S.tour);
+    els.btnTour.textContent = S.tour ? `NEXT ${S.tour.ix + 1}/${tourList().length}` : '▶ NEXT';
+  }
+  els.btnTrace.hidden = !S.trace;
+  if (S.trace) els.btnTrace.textContent = (S.trace.dir === 'up' ? '上流' : '下流') + ' ✕';
   syncUrl();                                  /* 表示状態を URL に反映（履歴は汚さない） */
 }
 
@@ -1105,15 +1189,37 @@ function toggleFullMap(on) {
       選択したノードだけに切り取らないのは、PR に貼ったときに全体のどこの話かが
       読み手に伝わらなくなるため。
    ══════════════════════════════════════════════════════════════════════════ */
+/* 選択もトレースも、画面で見えている点灯のまま書き出す */
+const exportDim = () => ({ sel:S.sel, dim:S.sel.length > 0, trace:S.trace && S.trace.set });
 function exportSvgText() {
   const g = graph({ compact:false, folded:{} });
   const pad = 24;
   const W = Math.round(g.cw + pad * 2), H = Math.round(g.ch + pad * 2);
-  const body = svgBody(g, { hidden:{}, q:'', hover:null, sel:S.sel, dim:S.sel.length > 0 });
+  const body = svgBody(g, Object.assign({ hidden:{}, q:'', hover:null }, exportDim()));
   return `<?xml version="1.0" encoding="UTF-8"?>\n`
     + `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`
     + `<rect width="100%" height="100%" fill="${C.sky50}"/>${DEFS}`
     + `<g transform="translate(${pad - g.minX},${pad - g.minY})">${body}</g></svg>`;
+}
+/* シェアカード: 1200×630 固定（OGP と同じ比率）。Slack / PR にそのまま貼るためのもの。
+   タイトルと更新時刻を上に入れ、図は残りの領域に全体フィットさせる */
+function exportCardSvgText() {
+  const W = 1200, H = 630, pad = 30, hd = 76;
+  const g = graph({ compact:false, folded:{} });
+  const body = svgBody(g, Object.assign({ hidden:{}, q:'', hover:null }, exportDim()));
+  const k = Math.min((W - pad * 2) / g.cw, (H - hd - pad * 2) / g.ch, 1.15);
+  const ox = (W - g.cw * k) / 2 - g.minX * k;
+  const oy = hd + ((H - hd) - g.ch * k) / 2 - g.minY * k;
+  const sub = [META.repoLabel, META.updatedAt].filter(Boolean).join(' · ');
+  return `<?xml version="1.0" encoding="UTF-8"?>\n`
+    + `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`
+    + `<rect width="100%" height="100%" fill="${C.sky50}"/>`
+    + `<rect width="${W}" height="${hd}" fill="${C.white}"/>`
+    + `<line x1="0" y1="${hd}" x2="${W}" y2="${hd}" stroke="${C.sky300}" stroke-width="1.5"/>`
+    + txt(META.title || 'status board', 36, 48, 26, 700, C.navy800, FONT)
+    + (sub ? `<text x="${W - 36}" y="46" font-size="13" fill="${C.navy400}" font-family="${MONO}" text-anchor="end">${esc(sub)}</text>` : '')
+    + DEFS
+    + `<g transform="translate(${ox},${oy}) scale(${k})">${body}</g></svg>`;
 }
 function download(blob, name) {
   const url = URL.createObjectURL(blob), a = document.createElement('a');
@@ -1122,20 +1228,25 @@ function download(blob, name) {
 }
 const slug = () => (META.title || 'status').replace(/[^\w\-]+/g, '-').replace(/^-+|-+$/g, '').toLowerCase() || 'status';
 function exportSvg() { download(new Blob([exportSvgText()], { type:'image/svg+xml' }), slug() + '.svg'); }
-function exportPng() {
-  const t = exportSvgText();
-  const g = graph({ compact:false, folded:{} }), pad = 24, s = 2, img = new Image();
+/* SVG 文字列 → 2x の PNG。全体図とシェアカードで共有する */
+function rasterize(svgText, w, h, name) {
+  const s = 2, img = new Image();
   img.onload = () => {
     const cv = document.createElement('canvas');
-    cv.width = Math.round((g.cw + pad * 2) * s); cv.height = Math.round((g.ch + pad * 2) * s);
+    cv.width = Math.round(w * s); cv.height = Math.round(h * s);
     const ctx = cv.getContext('2d');
     ctx.fillStyle = C.sky50; ctx.fillRect(0, 0, cv.width, cv.height);
     ctx.drawImage(img, 0, 0, cv.width, cv.height);
-    cv.toBlob(b => download(b, slug() + '.png'));
+    cv.toBlob(b => download(b, name));
   };
   img.onerror = () => console.error('[board] PNG 書き出しに失敗しました');
-  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(t);
+  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgText);
 }
+function exportPng() {
+  const g = graph({ compact:false, folded:{} }), pad = 24;
+  rasterize(exportSvgText(), Math.round(g.cw + pad * 2), Math.round(g.ch + pad * 2), slug() + '.png');
+}
+function exportCard() { rasterize(exportCardSvgText(), 1200, 630, slug() + '-card.png'); }
 
 /* ══════════════════════════════════════════════════════════════════════════
    10. 選択とスクロール連動
@@ -1157,15 +1268,7 @@ function select(id, from, additive) {
   const it = byId[id];
   if (!it || !S.sel.includes(id)) return;    /* 外したときは寄せない */
 
-  if (from === 'kanban' && it.col !== undefined) {
-    const g = graph({ compact:S.view.k < COMPACT_K, folded:S.folded });
-    const n = g.map[id];
-    if (n) {
-      S.touched = true;
-      const k = S.view.k;
-      setView({ k, tx:S.vw / 2 - (n.x + n.w / 2) * k, ty:S.vh / 2 - (n.y + n.h / 2) * k });
-    }
-  }
+  if (from === 'kanban' && it.col !== undefined) centerOn(id, S.view.k);
   if (from === 'map') {
     const bid = it.epic || 'none';
     const strip = els.kanban.querySelector(`[data-strip="${CSS.escape(bid)}"]`);
@@ -1173,6 +1276,38 @@ function select(id, from, additive) {
     if (strip && col) strip.scrollLeft += col.getBoundingClientRect().left - strip.getBoundingClientRect().left - 12;
     if (strip) els.kanban.scrollTop += strip.parentElement.getBoundingClientRect().top - els.kanban.getBoundingClientRect().top - 8;
   }
+}
+
+/* 図の中で id のノードを画面中央へ。カンバンからの選択と NEXT ツアーで共有する */
+function centerOn(id, k) {
+  const g = graph({ compact:k < COMPACT_K, folded:S.folded });
+  const n = g.map[id];
+  if (!n) return;
+  S.touched = true;
+  setView({ k, tx:S.vw / 2 - (n.x + n.w / 2) * k, ty:S.vh / 2 - (n.y + n.h / 2) * k });
+}
+
+/* ---- NEXT ツアー ----------------------------------------------------------
+   「▶ NEXT」か N キーで、NEXT 1 → 2 → 3 を順に選択 + センタリングして巡る。
+   1 歩ごとに詳細パネルへその 1 件が出るので、読みながら次の一手を確認できる。
+   最後まで行くと選択を解いて全体フィットに戻る。 */
+const tourList = () => ITEMS.filter(i => i.next).sort((a, b) => a.next - b.next).map(i => i.id);
+function tourNext() {
+  const list = tourList();
+  if (!list.length) return;
+  if (!S.tour) S.tour = { ix:0 };
+  else if (++S.tour.ix >= list.length) { tourEnd(); return; }
+  const id = list[S.tour.ix];
+  S.sel = [id];
+  render();
+  /* 意味的ズーム (k < 0.7) のままだと meta 行が読めないので、読める縮尺まで寄せる */
+  if (byId[id] && byId[id].col !== undefined) centerOn(id, Math.min(Math.max(S.view.k, 0.95), 1.06));
+}
+function tourEnd() {
+  if (!S.tour) return;
+  S.tour = null; S.sel = [];
+  render();
+  fitView();
 }
 
 /* ---- 表示状態と URL の同期 ------------------------------------------------
@@ -1184,6 +1319,7 @@ function select(id, from, additive) {
      collapse … 畳んだカンバン列の status id。既定と違うときだけ付く（空 = 全部展開）
      q        … 検索語（空なら付かない）
      full     … 1 なら図だけの全画面
+     trace    … up:<id> / down:<id>。トレース中の向きと起点
 
    同期は replaceState で行い、履歴は汚さない。location.search / URLSearchParams は
    protocol に依存しないので file:// でも動くが、replaceState を拒む環境に備えて
@@ -1201,6 +1337,7 @@ function syncUrl() {
     if (col === DEFAULT_COLLAPSED) p.delete('collapse'); else p.set('collapse', col);
     put('q', S.q);
     put('full', S.fullMap ? '1' : '');
+    put('trace', S.trace ? S.trace.dir + ':' + S.trace.id : '');
     const qs = p.toString();
     history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
   } catch { /* 書けなくても機能はそのまま */ }
@@ -1214,6 +1351,12 @@ function restoreFromUrl() {
     if (p.has('hide')) S.hidden = Object.fromEntries(ids('hide').filter(isStatusId).map(id => [id, true]));
     if (p.has('collapse')) S.collapsed = Object.fromEntries(ids('collapse').filter(isStatusId).map(id => [id, true]));
     if (p.has('q')) S.q = p.get('q') || '';
+    if (p.has('trace')) {
+      const m = (p.get('trace') || '').split(':');
+      if ((m[0] === 'up' || m[0] === 'down') && byId[m[1]]) {
+        S.trace = { id:m[1], dir:m[0], set:traceSetOf(m[1], m[0]) };
+      }
+    }
     out.full = p.get('full') === '1';
   } catch { /* パースに失敗したら既定の表示で開く */ }
   return out;
@@ -1236,7 +1379,9 @@ function init() {
     kanban:document.getElementById('kanban'),
     side:document.getElementById('side'),
     q:document.getElementById('q'),
-    btnChildren:document.getElementById('btn-children')
+    btnChildren:document.getElementById('btn-children'),
+    btnTour:document.getElementById('btn-tour'),      /* next が 1 件も無いと null */
+    btnTrace:document.getElementById('btn-trace')
   };
   els.q.value = S.q;                         /* URL から復元した検索語を入力欄にも出す */
   render();
@@ -1309,8 +1454,16 @@ function init() {
       return;
     }
     if (e.target.closest('#btn-fullmap')) { toggleFullMap(); return; }
+    if (e.target.closest('#btn-tour')) { tourNext(); return; }
+    if (e.target.closest('#btn-trace')) { S.trace = null; render(); return; }
     const ex = e.target.closest('[data-export]');
-    if (ex) { ex.getAttribute('data-export') === 'svg' ? exportSvg() : exportPng(); return; }
+    if (ex) {
+      const w = ex.getAttribute('data-export');
+      (w === 'svg' ? exportSvg : w === 'card' ? exportCard : exportPng)();
+      return;
+    }
+    const tr = e.target.closest('[data-trace]');
+    if (tr) { setTrace(tr.getAttribute('data-id'), tr.getAttribute('data-trace')); return; }
     if (e.target.closest('#btn-children')) { S.expanded = !S.expanded; render(); return; }
     const chip = e.target.closest('[data-chip]');
     if (chip) {
@@ -1342,8 +1495,24 @@ function init() {
 
   els.q.addEventListener('input', e => { S.q = e.target.value; render(); });
 
-  /* Esc で全画面を解除（全画面でなければ何もしない） */
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') toggleFullMap(false); });
+  /* キーボード: / = 検索へ / f = 全画面（プレゼン用） / n = NEXT ツアー / Esc = 1 段戻る。
+     入力中はショートカットを効かせない（Esc だけは入力から抜ける動きにする） */
+  document.addEventListener('keydown', e => {
+    const el = document.activeElement;
+    const typing = el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA');
+    if (e.key === 'Escape') {
+      if (typing) { el.blur(); return; }
+      if (S.fullMap) { toggleFullMap(false); return; }
+      if (S.trace) { S.trace = null; render(); return; }
+      if (S.tour) { tourEnd(); return; }
+      if (S.sel.length) { S.sel = []; render(); }
+      return;
+    }
+    if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key === '/') { e.preventDefault(); els.q.focus(); els.q.select(); return; }
+    if (e.key === 'f' || e.key === 'F') { toggleFullMap(); return; }
+    if (e.key === 'n' || e.key === 'N') { tourNext(); return; }
+  });
 
   /* --- 確認欄 ---
      打鍵のたびに render すると focus が飛ぶので、input では保存だけ。
@@ -1387,12 +1556,13 @@ function __verify() {
   /* 状態を退避して、最後に必ず戻す */
   const snap = { sel:S.sel.slice(), hover:S.hover, expanded:S.expanded, q:S.q, view:Object.assign({}, S.view),
                  hidden:Object.assign({}, S.hidden), collapsed:Object.assign({}, S.collapsed),
-                 folded:Object.assign({}, S.folded), fullMap:S.fullMap, scrollTop:els.kanban.scrollTop };
+                 folded:Object.assign({}, S.folded), fullMap:S.fullMap, scrollTop:els.kanban.scrollTop,
+                 trace:S.trace, tour:S.tour };
   try {
     /* URL から復元したフィルタ（検索語・非表示チップ・畳み）が残っていると、件数や
        点灯のチェックの前提が崩れる。検証はいったん素の状態に戻してから行う
        （元の表示は finally が snap から復元する）。 */
-    S.sel = []; S.hover = null; S.q = ''; S.hidden = {}; S.folded = {};
+    S.sel = []; S.hover = null; S.q = ''; S.hidden = {}; S.folded = {}; S.trace = null; S.tour = null;
     S.collapsed = Object.fromEntries(STATUSES.filter(s => s.collapsedByDefault).map(s => [s.id, true]));
     els.q.value = '';
     render();
@@ -1424,10 +1594,21 @@ function __verify() {
       check(!hit(fr[i].r, fr[j].r), `エピック枠が重なっている: ${fr[i].id} x ${fr[j].id}`);
 
     /* 依存線の並走。画面の縮尺・畳みに依らないよう、書き出しと同じ全体レイアウトで見る */
-    const ov = edgeOverlapPairs(edgeGeoms(graph({ compact:false, folded:{} })));
+    const gAll = graph({ compact:false, folded:{} });
+    const ov = edgeOverlapPairs(edgeGeoms(gAll));
     check(!ov.length, '依存線が並走して 1 本に見える: '
       + ov.map(o => `${o.a} と ${o.b}（約 ${o.len}px）`).join(' / '));
     info.edgeOverlaps = ov.length;
+
+    /* block の上向き矢印が、起点と相手の間に挟まった別のノードの裏を突き抜けていないか */
+    edgeGeoms(gAll).filter(x => x.up).forEach(x => {
+      const a = gAll.map[x.fromId], b = gAll.map[x.toId];
+      const seg = { x:x.sx - 2, y:b.y + b.h, w:4, h:Math.max(0, a.y - (b.y + b.h)) };
+      gAll.nodes.filter(n => n.i.id !== x.fromId && n.i.id !== x.toId).forEach(n => {
+        check(!(seg.x < n.x + n.w && n.x < seg.x + seg.w && seg.y < n.y + n.h && n.y < seg.y + seg.h),
+              `block の矢印が ${n.i.id} の裏を突き抜けている: ${x.fromId} → ${x.toId}`);
+      });
+    });
 
     nodesOf().forEach(g => {
       const shape = g.querySelector('rect, polygon'); if (!shape) return;
@@ -1521,7 +1702,9 @@ function __verify() {
       const svg = exportSvgText();
       check((svg.match(/data-node=/g) || []).length === ITEMS.filter(i => i.col !== undefined).length,
             '選択中の書き出しでノードが欠けている');
-      check(svg.indexOf('opacity="0.2"') >= 0, '選択中の書き出しで非選択が薄くなっていない');
+      /* 小さいボードでは選択 + 隣接が全ノードを覆い、沈む対象が無いことがある。
+         そのときは opacity="0.2" が出ないのが正しい */
+      check(!rest.length || svg.indexOf('opacity="0.2"') >= 0, '選択中の書き出しで非選択が薄くなっていない');
 
       /* ✕ で 1 件外すと単一表示に戻る */
       const x = document.querySelector('#side [data-deselect]');
@@ -1604,12 +1787,70 @@ function __verify() {
       }
       info.askItems = ITEMS.filter(needsAsk).length;
     }
+
+    /* --- トレース（上流 / 下流の推移的な点灯） --- */
+    const te = EDGES.find(e => byId[e.from] && byId[e.to]
+      && byId[e.from].col !== undefined && byId[e.to].col !== undefined);
+    if (te) {
+      select(te.from, 'kanban');
+      check(!!document.querySelector('#side [data-trace]'), '依存のあるチケットにトレースボタンが出ない');
+      setTrace(te.from, 'down');
+      check(!!S.trace && S.trace.set.has(te.to), 'トレース(下流)に直接の依存先が入らない');
+      const tset = S.trace ? S.trace.set : new Set();
+      const plain = nodesOf().filter(n => n.dataset.node.indexOf('epic:') !== 0);
+      const opOf2 = n => Number(n.getAttribute('opacity') || 1);
+      check(plain.filter(n => tset.has(n.dataset.node)).every(n => opOf2(n) === 1),
+            'トレース中のノードが沈んでいる');
+      check(plain.filter(n => !tset.has(n.dataset.node)).every(n => opOf2(n) === 0.2),
+            'トレース外のノードが沈まない');
+      check(new URLSearchParams(location.search).get('trace') === 'down:' + te.from,
+            'トレースが URL の ?trace= に反映されない');
+      check(!els.btnTrace.hidden, 'トレース中に解除ボタンが出ない');
+      setTrace(te.from, 'down');
+      check(!S.trace, '同じトレースをもう一度押しても解除されない');
+      info.trace = tset.size + ' nodes';
+    }
+
+    /* --- NEXT ツアー --- */
+    const tl = tourList();
+    if (tl.length) {
+      tourNext();
+      check(!!S.tour && S.sel.length === 1 && S.sel[0] === tl[0], 'ツアーの 1 歩目が next=1 を選ばない');
+      check(!!els.btnTour && els.btnTour.textContent.indexOf('1/') >= 0, 'ツアーの進捗がボタンに出ない');
+      for (let s2 = 0; s2 < tl.length; s2++) tourNext();   /* 最後の 1 回で終了する */
+      check(!S.tour && !S.sel.length, 'ツアーが最後まで行っても終了しない');
+      info.tour = tl.length + ' steps';
+    }
+
+    /* --- シェアカード --- */
+    try {
+      const card = exportCardSvgText();
+      check(!new DOMParser().parseFromString(card, 'image/svg+xml').querySelector('parsererror'),
+            '書き出したカード SVG が壊れている');
+      check(card.indexOf('width="1200"') >= 0 && card.indexOf('height="630"') >= 0,
+            'カードが 1200×630 になっていない');
+      check((card.match(/data-node=/g) || []).length === ITEMS.filter(i => i.col !== undefined).length,
+            'カードのノード数が図と合わない');
+    } catch (e) { fail.push('カード書き出しで例外: ' + e.message); }
+
+    /* --- キーボード --- */
+    const press = k => document.dispatchEvent(new KeyboardEvent('keydown', { key:k, bubbles:true, cancelable:true }));
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    press('/');
+    check(document.activeElement === els.q, '"/" で検索にフォーカスが移らない');
+    els.q.blur();
+    press('f');
+    check(S.fullMap, '"f" で全画面にならない');
+    press('Escape');
+    check(!S.fullMap, 'Esc で全画面が解除されない');
+    info.keys = 'ok';
   } catch (e) {
     fail.push('検証中に例外: ' + (e && e.stack ? e.stack.split('\n')[0] : e));
   } finally {
     toggleFullMap(snap.fullMap);
     Object.assign(S, { sel:snap.sel, hover:snap.hover, expanded:snap.expanded, q:snap.q,
-                       hidden:snap.hidden, collapsed:snap.collapsed, folded:snap.folded });
+                       hidden:snap.hidden, collapsed:snap.collapsed, folded:snap.folded,
+                       trace:snap.trace, tour:snap.tour });
     els.q.value = snap.q;
     render();
     setView(snap.view);
