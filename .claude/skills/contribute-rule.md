@@ -58,7 +58,7 @@ skill / rule / prompt は、実行時に AI Agent が実装・作業・判断す
 - script は参照ファイルとして `rules/<rule-name>/` 配下に置く。install.sh が RULE.md 以外を**相対パスのままユーザーのカレントディレクトリにコピー**するため、`rules/<rule-name>/tools/<rule-name>/<script>` のようにユーザープロジェクトを汚しにくいパスで設計する
 - install.sh は `curl -o` で保存するだけで**実行権限を付けない**。RULE.md 内の実行例は必ず `bash tools/<rule-name>/<script>.sh` / `node tools/<rule-name>/<script>.mjs` のようにインタープリタ明示で書く (`./<script>` 形式は動かない)
 - RULE.md からはユーザーのプロジェクトルート基準の相対パスで参照し、「script を読解・書き換え・再実装せず、そのまま実行する」と明記する
-- 既存例 (skill 側だが同じ思想): `skills/github-get-attachment-url/`、`skills/status-board/`
+- 既存例 (skill 側だが同じ思想): `skills/status-board/`
 
 ### script の品質要件
 

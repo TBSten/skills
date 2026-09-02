@@ -2,6 +2,9 @@
 
 ローカルファイルを GitHub にアップロードし、Issue を作成せずに `user-attachments` URL を取得する。
 
+> [!WARNING]
+> **Archived (2026-09)。** GitHub CLI v2.99.0 で繰り返し指定可能な `--attach` フラグ (`gh issue|pr create/edit/comment --attach <file>`) が追加され、このスキルの主用途はネイティブに実現できるようになったため、基本は `--attach` を使う。残る用途は `--attach` が対応しない、文書・アーカイブ (PDF, zip 等) のアップロードと、何も投稿せずに `user-attachments` URL だけ取得するケースのみ。
+
 ## インストール
 
 ```sh
