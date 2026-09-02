@@ -9,7 +9,7 @@
  * 「作れてしまうが読めない HTML」を出すよりエラーで止める方がよい。
  */
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { dirname, resolve, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -49,8 +49,12 @@ let data = load(input, 'board.json');
      edges             … from+to が同じものは置き換え、無ければ追加
      urgency           … あれば丸ごと差し替え
 */
+let overlayRaw = null;
 if (overlay) {
   const o = load(overlay, 'overlay.json');
+  /* snapshot には overlay の原文を残す。後段の block 補正が o の item を直接書き換える
+     （col / epic を注入する）ので、合成前にここで写しを取る。 */
+  overlayRaw = structuredClone(o);
   const upsert = (base, add, key = 'id') => {
     const list = (base || []).slice();
     (add || []).forEach(x => {
@@ -285,7 +289,24 @@ const outPath = resolve(out);
 mkdirSync(dirname(outPath), { recursive: true });
 writeFileSync(outPath, html, 'utf8');
 
+/* ---- データ snapshot ----------------------------------------------------
+   HTML と同じ basename の .json に、描画した最終データと overlay の原文を残す。
+   overlay（会話由来の人間待ち・未決・構想）はセッションを跨ぐとここにしか残らない。
+   次回の collect.mjs がこれを読み、overlay.prev.json として引き継ぎ候補に出す。 */
+const snapPath = outPath.replace(/\.html?$/i, '') + '.json';
+let snapNote = '';
+if (snapPath === resolve(input)) {
+  console.error('warn: snapshot が入力 board.json と同名になるため書かない（出力の basename を変える）');
+} else {
+  writeFileSync(snapPath, JSON.stringify({
+    html: basename(outPath),
+    board: { meta, props, statuses, epics, urgency, items, edges },
+    overlay: overlayRaw
+  }, null, 2), 'utf8');
+  snapNote = ` · snapshot ${basename(snapPath)}`;
+}
+
 const onMap = items.filter(i => i.col !== undefined).length;
 const onKanban = items.filter(i => i.kanban !== false).length;
 console.log(`${outPath}`);
-console.error(`  items ${items.length} (図 ${onMap} / カンバン ${onKanban}) · edges ${edges.length} · epics ${epics.length} · statuses ${statuses.length}`);
+console.error(`  items ${items.length} (図 ${onMap} / カンバン ${onKanban}) · edges ${edges.length} · epics ${epics.length} · statuses ${statuses.length}${snapNote}`);
