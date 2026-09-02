@@ -2,7 +2,7 @@
 name: github-get-attachment-url
 description: 同梱の決定的な Python Playwright スクリプトで、画像、動画、文書、アーカイブなど GitHub が対応するローカルファイルを TBSten/actions-test の Issue 下書きへアップロードし、Issue を作成せずに user-attachments URL または Markdown を取得する。GitHub にファイルをアップして URL 化したい、添付 URL を取得したいときに使用する。
 metadata:
-  status: Active
+  status: Archived
   group: Git / GitHub
 ---
 

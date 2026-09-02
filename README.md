@@ -211,19 +211,6 @@ gh skill install tbsten/skills pr-fix-loop
 <td>✅ Active</td>
 <td>Drive many PRs to green: classify CI failures, handle comments, chain rebases</td>
 </tr>
-<tr>
-<td></td>
-<td><a href="./skills/github-get-attachment-url.md">github-get-attachment-url</a></td>
-<td>
-
-```sh
-gh skill install tbsten/skills github-get-attachment-url
-```
-
-</td>
-<td>✅ Active</td>
-<td>Upload local files to GitHub</td>
-</tr>
 </table>
 
 ## 📝 Available Rules
@@ -452,3 +439,30 @@ gh skill install tbsten/skills contribute-batch
 <td>Triage knowledge into skills / rules / prompts and open one PR to TBSten/skills</td>
 </tr>
 </table>
+
+<details>
+
+<summary> ❌ Archived Skills / Rules / Prompts </summary>
+
+<table>
+<tr>
+<th>Name</th>
+<th>Install / Run</th>
+<th>Status</th>
+<th>Description</th>
+</tr>
+<tr>
+<td><a href="./skills/github-get-attachment-url.md">github-get-attachment-url</a></td>
+<td>
+
+```sh
+gh skill install tbsten/skills github-get-attachment-url
+```
+
+</td>
+<td>❌ Archived</td>
+<td>Upload local files to GitHub (superseded by GitHub CLI v2.99.0's <code>--attach</code> flag)</td>
+</tr>
+</table>
+
+</details>

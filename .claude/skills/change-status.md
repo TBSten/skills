@@ -91,7 +91,7 @@ README.md / README.ja.md のステータス列は **frontmatter を正とした�
 1. 通常テーブル (⭐️ Available Skills / 📝 Available Rules / 💬 Available Prompts) から該当 `<tr>...</tr>` を削除する
    - 削除する行がグループ先頭行 (グループセルに `絵文字 + グループ名` が入っている行) の場合は、直後の同グループ行の空グループセルにその内容を移す
 2. README 末尾 (🤝 Contribute セクションの下) の `<details>` 内 Archived テーブルに、ステータス `❌ Archived` で同じ行を追加する
-3. Archived テーブルが無ければ `<details><summary> ❌ Archived Skills / Rules </summary>` セクションごと新規作成する
+3. Archived テーブルが無ければ `<details><summary> ❌ Archived Skills / Rules / Prompts </summary>` (日本語版は `❌ Archived スキル / ルール / プロンプト`) セクションごと新規作成する。skill / rule / prompt の 3 種が同居するため、列は `Name`・`Install / Run`・`Status`・`Description` (日本語版は `名前`・`インストール / 実行`・`ステータス`・`説明`) とし、グループ列は持たない
 
 逆に `Archived` から他の status へ戻す場合は、Archived テーブルから通常テーブルへ行を戻す。
 

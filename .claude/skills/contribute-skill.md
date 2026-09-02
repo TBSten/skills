@@ -53,7 +53,7 @@ skill / rule / prompt は、実行時に AI Agent が実装・作業・判断す
 - SKILL.md からは `${CLAUDE_SKILL_DIR}/scripts/<script>` (この SKILL.md があるディレクトリ基準) で実行させる
 - SKILL.md には「script を読解・書き換え・再実装せず、そのまま実行する」と明記する
 - ユーザーのプロジェクト側に配置して使わせる script は `scripts/` ではなく `example/` に置き、コピー指示にする
-- 既存例: `skills/github-get-attachment-url/` (scripts/run.sh をそのまま実行)、`skills/status-board/` (scripts/*.mjs)、`skills/kmp-snapshot-testing-setup/example/tools/` (プロジェクト配置型)
+- 既存例: `skills/status-board/` (scripts/*.mjs をそのまま実行)、`skills/kmp-snapshot-testing-setup/example/tools/` (プロジェクト配置型)
 
 ### script の品質要件
 
