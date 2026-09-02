@@ -52,7 +52,7 @@ gh skill install tbsten/skills kotlin-tuple
 ```
 
 </td>
-<td>✅ Active</td>
+<td>🧪 Experimental</td>
 <td>Kotlin/KMP 向け型安全な Tuple ユーティリティを生成する Gradle 設定</td>
 </tr>
 <tr>
@@ -65,7 +65,7 @@ gh skill install tbsten/skills simple-loader
 ```
 
 </td>
-<td>✅ Active</td>
+<td>🧪 Experimental</td>
 <td>Kotlin/Compose Multiplatform 向け sealed interface ベースの非同期データ読み込み状態管理</td>
 </tr>
 <tr>
@@ -78,7 +78,7 @@ gh skill install tbsten/skills navigation3-main-tab
 ```
 
 </td>
-<td>✅ Active</td>
+<td>🧪 Experimental</td>
 <td>Navigation 3 の SceneStrategy を活用した下タブ管理パターン (KMP + Compose)</td>
 </tr>
 <tr>
@@ -91,7 +91,7 @@ gh skill install tbsten/skills kmp-snapshot-testing-setup
 ```
 
 </td>
-<td>✅ Active</td>
+<td>🧪 Experimental</td>
 <td>KMP + Compose プロジェクト向けスナップショットテスト基盤</td>
 </tr>
 <tr>
@@ -104,7 +104,7 @@ gh skill install tbsten/skills kotlin-compiler-plugin-setup
 ```
 
 </td>
-<td>✅ Active</td>
+<td>🧪 Experimental</td>
 <td>基本的なツールチェインを揃えた Kotlin Compiler Plugin プロジェクト のセットアップ</td>
 </tr>
 <tr>
@@ -117,7 +117,7 @@ gh skill install tbsten/skills kotlin-compiler-plugin-dev
 ```
 
 </td>
-<td>✅ Active</td>
+<td>🧪 Experimental</td>
 <td>Kotlin Compiler Plugin の開発・レビューを支援する</td>
 </tr>
 <tr>
@@ -169,7 +169,7 @@ gh skill install tbsten/skills react-vite-supabase-starter
 ```
 
 </td>
-<td>✅ Active</td>
+<td>🧪 Experimental</td>
 <td>React + Vite + Tailwind v4 + shadcn/ui + TanStack + Supabase の Web アプリプロジェクト作成</td>
 </tr>
 <tr>
@@ -182,7 +182,7 @@ gh skill install tbsten/skills exploratory-pr-verification
 ```
 
 </td>
-<td>✅ Active</td>
+<td>🧪 Experimental</td>
 <td>Kotlin プロジェクトの PR を複数 subagent 並列で探索的に検証する運用規約</td>
 </tr>
 <tr>
@@ -195,7 +195,7 @@ gh skill install tbsten/skills exploratory-nightly-verification
 ```
 
 </td>
-<td>✅ Active</td>
+<td>🧪 Experimental</td>
 <td>nightly CI から main を 60 分 single-shot で探索検証し、発見を Markdown に書き出す</td>
 </tr>
 <tr>
@@ -247,7 +247,7 @@ curl -fsSL https://rules.tbsten.me/i | \
 ```
 
 </td>
-<td>✅ Active</td>
+<td>🧪 Experimental</td>
 <td>Kotlin Multiplatform プロジェクト向けスナップショット PBT テストルール</td>
 </tr>
 <tr>
@@ -261,7 +261,7 @@ curl -fsSL https://rules.tbsten.me/i | \
 ```
 
 </td>
-<td>✅ Active</td>
+<td>🧪 Experimental</td>
 <td>Kotlin Multiplatform + Compose プロジェクト向けエラーハンドリング・警告管理</td>
 </tr>
 <tr>
@@ -275,7 +275,7 @@ curl -fsSL https://rules.tbsten.me/i | \
 ```
 
 </td>
-<td>✅ Active</td>
+<td>🧪 Experimental</td>
 <td>Kotlin Multiplatform + Compose プロジェクト向け 4 層アーキテクチャ</td>
 </tr>
 </table>

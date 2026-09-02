@@ -13,7 +13,7 @@ description: >
   "compiler plugin の unit test を書きたい", "FIR/IR extension のプロジェクト構成",
   "Gradle plugin で compiler plugin をラップ", "compiler plugin の integration test をセットアップ".
 metadata:
-  status: Active
+  status: Experimental
   group: Kotlin ライブラリ/ツール開発
 ---
 

@@ -11,7 +11,7 @@ description: >
   "Compose でローディングのアニメーション遷移", "PartialData でプログレス表示".
   For Kotlin/KMP + Compose Multiplatform projects that need structured async data loading with state management.
 metadata:
-  status: Active
+  status: Experimental
   group: Kotlin / Android アプリ開発
 ---
 

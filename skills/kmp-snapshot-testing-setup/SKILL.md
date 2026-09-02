@@ -11,7 +11,7 @@ description: >
   "テスト基盤モジュールを作りたい", "setup snapshot testing".
   For KMP + Compose Multiplatform projects using Gradle with build-logic convention plugins.
 metadata:
-  status: Active
+  status: Experimental
   group: Kotlin / Android アプリ開発
 ---
 

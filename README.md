@@ -52,7 +52,7 @@ gh skill install tbsten/skills kotlin-tuple
 ```
 
 </td>
-<td>✅ Active</td>
+<td>🧪 Experimental</td>
 <td>Gradle setup that generates type-safe Tuple utilities for Kotlin/KMP</td>
 </tr>
 <tr>
@@ -65,7 +65,7 @@ gh skill install tbsten/skills simple-loader
 ```
 
 </td>
-<td>✅ Active</td>
+<td>🧪 Experimental</td>
 <td>Sealed interface based async data loading state management for Kotlin/Compose MP</td>
 </tr>
 <tr>
@@ -78,7 +78,7 @@ gh skill install tbsten/skills navigation3-main-tab
 ```
 
 </td>
-<td>✅ Active</td>
+<td>🧪 Experimental</td>
 <td>Bottom tab management pattern using Navigation 3 SceneStrategy for KMP + Compose</td>
 </tr>
 <tr>
@@ -91,7 +91,7 @@ gh skill install tbsten/skills kmp-snapshot-testing-setup
 ```
 
 </td>
-<td>✅ Active</td>
+<td>🧪 Experimental</td>
 <td>Snapshot testing infrastructure for KMP + Compose projects</td>
 </tr>
 <tr>
@@ -104,7 +104,7 @@ gh skill install tbsten/skills kotlin-compiler-plugin-setup
 ```
 
 </td>
-<td>✅ Active</td>
+<td>🧪 Experimental</td>
 <td>Set up a Kotlin Compiler Plugin project with the essential toolchain</td>
 </tr>
 <tr>
@@ -117,7 +117,7 @@ gh skill install tbsten/skills kotlin-compiler-plugin-dev
 ```
 
 </td>
-<td>✅ Active</td>
+<td>🧪 Experimental</td>
 <td>Support developing and reviewing Kotlin Compiler Plugins</td>
 </tr>
 <tr>
@@ -169,7 +169,7 @@ gh skill install tbsten/skills react-vite-supabase-starter
 ```
 
 </td>
-<td>✅ Active</td>
+<td>🧪 Experimental</td>
 <td>Create a React + Vite + Tailwind v4 + shadcn/ui + TanStack + Supabase web app project</td>
 </tr>
 <tr>
@@ -182,7 +182,7 @@ gh skill install tbsten/skills exploratory-pr-verification
 ```
 
 </td>
-<td>✅ Active</td>
+<td>🧪 Experimental</td>
 <td>Rules for multi-subagent exploratory PR verification on Kotlin projects</td>
 </tr>
 <tr>
@@ -195,7 +195,7 @@ gh skill install tbsten/skills exploratory-nightly-verification
 ```
 
 </td>
-<td>✅ Active</td>
+<td>🧪 Experimental</td>
 <td>60-min single-shot exploratory verification of main from a nightly CI job</td>
 </tr>
 <tr>
@@ -247,7 +247,7 @@ curl -fsSL https://rules.tbsten.me/i | \
 ```
 
 </td>
-<td>✅ Active</td>
+<td>🧪 Experimental</td>
 <td>Snapshot PBT testing rule for Kotlin Multiplatform projects</td>
 </tr>
 <tr>
@@ -261,7 +261,7 @@ curl -fsSL https://rules.tbsten.me/i | \
 ```
 
 </td>
-<td>✅ Active</td>
+<td>🧪 Experimental</td>
 <td>Error handling and warning management for KMP + Compose projects</td>
 </tr>
 <tr>
@@ -275,7 +275,7 @@ curl -fsSL https://rules.tbsten.me/i | \
 ```
 
 </td>
-<td>✅ Active</td>
+<td>🧪 Experimental</td>
 <td>4-layer architecture for KMP + Compose projects</td>
 </tr>
 </table>
