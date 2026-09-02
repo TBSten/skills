@@ -442,12 +442,12 @@ gh skill install tbsten/skills contribute-batch
 
 <details>
 
-<summary> ❌ Archived Skills / Rules </summary>
+<summary> ❌ Archived Skills / Rules / Prompts </summary>
 
 <table>
 <tr>
-<th>Skill</th>
-<th>Install</th>
+<th>Name</th>
+<th>Install / Run</th>
 <th>Status</th>
 <th>Description</th>
 </tr>
@@ -461,7 +461,7 @@ gh skill install tbsten/skills github-get-attachment-url
 
 </td>
 <td>❌ Archived</td>
-<td>Upload local files to GitHub (superseded by <code>gh --attach</code> in GitHub CLI v2.99.0)</td>
+<td>Upload local files to GitHub (superseded by GitHub CLI v2.99.0's <code>--attach</code> flag)</td>
 </tr>
 </table>
 

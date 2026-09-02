@@ -442,12 +442,12 @@ gh skill install tbsten/skills contribute-batch
 
 <details>
 
-<summary> ❌ Archived スキル / ルール </summary>
+<summary> ❌ Archived スキル / ルール / プロンプト </summary>
 
 <table>
 <tr>
-<th>スキル</th>
-<th>インストール</th>
+<th>名前</th>
+<th>インストール / 実行</th>
 <th>ステータス</th>
 <th>説明</th>
 </tr>
@@ -461,7 +461,7 @@ gh skill install tbsten/skills github-get-attachment-url
 
 </td>
 <td>❌ Archived</td>
-<td>ローカルファイルを github にアップロード (GitHub CLI v2.99.0 の <code>gh --attach</code> で代替)</td>
+<td>ローカルファイルを GitHub にアップロード (GitHub CLI v2.99.0 の <code>--attach</code> フラグで代替)</td>
 </tr>
 </table>
 
