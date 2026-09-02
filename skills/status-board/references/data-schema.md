@@ -1,6 +1,7 @@
 # board.json / overlay.json スキーマ
 
-`build-board.mjs` の入力。スクラッチパッドにだけ置き、`.local/` には残さない。
+`build-board.mjs` の入力。下書きはスクラッチパッドに置く
+（`.local/` に残るのは出力 HTML とビルドが書く [snapshot](#snapshot--前回の-overlay-を引き継ぐ) だけ）。
 
 ```bash
 node scripts/build-board.mjs <board.json> [--overlay <overlay.json>] -o <out.html>
@@ -151,7 +152,7 @@ PR / issue 由来の id (`pr123` / `issue45`) は `collect.mjs` が安定して�
 ## collect.mjs が決めるところ
 
 ```bash
-node scripts/collect.mjs -o <board.json> [--days 7] [--title "..."] [--all] [--no-gh]
+node scripts/collect.mjs -o <board.json> [--days 7] [--title "..."] [--all] [--no-gh] [--prev <dir>]
 ```
 
 GitHub への問い合わせは **GraphQL 1 往復だけ**（PR 一覧・CI・レビュー状態・未 resolve
@@ -223,6 +224,30 @@ merged PR は最大 6 件）。塩漬けの issue とブランチを全部載せ
 `col` を持つ item を足すとき、その col がエピックの範囲内なら `epic` も付ける。
 忘れてもビルドが直し方つきで止めるので、先に悩まない。
 **`block` の起点だけは例外で、`col` / `epic` / `anchorY` を書かない**（相手から導出される）。
+
+## snapshot — 前回の overlay を引き継ぐ
+
+`build-board.mjs` は出力 HTML と同じ basename の `<ts>.json` を隣に書く:
+
+```jsonc
+{ "html": "<ts>.html",
+  "board": { ... },     // 描画した最終データ（overlay 合成・block 補正後）
+  "overlay": { ... }    // 渡した overlay の原文（合成前）。--overlay 無しなら null
+}
+```
+
+`collect.mjs` は `--prev <dir>`（既定 `.local/status-board`）の最新 snapshot から
+`overlay` を取り出し、下書きの隣に `overlay.prev.json` を書いて要約を stderr に出す。
+会話由来の人間待ち・未決・構想はセッションを跨ぐと snapshot にしか残らないため。
+
+機械的に死ぬものはこのとき落とす（残すか消すかの判断を「片付いたかどうか」だけにするため）:
+
+- 端点が居なくなった `edges`（相手の PR が merge されて板から消えた等）
+- board から消えた item への部分上書き（`{"id","next"}` だけのような差分）
+- 消えた epic への参照（`epic` フィールドだけ外す）
+- `next`（毎回 collect が振り直す）
+
+引き継ぐかどうかは呼び出し元が決める: **まだ生きている項目だけ残して `overlay.json` にする。**
 
 ## 検証（`build-board.mjs`）
 
