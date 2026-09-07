@@ -10,7 +10,7 @@ description: >
   "タブ切り替え時に状態を保持したい", "Navigation 3 の MainTab パターン",
   "implement bottom tabs with Navigation 3".
 metadata:
-  status: Active
+  status: Experimental
   group: Kotlin / Android アプリ開発
 ---
 

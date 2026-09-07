@@ -23,7 +23,7 @@ description: >
   "compat module を delegation で作りたい", "capability flag を追加したい",
   "IrDeclarationOrigin が patch で変わった", "ShadowJar で compat module を束ねたい".
 metadata:
-  status: Active
+  status: Experimental
   group: Kotlin ライブラリ/ツール開発
 ---
 

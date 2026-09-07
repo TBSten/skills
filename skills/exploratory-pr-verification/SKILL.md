@@ -11,7 +11,7 @@ description: >
   "PR loop", "ticket 駆動で PR review", "stacked PR を多角的に audit",
   "complex PR を 5 並列で深掘り".
 metadata:
-  status: Active
+  status: Experimental
   group: Git / GitHub
 ---
 
