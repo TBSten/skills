@@ -211,19 +211,6 @@ gh skill install tbsten/skills pr-fix-loop
 <td>✅ Active</td>
 <td>複数 PR を並行して green に。CI 失敗の分類・修正委譲、コメント対応、stacked PR の rebase 連鎖</td>
 </tr>
-<tr>
-<td></td>
-<td><a href="./skills/github-get-attachment-url.ja.md">github-get-attachment-url</a></td>
-<td>
-
-```sh
-gh skill install tbsten/skills github-get-attachment-url
-```
-
-</td>
-<td>✅ Active</td>
-<td>ローカルファイルを github にアップロード</td>
-</tr>
 </table>
 
 ## 📝 利用可能なルール
@@ -452,3 +439,30 @@ gh skill install tbsten/skills contribute-batch
 <td>複数の知見を skill / rule / prompt に仕分けし TBSten/skills に 1 つの PR を作成</td>
 </tr>
 </table>
+
+<details>
+
+<summary> ❌ Archived スキル / ルール / プロンプト </summary>
+
+<table>
+<tr>
+<th>名前</th>
+<th>インストール / 実行</th>
+<th>ステータス</th>
+<th>説明</th>
+</tr>
+<tr>
+<td><a href="./skills/github-get-attachment-url.ja.md">github-get-attachment-url</a></td>
+<td>
+
+```sh
+gh skill install tbsten/skills github-get-attachment-url
+```
+
+</td>
+<td>❌ Archived</td>
+<td>ローカルファイルを GitHub にアップロード (GitHub CLI v2.99.0 の <code>--attach</code> フラグで代替)</td>
+</tr>
+</table>
+
+</details>

@@ -2,6 +2,9 @@
 
 Upload local files to GitHub and get their `user-attachments` URLs — without creating an issue.
 
+> [!WARNING]
+> **Archived (2026-09).** GitHub CLI v2.99.0 added a repeatable `--attach` flag (`gh issue|pr create/edit/comment --attach <file>`), which covers this skill's primary use case natively — prefer it. This skill remains only for what `--attach` does not do: uploading documents/archives (PDF, zip, …) and getting a `user-attachments` URL without posting anything.
+
 ## Install
 
 ```sh
