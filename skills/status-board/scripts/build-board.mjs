@@ -295,8 +295,9 @@ writeFileSync(outPath, html, 'utf8');
    次回の collect.mjs がこれを読み、overlay.prev.json として引き継ぎ候補に出す。 */
 const snapPath = outPath.replace(/\.html?$/i, '') + '.json';
 let snapNote = '';
-if (snapPath === resolve(input)) {
-  console.error('warn: snapshot が入力 board.json と同名になるため書かない（出力の basename を変える）');
+const inputPaths = [resolve(input), overlay ? resolve(overlay) : null].filter(Boolean);
+if (inputPaths.includes(snapPath)) {
+  console.error('warn: snapshot が入力 (board.json / overlay.json) と同名になるため書かない（出力の basename を変える）');
 } else {
   writeFileSync(snapPath, JSON.stringify({
     html: basename(outPath),

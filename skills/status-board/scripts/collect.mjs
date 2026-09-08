@@ -383,9 +383,20 @@ notes.forEach(n => console.error(`note: ${n}`));
     });
     const keptIds = new Set(kept.map(i => i.id));
     const alive = id => itemIds.has(id) || keptIds.has(id);
+    /* 端点が存在しても col を失っていれば線は引けない（merged PR は items に残っても
+       図から外れる）。base と kept overlay の合成で col を持つものだけを描画可能とみなす。
+       block の from は build が相手の直下に col を導出するので、存在すれば足りる。 */
+    const onMapIds = new Set(items.filter(i => i.col !== undefined).map(i => i.id));
+    kept.forEach(i => { if (i.col !== undefined) onMapIds.add(i.id); });
+    const drawable = id => onMapIds.has(id);
     const edgesKept = (ov.edges || []).filter(e => {
-      if (alive(e.from) && alive(e.to)) return true;
-      drops.push(`edge ${e.from} → ${e.to}（端点が消えた）`); return false;
+      if (!alive(e.from) || !alive(e.to)) {
+        drops.push(`edge ${e.from} → ${e.to}（端点が消えた）`); return false;
+      }
+      if (!drawable(e.to) || (e.kind !== 'block' && !drawable(e.from))) {
+        drops.push(`edge ${e.from} → ${e.to}（端点が図に出なくなった）`); return false;
+      }
+      return true;
     });
     const rest = { ...ov, items: kept, edges: edgesKept };
     if (!kept.length) delete rest.items;
