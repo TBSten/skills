@@ -12,18 +12,19 @@ gh skill install tbsten/skills kotlin-maven-central-publish
 
 This skill automates the setup of Maven Central publishing for Kotlin and Kotlin Multiplatform projects. The mechanical setup is done by two bundled scripts, which the agent runs as-is (no reading, rewriting, or reimplementing):
 
-- **`scripts/setup-publish.sh`** — idempotently adds the Vanniktech Maven Publish plugin to the version catalog, generates the buildSrc convention plugin (`publish-convention.gradle.kts`) with placeholders already filled in (GitHub URL, license, and developer info are auto-inferred from `git remote` and the `LICENSE` file), and creates the GitHub Actions workflow. Safe to re-run; never overwrites existing files without `--force`; emits a one-line result JSON.
+- **`scripts/setup-publish.sh`** — idempotently adds the Vanniktech Maven Publish plugin (version auto-selected from the Gradle wrapper / Kotlin version) and your library version to the version catalog, generates the convention plugin (`publish-convention.gradle.kts`) in `buildSrc` or an included build such as `build-logic` with placeholders already filled in (GitHub URL, license, and developer info are auto-inferred from `git remote` and the `LICENSE` file), and creates the GitHub Actions workflows (runner auto-selected by whether Apple targets exist). It also reports plugin requests that must be rewritten for the chosen layout. Safe to re-run; never overwrites existing files without `--force`; emits a one-line result JSON.
 - **`scripts/setup-secrets.sh`** — interactive script that generates a GPG key, sends the public key to keyservers, exports the private key, and registers all 5 GitHub Secrets via `gh secret set`. The only remaining manual step is issuing the Sonatype Central Portal user token. Supports `--dry-run`.
 
 ## What Gets Generated
 
 | File | Description |
 |---|---|
-| `buildSrc/src/main/kotlin/publish-convention.gradle.kts` | Convention plugin with Sonatype Central Portal config, signing, and POM metadata |
-| `buildSrc/build.gradle.kts` | Updated with Vanniktech Maven Publish dependency |
-| `buildSrc/settings.gradle.kts` | Imports the root version catalog and declares repositories for buildSrc |
-| `gradle/libs.versions.toml` | Updated with Maven Publish plugin version |
-| `.github/workflows/publish.yml` | GitHub Actions workflow for automated publishing |
+| `<convention-dir>/src/main/kotlin/publish-convention.gradle.kts` | Convention plugin with Central Portal config, conditional signing, flat artifactId, and POM metadata (`<convention-dir>` = `buildSrc` by default, or e.g. `build-logic`) |
+| `<convention-dir>/build.gradle.kts` | Puts Vanniktech Maven Publish and the Kotlin (/ Android) Gradle plugin on the convention build's classpath |
+| `<convention-dir>/settings.gradle.kts` | Imports the root version catalog and declares repositories |
+| `gradle/libs.versions.toml` | Updated with the Maven Publish plugin and (optionally) your library version |
+| `.github/workflows/publish.yml` | Release-driven publishing with tag/version and non-SNAPSHOT checks, dry-run / stage-only manual runs |
+| `.github/workflows/publish-check.yml` | Runs `publishToMavenLocal` on every PR to catch broken publishing config early |
 
 ## Prerequisites
 
@@ -41,12 +42,19 @@ After installation, invoke with:
 
 The skill collects project information, runs `scripts/setup-publish.sh` to generate the configuration files, applies the convention plugin to the modules to publish, and runs `scripts/setup-secrets.sh` to set up GPG keys and GitHub Secrets. `references/gpg-setup.md` and `references/github-secrets.md` serve as fallback manual instructions for environments where the scripts cannot run.
 
+Further references:
+
+- `references/convention-options.md` — buildSrc vs build-logic, signing strategies, artifactId / coordinates, version SSoT (catalog vs `VERSION_NAME`, no-SNAPSHOT policy), Dokka javadoc, `languageVersion` / `apiVersion` floor for older Kotlin consumers
+- `references/release-flow.md` — why the workflow looks the way it does, and the tag-push + auto GitHub Release alternative
+- `references/troubleshooting.md` — common errors (classpath conflicts, `SonatypeHost` removal, `is final`, 401, `BAD_PASSPHRASE`, ...)
+
 ## Key Technical Details
 
-- Uses **Vanniktech Maven Publish** plugin (v0.30.0+) for simplified Maven Central integration
+- Uses **Vanniktech Maven Publish** plugin (0.37.0 by default; 0.35.0 / 0.34.0 for older Gradle / Kotlin) — `publishToMavenCentral()` without `SonatypeHost` (removed in 0.34.0)
 - Targets **Sonatype Central Portal** (not legacy OSSRH)
-- GPG signing is **conditional** — skipped during local development, active in CI when secrets are provided
-- The `libs.plugins.mavenPublish.map { ... }` pattern converts a plugin ID to a dependency coordinate for buildSrc usage
+- GPG signing is **conditional** — skipped only for `*ToMavenLocal` tasks (judged by the last path segment), so CI fails fast when secrets are missing
+- artifactId is derived from `project.path` (`:ksp:processor` → `ksp-processor`); modules override only the POM name / description
+- The Kotlin Gradle plugin shares the convention build's classpath with Vanniktech (required since 0.36)
 - Publishes via `publishAndReleaseToMavenCentral` task with `--no-configuration-cache`
 
 ## Required GitHub Secrets
