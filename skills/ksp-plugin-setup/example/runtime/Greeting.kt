@@ -1,3 +1,7 @@
+// Token constants are PascalCase on purpose: users write `GreetingFunNameToken.SimpleName` in
+// annotation arguments, where they read as values of the DSL rather than as implementation constants.
+@file:Suppress("ktlint:standard:property-naming")
+
 package com.example.ksppluginsetup
 
 /**

@@ -25,8 +25,10 @@ class LintPlugin : Plugin<Project> {
                 version.set(libs.version("ktlint"))
 
                 filter {
-                    exclude("**/generated/**")
-                    exclude("**/build/**")
+                    // ktlint-gradle matches glob patterns against the path RELATIVE to the source
+                    // directory, so `**/build/generated/**` never matches a srcDir that itself lives
+                    // under build/ (the KSP output added to commonMain). Match the absolute path.
+                    exclude { it.file.invariantSeparatorsPath.contains("/build/") }
                 }
             }
         }

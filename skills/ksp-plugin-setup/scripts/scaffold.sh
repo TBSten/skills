@@ -7,7 +7,7 @@
 # Usage:
 #   scaffold.sh --dest <dir> --name <kebab-case> --package <pkg> --annotation <PascalCase>
 #               [--group-id <id>] [--owner <owner>] [--repo <repo>]
-#               [--kotlin-version <v>] [--ksp-version <kotlin>-<ksp>]
+#               [--kotlin-version <v>] [--ksp-version <v>]
 #               [--skip-ci] [--skip-rules] [--skip-test-module]
 #               [--dry-run] [--force]
 #
@@ -31,7 +31,8 @@
 #   ksp/META-INF-services.txt    -> (最終行の FQN を) <name>-ksp/src/main/resources/META-INF/services/...
 #   test/*TestData.kt            -> test/src/commonMain/kotlin/<pkg-path>/test/<annotCamel>/
 #   test/*.kt                    -> test/src/commonTest/kotlin/<pkg-path>/test/<annotCamel>/
-#   それ以外 (build ファイル / CI) -> 同じ相対パス
+#   gitignore                    -> .gitignore (skill リポジトリ自身に効かないよう dot 無しで保持)
+#   それ以外 (build ファイル / CI / .run) -> 同じ相対パス
 #   assets/rules/*.md            -> <dest>/.claude/rules/ (<project-name> のみ置換)
 #
 # 出力: 配置ファイル一覧 + 1 行 JSON {"ok":true,"files":N,"dest":"..."}
@@ -206,8 +207,9 @@ transform_path() {
 
 apply_versions_toml() {
     # --kotlin-version / --ksp-version を libs.versions.toml に反映。
-    # ksp は `<kotlin>-<ksp>` 形式: --ksp-version はフル文字列で渡す。
-    # --kotlin-version のみ指定時は ksp の kotlin 部分 (最後のハイフンより前) を追従させる。
+    # KSP 2.3.0 以降は Kotlin と独立した版 (例: 2.3.11)。--ksp-version はそのまま書き込む。
+    # 旧形式 `<kotlin>-<ksp>` の catalog に --kotlin-version のみ指定した時だけ、ksp の kotlin 部分
+    # (最後のハイフンより前) を追従させる (新形式はハイフンを含まないので何もしない)。
     local content
     content=$(cat)
     if [ -n "$KOTLIN_VERSION" ]; then
@@ -240,6 +242,8 @@ while IFS= read -r src; do
         .github/*)
             $SKIP_CI && continue
             dstrel=$rel ;;
+        gitignore)
+            dstrel=".gitignore" ;;
         runtime/build.gradle.kts)
             dstrel="$NAME-runtime/build.gradle.kts" ;;
         runtime/*.kt)
@@ -346,6 +350,10 @@ for i in $(seq 0 $((TOTAL - 1))); do
             if [ "$dstrel" = "settings.gradle.kts" ] && $SKIP_TEST; then
                 content=$(printf '%s\n' "$content" | grep -v '^include(":test")$')
             fi
+            if [ "$dstrel" = "build.gradle.kts" ] && $SKIP_TEST; then
+                # BCV は存在しない ignoredProjects を指定するとエラーになる
+                content=$(printf '%s\n' "$content" | grep -v 'ignoredProjects.add("test")')
+            fi
             if [ "$dstrel" = "gradle/libs.versions.toml" ]; then
                 content=$(printf '%s\n' "$content" | apply_versions_toml)
             fi
@@ -361,5 +369,5 @@ for i in $(seq 0 $((TOTAL - 1))); do
 done
 $SKIP_CI   && echo "  (skip: CI workflows)"
 $SKIP_RULES && echo "  (skip: .claude/rules)"
-$SKIP_TEST && echo "  (skip: test モジュール — settings.gradle.kts の include(\":test\") も除去済み)"
+$SKIP_TEST && echo "  (skip: test モジュール — settings.gradle.kts の include(\":test\") と BCV の ignoredProjects も除去済み)"
 echo "{\"ok\":true,\"files\":$TOTAL,\"dest\":\"$DEST_ABS\"}"

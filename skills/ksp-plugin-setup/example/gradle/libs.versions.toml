@@ -1,18 +1,21 @@
 [versions]
 # The project's own version lives here too, so buildLogic and all modules share one source of truth.
+# publish.yml refuses to publish when the release tag differs from this value or it is a -SNAPSHOT.
 <project-name> = "0.1.0-alpha01"
-agp = "8.12.3"
-kotlin = "2.2.20"
-# KSP versions are always `<kotlin>-<ksp>`: bump this together with `kotlin`.
-ksp = "2.2.20-2.0.4"
+agp = "9.3.1"
+kotlin = "2.4.10"
+# Since KSP 2.3.0 the version is independent of Kotlin (no more `<kotlin>-<ksp>` pairs).
+ksp = "2.3.11"
 android-minSdk = "24"
 android-compileSdk = "36"
-kotest = "6.1.11"
-kctfork = "0.12.1"
+kotest = "6.2.3"
+kctfork = "0.13.0"
 kotlinPoet = "2.3.0"
 konsist = "0.17.3"
 ktlint = "1.7.1"
-ktlintGradlePlugin = "13.1.0"
+ktlintGradlePlugin = "14.0.1"
+vanniktech-mavenPublish = "0.37.0"
+binaryCompatibilityValidator = "0.18.1"
 
 [libraries]
 kotest = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
@@ -24,15 +27,15 @@ kctforkCore = { module = "dev.zacsweers.kctfork:core", version.ref = "kctfork" }
 kctforkKsp = { module = "dev.zacsweers.kctfork:ksp", version.ref = "kctfork" }
 kotlinPoet = { module = "com.squareup:kotlinpoet", version.ref = "kotlinPoet" }
 konsist = { module = "com.lemonappdev:konsist", version.ref = "konsist" }
-kotlinGradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
-kotlinGradlePluginApi = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin-api", version.ref = "kotlin" }
-ktlintGradlePlugin = { module = "org.jlleitschuh.gradle:ktlint-gradle", version.ref = "ktlintGradlePlugin" }
+# Gradle plugins used by buildLogic are NOT listed here: buildLogic/convention/build.gradle.kts
+# derives their plugin-marker coordinates from [plugins] below, so each plugin is declared once.
 
 [plugins]
-androidLibrary = { id = "com.android.library", version.ref = "agp" }
+androidKmpLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kotest = { id = "io.kotest", version.ref = "kotest" }
 ktlintGradle = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlintGradlePlugin" }
-vanniktech-mavenPublish = { id = "com.vanniktech.maven.publish", version = "0.34.0" }
+vanniktech-mavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktech-mavenPublish" }
+binaryCompatibilityValidator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "binaryCompatibilityValidator" }
