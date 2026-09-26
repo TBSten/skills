@@ -37,4 +37,36 @@ libraries:
     skills: [kotlin-compiler-plugin-setup, kotlin-compiler-plugin-dev, kotlin-maven-central-publish]
     paths: ["*.gradle.kts", gradle.properties, gradle/, .github/, .claude/, .agents/, CLAUDE.md, docs/, scripts/]
     last_commit: 8df304ff1df6e344875a4b965704e83d6877787d
-ignored: []
+  - repo: TBSten/kotlin-default-value-capture
+    skills: ["kotlin-compiler-plugin-setup", "kotlin-compiler-plugin-dev", "kotlin-maven-central-publish"]
+    paths: ["*.gradle.kts", "gradle.properties", "gradle/", "buildSrc/", ".github/", ".claude/", ".agents/"]
+    last_commit: 5363d90dbe7fc050ab0d505a082543def4a2c35e
+ignored:
+  - repo: TBSten/triple-triad-android
+    reason: 個人 Android アプリ。再利用できる技法は見当たらない
+  - repo: TBSten/Navigation-3-bottom-tab-example
+    reason: サンプル実装。ライブラリではない
+  - repo: TBSten/metro-crash-by-named-function-type-sample
+    reason: バグ再現用サンプル
+  - repo: TBSten/kotlin-js-sealed-ksp-practice
+    reason: 検証用の practice リポジトリ
+  - repo: TBSten/kotlin-js-extend-plugins
+    reason: description・topics 無し、1 年近く更新無し。内容から公開ライブラリと確認できない
+  - repo: TBSten/flow-practice
+    reason: 検証用の practice リポジトリ
+  - repo: TBSten/serialization-sealedinterface-valueclass-runtime-error-sample
+    reason: バグ再現用サンプル
+  - repo: TBSten/melabo2025
+    reason: 個人イベント用アプリ
+  - repo: TBSten/storytale-example-cmp
+    reason: サンプル実装
+  - repo: TBSten/pointer-and-rotate-test
+    reason: 検証用の test リポジトリ
+  - repo: TBSten/hiso-hiso-talk
+    reason: 個人アプリ
+  - repo: TBSten/tart-practice
+    reason: 検証用の practice リポジトリ
+  - repo: TBSten/app-link-prac
+    reason: 検証用の practice リポジトリ
+  - repo: TBSten/compose-custom-scroll-bar
+    reason: Compose UI コンポーネント 1 つのサンプル。1 年以上更新無く、Gradle/CI 面で新規性のある技法も無い
