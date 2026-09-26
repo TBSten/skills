@@ -3,12 +3,16 @@
 #
 # TBSten/skills skills/kotlin-maven-central-publish に同梱。
 # やること:
-#   1. gradle/libs.versions.toml に mavenPublish プラグインを冪等追記
-#   2. buildSrc/build.gradle.kts / buildSrc/settings.gradle.kts の生成 (既存ありなら ACTION_REQUIRED)
-#   3. buildSrc/src/main/kotlin/publish-convention.gradle.kts をプレースホルダー置換して生成
-#   4. .github/workflows/publish.yml の生成
+#   1. gradle/libs.versions.toml に mavenPublish プラグイン (+ 任意で自ライブラリのバージョン) を冪等追記
+#      vanniktech のバージョンは Gradle wrapper / Kotlin のバージョンから互換なものを自動選択
+#   2. <convention-dir>/build.gradle.kts / settings.gradle.kts の生成 (既存ありなら ACTION_REQUIRED)
+#      convention-dir は buildSrc (デフォルト) か build-logic 等の included build
+#   3. <convention-dir>/src/main/kotlin/publish-convention.gradle.kts をプレースホルダー置換して生成
+#   4. .github/workflows/publish.yml / publish-check.yml の生成
+#      (runner は Apple ターゲットの有無で macos-latest / ubuntu-latest を自動選択)
 # やらないこと (AI / ユーザーの責務):
 #   - 公開対象モジュールへの id("publish-convention") 適用と group/version 設定
+#   - Dokka / languageVersion 床などの任意設定 (references/convention-options.md)
 #   - GPG 鍵・GitHub Secrets のセットアップ (scripts/setup-secrets.sh を使う)
 #
 # 冪等: 再実行しても二重追記しない。既存ファイルは --force なしでは上書きしない。
@@ -18,7 +22,11 @@ set -euo pipefail
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 EXAMPLE_DIR="$SCRIPT_DIR/../example"
 RAW_EXAMPLE_BASE="https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/skills/kotlin-maven-central-publish/example"
-DEFAULT_MAVEN_PUBLISH_VERSION="0.30.0"
+# vanniktech のバージョンと最低要件 (CHANGELOG.md で確認)
+#   0.37.0: Gradle 9.0 / KGP 2.2.0 / JDK 17
+#   0.35.0: Gradle 8.13 / KGP 1.9.20 / JDK 11
+#   0.34.0: Gradle 8.5  / KGP 1.9.20 / JDK 11 (SonatypeHost が DSL から削除された最初の版)
+DEFAULT_MAVEN_PUBLISH_VERSION="0.37.0"
 
 log() { printf '[setup-publish] %s\n' "$*" >&2; }
 die() {
@@ -44,7 +52,13 @@ Options:
   --developer-name <name>    開発者名 (省略時: git config user.name、なければ developer-id)
   --developer-url <url>      開発者 URL (省略時: https://github.com/<developer-id>)
   --start-year <yyyy>        プロジェクト開始年 (省略時: git の最初のコミット年、なければ今年)
-  --maven-publish-version <v> Vanniktech Maven Publish のバージョン (デフォルト: 0.30.0)
+  --maven-publish-version <v> Vanniktech Maven Publish のバージョン
+                             (catalog に既にあればそれを使う。無ければ Gradle>=9 かつ Kotlin>=2.2 で 0.37.0、Gradle>=8.13 で 0.35.0、それ以外 0.34.0)
+  --version-ref <key>        自ライブラリのバージョンを持つ version catalog [versions] のキー (例: mylib)。
+                             publish.yml の tag 一致チェックが読む SSoT。省略時は gradle.properties の VERSION_NAME を使う
+  --version <v>              --version-ref のキーが catalog に無い時に追記する初期バージョン (例: 0.1.0)
+  --convention-dir <dir>     convention plugin を置くディレクトリ (デフォルト: buildSrc。build-logic 等の included build も可)
+  --skip-publish-check       PR で publishToMavenLocal を回す .github/workflows/publish-check.yml を生成しない
   --project-root <dir>       プロジェクトルート (デフォルト: カレントディレクトリ)
   --force                    既存ファイルが内容不一致でも上書きする
   -h, --help                 このヘルプ
@@ -62,7 +76,11 @@ developer_id=""
 developer_name=""
 developer_url=""
 start_year=""
-mp_version="$DEFAULT_MAVEN_PUBLISH_VERSION"
+mp_version=""
+version_ref=""
+lib_version=""
+convention_dir="buildSrc"
+skip_publish_check=0
 project_root="."
 force=0
 
@@ -82,6 +100,10 @@ while [ $# -gt 0 ]; do
     --developer-url) need_arg "$1" $#; developer_url=$2; shift 2 ;;
     --start-year) need_arg "$1" $#; start_year=$2; shift 2 ;;
     --maven-publish-version) need_arg "$1" $#; mp_version=$2; shift 2 ;;
+    --version-ref) need_arg "$1" $#; version_ref=$2; shift 2 ;;
+    --version) need_arg "$1" $#; lib_version=$2; shift 2 ;;
+    --convention-dir) need_arg "$1" $#; convention_dir=${2%/}; shift 2 ;;
+    --skip-publish-check) skip_publish_check=1; shift ;;
     --project-root) need_arg "$1" $#; project_root=$2; shift 2 ;;
     --force) force=1; shift ;;
     -h|--help) usage; exit 0 ;;
@@ -99,6 +121,56 @@ if [ ! -f "$catalog" ]; then
 fi
 if [ -z "$description" ]; then
   die "--description が未指定" "POM の description はプロジェクト固有で推定できない" '--description "<プロジェクトの説明 (英語)>" を指定して再実行する'
+fi
+case $convention_dir in
+  ""|/*|*..*) die "--convention-dir が不正: $convention_dir" "プロジェクトルートからの相対パスである必要がある" "--convention-dir buildSrc や --convention-dir build-logic のように指定する" ;;
+esac
+
+# ---------- バージョン SSoT (publish.yml の tag 一致チェックが読む) ----------
+if [ -n "$version_ref" ]; then
+  case $version_ref in
+    *[!A-Za-z0-9_.-]*) die "--version-ref が不正: $version_ref" "version catalog のキーに使えない文字を含む" "--version-ref mylib のように英数字と - _ . で指定する" ;;
+  esac
+  if ! grep -Eq "^[[:space:]]*${version_ref}[[:space:]]*=[[:space:]]*\"" "$catalog" && [ -z "$lib_version" ]; then
+    die "version catalog に $version_ref のバージョンが無い" "--version-ref のキーが [versions] に未定義で、追記する初期値も渡されていない" "--version <初期バージョン (例: 0.1.0)> を併せて指定するか、[versions] に $version_ref を追加する"
+  fi
+  read_version_cmd="grep -E '^[[:space:]]*${version_ref}[[:space:]]*=' gradle/libs.versions.toml | head -n 1 | cut -d'\"' -f2"
+  version_source="gradle/libs.versions.toml [versions] $version_ref"
+elif [ -f "$project_root/gradle.properties" ] && grep -Eq '^[[:space:]]*VERSION_NAME[[:space:]]*=' "$project_root/gradle.properties"; then
+  read_version_cmd="grep -E '^[[:space:]]*VERSION_NAME[[:space:]]*=' gradle.properties | head -n 1 | cut -d= -f2 | tr -d '[:space:]'"
+  version_source="gradle.properties VERSION_NAME"
+else
+  die "自ライブラリのバージョンの SSoT を特定できない" "publish.yml は tag とバージョンの一致を検証するため、バージョンの置き場所が必要" "--version-ref <catalog のキー> --version <初期バージョン> を指定するか、gradle.properties に VERSION_NAME=<版> を書く"
+fi
+log "バージョンの SSoT: $version_source"
+
+# ---------- vanniktech バージョンの自動選択 ----------
+version_ge() {
+  # version_ge <a> <b>: a >= b (major.minor の数値比較) なら 0
+  local a_major a_minor b_major b_minor
+  a_major=${1%%.*}; a_minor=${1#*.}; a_minor=${a_minor%%[!0-9]*}
+  b_major=${2%%.*}; b_minor=${2#*.}; b_minor=${b_minor%%[!0-9]*}
+  a_major=${a_major%%[!0-9]*}
+  [ -z "$a_minor" ] && a_minor=0
+  [ "$a_major" -gt "$b_major" ] || { [ "$a_major" -eq "$b_major" ] && [ "$a_minor" -ge "$b_minor" ]; }
+}
+if [ -z "$mp_version" ] && ! grep -q 'com\.vanniktech\.maven\.publish' "$catalog"; then
+  gradle_version=""
+  wrapper_props="$project_root/gradle/wrapper/gradle-wrapper.properties"
+  if [ -f "$wrapper_props" ]; then
+    gradle_version=$(sed -n 's/^distributionUrl=.*gradle-\([0-9][0-9.]*\)-.*/\1/p' "$wrapper_props" | head -n 1)
+  fi
+  kotlin_version=$(grep -E '^[[:space:]]*kotlin[[:space:]]*=[[:space:]]*"' "$catalog" | head -n 1 | cut -d'"' -f2 || true)
+  mp_version=$DEFAULT_MAVEN_PUBLISH_VERSION
+  if [ -n "$gradle_version" ] && ! version_ge "$gradle_version" 9.0; then
+    if version_ge "$gradle_version" 8.13; then mp_version="0.35.0"
+    elif version_ge "$gradle_version" 8.5; then mp_version="0.34.0"
+    else die "Gradle $gradle_version は古すぎる" "Central Portal に対応した vanniktech (0.34.0+) は Gradle 8.5 以上が必要" "./gradlew wrapper --gradle-version <8.5 以上> で wrapper を上げてから再実行する"
+    fi
+  elif [ -n "$kotlin_version" ] && ! version_ge "$kotlin_version" 2.2; then
+    mp_version="0.35.0"
+  fi
+  log "vanniktech maven-publish のバージョンを選択: $mp_version (Gradle=${gradle_version:-不明}, Kotlin=${kotlin_version:-不明})"
 fi
 
 TMP_DIR=$(mktemp -d)
@@ -235,49 +307,137 @@ toml_insert() {
   mv "$TMP_DIR/catalog.toml" "$catalog"
 }
 
-need_version=1
-need_plugin=1
-if grep -Eq '^[[:space:]]*mavenPublish[[:space:]]*=[[:space:]]*"' "$catalog"; then need_version=0; fi
-if grep -q 'com\.vanniktech\.maven\.publish' "$catalog"; then need_plugin=0; fi
-if [ "$need_version" = 0 ] && [ "$need_plugin" = 0 ]; then
-  add_skipped "gradle/libs.versions.toml (mavenPublish 追加済み)"
+catalog_changed=0
+# 既に vanniktech のプラグインエントリがあればそのエイリアスを使う (例: maven-publish → accessor maven.publish)
+mp_alias=$(grep -E '^[[:space:]]*[A-Za-z0-9_.-]+[[:space:]]*=.*com\.vanniktech\.maven\.publish' "$catalog" | head -n 1 | sed -E 's/^[[:space:]]*([A-Za-z0-9_.-]+).*/\1/' || true)
+if [ -n "$mp_alias" ]; then
+  add_skipped "gradle/libs.versions.toml (vanniktech プラグイン $mp_alias は定義済み。バージョンは既存の値を使う)"
 else
-  if [ "$need_version" = 1 ]; then
+  mp_alias="mavenPublish"
+  if ! grep -Eq '^[[:space:]]*mavenPublish[[:space:]]*=[[:space:]]*"' "$catalog"; then
     toml_insert versions "mavenPublish = \"$mp_version\""
   fi
-  if [ "$need_plugin" = 1 ]; then
-    toml_insert plugins 'mavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "mavenPublish" }'
-  fi
+  toml_insert plugins 'mavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "mavenPublish" }'
+  catalog_changed=1
+fi
+# Gradle の catalog accessor は - _ . を区切りとして扱う
+mp_accessor=$(printf '%s' "$mp_alias" | tr '_-' '..')
+if [ -n "$version_ref" ] && ! grep -Eq "^[[:space:]]*${version_ref}[[:space:]]*=[[:space:]]*\"" "$catalog"; then
+  toml_insert versions "$version_ref = \"$lib_version\""
+  catalog_changed=1
+fi
+if [ "$catalog_changed" = 1 ]; then
   add_changed "gradle/libs.versions.toml"
 fi
 
-# ---------- 2. buildSrc ----------
-bs_build="$project_root/buildSrc/build.gradle.kts"
-if [ -f "$bs_build" ]; then
-  if grep -q 'mavenPublish' "$bs_build"; then
-    add_skipped "buildSrc/build.gradle.kts (mavenPublish 依存が既にある)"
-  else
-    add_action "buildSrc/build.gradle.kts が既に存在する。example/buildSrc-build.gradle.kts の dependencies ブロック (libs.plugins.mavenPublish の implementation) を手動でマージすること"
+# ---------- 2. convention plugin 用ビルド (buildSrc / build-logic) ----------
+render() {
+  # render <テンプレートパス> <出力パス> <PLACEHOLDER=値>...  (値は加工せずそのまま埋め込む)
+  local src=$1 dst=$2 content kv key val leftover
+  shift 2
+  content=$(cat "$src")
+  for kv in "$@"; do
+    key=${kv%%=*}
+    val=${kv#*=}
+    content=${content//"<$key>"/"$val"}
+  done
+  printf '%s\n' "$content" > "$dst"
+  if grep -Eq '<[A-Z_]+>' "$dst"; then
+    leftover=$(grep -Eo '<[A-Z_]+>' "$dst" | sort -u | tr '\n' ' ')
+    die "プレースホルダーが置換されずに残った ($(basename "$src")): $leftover" "テンプレートと script の置換リストがずれている" "TBSten/skills の skills/kotlin-maven-central-publish に issue 報告するか、生成後のファイルを手動修正する"
   fi
-else
-  mkdir -p "$project_root/buildSrc"
-  tpl=$(resolve_template buildSrc-build.gradle.kts)
-  cp "$tpl" "$bs_build"
-  add_changed "buildSrc/build.gradle.kts"
+}
+
+catalog_aliases_for() {
+  # catalog_aliases_for <plugin-id の ERE>: [plugins] でその id を持つエイリアスの catalog accessor を 1 行ずつ出す
+  grep -E "^[[:space:]]*[A-Za-z0-9_.-]+[[:space:]]*=.*id[[:space:]]*=[[:space:]]*\"($1)\"" "$catalog" \
+    | sed -E 's/^[[:space:]]*([A-Za-z0-9_.-]+).*/\1/' | tr '_-' '..' || true
+}
+# vanniktech は KGP / AGP のクラスに触るため、同じ classpath (= convention ビルド) に載せる必要がある
+KGP_IDS='org\.jetbrains\.kotlin\.(multiplatform|jvm|android)'
+AGP_IDS='com\.android\.(kotlin\.multiplatform\.library|library|application)'
+kgp_accessor=""
+for id in 'org\.jetbrains\.kotlin\.multiplatform' 'org\.jetbrains\.kotlin\.jvm' 'org\.jetbrains\.kotlin\.android'; do
+  kgp_accessor=$(catalog_aliases_for "$id" | head -n 1)
+  if [ -n "$kgp_accessor" ]; then break; fi
+done
+if [ -z "$kgp_accessor" ]; then
+  die "version catalog に Kotlin Gradle plugin のエイリアスが無い" "vanniktech は KGP を convention ビルドと同じ classpath に要求するため、catalog 経由で KGP を依存に載せる必要がある" '[plugins] に kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" } 等を追加して再実行する'
+fi
+agp_accessor=""
+for id in 'com\.android\.kotlin\.multiplatform\.library' 'com\.android\.library' 'com\.android\.application'; do
+  agp_accessor=$(catalog_aliases_for "$id" | head -n 1)
+  if [ -n "$agp_accessor" ]; then break; fi
+done
+plugin_deps="    implementation(plugin(libs.plugins.$mp_accessor))
+    implementation(plugin(libs.plugins.$kgp_accessor))"
+if [ -n "$agp_accessor" ]; then
+  plugin_deps="$plugin_deps
+    implementation(plugin(libs.plugins.$agp_accessor))"
 fi
 
-bs_settings="$project_root/buildSrc/settings.gradle.kts"
-if [ -f "$bs_settings" ]; then
-  if grep -q 'libs\.versions\.toml' "$bs_settings"; then
-    add_skipped "buildSrc/settings.gradle.kts (version catalog import 済み)"
+cd_build="$project_root/$convention_dir/build.gradle.kts"
+if [ -f "$cd_build" ]; then
+  missing=""
+  for acc in "$mp_accessor" "$kgp_accessor" $agp_accessor; do
+    if ! grep -Eq "libs\.plugins\.$acc([^A-Za-z0-9.]|$)" "$cd_build"; then missing="$missing libs.plugins.$acc"; fi
+  done
+  if [ -z "$missing" ]; then
+    add_skipped "$convention_dir/build.gradle.kts (必要なプラグイン依存が既にある)"
   else
-    add_action "buildSrc/settings.gradle.kts が既に存在するが version catalog を import していない。example/buildSrc-settings.gradle.kts の dependencyResolutionManagement を手動でマージすること"
+    add_action "$convention_dir/build.gradle.kts が既に存在する。次の plugin marker 依存が見当たらないので example/buildSrc-build.gradle.kts を参考に dependencies へ手動でマージすること:$missing"
   fi
 else
-  mkdir -p "$project_root/buildSrc"
+  mkdir -p "$project_root/$convention_dir"
+  tpl=$(resolve_template buildSrc-build.gradle.kts)
+  render "$tpl" "$cd_build" "PLUGIN_DEPENDENCIES=$plugin_deps"
+  add_changed "$convention_dir/build.gradle.kts"
+fi
+
+# buildSrc の classpath に載せたプラグインをバージョン付きで要求すると
+# "already on the classpath with an unknown version" で失敗するため、該当箇所を列挙する。
+# (included build (build-logic) では逆にバージョン付き alias(...) のままで良く、id-only だと解決できない)
+versioned_requests=""
+[ "$convention_dir" = "buildSrc" ] && versioned_requests=$(
+  {
+    for acc in $mp_accessor $(catalog_aliases_for "$KGP_IDS") $(catalog_aliases_for "$AGP_IDS"); do
+      grep -rEns --include='*.gradle.kts' --exclude-dir=build --exclude-dir=.gradle --exclude-dir="$convention_dir" \
+        "alias\([[:space:]]*libs\.plugins\.${acc}[[:space:]]*\)" "$project_root" || true
+    done
+    grep -rEns --include='*.gradle.kts' --exclude-dir=build --exclude-dir=.gradle --exclude-dir="$convention_dir" \
+      "(kotlin\(\"(multiplatform|jvm|android)\"\)|id\(\"($KGP_IDS|$AGP_IDS|com\.vanniktech\.maven\.publish)\"\))[[:space:]]+version" "$project_root" || true
+  } | sed "s|^$project_root/||" | sort -u
+)
+if [ -n "$versioned_requests" ]; then
+  while IFS= read -r req; do
+    add_action "バージョン付きのプラグイン要求を id(libs.plugins.<alias>.get().pluginId) (ルートの apply false 行は削除でも可) に置き換えること: $req"
+  done <<EOF
+$versioned_requests
+EOF
+fi
+
+cd_settings="$project_root/$convention_dir/settings.gradle.kts"
+if [ -f "$cd_settings" ]; then
+  if grep -q 'libs\.versions\.toml' "$cd_settings"; then
+    add_skipped "$convention_dir/settings.gradle.kts (version catalog import 済み)"
+  else
+    add_action "$convention_dir/settings.gradle.kts が既に存在するが version catalog を import していない。example/buildSrc-settings.gradle.kts の dependencyResolutionManagement を手動でマージすること"
+  fi
+else
+  mkdir -p "$project_root/$convention_dir"
   tpl=$(resolve_template buildSrc-settings.gradle.kts)
-  cp "$tpl" "$bs_settings"
-  add_changed "buildSrc/settings.gradle.kts"
+  cp "$tpl" "$cd_settings"
+  add_changed "$convention_dir/settings.gradle.kts"
+fi
+
+# buildSrc 以外は included build としてルートの settings に登録されている必要がある
+if [ "$convention_dir" != "buildSrc" ]; then
+  root_settings="$project_root/settings.gradle.kts"
+  if [ -f "$root_settings" ] && grep -Eq "includeBuild\([[:space:]]*\"(\./)?$convention_dir\"[[:space:]]*\)" "$root_settings"; then
+    add_skipped "settings.gradle.kts (includeBuild(\"$convention_dir\") 済み)"
+  else
+    add_action "settings.gradle.kts の pluginManagement { } に includeBuild(\"$convention_dir\") を追加すること (included build の convention plugin を id(\"publish-convention\") で解決するため)"
+  fi
 fi
 
 # ---------- 3. publish-convention.gradle.kts (プレースホルダー置換) ----------
@@ -314,29 +474,40 @@ kts_escape() {
 }
 
 tpl=$(resolve_template publish-convention.gradle.kts)
-content=$(cat "$tpl")
-esc=$(kts_escape "$description");    content=${content//<PROJECT_DESCRIPTION>/$esc}
-esc=$(kts_escape "$github_url");     content=${content//<GITHUB_URL>/$esc}
-esc=$(kts_escape "$start_year");     content=${content//<INCEPTION_YEAR>/$esc}
-esc=$(kts_escape "$license_name");   content=${content//<LICENSE_NAME>/$esc}
-esc=$(kts_escape "$license_url");    content=${content//<LICENSE_URL>/$esc}
-esc=$(kts_escape "$developer_id");   content=${content//<DEVELOPER_ID>/$esc}
-esc=$(kts_escape "$developer_name"); content=${content//<DEVELOPER_NAME>/$esc}
-esc=$(kts_escape "$developer_url");  content=${content//<DEVELOPER_URL>/$esc}
-esc=$(kts_escape "$github_owner");   content=${content//<GITHUB_OWNER>/$esc}
-esc=$(kts_escape "$github_repo");    content=${content//<GITHUB_REPO>/$esc}
-printf '%s\n' "$content" > "$TMP_DIR/publish-convention.rendered.gradle.kts"
-if grep -Eq '<[A-Z_]+>' "$TMP_DIR/publish-convention.rendered.gradle.kts"; then
-  leftover=$(grep -Eo '<[A-Z_]+>' "$TMP_DIR/publish-convention.rendered.gradle.kts" | sort -u | tr '\n' ' ')
-  die "プレースホルダーが置換されずに残った: $leftover" "テンプレートと script の置換リストがずれている" "TBSten/skills の skills/kotlin-maven-central-publish に issue 報告するか、生成後のファイルを手動修正する"
-fi
+render "$tpl" "$TMP_DIR/publish-convention.rendered.gradle.kts" \
+  "PROJECT_DESCRIPTION=$(kts_escape "$description")" \
+  "GITHUB_URL=$(kts_escape "$github_url")" \
+  "INCEPTION_YEAR=$(kts_escape "$start_year")" \
+  "LICENSE_NAME=$(kts_escape "$license_name")" \
+  "LICENSE_URL=$(kts_escape "$license_url")" \
+  "DEVELOPER_ID=$(kts_escape "$developer_id")" \
+  "DEVELOPER_NAME=$(kts_escape "$developer_name")" \
+  "DEVELOPER_URL=$(kts_escape "$developer_url")" \
+  "GITHUB_OWNER=$(kts_escape "$github_owner")" \
+  "GITHUB_REPO=$(kts_escape "$github_repo")"
 install_file "$TMP_DIR/publish-convention.rendered.gradle.kts" \
-  "$project_root/buildSrc/src/main/kotlin/publish-convention.gradle.kts" \
-  "buildSrc/src/main/kotlin/publish-convention.gradle.kts"
+  "$project_root/$convention_dir/src/main/kotlin/publish-convention.gradle.kts" \
+  "$convention_dir/src/main/kotlin/publish-convention.gradle.kts"
 
-# ---------- 4. publish.yml ----------
+# ---------- 4. workflows ----------
+# Apple ターゲットがあれば macOS runner (Apple の klib は macOS でしかビルドできない)。無ければ安価な ubuntu。
+if grep -rEqs --include='*.gradle.kts' --exclude-dir=build --exclude-dir=.gradle --exclude-dir="$convention_dir" \
+  '(ios|macos|tvos|watchos)(Arm64|X64|SimulatorArm64|DeviceArm64)?[[:space:]]*\(' "$project_root"; then
+  runner="macos-latest"
+else
+  runner="ubuntu-latest"
+fi
+log "GitHub Actions runner: $runner"
+
 tpl=$(resolve_template publish.yml)
-install_file "$tpl" "$project_root/.github/workflows/publish.yml" ".github/workflows/publish.yml"
+render "$tpl" "$TMP_DIR/publish.rendered.yml" "RUNNER=$runner" "READ_VERSION_CMD=$read_version_cmd"
+install_file "$TMP_DIR/publish.rendered.yml" "$project_root/.github/workflows/publish.yml" ".github/workflows/publish.yml"
+
+if [ "$skip_publish_check" = 0 ]; then
+  tpl=$(resolve_template publish-check.yml)
+  render "$tpl" "$TMP_DIR/publish-check.rendered.yml" "RUNNER=$runner"
+  install_file "$TMP_DIR/publish-check.rendered.yml" "$project_root/.github/workflows/publish-check.yml" ".github/workflows/publish-check.yml"
+fi
 
 # ---------- 結果 JSON (stdout 末尾 1 行) ----------
 json_escape() {
@@ -361,8 +532,8 @@ EOF
 
 status="ok"
 if [ -n "$ACTION_REQUIRED" ]; then status="action_required"; fi
-next_steps='"公開対象モジュールの build.gradle.kts に id(\"publish-convention\") と group/version を追加する","./gradlew publishToMavenLocal で動作確認する","scripts/setup-secrets.sh で GPG 鍵と GitHub Secrets を設定する"'
-printf '{"status":"%s","changed":%s,"skipped":%s,"action_required":%s,"group_id":"%s","description":"%s","github_url":"%s","github_owner":"%s","github_repo":"%s","license_name":"%s","license_url":"%s","developer_id":"%s","developer_name":"%s","developer_url":"%s","inception_year":"%s","maven_publish_version":"%s","next_steps":[%s]}\n' \
+next_steps='"公開対象モジュールの build.gradle.kts に id(\"publish-convention\") と group/version を追加する","./gradlew publishToMavenLocal で動作確認する (署名はスキップされる)","scripts/setup-secrets.sh で GPG 鍵と GitHub Secrets を設定する"'
+printf '{"status":"%s","changed":%s,"skipped":%s,"action_required":%s,"group_id":"%s","description":"%s","github_url":"%s","github_owner":"%s","github_repo":"%s","license_name":"%s","license_url":"%s","developer_id":"%s","developer_name":"%s","developer_url":"%s","inception_year":"%s","maven_publish_version":"%s","maven_publish_accessor":"%s","convention_dir":"%s","version_source":"%s","runner":"%s","next_steps":[%s]}\n' \
   "$status" \
   "$(json_array "$CHANGED")" \
   "$(json_array "$SKIPPED")" \
@@ -379,4 +550,8 @@ printf '{"status":"%s","changed":%s,"skipped":%s,"action_required":%s,"group_id"
   "$(json_escape "$developer_url")" \
   "$(json_escape "$start_year")" \
   "$(json_escape "$mp_version")" \
+  "$(json_escape "$mp_accessor")" \
+  "$(json_escape "$convention_dir")" \
+  "$(json_escape "$version_source")" \
+  "$(json_escape "$runner")" \
   "$next_steps"
