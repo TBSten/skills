@@ -41,7 +41,7 @@ IDE プラグインは「実装したものを IDE に入れて手で触る」�
 
 | ファイル | 内容 |
 |---|---|
-| `example/` | references の snippet を整合する 1 プロジェクトに束ねた動く scaffold (`com.example.plugin`・独立 Gradle ビルド): build 配線 / plugin.xml / Compose tool window + 共有 Composable / `PreviewMain.kt`・`PreviewChecks.kt` / AA テスト harness / 雛形テスト (`ToolWindowEP.EP_NAME` での Tool Window 登録検査・最小の AA スモーク・preview ゲート)。コード片の SSoT |
+| `example/` | references の snippet を整合する 1 プロジェクトに束ねた動く scaffold (`com.example.intellijplugindev`・独立 Gradle ビルド): build 配線 / plugin.xml / Compose tool window + 共有 Composable / `PreviewMain.kt`・`PreviewChecks.kt` / AA テスト harness / 雛形テスト (`ToolWindowEP.EP_NAME` での Tool Window 登録検査・最小の AA スモーク・preview ゲート)。コード片の SSoT |
 | `scripts/scaffold.sh` | `example/` から新規プラグインモジュールを生成する (`--dest` / `--package` / `--plugin-id` / `--plugin-name`、任意で `--tool-window-id` / `--vendor`、`--dry-run` / `--force`)。`rootProject.name` は `--dest` のディレクトリ名。`.gitignore` も生成 (既存なら触らない)。生成物のコメントは英語で repo 単体で読める。冪等 (`--force` なし上書き禁止)・末尾 1 行 JSON。`bash` を付けて呼ぶ |
 | `references/setup/basics.md` | 基本 build 配線 (intellijPlatform / SDK 261 / bundled Kotlin(AA)・Jewel・Compose・Skiko / JBR21 / K2 / since-until)。統合ディストリの罠・stdlib 非同梱 |
 | `references/setup/preview.md` | preview (headless PNG) を焼く build 配線 (source set 共有 / standalone Jewel・Compose Desktop / `:icons` / `updatePreview`・`verifyPreview` タスク登録) |

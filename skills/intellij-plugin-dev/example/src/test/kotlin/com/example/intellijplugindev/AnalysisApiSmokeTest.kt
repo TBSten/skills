@@ -1,4 +1,4 @@
-package com.example.plugin
+package com.example.intellijplugindev
 
 import org.jetbrains.kotlin.analysis.api.analyze
 import org.jetbrains.kotlin.analysis.api.permissions.KaAllowAnalysisOnEdt

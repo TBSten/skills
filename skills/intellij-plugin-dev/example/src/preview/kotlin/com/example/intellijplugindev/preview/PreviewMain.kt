@@ -1,6 +1,6 @@
 @file:OptIn(InternalComposeUiApi::class) // renderComposeScene
 
-package com.example.plugin.preview
+package com.example.intellijplugindev.preview
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -8,8 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.InternalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.renderComposeScene
-import com.example.plugin.ui.ExampleModel
-import com.example.plugin.ui.ExampleToolWindowContent
+import com.example.intellijplugindev.ui.ExampleModel
+import com.example.intellijplugindev.ui.ExampleToolWindowContent
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.intui.standalone.theme.IntUiTheme
 import org.jetbrains.skia.EncodedImageFormat

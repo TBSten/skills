@@ -78,7 +78,7 @@ IDE プラグインは「実装したものを IDE に入れて手で触る」�
 ## example scaffold (実ファイルの SSoT) と scripts/scaffold.sh
 
 references の snippet を整合する 1 プロジェクトに束ねた実ファイルが `example/`
-(パッケージ `com.example.plugin`、独立 Gradle ビルド一式: build 配線 / plugin.xml /
+(パッケージ `com.example.intellijplugindev`、独立 Gradle ビルド一式: build 配線 / plugin.xml /
 tool window + 共有 Composable / `PreviewMain.kt`+`PreviewChecks.kt` / AA テスト harness)。
 **新規プラグインの土台は snippet の転記で再構築せず、`scripts/scaffold.sh` を実行して
 example から生成する** (example がコード片の SSoT。references は設計解説と実ファイルへの参照)。

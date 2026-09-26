@@ -1,7 +1,7 @@
-package com.example.plugin
+package com.example.intellijplugindev
 
-import com.example.plugin.ui.ExampleModel
-import com.example.plugin.ui.ExampleToolWindowContent
+import com.example.intellijplugindev.ui.ExampleModel
+import com.example.intellijplugindev.ui.ExampleToolWindowContent
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow

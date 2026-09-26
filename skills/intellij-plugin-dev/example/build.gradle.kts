@@ -12,7 +12,7 @@ plugins {
     id("org.jetbrains.intellij.platform")
 }
 
-group = "com.example.plugin"   // CUSTOMIZE
+group = "com.example.intellijplugindev"   // CUSTOMIZE
 version = "0.1.0"              // CUSTOMIZE
 
 // JBR 21, which the 261 platform runs on. If the default `java` is older, point JAVA_HOME
@@ -91,7 +91,7 @@ tasks.test { systemProperty("idea.kotlin.plugin.use.k2", "true") }
 fun registerPreviewTask(name: String, mode: String, desc: String) = tasks.register<JavaExec>(name) {
     group = "preview"
     description = desc
-    mainClass.set("com.example.plugin.preview.PreviewMainKt")
+    mainClass.set("com.example.intellijplugindev.preview.PreviewMainKt")
     classpath = sourceSets["preview"].runtimeClasspath
     jvmArgs("-Djava.awt.headless=true", "-Dskiko.renderApi=SOFTWARE")
     args(mode)

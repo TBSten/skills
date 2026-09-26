@@ -1,6 +1,6 @@
-package com.example.plugin
+package com.example.intellijplugindev
 
-import com.example.plugin.preview.PreviewChecks
+import com.example.intellijplugindev.preview.PreviewChecks
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule

@@ -9,14 +9,14 @@
 #                    [--tool-window-id <id>] [--vendor <vendor>] [--dry-run] [--force]
 #
 # 置換仕様 (長いキー優先の単一パス置換なので、置換結果が再置換されることはない):
-#   <id>com.example.plugin</id> -> <id>{--plugin-id}</id>   (plugin.xml の ID のみ)
-#   com.example.plugin          -> --package (パス形 com/example/plugin も)
-#   example-plugin              -> --dest のディレクトリ名 (rootProject.name = 配布 zip の名前)
-#   Example Tool Window         -> --tool-window-id (省略時 --plugin-name。Tool Window の id = タイトル)
-#   Example Vendor              -> --vendor (省略時 --plugin-name。plugin.xml の <vendor>)
-#   Example Plugin              -> --plugin-name (plugin.xml の <name> / UI の見出し / gallery タイトル)
-#   Example                     -> --plugin-name の PascalCase (クラス名接頭辞。ファイル名にも適用され
-#                                  ExampleToolWindowFactory.kt 等が rename される)
+#   <id>com.example.intellijplugindev</id> -> <id>{--plugin-id}</id>   (plugin.xml の ID のみ)
+#   com.example.intellijplugindev   -> --package (パス形 com/example/intellijplugindev も)
+#   example-plugin                  -> --dest のディレクトリ名 (rootProject.name = 配布 zip の名前)
+#   Example Tool Window             -> --tool-window-id (省略時 --plugin-name。Tool Window の id = タイトル)
+#   Example Vendor                  -> --vendor (省略時 --plugin-name。plugin.xml の <vendor>)
+#   Example Plugin                  -> --plugin-name (plugin.xml の <name> / UI の見出し / gallery タイトル)
+#   Example                         -> --plugin-name の PascalCase (クラス名接頭辞。ファイル名にも適用され
+#                                      ExampleToolWindowFactory.kt 等が rename される)
 #
 # 追加で生成するもの: <dest>/.gitignore (build/ .gradle/ .intellijPlatform/ .kotlin/)。
 #   既にあれば --force でも上書きしない (利用者の ignore 設定を壊さない)。
@@ -143,14 +143,14 @@ transform_full() {
     perl -0777 -pe '
         BEGIN {
             %m = (
-                "<id>com.example.plugin</id>" => "<id>$ENV{S_PLUGIN_ID}</id>",
-                "com.example.plugin"          => $ENV{S_PKG},
-                "com/example/plugin"          => $ENV{S_PKG_PATH},
-                "example-plugin"              => $ENV{S_PROJECT_NAME},
-                "Example Tool Window"         => $ENV{S_TOOL_WINDOW_ID},
-                "Example Vendor"              => $ENV{S_VENDOR},
-                "Example Plugin"              => $ENV{S_PLUGIN_NAME},
-                "Example"                     => $ENV{S_PASCAL},
+                "<id>com.example.intellijplugindev</id>" => "<id>$ENV{S_PLUGIN_ID}</id>",
+                "com.example.intellijplugindev"          => $ENV{S_PKG},
+                "com/example/intellijplugindev"          => $ENV{S_PKG_PATH},
+                "example-plugin"                         => $ENV{S_PROJECT_NAME},
+                "Example Tool Window"                    => $ENV{S_TOOL_WINDOW_ID},
+                "Example Vendor"                         => $ENV{S_VENDOR},
+                "Example Plugin"                         => $ENV{S_PLUGIN_NAME},
+                "Example"                                => $ENV{S_PASCAL},
             );
             $re = join "|", map { quotemeta } sort { length($b) <=> length($a) } keys %m;
         }
@@ -169,7 +169,7 @@ PLAN_DST=()
 while IFS= read -r src; do
     rel=${src#"$EXAMPLE_DIR"/}
     PLAN_SRC+=("$src")
-    PLAN_DST+=("$(transform_path "$rel")") # com/example/plugin と Example* ファイルの rename
+    PLAN_DST+=("$(transform_path "$rel")") # com/example/intellijplugindev と Example* ファイルの rename
 done < <(find "$EXAMPLE_DIR" -type f ! -name '.DS_Store' | LC_ALL=C sort)
 
 TOTAL=${#PLAN_SRC[@]}

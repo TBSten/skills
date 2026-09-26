@@ -18,8 +18,8 @@
 - `ToolWindowFactory` + `DumbAware` を実装し、`plugin.xml` に `<toolWindow anchor="right" ...>` で登録。
 - Compose UI のホストは **`ToolWindow.addComposeTab("…") { … }`** (内部で `JewelComposePanel` +
   `enableNewSwingCompositing`)。この中の Composable を preview と共有する (`headless-preview.md`)。
-- 実ファイル: `example/src/main/kotlin/com/example/plugin/ExampleToolWindowFactory.kt` + 共有
-  Composable `example/src/shared/kotlin/com/example/plugin/ui/ExampleToolWindowContent.kt`。
+- 実ファイル: `example/src/main/kotlin/com/example/intellijplugindev/ExampleToolWindowFactory.kt` + 共有
+  Composable `example/src/shared/kotlin/com/example/intellijplugindev/ui/ExampleToolWindowContent.kt`。
 
 ## 2. plugin.xml 登録
 

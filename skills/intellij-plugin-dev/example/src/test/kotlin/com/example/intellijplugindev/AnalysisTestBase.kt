@@ -1,4 +1,4 @@
-package com.example.plugin
+package com.example.intellijplugindev
 
 import com.intellij.testFramework.LoggedErrorProcessor
 import com.intellij.testFramework.fixtures.BasePlatformTestCase

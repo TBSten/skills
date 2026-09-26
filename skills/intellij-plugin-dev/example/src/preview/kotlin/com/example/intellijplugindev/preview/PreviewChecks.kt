@@ -1,4 +1,4 @@
-package com.example.plugin.preview
+package com.example.intellijplugindev.preview
 
 import java.io.File
 import javax.imageio.ImageIO

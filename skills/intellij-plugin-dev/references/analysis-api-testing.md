@@ -4,7 +4,7 @@
 `BasePlatformTestCase` の fixture 上でヘッドレスにテストする。実 UI (Swing/Compose パネル) では
 なく **パネルが呼ぶ純ロジック (AA→model→IR→ナビ先)** を分解してアサートするのがコツ。
 
-実ファイル (SSoT): `example/src/test/kotlin/com/example/plugin/AnalysisTestBase.kt` (harness:
+実ファイル (SSoT): `example/src/test/kotlin/com/example/intellijplugindev/AnalysisTestBase.kt` (harness:
 `ignoreUnrelatedLoggedErrors` / `runReadActionBlocking`) + `AnalysisApiSmokeTest.kt` (関数の戻り値の型を
 解決する最小の AA スモーク) + `ExampleToolWindowRegistrationTest.kt` (Tool Window の登録を
 `ToolWindowEP.EP_NAME` で検査。plugin.xml の anchor を変えると落ちることを確認済み)。

@@ -1,4 +1,4 @@
-package com.example.plugin.ui
+package com.example.intellijplugindev.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

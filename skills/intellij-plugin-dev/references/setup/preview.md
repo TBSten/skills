@@ -10,7 +10,7 @@
 
 図/UI の Composable は plugin 本体 (bundled Jewel) と preview (standalone Jewel) で **同じ Jewel/Compose
 API**。`src/shared/kotlin` を両 source set の srcDir に足し、それぞれの Compose 依存で二重コンパイルする
-(共有 Composable の例: `example/src/shared/kotlin/com/example/plugin/ui/ExampleToolWindowContent.kt`)。
+(共有 Composable の例: `example/src/shared/kotlin/com/example/intellijplugindev/ui/ExampleToolWindowContent.kt`)。
 
 - `sourceSets`: main と `create("preview")` の両方に `kotlin.srcDir("src/shared/kotlin")`。
 - `previewImplementation` 依存: `compose.desktop.currentOs` (renderComposeScene はここ・Skiko 同梱。

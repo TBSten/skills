@@ -1,4 +1,4 @@
-package com.example.plugin
+package com.example.intellijplugindev
 
 import com.intellij.openapi.wm.ToolWindowAnchor
 import com.intellij.openapi.wm.ToolWindowEP

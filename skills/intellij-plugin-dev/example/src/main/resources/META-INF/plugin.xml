@@ -1,5 +1,5 @@
 <idea-plugin>
-    <id>com.example.plugin</id>
+    <id>com.example.intellijplugindev</id>
     <name>Example Plugin</name>
     <vendor>Example Vendor</vendor>
     <!-- CUSTOMIZE: describe the plugin. -->
@@ -29,9 +29,9 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <!-- The id is also the tool window's title. Keep it equal to ExampleToolWindowFactory.TOOL_WINDOW_ID. -->
-        <toolWindow id="Example Tool Window" anchor="right" factoryClass="com.example.plugin.ExampleToolWindowFactory"/>
+        <toolWindow id="Example Tool Window" anchor="right" factoryClass="com.example.intellijplugindev.ExampleToolWindowFactory"/>
         <!-- TODO(CUSTOMIZE): register a gutter line marker once one is implemented, e.g.
-        <codeInsight.lineMarkerProvider language="kotlin" implementationClass="com.example.plugin.ExampleLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="kotlin" implementationClass="com.example.intellijplugindev.ExampleLineMarkerProvider"/>
         -->
     </extensions>
 </idea-plugin>

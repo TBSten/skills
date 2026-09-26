@@ -3,7 +3,7 @@
 Jewel/Compose の UI を **IDE を起動せず** PNG に焼き、エージェントが画像として目視する。同一マシンで
 描画がバイト決定的なので、golden 比較 (VRT: Visual Regression Test) のゲートも掛けられる。
 
-実ファイル (SSoT): `example/src/preview/kotlin/com/example/plugin/preview/PreviewMain.kt`
+実ファイル (SSoT): `example/src/preview/kotlin/com/example/intellijplugindev/preview/PreviewMain.kt`
 (harness: render → gallery → 自動ゲート → golden 同期/比較/report) + `PreviewChecks.kt` (純出力ゲート)
 + `example/build.gradle.kts` の `updatePreview` / `verifyPreview`。snippet から再構築せず
 `scripts/scaffold.sh` で example から生成する (SKILL.md)。
