@@ -25,7 +25,8 @@ sourceSets { create("integrationTest") {
     compileClasspath += sourceSets.main.get().output
     runtimeClasspath += sourceSets.main.get().output
 } }
-val integrationTestImplementation by configurations.getting { extendsFrom(configurations.testImplementation.get()) }
+// Gradle 9.6 で `by configurations.getting` は非推奨警告になるので getByName を使う
+configurations.getByName("integrationTestImplementation") { extendsFrom(configurations.testImplementation.get()) }
 dependencies {
     intellijPlatform { testFramework(TestFrameworkType.Starter, configurationName = "integrationTestImplementation") }
     integrationTestImplementation("org.junit.jupiter:junit-jupiter:5.11.4")  // Starter は JUnit5 専用

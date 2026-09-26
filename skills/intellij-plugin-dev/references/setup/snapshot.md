@@ -15,6 +15,8 @@
   で焼き直して差分を commit する。
 - CI は `verifyPreview` をゲートにする (golden と不一致なら fail)。**独立ビルドなので root の通常
   test/check では走らない** → root/CI から独立ビルドを明示呼び出しする quality gate を足す。
+- **golden は OS をまたいでバイト一致しない**。CI の OS とローカルの OS が違うなら、golden をどこで作るかを
+  最初に決める (選択肢は `gotchas.md`「golden と OS」)。
 
 ## 自動ゲート (目視の自己弁護を排す)
 

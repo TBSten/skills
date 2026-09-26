@@ -5,8 +5,11 @@
 なく **パネルが呼ぶ純ロジック (AA→model→IR→ナビ先)** を分解してアサートするのがコツ。
 
 実ファイル (SSoT): `example/src/test/kotlin/com/example/plugin/AnalysisTestBase.kt` (harness:
-`ignoreUnrelatedLoggedErrors` / `runReadActionBlocking`) + `ExampleAnalysisTest.kt` (土台レシピの実装)。
+`ignoreUnrelatedLoggedErrors` / `runReadActionBlocking`) + `AnalysisApiSmokeTest.kt` (関数の戻り値の型を
+解決する最小の AA スモーク) + `ExampleToolWindowRegistrationTest.kt` (Tool Window の登録を
+`ToolWindowEP.EP_NAME` で検査。plugin.xml の anchor を変えると落ちることを確認済み)。
 snippet から再構築せず `scripts/scaffold.sh` で example から生成する (SKILL.md)。
+下の「土台のレシピ」(注釈の解析) は雛形には入れていない。自分の注釈を解析する段になったらこの形で書く。
 
 ## 土台のレシピ
 
@@ -40,8 +43,9 @@ internal class MySpecAnalysisTest : BasePlatformTestCase() {
 }
 ```
 
-- この形の実ファイルは `ExampleAnalysisTest.kt` (example が SSoT)。`runReadActionBlocking` /
-  `ignoreUnrelatedLoggedErrors` は `AnalysisTestBase.kt` に定義してある。
+- `runReadActionBlocking` / `ignoreUnrelatedLoggedErrors` は `AnalysisTestBase.kt` (example) に定義してある。
+  `runReadActionBlocking` は `com.intellij.openapi.application.runReadActionBlocking` を alias import して
+  包んでいる (261 では `runReadAction` が非推奨)。
 - **K2 強制**: `tasks.test { systemProperty("idea.kotlin.plugin.use.k2", "true") }` + `plugin.xml` の
   `<supportsKotlinPluginMode supportsK2="true"/>` (`setup/basics.md`)。
 - **read action + EDT**: テストは EDT なので `runReadActionBlocking { allowAnalysisOnEdt { analyze(...) } }`
@@ -65,8 +69,8 @@ analyze(content) {
 
 - plugin モジュールは runtime 注釈に依存を持たないので、**注釈スタブを fixture 内ソースとして同梱**する
   (KSP テストの注釈スタブと同型)。FQN を本物と合わせて `classId` 判定を通す。
-- **spike のスタブと parity fixture を区別する**: `ExampleAnalysisTest.kt` (example) の `ANNOTATION_STUB`
-  は AA 解決を実証する**最小 spike** で、実 runtime とは差がある (`Unit::class`↔`Nothing::class` /
+- **spike のスタブと parity fixture を区別する**: 上の「土台のレシピ」の `ANNOTATION_STUB` のような手書き
+  スタブは AA 解決を実証する**最小 spike** で、実 runtime とは差がありがち (`Unit::class`↔`Nothing::class` /
   `KClass<*>`↔`KClass<out State>` / `@Retention(SOURCE)`・`@Repeatable`・`A : Any` bound の欠落)。
   production frontend の正しさを担保する fixture にはそのままコピーせず、**実 runtime 定義から生成した
   共通スタブ (parity fixture)** を使う。
