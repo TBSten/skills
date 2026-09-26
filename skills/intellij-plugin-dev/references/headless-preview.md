@@ -67,7 +67,8 @@ File(out).writeBytes(image.encodeToData(EncodedImageFormat.PNG)!!.bytes)   // or
    限定し、検証の代わりに使わない。
 
 - 新規シナリオを足すと verify では `new` (golden 未登録) として出る。意図通りなら updatePreview で golden 化。
-- CI は `verifyPreview` をゲートにする (golden と不一致なら fail)。
+- CI は `verifyPreview` をゲートにする (golden と不一致なら fail)。golden を作る OS と CI の OS が違うと
+  毎回落ちるので、先に `gotchas.md`「golden と OS」で方針を決める。
 - 多数の PNG 目視/採点/修正を subagent に振るときは **1 agent = 10〜15 図のまとまり** (読み込み重複を避ける)。
 
 ## 自動ゲート (目視の自己弁護を排す)

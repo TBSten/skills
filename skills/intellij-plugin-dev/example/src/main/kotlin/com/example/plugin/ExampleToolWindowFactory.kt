@@ -9,21 +9,24 @@ import com.intellij.openapi.wm.ToolWindowFactory
 import org.jetbrains.jewel.bridge.addComposeTab
 
 /**
- * tool window に Compose (Jewel) UI をホストする (references/ide-integration.md §1)。
- * `addComposeTab` は内部で `JewelComposePanel` + `enableNewSwingCompositing`。
- * この中の Composable (src/shared) を preview (`PreviewMain`) と共有するので、
- * headless PNG は出荷物に忠実になる (references/headless-preview.md)。
+ * Hosts the tool window's Compose (Jewel) UI.
+ *
+ * The Composable lives in `src/shared` so that the headless preview renders the same code.
  */
 internal class ExampleToolWindowFactory : ToolWindowFactory, DumbAware {
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
-        toolWindow.addComposeTab("Example") {
-            // CUSTOMIZE: 実データから model を組み立てて渡す。
-            // エディタ追従 (選択・編集の反映) を足すなら ide-integration.md §3 (デバウンス +
-            // invalidation)、非同期解析は §6 (lifecycle) / §7 (性能・cancellation) を参照。
+        toolWindow.addComposeTab {
+            // CUSTOMIZE: build the model from real data. Follow the editor with a debounce and
+            // invalidation, and move heavy analysis off the EDT (ReadAction.nonBlocking).
             ExampleToolWindowContent(
-                ExampleModel(title = "Example", items = listOf("Alpha", "Beta", "Gamma")),
+                ExampleModel(title = "Example Plugin", items = listOf("Alpha", "Beta", "Gamma")),
             )
         }
+    }
+
+    companion object {
+        /** Must match the `id` of `<toolWindow>` in plugin.xml. */
+        const val TOOL_WINDOW_ID: String = "Example Tool Window"
     }
 }

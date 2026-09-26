@@ -41,8 +41,8 @@ Real-IDE channels (Driver / physical Android Studio) are pushed to periodic chec
 
 | File | Description |
 |---|---|
-| `example/` | A working scaffold (`com.example.plugin`, independent Gradle build) that bundles the reference snippets into one consistent project: build wiring, plugin.xml, Compose tool window + shared Composable, `PreviewMain.kt`/`PreviewChecks.kt`, and the AA test harness. The SSoT for the code fragments |
-| `scripts/scaffold.sh` | Generates a new plugin module from `example/` (`--dest` / `--package` / `--plugin-id` / `--plugin-name`, plus `--dry-run` / `--force`). Idempotent (no overwrite without `--force`); prints a trailing one-line JSON result |
+| `example/` | A working scaffold (`com.example.plugin`, independent Gradle build) that bundles the reference snippets into one consistent project: build wiring, plugin.xml, Compose tool window + shared Composable, `PreviewMain.kt`/`PreviewChecks.kt`, the AA test harness, and starter tests (tool window registration via `ToolWindowEP.EP_NAME`, a minimal AA smoke test, preview gates). The SSoT for the code fragments |
+| `scripts/scaffold.sh` | Generates a new plugin module from `example/` (`--dest` / `--package` / `--plugin-id` / `--plugin-name`, optional `--tool-window-id` / `--vendor`, plus `--dry-run` / `--force`). `rootProject.name` comes from the `--dest` directory name. Also writes a `.gitignore` unless one exists. Generated comments are in English and self-contained. Idempotent (no overwrite without `--force`); prints a trailing one-line JSON result. Run it with `bash` |
 | `references/setup/basics.md` | Base build wiring (intellijPlatform / SDK 261 / bundled Kotlin(AA), Jewel, Compose, Skiko / JBR21 / K2 / since-until). Unified-distribution trap; not bundling stdlib |
 | `references/setup/preview.md` | Build wiring to bake preview PNGs (shared source set / standalone Jewel & Compose Desktop / `:icons` / `updatePreview`·`verifyPreview` tasks) |
 | `references/setup/snapshot.md` | VRT golden wiring (`snapshots/preview` location / update=sync·verify=compare / alpha=255·managed-clean gates / CI gate) |
@@ -50,7 +50,7 @@ Real-IDE channels (Driver / physical Android Studio) are pushed to periodic chec
 | `references/headless-preview.md` | `renderComposeScene` + standalone Jewel + VRT golden. Recommended workflow (baseline → verify → review → human sign-off) and automated gates |
 | `references/ide-integration.md` | tool window / `addComposeTab` / gutter line markers / editor following / navigation / PSI insertion / lifecycle (stale race, dumb mode) / performance (backgrounding, cancellation, the `runCatching` trap) |
 | `references/driver-smoke.md` | Real-IDE Driver smoke. Two-layer setup (thick functional tests + thin Driver) / inspecting the UI tree (locators) / internal debug AnActions |
-| `references/gotchas.md` | Compose Desktop / IntelliJ-specific traps (pinch not delivered, AS vs IDEA build skew, rejected rendering approaches) and an index to each trap |
+| `references/gotchas.md` | Compose Desktop / IntelliJ-specific traps (pinch not delivered, AS vs IDEA build skew, rejected rendering approaches, Japanese text in headless previews, golden snapshots across OSes on CI, classpath/sandbox leftovers) and an index to each trap |
 
 ## Prerequisites
 

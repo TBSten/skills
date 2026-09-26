@@ -19,6 +19,11 @@ API**。`src/shared/kotlin` を両 source set の srcDir に足し、それぞ�
   プレースホルダになる)。バージョンは `example/gradle/libs.versions.toml`。
 - plugins block には `org.jetbrains.compose` (preview の standalone Compose Desktop 用) と
   `org.jetbrains.kotlin.plugin.compose` が要る (`setup/basics.md` のバージョンと揃える)。
+- **どのコードを `src/shared` に置くか**: preview が描くのに要るもの (Composable と、Composable が呼ぶ
+  model・レイアウト計算など) だけ。**UI にも preview にも依存しない純ロジック** (lowering / hit-test /
+  解析結果の整形など) は `src/main` に置き、素の JUnit で test する。shared に置くと preview 側にも
+  二重にコンパイルされ、test の classpath でも二重になる (`gotchas.md`「shared のクラスが test の
+  classpath で二重になる」)。迷ったら `src/main` に置き、preview から要るようになった時点で shared へ移す。
 - **二重コンパイルの副作用に注意**: `src/shared` は main と preview の両方でコンパイルされるので、
   test で使わない sample が「main 側コピー未使用」判定になることがある。未使用判定は推測せず
   jetbrains MCP `get_file_problems` で事実確認する。

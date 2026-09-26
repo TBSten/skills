@@ -1,84 +1,93 @@
-// IntelliJ Platform plugin の build 配線の完成形 (コード片の SSoT)。
-// 設計解説: references/setup/basics.md (基本) / setup/preview.md (preview) / setup/snapshot.md (VRT golden)。
-// バージョンの SSoT は gradle/libs.versions.toml。
+// The build of the IDE plugin (IntelliJ IDEA / Android Studio, build 261 and up).
+// Versions live in gradle/libs.versions.toml.
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
-    // Compose Compiler (Kotlin と同版に揃える — setup/basics.md)
+    // Same version as Kotlin.
     alias(libs.plugins.kotlin.compose.compiler)
-    // preview の standalone Compose Desktop 用 (setup/preview.md)
+    // Only for the standalone Compose Desktop of the headless preview.
     alias(libs.plugins.compose.multiplatform)
-    // version は settings.gradle.kts 側にのみ書く (両方に書くと classpath 衝突 — setup/basics.md)
+    // No version here: it is set in settings.gradle.kts, and setting it twice collides.
     id("org.jetbrains.intellij.platform")
 }
 
 group = "com.example.plugin"   // CUSTOMIZE
 version = "0.1.0"              // CUSTOMIZE
 
-// JBR 21 (setup/basics.md)。マシン既定 java が 17 なら JAVA_HOME / -Dorg.gradle.java.home で明示する
+// JBR 21, which the 261 platform runs on. If the default `java` is older, point JAVA_HOME
+// (or -Dorg.gradle.java.home) at a JDK 21.
 kotlin { jvmToolchain(21) }
 
-// --- source set 共有 (setup/preview.md):
-// 図/UI の Composable (src/shared/kotlin) を plugin 本体 (bundled Jewel) と preview (standalone Jewel)
-// の両方の srcDir に足し、それぞれの Compose 依存で二重コンパイルする。
+// The UI Composables in src/shared/kotlin are compiled twice: into the plugin against the IDE's
+// bundled Jewel, and into `preview` against standalone Jewel, so the headless PNGs show what ships.
 sourceSets {
     main { kotlin.srcDir("src/shared/kotlin") }
     create("preview") { kotlin.srcDir("src/shared/kotlin") }
 }
-val previewImplementation: Configuration by configurations.getting
+val previewImplementation: Configuration = configurations.getByName("previewImplementation")
 
 dependencies {
     intellijPlatform {
-        // build 261 = 2026.1 (AS Quail 2026.1.1 と同世代)。intellijIdeaCommunity は 253 以降解決不可
+        // 2026.1 = build 261. intellijIdeaCommunity(...) no longer resolves from 253 on.
         intellijIdea(libs.versions.intellijIdea.get())
-        // Analysis API (K2) 同梱 = 追加依存なしで analyze{}/KaSession が載る
+        // Brings the Analysis API (K2), so analyze { } works without further dependencies.
         bundledPlugin("org.jetbrains.kotlin")
-        // Jewel/Compose/Skiko は 261 バンドルを引く (自前 Compose を持たない)。
-        // plugin.xml の <dependencies><module name="..."/> と対を成す (setup/basics.md)
+        // Jewel, Compose and Skiko come from the IDE rather than from the plugin. Each line pairs
+        // with a <module name="..."/> in plugin.xml.
         bundledModule("intellij.platform.jewel.foundation")
         bundledModule("intellij.platform.jewel.ui")
         bundledModule("intellij.platform.jewel.ideLafBridge")
         bundledModule("intellij.libraries.compose.runtime.desktop")
-        bundledModule("intellij.libraries.compose.foundation.desktop")  // compile classpath に runtime を伝播しないので明示
+        // Named explicitly because it does not put runtime on the compile classpath by itself.
+        bundledModule("intellij.libraries.compose.foundation.desktop")
         bundledModule("intellij.libraries.skiko")
-        // BasePlatformTestCase など (詳細は analysis-api-testing.md)
+        // BasePlatformTestCase and friends.
         testFramework(TestFrameworkType.Platform)
     }
-    // 2.0.0-rc1 以降 Platform は JUnit4 を供給しない。BasePlatformTestCase は JUnit4 系
+    // The platform no longer supplies JUnit 4, which BasePlatformTestCase is based on.
     testImplementation(libs.junit4)
-    // preview の純出力ゲート (PreviewChecks) を test から叩く。standalone Compose 依存は載せない
-    // (bundled Compose との二重ロードを避ける — setup/snapshot.md)
+    // The pure-JVM preview gates (PreviewChecks) are tested from `test`. Standalone Compose is
+    // deliberately not put on the test classpath, where it would clash with the bundled one.
+    // Side effect: the shared UI classes are on the test classpath twice (from main and from
+    // preview). Harmless while tests do not load them.
     testImplementation(sourceSets["preview"].output)
 
-    // --- preview (standalone) 側の依存 (setup/preview.md)
-    // renderComposeScene はここ (Skiko 同梱)。uiTestJUnit4 は不要
+    // renderComposeScene lives here, Skiko included.
     previewImplementation(compose.desktop.currentOs)
     val jewelForIde = libs.versions.jewelForIde.get()
     previewImplementation("org.jetbrains.jewel:jewel-int-ui-standalone:${libs.versions.jewel.get()}-$jewelForIde")
-    // AllIconsKeys を standalone preview でも解決させる (無いとマゼンタのプレースホルダになる — headless-preview.md)
+    // Without it AllIconsKeys render as magenta placeholders in the standalone preview.
     previewImplementation("com.jetbrains.intellij.platform:icons:$jewelForIde")
 }
 
 intellijPlatform {
-    // 小さい plugin は省く (headless IDE 起動を避ける — setup/basics.md)
+    // A small plugin: skip starting a headless IDE to index settings.
     buildSearchableOptions = false
     pluginConfiguration {
         ideaVersion {
-            sinceBuild = "261"             // floor = build 261 (AS Quail 2026.1.1 / IJ 2026.1)
-            // 上限無し = 全ての将来 build に互換と宣言。verifyPlugin (Plugin Verifier) の CI ゲートと
-            // セットで運用する。互換を 261 系に絞るなら untilBuild = "261.*" (setup/basics.md)
+            sinceBuild = "261"
+            // No upper bound: every future build is declared compatible. That promise is only
+            // safe with `./gradlew verifyPlugin` (configured below) running on CI; otherwise
+            // narrow it to "261.*".
             untilBuild = provider { null }
+        }
+    }
+    // `./gradlew verifyPlugin` checks binary compatibility against the IDEs recommended for the
+    // since/until range above. It downloads those IDEs, so run it on CI rather than every build.
+    pluginVerification {
+        ides {
+            recommended()
         }
     }
 }
 
-// AA を K2 で動かす (plugin.xml の <supportsKotlinPluginMode supportsK2="true"/> とセット)。
-// test に useJUnitPlatform() を付けない (BasePlatformTestCase は JUnit4 — setup/basics.md)
+// K2 for the Analysis API in tests, paired with <supportsKotlinPluginMode supportsK2="true"/>.
+// No useJUnitPlatform(): BasePlatformTestCase is JUnit 4 based.
 tasks.test { systemProperty("idea.kotlin.plugin.use.k2", "true") }
 
-// --- preview タスク (setup/preview.md): preview の main() を standalone 依存で回す。
-// 第 1 引数で mode を切る (update / verify)。update / verify の golden 側の意味は setup/snapshot.md。
+// updatePreview / verifyPreview: run the preview main() on the standalone classpath.
+// The first argument picks the mode; the working directory is this project directory.
 fun registerPreviewTask(name: String, mode: String, desc: String) = tasks.register<JavaExec>(name) {
     group = "preview"
     description = desc
