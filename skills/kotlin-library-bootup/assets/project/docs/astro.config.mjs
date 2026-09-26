@@ -21,7 +21,7 @@ export default defineConfig({
 		mermaid({ theme: 'neutral', autoTheme: true }),
 		starlight({
 			title: 'example-lib',
-			description: '<description>',
+			description: "<description>",
 			// Refers to a key of `locales`. English is served from the root.
 			defaultLocale: 'root',
 			// English lives under /<repo>/, Japanese under /<repo>/ja/.

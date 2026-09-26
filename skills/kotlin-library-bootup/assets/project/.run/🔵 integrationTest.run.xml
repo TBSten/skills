@@ -1,3 +1,4 @@
+<!-- @bootup:file-if integration-test -->
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="🔵 integrationTest" type="GradleRunConfiguration" factoryName="Gradle">
     <ExternalSystemSettings>

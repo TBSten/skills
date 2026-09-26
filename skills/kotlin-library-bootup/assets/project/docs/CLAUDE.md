@@ -37,7 +37,12 @@ API リファレンスまで含めて手元で見るなら、先にリポジト�
 - **サイドバーの `link` には `base` を付けない。** Starlight が自動で前置するので、付けると
   `/<repo>/<repo>/...` になる
 - **`/api-docs/` は validator の対象外** (`astro.config.mjs` の `exclude`)。Starlight の外で作られるため
+<!-- @bootup:if integration-test -->
 - **コード例はコンパイルできる形で書く。** 可能なら `integrationTest/` のコードを引用し、そこへリンクする。
+<!-- @bootup:end -->
+<!-- @bootup:if !integration-test -->
+- **コード例はコンパイルできる形で書く。** 可能ならテストコードを引用し、そこへリンクする。
+<!-- @bootup:end -->
   docs は CI でコンパイルされないので、引用しない例はいずれ腐る
 - ユーザー向けの公開 API を変えたら、Installation / Guides の例が古くなっていないか確認する
 

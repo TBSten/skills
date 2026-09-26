@@ -2,7 +2,9 @@
 paths:
   - "**/src/*Test/**/*.kt"
   - "**/src/test/**/*.kt"
+  # @bootup:if integration-test
   - "integrationTest/**/*.kt"
+  # @bootup:end
 ---
 
 # テスト規約
@@ -11,7 +13,12 @@ paths:
 
 - **kotest** の `FreeSpec` で書く (JUnit Platform 上で動く)
 - アサーションは kotest の matcher (`shouldBe`, `shouldThrow<T>` 等) を使う
+<!-- @bootup:if kmp -->
 - テストは可能な限り `commonTest` に置く。プラットフォーム固有の挙動だけ `jvmTest` 等に置く
+<!-- @bootup:end -->
+<!-- @bootup:if jvm -->
+- テストは `src/test/kotlin` に置く
+<!-- @bootup:end -->
 
 ```kt
 class ExampleLibSpec : FreeSpec({
@@ -40,15 +47,24 @@ class ExampleLibSpec : FreeSpec({
 - 1 テスト 1 振る舞い。複数の性質を 1 つに詰め込まない
 - 新しいテストを足したら、**一度わざと実装を壊して落ちることを確かめる**。緑であることは、見ていることの証明にならない
 - 例外のテストは型だけでなく、利用者に見える文面 (何が起きたか / どう直すか) も確認する
+<!-- @bootup:if integration-test -->
 - 公開 API の使い勝手は `integrationTest/` (Maven 座標経由の独立ビルド) で確かめる。
   `@InternalExampleLibApi` の opt-in 壁や `explicitApi` の漏れは、本体モジュールの中からは見えない
+<!-- @bootup:end -->
 
 ## 実行
 
 ```bash
 ./gradlew jvmTest                    # 素早いフィードバック
 ./gradlew allTests                   # 全ターゲット
+# @bootup:if integration-test
 ./gradlew -p integrationTest test    # 結合テスト
+# @bootup:end
 ```
 
+<!-- @bootup:if ai-skills -->
 ログは `.local/tmp/` に保存してから読む (`.claude/skills/verify-changes/` 参照)。
+<!-- @bootup:end -->
+<!-- @bootup:if !ai-skills -->
+ログは `.local/tmp/` に保存してから読む。
+<!-- @bootup:end -->

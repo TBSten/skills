@@ -58,7 +58,9 @@ bash .claude/skills/bump-library-version/scripts/bump-version.sh <version>
 
 ```bash
 ./gradlew logVersion -q
+# @bootup:if integration-test
 ./gradlew -p integrationTest help -q
+# @bootup:end
 ```
 
 新しいバージョンが表示され、設定フェーズが通ることを確認する。落ちたら commit せずユーザーに報告する。

@@ -17,7 +17,12 @@ paths:
   `[versions]` に置く。convention plugin からは `libs.versions.xxx` で読む
 - `build-logic/` は `settings.gradle.kts` で同じ catalog を共有している。plugin の依存は
   `plugin(libs.plugins.xxx)` のようなヘルパで marker 座標に変換して足す (二重管理しない)
+<!-- @bootup:if ai-skills -->
 - 自ライブラリの版は `.claude/skills/bump-library-version/` で上げる。手で書き換えない
+<!-- @bootup:end -->
+<!-- @bootup:if !ai-skills -->
+- 自ライブラリの版を上げたら、README / docs に書いた Maven 座標の版も同じ変更で揃える
+<!-- @bootup:end -->
 
 ## 「なぜ」をコメントに残す
 
@@ -70,5 +75,7 @@ kotlinLanguage = "2.2"
 ```bash
 ./gradlew help                       # 設定フェーズが通るか (catalog・plugin 解決)
 ./gradlew build                      # 全体
+# @bootup:if integration-test
 ./gradlew -p integrationTest test    # catalog を共有しているので結合テストも回す
+# @bootup:end
 ```
