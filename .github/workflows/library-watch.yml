@@ -122,6 +122,7 @@ jobs:
           distribution: temurin
           java-version: "21"
       - name: skill を更新 (AI)
+        id: claude
         if: needs.detect.outputs.needs_ai == 'true'
         uses: anthropics/claude-code-action@v1
         with:
@@ -135,6 +136,14 @@ jobs:
           claude_args: |
             --max-turns 80
             --allowedTools "Read,Write,Edit,Glob,Grep,Bash(scripts/library-watch/update-state.sh:*),Bash(bash skills/:*),Bash(git -C:*),Bash(git log:*),Bash(git diff:*),Bash(git status:*),Bash(gh api:*),Bash(ls:*),Bash(find:*),Bash(jq:*),Bash(mkdir:*),Bash(mktemp:*)"
+      - name: AI の権限拒否を表示 (allowedTools 調整用)
+        if: always() && steps.claude.outputs.execution_file != ''
+        env:
+          EXECUTION_FILE: ${{ steps.claude.outputs.execution_file }}
+        run: |
+          # 入力は先頭 200 文字だけ出す (全文ログは secret 漏れを避けるため出さない)
+          jq -r '.[] | select(.type == "result") | .permission_denials[]?
+            | "\(.tool_name)\t\(.tool_input | tostring | .[0:200])"' "$EXECUTION_FILE" || true
       - name: 調べた commit を一覧に記録 (archive 済みは外す)
         run: scripts/library-watch/update-state.sh record --changes "$LW_DIR/changes.json"
       - name: PR 本文を用意
@@ -151,7 +160,9 @@ jobs:
           cp "$LW_DIR/pr-body.md" "$RUNNER_TEMP/pr-body.md"
       - name: 変更を patch にする
         run: |
-          git add -A -- . ':(exclude).local' ':(exclude).github/workflows' ':(exclude)scripts'
+          # .local は .gitignore 済み。exclude pathspec に ignored なパスを書くと git add が
+          # "paths are ignored" で exit 1 になるので書かない
+          git add -A -- . ':(exclude).github/workflows' ':(exclude)scripts'
           git diff --cached --binary > "$RUNNER_TEMP/changes.patch"
           git diff --cached --stat
       - uses: actions/upload-artifact@v7
