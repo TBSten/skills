@@ -1,29 +1,29 @@
 package com.example.plugin
 
-import com.intellij.openapi.application.runReadAction
 import com.intellij.testFramework.LoggedErrorProcessor
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.intellij.openapi.application.runReadActionBlocking as platformRunReadActionBlocking
 
 /**
- * Analysis API 機能テストの harness (references/analysis-api-testing.md の参照実装 / SSoT)。
- * - tearDown を [ignoreUnrelatedLoggedErrors] で包み、統合 IDEA (IU) の bundled plugin
- *   (Vue LSP 等) 由来の無関係な logged error をテスト失敗に昇格させない
- * - テストは EDT なので、AA は `runReadActionBlocking { allowAnalysisOnEdt { analyze(...) } }` で囲む
+ * Base of the platform tests (BasePlatformTestCase + Analysis API).
  *
- * K2 強制は build.gradle.kts の `tasks.test { systemProperty("idea.kotlin.plugin.use.k2", "true") }`
- * と plugin.xml の `<supportsKotlinPluginMode supportsK2="true"/>` (references/setup/basics.md)。
+ * - `tearDown` runs inside [ignoreUnrelatedLoggedErrors], so that known-harmless errors logged by
+ *   plugins bundled in the unified IDEA (the Vue LSP and the like) do not fail the test.
+ * - Tests run on the EDT, so wrap the Analysis API in
+ *   `runReadActionBlocking { allowAnalysisOnEdt { analyze(...) { } } }`.
+ *
+ * K2 is forced by the `idea.kotlin.plugin.use.k2` system property of the test task, paired with
+ * `<supportsKotlinPluginMode supportsK2="true"/>` in plugin.xml.
  */
 abstract class AnalysisTestBase : BasePlatformTestCase() {
 
     override fun tearDown() = ignoreUnrelatedLoggedErrors { super.tearDown() }
 
     /**
-     * 既知の無害カテゴリだけ握り潰す。実装由来のエラーは隠さない。
+     * Swallows only the known-harmless categories; errors from this plugin are not hidden.
      *
-     * NOTE: この substring 一致は spike の最小策で、本番テストには広すぎる
-     * (新規の実装エラーの message/stack に `Lsp` 等が偶然含まれるだけで昇格しなくなる)。
-     * TODO(CUSTOMIZE): production では logger category の完全一致 + 例外 class + 既知 message
-     * prefix の組み合わせへ絞る (references/analysis-api-testing.md「harness の落とし穴」)。
+     * TODO(CUSTOMIZE): the substring match is wide — an error of ours that merely mentions `Lsp`
+     *  would be swallowed too. Narrow it to exact logger category + exception class + message prefix.
      */
     protected fun ignoreUnrelatedLoggedErrors(block: () -> Unit) {
         LoggedErrorProcessor.executeWith<Throwable>(object : LoggedErrorProcessor() {
@@ -36,7 +36,7 @@ abstract class AnalysisTestBase : BasePlatformTestCase() {
                 val text = "$category $message ${t?.stackTraceToString().orEmpty()}"
                 val ignorable = IGNORABLE_ERROR_PATTERNS.any { text.contains(it, ignoreCase = true) }
                 return if (ignorable) {
-                    // 抑制した内容をテスト出力に残す (silent に握り潰さない)
+                    // Leave a trace in the test output rather than swallowing it silently.
                     println("AnalysisTestBase: suppressed unrelated logged error: category=$category message=$message")
                     emptySet()
                 } else {
@@ -47,13 +47,13 @@ abstract class AnalysisTestBase : BasePlatformTestCase() {
     }
 
     /**
-     * EDT 上のテストから read action を同期実行する薄い wrapper。
-     * (プロダクション側の非同期解析は `ReadAction.nonBlocking()` を使う — ide-integration.md §7)
+     * Runs a read action synchronously from a test on the EDT. Production code should use
+     * `ReadAction.nonBlocking()` instead.
      */
-    protected fun <T> runReadActionBlocking(action: () -> T): T = runReadAction(action)
+    protected fun <T> runReadActionBlocking(action: () -> T): T = platformRunReadActionBlocking(action)
 
     companion object {
-        /** 既知の無害カテゴリ (IU bundled plugin の初期化失敗 / fixture 終了時の index 掃除) */
+        /** Bundled plugins of the unified IDEA failing to start, and index cleanup at fixture teardown. */
         val IGNORABLE_ERROR_PATTERNS: List<String> = listOf("Vue", "Lsp", "stale file ids")
     }
 }
