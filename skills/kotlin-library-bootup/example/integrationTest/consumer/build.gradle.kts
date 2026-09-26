@@ -13,7 +13,7 @@ kotlin {
 
 dependencies {
     testImplementation(libs.example.lib.core)
-    testImplementation(kotlin("test"))
+    testImplementation(libs.kotest.runner.junit5)
     testImplementation(libs.kotest.assertions.core)
 }
 

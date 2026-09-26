@@ -18,6 +18,8 @@ dependencies {
     // @bootup:if kmp
     implementation(plugin(libs.plugins.kotlin.multiplatform))
     implementation(plugin(libs.plugins.android.kmp.library))
+    implementation(plugin(libs.plugins.ksp))
+    implementation(plugin(libs.plugins.kotest))
     // @bootup:end
     implementation(plugin(libs.plugins.kotlin.jvm))
     implementation(plugin(libs.plugins.maven.publish))

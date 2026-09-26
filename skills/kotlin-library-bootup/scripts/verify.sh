@@ -9,7 +9,7 @@
 #             [--project-cache-dir <dir>] [--gradle-args "<args>"]
 #
 #   --project-dir        対象プロジェクト (default: カレントディレクトリ)
-#   --fresh              scaffold 直後用: api/ (BCV dump) が無くても apiDump を先に実行する
+#   --fresh              scaffold 直後用: ktlintFormat (名前置換で崩れた import 順を直す) と apiDump を先に実行する
 #                        (api/ が 1 つも無い場合は --fresh 無しでも apiDump を先に実行する)
 #   --bootstrap-wrapper  gradlew が無ければ生成する。gradle-wrapper.properties (同梱) の版を読み、
 #                        PATH の gradle か ~/.gradle/wrapper/dists にある同版の Gradle で
@@ -23,6 +23,7 @@
 #
 # steps (この順に実行):
 #   wrapper           gradlew の存在確認 (--bootstrap-wrapper 時は生成)
+#   ktlint-format     ./gradlew ktlintFormat        (--fresh の時のみ)
 #   api-dump          ./gradlew apiDump            (--fresh または api/ が無い時のみ)
 #   build             ./gradlew build
 #   test              ./gradlew allTests | test     (--test-tasks で変更可)
@@ -34,6 +35,7 @@
 #
 # KMP プロジェクトで ANDROID_HOME / ANDROID_SDK_ROOT / local.properties の sdk.dir が無い時は、
 # 標準の Android Studio SDK の場所 (~/Library/Android/sdk, ~/Android/Sdk) を ANDROID_HOME として渡す (ファイルは書かない)。
+# どこにも無ければ Gradle を回す前にエラーで止まる (Android ターゲットの設定・ktlint が失敗するため)。
 #
 # 出力: 各 step の SUCCESS/FAILED/SKIPPED サマリ + 1 行 JSON {"ok":...,"passed":N,"failed":N,"skipped":N,"logsDir":"..."}
 
@@ -80,7 +82,7 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-ALL_STEPS="wrapper,api-dump,build,test,api-check,ktlint,publish-local,api-docs,integration-test"
+ALL_STEPS="wrapper,ktlint-format,api-dump,build,test,api-check,ktlint,publish-local,api-docs,integration-test"
 for s in ${ONLY//,/ } ${SKIP//,/ }; do
     case ",$ALL_STEPS," in
         *",$s,"*) ;;
@@ -184,7 +186,9 @@ if $IS_KMP && [ -z "${ANDROID_HOME:-}" ] && [ -z "${ANDROID_SDK_ROOT:-}" ] \
             break
         fi
     done
-    [ -n "${ANDROID_HOME:-}" ] || echo "WARN: Android SDK が見つからない。Android ターゲットのタスクは失敗する (ANDROID_HOME を設定する)"
+    [ -n "${ANDROID_HOME:-}" ] || die "Android SDK が見つからない" \
+        "KMP (standard / full) は com.android.kotlin.multiplatform.library を使うため、SDK が無いと Android の設定・ビルド・ktlint が失敗する" \
+        "ANDROID_HOME を設定するか、local.properties に sdk.dir=<SDK のパス> を書く (Android Studio の SDK Manager で導入できる)"
 fi
 
 # ---------------------------------------------------------------- Gradle 実行
@@ -220,6 +224,13 @@ skip_step() {
     record "$1" SKIPPED "($2)"
 }
 
+if step_enabled ktlint-format; then
+    if $FRESH; then
+        run_task ktlint-format "$PROJECT_DIR" ktlintFormat
+    else
+        skip_step ktlint-format "--fresh の時のみ"
+    fi
+fi
 if step_enabled api-dump; then
     if $FRESH || ! ls -d "$PROJECT_DIR"/*/api >/dev/null 2>&1; then
         run_task api-dump "$PROJECT_DIR" apiDump

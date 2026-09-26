@@ -15,14 +15,18 @@ build/
 *.ipr
 out/
 
+# @bootup:if kmp
 ### Android ###
 # この端末の Android SDK の場所。可能なら ANDROID_HOME を使う
 local.properties
 .cxx/
 captures/
+# @bootup:end
 
+# @bootup:if kmp
 ### Xcode ###
 xcuserdata/
+# @bootup:end
 
 ### OS / Editor ###
 .DS_Store

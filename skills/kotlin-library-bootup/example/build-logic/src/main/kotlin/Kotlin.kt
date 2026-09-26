@@ -1,7 +1,7 @@
 import org.gradle.api.Project
+import org.jetbrains.kotlin.gradle.dsl.KotlinBaseExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinCommonCompilerOptions
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
-import org.jetbrains.kotlin.gradle.dsl.KotlinTopLevelExtension
 
 /**
  * opt-in 必須マーカー。自モジュール内では opt-in 済みとして扱い、利用側にだけ opt-in を要求する。
@@ -20,7 +20,7 @@ internal val OPT_IN_MARKERS: List<String> = listOf(
  * 推移的に入る kotlin-stdlib (coreLibrariesVersion) も同じ床に揃える。
  * 代償として、床より新しい言語機能・stdlib API は使えない。
  */
-internal fun KotlinTopLevelExtension.configureCompatibilityFloor(project: Project) {
+internal fun KotlinBaseExtension.configureCompatibilityFloor(project: Project) {
     coreLibrariesVersion = project.libs.version("kotlinCoreLibrariesVersion")
 }
 

@@ -75,8 +75,8 @@ jobs:
           - { name: "jvm", tasks: "jvmTest", os: ubuntu-latest }
           # browser テストは runner 同梱の Chrome (headless) で動く
           - { name: "js / wasm", tasks: "jsTest wasmJsTest", os: ubuntu-latest }
-          # com.android.kotlin.multiplatform.library は既定で host test を持たないため AAR のビルドで担保する
-          - { name: "android", tasks: "assembleAndroidMain", android: true, os: ubuntu-latest }
+          # commonTest を Android の JVM host で回し (withHostTest)、AAR が組めることも確かめる
+          - { name: "android", tasks: "testAndroidHostTest assembleAndroidMain", android: true, os: ubuntu-latest }
           # macOS runner は高価なので Apple ターゲットだけをここで回す
           - { name: "ios", tasks: "iosSimulatorArm64Test compileKotlinIosArm64", konan: true, os: macos-latest }
           # @bootup:if full

@@ -1,6 +1,7 @@
 import com.vanniktech.maven.publish.JavadocJar
 import com.vanniktech.maven.publish.KotlinJvm
 import com.vanniktech.maven.publish.KotlinMultiplatform
+import com.vanniktech.maven.publish.SourcesJar
 
 // Maven Central へ出すモジュールの共通設定。publish しないモジュールには適用しない
 // (適用しなければ publish タスクも生えない)。
@@ -26,14 +27,14 @@ dokka {
 pluginManager.withPlugin("org.jetbrains.kotlin.multiplatform") {
     mavenPublishing {
         // KMP は Dokka javadoc 形式が JVM 以外を扱えないため HTML を包む
-        configure(KotlinMultiplatform(javadocJar = JavadocJar.Dokka("dokkaGeneratePublicationHtml"), sourcesJar = true))
+        configure(KotlinMultiplatform(javadocJar = JavadocJar.Dokka("dokkaGeneratePublicationHtml"), sourcesJar = SourcesJar.Sources()))
     }
 }
 pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {
     // Javadoc 形式は Dokka 2.x では別 plugin
     pluginManager.apply("org.jetbrains.dokka-javadoc")
     mavenPublishing {
-        configure(KotlinJvm(javadocJar = JavadocJar.Dokka("dokkaGeneratePublicationJavadoc"), sourcesJar = true))
+        configure(KotlinJvm(javadocJar = JavadocJar.Dokka("dokkaGeneratePublicationJavadoc"), sourcesJar = SourcesJar.Sources()))
     }
 }
 
@@ -41,7 +42,9 @@ mavenPublishing {
     publishToMavenCentral()
 
     // artifactId は project path から導出する (:example-lib-core -> example-lib-core, :a:b -> a-b)。
+    // @bootup:if integration-test
     // integrationTest の composite build は group + project.name で置換するので、トップレベルに置く限り一致する。
+    // @bootup:end
     coordinates(group.toString(), project.path.removePrefix(":").replace(":", "-"), version.toString())
 
     pom {
@@ -75,9 +78,10 @@ mavenPublishing {
 
     // ローカル publish (publishToMavenLocal) の時だけ署名をスキップする。
     // CI の Maven Central publish は ORG_GRADLE_PROJECT_signingInMemoryKey* を注入するので常に署名する。
-    // `:example-lib-core:publishToMavenLocal` のような path 付き指定でも効くよう末尾セグメントで判定する。
+    // `:example-lib-core:publishToMavenLocal` のような path 付き指定や
+    // publishAllPublicationsToMavenLocal でも効くよう、末尾セグメントで判定する。
     // 明示的に止めたい時は -PskipSigning=true。
-    val isLocalPublish = gradle.startParameter.taskNames.any { it.substringAfterLast(':') == "publishToMavenLocal" }
+    val isLocalPublish = gradle.startParameter.taskNames.any { it.substringAfterLast(':').endsWith("ToMavenLocal") }
     val skipSigning = providers.gradleProperty("skipSigning").orNull?.toBoolean() == true
     if (!isLocalPublish && !skipSigning) signAllPublications()
 }

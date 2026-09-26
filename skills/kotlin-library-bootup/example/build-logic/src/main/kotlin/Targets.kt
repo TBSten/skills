@@ -3,6 +3,7 @@ import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryTarget
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
@@ -24,6 +25,8 @@ internal fun KotlinMultiplatformExtension.configureExampleLibTargets(project: Pr
         namespace = "com.example.kotlinlibrarybootup." + project.name.replace("-", "_")
         compileSdk = libs.version("androidCompileSdk").toInt()
         minSdk = libs.version("androidMinSdk").toInt()
+        // commonTest を Android (JVM host) でも回す: ./gradlew testAndroidHostTest
+        withHostTest {}
         compilerOptions { this.jvmTarget = jvmTarget }
     }
 
@@ -34,6 +37,7 @@ internal fun KotlinMultiplatformExtension.configureExampleLibTargets(project: Pr
         browser()
         nodejs()
     }
+    @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         browser()
         nodejs()
@@ -65,7 +69,7 @@ internal fun KotlinMultiplatformExtension.configureExampleLibTargets(project: Pr
     //~ androidNativeArm64()
     //~ androidNativeX86()
     //~ androidNativeX64()
-    //~ @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
+    //~ @OptIn(ExperimentalWasmDsl::class)
     //~ wasmWasi {
     //~     nodejs()
     //~ }
@@ -75,6 +79,22 @@ internal fun KotlinMultiplatformExtension.configureExampleLibTargets(project: Pr
         configureCommon(project)
     }
     configureCompatibilityFloor(project)
+
+    // JS / Wasm の stdlib (klib) はコンパイラと同じ ABI 版でないとコンパイルできない
+    // ("The Kotlin/JS standard library has the ABI version (2.2.0) that is not compatible ...")。
+    // そのため JS / Wasm のコンパイル時だけ stdlib をコンパイラ版に解決させる。
+    // 公開 metadata 上の依存宣言は床 (kotlinCoreLibrariesVersion) のままなので、利用側は自分の版を使う。
+    val compilerVersion = libs.version("kotlin")
+    val webPrefixes = listOf("js", "wasmJs", "wasmWasi", "web")
+    project.configurations
+        .matching { c -> webPrefixes.any { c.name.startsWith(it) } }
+        .configureEach {
+            resolutionStrategy.eachDependency {
+                if (requested.group == "org.jetbrains.kotlin" && requested.name.startsWith("kotlin-")) {
+                    useVersion(compilerVersion)
+                }
+            }
+        }
 }
 
 /**

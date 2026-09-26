@@ -1,4 +1,7 @@
-# version catalog。build-logic / integrationTest もこのファイルを共有する (バージョンの SSoT)。
+# version catalog (バージョンの SSoT)。build-logic もこのファイルを共有する。
+# @bootup:if integration-test
+# integrationTest/ (独立ビルド) も同じファイルを読む。
+# @bootup:end
 #
 # キー命名の注意: `foo` と `foo-bar` のように、あるキーが別キーの接頭辞 (+ 区切り文字) に
 # なると accessor が衝突して asProvider() が必要になる。ビルド定数は camelCase にして避ける。
@@ -36,19 +39,32 @@ ktlintGradle = "14.2.0"
 # ktlint 本体 (CLI) のバージョン。ktlintGradle とは別に上げる
 ktlint = "1.8.0"
 kotest = "6.2.5"
+# @bootup:if kmp
+# kotest を JS / Wasm / Native で動かすための KSP (kotest Gradle plugin が spec の launcher を生成する)。
+# KSP2 は Kotlin と独立した版番号。Kotlin を上げたら対応する KSP を確認する
+ksp = "2.3.12"
+# @bootup:end
 
 [libraries]
 
-# integrationTest から Maven 座標で依存する。integrationTest/settings.gradle.kts の
-# includeBuild("../") により、ローカルのプロジェクトへ自動で置き換わる。
+# このライブラリ自身の Maven 座標。利用側から見た依存の書き方の見本。
+# @bootup:if integration-test
+# integrationTest はこれで依存し、integrationTest/settings.gradle.kts の includeBuild("../") で
+# ローカルのプロジェクトへ自動で置き換わる。
+# @bootup:end
 example-lib-core = { module = "<group-id>:example-lib-core", version.ref = "example-lib" }
 kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
+kotest-framework-engine = { module = "io.kotest:kotest-framework-engine", version.ref = "kotest" }
+# JVM (jvmTest / test) で kotest を JUnit Platform 上で動かす runner
+kotest-runner-junit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
 
 [plugins]
 
 # @bootup:if kmp
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 android-kmp-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+kotest = { id = "io.kotest", version.ref = "kotest" }
 # @bootup:end
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "maven-publish" }

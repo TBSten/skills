@@ -20,7 +20,7 @@
 #   --package         ルートパッケージ (例: io.github.me.mylib)
 #   --group-id        Maven groupId (既定: --package)
 #   --owner / --repo  GitHub の owner / repo (既定: --dest の git remote origin から推定)
-#   --description     POM の description (既定: "<name>: a Kotlin Multiplatform library." / jvm は "a Kotlin library.")
+#   --description     POM の description (既定: "<name> is a Kotlin Multiplatform library." / jvm は "... a Kotlin library.")
 #   --developer-id    POM の developer id (既定: --owner)
 #   --developer-name  POM の developer name / LICENSE の著作権者 (既定: --developer-id)
 #   --targets         standard (既定): android / jvm / js / wasmJs / iosArm64 / iosSimulatorArm64
@@ -198,9 +198,9 @@ fi
 [ -n "$DEV_NAME" ] || DEV_NAME=$DEV_ID
 if [ -z "$DESCRIPTION" ]; then
     if [ "$TARGETS" = jvm ]; then
-        DESCRIPTION="$NAME: a Kotlin library."
+        DESCRIPTION="$NAME is a Kotlin library."
     else
-        DESCRIPTION="$NAME: a Kotlin Multiplatform library."
+        DESCRIPTION="$NAME is a Kotlin Multiplatform library."
     fi
 fi
 for pair in "description:$DESCRIPTION" "developer-name:$DEV_NAME" "developer-id:$DEV_ID" "owner:$OWNER" "repo:$REPO"; do
