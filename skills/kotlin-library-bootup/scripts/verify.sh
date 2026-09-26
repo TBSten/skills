@@ -32,6 +32,7 @@
 #   publish-local     ./gradlew publishToMavenLocal (署名はスキップされる)
 #   api-docs          ./gradlew generateApiDocs
 #   integration-test  ./gradlew -p integrationTest test (integrationTest/ がある時のみ)
+#   docs-site         cd docs && pnpm install --frozen-lockfile && pnpm build (docs/ がある時のみ。pnpm が無ければ SKIPPED)
 #
 # KMP プロジェクトで ANDROID_HOME / ANDROID_SDK_ROOT / local.properties の sdk.dir が無い時は、
 # 標準の Android Studio SDK の場所 (~/Library/Android/sdk, ~/Android/Sdk) を ANDROID_HOME として渡す (ファイルは書かない)。
@@ -82,7 +83,7 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-ALL_STEPS="wrapper,ktlint-format,api-dump,build,test,api-check,ktlint,publish-local,api-docs,integration-test"
+ALL_STEPS="wrapper,ktlint-format,api-dump,build,test,api-check,ktlint,publish-local,api-docs,integration-test,docs-site"
 for s in ${ONLY//,/ } ${SKIP//,/ }; do
     case ",$ALL_STEPS," in
         *",$s,"*) ;;
@@ -250,6 +251,30 @@ if step_enabled integration-test; then
         run_task integration-test "$PROJECT_DIR/integrationTest" test
     else
         skip_step integration-test "integrationTest/ が無い"
+    fi
+fi
+if step_enabled docs-site; then
+    if [ ! -f "$PROJECT_DIR/docs/package.json" ]; then
+        skip_step docs-site "docs/ が無い"
+    elif ! command -v pnpm >/dev/null 2>&1; then
+        # docs サイトは Gradle と独立。pnpm が無い環境では失敗扱いにせず知らせるだけにする
+        skip_step docs-site "pnpm が無い (Node 22+ と pnpm を入れて再実行する)"
+    else
+        log="$LOG_DIR/$(date +%Y%m%d-%H%M%S)-docs-site.log"
+        if [ -f "$PROJECT_DIR/docs/pnpm-lock.yaml" ]; then
+            install_args=(install --frozen-lockfile)
+        else
+            install_args=(install --no-frozen-lockfile)
+        fi
+        echo "==> docs-site: pnpm ${install_args[*]} && pnpm build (in docs/)"
+        if (cd "$PROJECT_DIR/docs" && pnpm "${install_args[@]}" && pnpm build) > "$log" 2>&1; then
+            record docs-site SUCCESS "$log"
+        else
+            echo "---- docs-site failed; last 30 lines of $log ----"
+            tail -30 "$log"
+            echo "----"
+            record docs-site FAILED "$log"
+        fi
     fi
 fi
 
