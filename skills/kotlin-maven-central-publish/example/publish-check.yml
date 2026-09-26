@@ -1,0 +1,35 @@
+name: Publish Check
+
+# PR ごとに publishToMavenLocal を回し、公開設定 (POM / 署名条件 / javadoc・sources jar / artifactId) の
+# 破損をリリース前に検出する。署名は convention 側で publishToMavenLocal 時にスキップされるため Secrets 不要。
+on:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: publish-check-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  publish-to-maven-local:
+    name: Publish to Maven Local
+    runs-on: <RUNNER>
+    timeout-minutes: 60
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v7
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Publish to Maven Local
+        run: ./gradlew publishToMavenLocal --stacktrace
