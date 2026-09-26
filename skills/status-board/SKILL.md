@@ -37,10 +37,14 @@ metadata:
 
 ## 成果物
 
-`.local/status-board/<yyyy-MM-dd-HH-mm>.html` **1 ファイルだけ**。CSS / JS は全部インライン。
-外部依存は Google Fonts の `<link>` のみ。中間ファイルはスクラッチパッドに置く。
+`.local/status-board/<yyyy-MM-dd-HH-mm>.html` **1 ファイル**。CSS / JS は全部インライン。
+外部依存は Google Fonts の `<link>` のみ。ビルドが同じ basename のデータ snapshot
+`<同>.json`（`{ html, board, overlay }`）を隣に自動で書く。中間ファイルはスクラッチパッドに置く。
 
-前回結果とのマージはしない。毎回フル再生成する。
+前回結果とのマージはしない。毎回フル再生成する。ただし **overlay に書いた会話由来の項目
+（人間待ち・未決・構想）だけは snapshot 経由で引き継ぐ**。`collect.mjs` が前回 snapshot の
+overlay を `$W/overlay.prev.json` に置いて要約を stderr に出すので、Step 2 で片付いたものを
+消すだけでよい。
 
 ## 手順
 
@@ -66,7 +70,12 @@ open PR が 1 本も無いときは直近 merged PR を図に出す（main だ�
 
 ### 2. overlay を書く（会話で分かっていることだけ）
 
-`collect.mjs` が出せないのは会話コンテキスト由来のものだけ。**それが無ければこのステップを飛ばす。**
+Step 1 の出力に「前回 overlay」の要約が出ていたら `$W/overlay.prev.json` から始める。
+やるのは**片付いた項目を消すだけ**（未決のまま・人間待ちのまま・まだ視野にある構想は残す）。
+全部生きているなら `mv` で overlay.json にするだけでよい。端点が消えた edge や
+board から消えた item への部分上書きは collect.mjs が落とし済みなので、生死以外を考えない。
+
+`collect.mjs` が出せないのは会話コンテキスト由来のものだけ。**前回分も新規も無ければこのステップを飛ばす。**
 
 ```jsonc
 // $W/overlay.json — 足すものだけ。board.json は触らない

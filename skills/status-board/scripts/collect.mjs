@@ -2,7 +2,7 @@
 /**
  * GitHub (gh) と git ローカルの状態を集めて board.json の下書きを書き出す。
  *
- *   node collect.mjs -o <board.json> [--days 7] [--title "..."] [--all] [--no-gh]
+ *   node collect.mjs -o <board.json> [--days 7] [--title "..."] [--all] [--no-gh] [--prev <dir>]
  *
  * 生の gh 出力を呼び出し元の context に載せないためのスクリプト。
  * stdout には出力パス、stderr には 1 件 1 行の要約だけを出す。
@@ -23,8 +23,8 @@
  * epics、next、ask は **呼び出し元が後から足す**。そこがこの図の価値の中心なので、
  * スクリプトでは推測しない。
  */
-import { writeFileSync, mkdirSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { writeFileSync, mkdirSync, readFileSync, readdirSync } from 'node:fs';
+import { dirname, resolve, join } from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 
@@ -32,7 +32,7 @@ const pexec = promisify(execFile);
 
 /* ---- 引数 --------------------------------------------------------------- */
 const argv = process.argv.slice(2);
-let out = null, days = 7, title = null, useGh = true, all = false;
+let out = null, days = 7, title = null, useGh = true, all = false, prevDir = '.local/status-board';
 for (let i = 0; i < argv.length; i++) {
   const a = argv[i];
   if (a === '-o' || a === '--out') out = argv[++i];
@@ -40,9 +40,10 @@ for (let i = 0; i < argv.length; i++) {
   else if (a === '--title') title = argv[++i];
   else if (a === '--all') all = true;
   else if (a === '--no-gh') useGh = false;
+  else if (a === '--prev') prevDir = argv[++i];
 }
 if (!out) {
-  console.error('usage: collect.mjs -o <board.json> [--days 7] [--title "..."] [--all] [--no-gh]');
+  console.error('usage: collect.mjs -o <board.json> [--days 7] [--title "..."] [--all] [--no-gh] [--prev <dir>]');
   process.exit(2);
 }
 
@@ -345,6 +346,73 @@ const dropI = rawIssues.length - issues.length, dropB = rawBranches.length - bra
 if (dropI > 0) notes.push(`${days} 日以内に動きの無い issue ${dropI} 件を除外した（--all で全件）`);
 if (dropB > 0) notes.push(`${days} 日以内に動きの無いローカルブランチ ${dropB} 本を除外した（--all で全件）`);
 notes.forEach(n => console.error(`note: ${n}`));
+
+/* ---- 前回 snapshot の overlay を引き継ぎ候補に出す ------------------------
+   build-board.mjs は HTML と同じ basename の snapshot (<ts>.json = {html,board,overlay})
+   を書く。overlay（会話由来の人間待ち・未決・構想）はセッションを跨ぐとそこにしか
+   残らないので、--prev の最新 snapshot から取り出して下書きの隣に overlay.prev.json
+   として置く。呼び出し元に残す判断は「片付いたかどうか」だけ。機械的に死ぬもの
+   （端点が消えた edge・board から消えた item への部分上書き・消えた epic 参照・next）
+   はここで落とす。 */
+{
+  const itemIds = new Set(items.map(i => i.id));
+  const epicIds = new Set(epics.map(e => e.id));
+  let snap = null, snapFile = null;
+  try {
+    for (const f of readdirSync(prevDir).filter(f => f.endsWith('.json')).sort().reverse()) {
+      let j; try { j = JSON.parse(readFileSync(join(prevDir, f), 'utf8')); } catch { continue; }
+      if (!j || typeof j !== 'object' || !('board' in j)) continue;   /* snapshot 以外の json は飛ばす */
+      snap = j; snapFile = f; break;                                  /* 最新 snapshot だけを見る */
+    }
+  } catch { /* prevDir が無い = 初回。何もしない */ }
+  const ov = snap?.overlay;
+  if (ov && typeof ov === 'object') {
+    const drops = [];
+    const complete = i => i.key && i.title && i.status && i.kind;
+    const ovEpicIds = new Set((ov.epics || []).map(e => e.id));
+    const kept = [];
+    (ov.items || []).forEach(i => {
+      if (!i.id) return;
+      if (!complete(i) && !itemIds.has(i.id)) { drops.push(`item ${i.id}（部分上書きの相手が消えた）`); return; }
+      const c = { ...i };
+      delete c.next;                                        /* next は毎回振り直す */
+      if (c.epic && !epicIds.has(c.epic) && !ovEpicIds.has(c.epic)) {
+        drops.push(`${c.id}.epic "${c.epic}"（消えたので外した）`); delete c.epic;
+      }
+      kept.push(c);
+    });
+    const keptIds = new Set(kept.map(i => i.id));
+    const alive = id => itemIds.has(id) || keptIds.has(id);
+    /* 端点が存在しても col を失っていれば線は引けない（merged PR は items に残っても
+       図から外れる）。base と kept overlay の合成で col を持つものだけを描画可能とみなす。
+       block の from は build が相手の直下に col を導出するので、存在すれば足りる。 */
+    const onMapIds = new Set(items.filter(i => i.col !== undefined).map(i => i.id));
+    kept.forEach(i => { if (i.col !== undefined) onMapIds.add(i.id); });
+    const drawable = id => onMapIds.has(id);
+    const edgesKept = (ov.edges || []).filter(e => {
+      if (!alive(e.from) || !alive(e.to)) {
+        drops.push(`edge ${e.from} → ${e.to}（端点が消えた）`); return false;
+      }
+      if (!drawable(e.to) || (e.kind !== 'block' && !drawable(e.from))) {
+        drops.push(`edge ${e.from} → ${e.to}（端点が図に出なくなった）`); return false;
+      }
+      return true;
+    });
+    const rest = { ...ov, items: kept, edges: edgesKept };
+    if (!kept.length) delete rest.items;
+    if (!edgesKept.length) delete rest.edges;
+    if (Object.keys(rest).length) {
+      const prevOut = join(dirname(outPath), 'overlay.prev.json');
+      writeFileSync(prevOut, JSON.stringify(rest, null, 2), 'utf8');
+      console.error(`前回 overlay（${snapFile}）→ ${prevOut}`);
+      kept.forEach(i => console.error(
+        `  ${String(i.kind || '-').padEnd(6)} ${String(i.status || '-').padEnd(12)} ${String(i.id).padEnd(20)} ${i.title || '（部分上書き）'}`));
+      drops.forEach(d => console.error(`  落とした: ${d}`));
+      console.error('片付いた項目を消して overlay.json にする。全部生きているならそのまま使える。');
+    }
+  }
+}
+
 console.error('epics / next は既定を入れてある。そのまま使ってよい。');
 console.error('足すのは会話で分かっていることだけ: 人間待ち (kind:"human")・未決 (+ ask)・構想 (kind:"idea")');
 console.log(outPath);

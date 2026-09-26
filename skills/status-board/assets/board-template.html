@@ -1702,9 +1702,15 @@ function __verify() {
       const svg = exportSvgText();
       check((svg.match(/data-node=/g) || []).length === ITEMS.filter(i => i.col !== undefined).length,
             '選択中の書き出しでノードが欠けている');
-      /* 小さいボードでは選択 + 隣接が全ノードを覆い、沈む対象が無いことがある。
-         そのときは opacity="0.2" が出ないのが正しい */
-      check(!rest.length || svg.indexOf('opacity="0.2"') >= 0, '選択中の書き出しで非選択が薄くなっていない');
+      /* 小さいボード（直径 2 以下など）では選択 + 隣接が全ノードを覆い、沈む対象
+         (far ティア) が 0 件になる。そのときは opacity="0.2" が出ないのが正しいので、
+         前提が成立しない場合はこのチェックを適用せず、その旨を info に残す */
+      if (rest.length) {
+        check(svg.indexOf('opacity="0.2"') >= 0, '選択中の書き出しで非選択が薄くなっていない');
+        info.dimCheck = 'ok';
+      } else {
+        info.dimCheck = 'skipped(no-far-nodes)';
+      }
 
       /* ✕ で 1 件外すと単一表示に戻る */
       const x = document.querySelector('#side [data-deselect]');
