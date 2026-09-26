@@ -1,0 +1,41 @@
+# ktlint のルールもここが SSoT (build-logic の example-lib.lint が読む)
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_size = 4
+indent_style = space
+insert_final_newline = true
+max_line_length = 140
+trim_trailing_whitespace = true
+
+[*.md]
+trim_trailing_whitespace = false
+max_line_length = off
+
+[*.{yml,yaml,json,js,mjs,ts,tsx,astro}]
+indent_size = 2
+
+[*.{kt,kts}]
+ktlint_code_style = ktlint_official
+ij_kotlin_code_style_defaults = KOTLIN_OFFICIAL
+ij_kotlin_name_count_to_use_star_import = 2147483647
+ij_kotlin_name_count_to_use_star_import_for_members = 2147483647
+ij_kotlin_packages_to_use_import_on_demand = unset
+ij_kotlin_allow_trailing_comma = true
+ij_kotlin_allow_trailing_comma_on_call_site = true
+ij_kotlin_line_comment_add_space = true
+
+# テスト関数名は日本語 (何を検証するか) で書くため、テストでは関数名の規約を外す
+[**/src/*Test/**/*.kt]
+ktlint_standard_function-naming = disabled
+
+[**/src/test/**/*.kt]
+ktlint_standard_function-naming = disabled
+
+[**/generated/**/*]
+ktlint = disabled
+
+[**/build/**/*]
+ktlint = disabled

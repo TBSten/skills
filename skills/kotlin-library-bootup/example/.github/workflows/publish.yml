@@ -1,0 +1,108 @@
+# Maven Central への publish。トリガは「GitHub Release を publish したとき」(タグ push ではない)。
+#
+# 手順: gradle/libs.versions.toml の example-lib を上げて main にマージ
+#       -> tag v<version> で GitHub Release を publish -> この workflow が CI を通してから publish する。
+#
+# 必要な repository secrets (kotlin-maven-central-publish skill の setup-secrets.sh で登録できる):
+#   MAVEN_CENTRAL_USERNAME / MAVEN_CENTRAL_PASSWORD : Central Portal の User Token
+#   SIGNING_KEY_ID / SIGNING_PASSWORD / GPG_KEY_CONTENTS : GPG 署名鍵
+name: Publish
+
+on:
+  release:
+    # `published` は full release / pre-release の両方で発火する唯一の type
+    types: [ published ]
+  workflow_dispatch:
+
+# 多重起動は避けるが、走っている publish はキャンセルしない (途中で止めると staging が残る)
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  verify-version:
+    name: verify version
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - name: Tag matches the version in the catalog
+        if: ${{ github.event_name == 'release' }}
+        run: |
+          catalog=$(sed -n 's/^example-lib = "\(.*\)"/\1/p' gradle/libs.versions.toml | head -n 1)
+          tag="${GITHUB_REF_NAME#v}"
+          echo "catalog=$catalog  tag=$tag"
+          if [ "$catalog" != "$tag" ]; then
+            echo "::error::gradle/libs.versions.toml は $catalog、tag は $tag。揃えてから publish してください。"
+            exit 1
+          fi
+      - name: Version is not a SNAPSHOT
+        run: |
+          catalog=$(sed -n 's/^example-lib = "\(.*\)"/\1/p' gradle/libs.versions.toml | head -n 1)
+          case "$catalog" in
+            *-SNAPSHOT)
+              echo "::error::$catalog は SNAPSHOT です。リリース版に上げてください。"
+              exit 1
+              ;;
+          esac
+
+  ci:
+    name: ci
+    needs: verify-version
+    uses: ./.github/workflows/ci.yml
+
+  publish:
+    name: publish
+    needs: ci
+    # @bootup:if kmp
+    # Apple ターゲットの klib は macOS でしか作れないため、全ターゲットを 1 回で出せる macOS runner で publish する
+    runs-on: macos-latest
+    timeout-minutes: 90
+    # @bootup:end
+    # @bootup:if jvm
+    #~ runs-on: ubuntu-latest
+    #~ timeout-minutes: 30
+    # @bootup:end
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+      # @bootup:if kmp
+      - name: Cache Kotlin/Native (konan)
+        uses: actions/cache@v6
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ hashFiles('gradle/libs.versions.toml') }}
+          restore-keys: |
+            konan-${{ runner.os }}-
+      # @bootup:end
+      - uses: gradle/actions/setup-gradle@v6
+      # publishAndReleaseToMavenCentral 一発で staging -> Central Portal の自動リリースまで行う。
+      # configuration cache は publish (署名鍵の注入) と相性が悪いので無効化する。
+      - name: Publish to Maven Central
+        # @bootup:if kmp
+        run: ./gradlew publishAndReleaseToMavenCentral -PenableAppleTargets=true --no-configuration-cache --stacktrace
+        # @bootup:end
+        # @bootup:if jvm
+        #~ run: ./gradlew publishAndReleaseToMavenCentral --no-configuration-cache --stacktrace
+        # @bootup:end
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.SIGNING_KEY_ID }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_KEY_CONTENTS }}
+      - name: Upload reports
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: reports-publish
+          path: |
+            **/build/reports/
+          retention-days: 7
+          if-no-files-found: ignore
