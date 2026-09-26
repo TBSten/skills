@@ -1,0 +1,40 @@
+# library-watch の SSoT: 定期的に調べる TBSten の Kotlin ライブラリ一覧。
+#
+# libraries[] の各フィールド:
+#   repo        : GitHub の owner/name (実名。rename されたら直す)
+#   skills      : 差分から技法を取り込む先の skill (skills/<name>/)
+#   paths       : 差分を見るパス (git pathspec。`*` は階層をまたいでマッチする)
+#   last_commit : 最後に調べた commit。workflow の PR がマージされると進む
+# ignored[] : 一覧に入れないと AI が判断した候補 (次回以降の候補から外す)。
+#
+# 手で編集してよい。値の更新は scripts/library-watch/update-state.sh を使うとコメントを保ったまま書き換えられる。
+libraries:
+  - repo: TBSten/cream
+    skills: [ksp-plugin-setup, kotlin-library-bootup]
+    paths: ["*.gradle.kts", gradle.properties, gradle/, buildLogic/, .github/, .claude/, CLAUDE.md, doc/]
+    last_commit: 2162ec8d5261e3cb047de6825545f589102caab5
+  - repo: TBSten/kotlin-args-info
+    skills: [ksp-plugin-setup, kotlin-library-bootup]
+    paths: ["*.gradle.kts", gradle.properties, gradle/, .github/, .claude/, CLAUDE.md]
+    last_commit: d9a6890e32995cce36f6f292a5d0aac555a04c24
+  - repo: TBSten/koma-strict
+    skills: [ksp-plugin-setup, kotlin-library-bootup]
+    paths: ["*.gradle.kts", gradle.properties, gradle/, build-logic/, .github/, .claude/, CLAUDE.md, doc/, docs/]
+    last_commit: 6a1d201fb8ad38f9d583fc3b30a04d8d47023bd6
+  - repo: TBSten/katachi
+    skills: [kotlin-library-bootup, kotlin-maven-central-publish]
+    paths: ["*.gradle.kts", gradle.properties, gradle/, buildSrc/, .github/, .claude/, CLAUDE.md, docs/, architecture-test/]
+    last_commit: 5316a8c77103f97da2f559fe1e1ad1e202c42e12
+  - repo: TBSten/compose-preview-lab
+    skills: [kotlin-library-bootup, kotlin-compiler-plugin-setup, kotlin-compiler-plugin-dev, exploratory-nightly-verification, exploratory-pr-verification, pr-fix-loop]
+    paths: ["*.gradle.kts", gradle.properties, gradle/, buildLogic/, .github/, .claude/, CLAUDE.md, docs/, scripts/]
+    last_commit: b73a48c33b666fa9c78d62c519b059e3c28bd2cd
+  - repo: TBSten/capture-code-compiler-plugin
+    skills: [kotlin-compiler-plugin-setup, kotlin-compiler-plugin-dev, kotlin-maven-central-publish]
+    paths: ["*.gradle.kts", gradle.properties, gradle/, buildSrc/, .github/, .claude/, .agents/, CLAUDE.md, docs/, compiler-plugin/compat/]
+    last_commit: 34bc218e231242246339b82531877d079ebfc164
+  - repo: TBSten/debuggable-compiler-plugin
+    skills: [kotlin-compiler-plugin-setup, kotlin-compiler-plugin-dev, kotlin-maven-central-publish]
+    paths: ["*.gradle.kts", gradle.properties, gradle/, .github/, .claude/, .agents/, CLAUDE.md, docs/, scripts/]
+    last_commit: 8df304ff1df6e344875a4b965704e83d6877787d
+ignored: []

@@ -1,0 +1,189 @@
+# TBSten の Kotlin ライブラリを約 2 週に 1 回調べ、再利用できる技法を関連 skill に取り込む PR を作る。
+# 仕組み・必要な設定・手動実行の方法: .github/library-watch/README.md
+name: library-watch
+
+on:
+  schedule:
+    # 毎週月曜 00:17 UTC (09:17 JST)。ISO 週番号が奇数の週は detect job の week-gate で止める (= 約 2 週に 1 回)
+    - cron: "17 0 * * 1"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "差分が無いライブラリも直近 commit を対象に調べ直す"
+        type: boolean
+        default: false
+      only:
+        description: "対象を絞る repo (カンマ区切り。例: TBSten/cream,TBSten/katachi)。空なら全件"
+        type: string
+        default: ""
+
+permissions: {}
+
+concurrency:
+  group: library-watch
+  cancel-in-progress: false
+
+env:
+  LW_BRANCH: library-watch/auto
+  LW_BASE: main
+  LW_DIR: .local/library-watch
+
+jobs:
+  detect:
+    # AI を呼ばない。差分・候補・archive を調べ、AI が必要かを決める
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      run: ${{ steps.gate.outputs.run }}
+      needs_ai: ${{ steps.summary.outputs.needs_ai }}
+      has_work: ${{ steps.summary.outputs.has_work }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - id: gate
+        run: scripts/library-watch/week-gate.sh "${{ github.event_name }}" >> "$GITHUB_OUTPUT"
+      - name: 作業ブランチを用意 (open な PR があれば続きから)
+        if: steps.gate.outputs.run == 'true'
+        run: scripts/library-watch/prepare-branch.sh --branch "$LW_BRANCH" --base "$LW_BASE"
+      - name: 差分と候補を調べる
+        if: steps.gate.outputs.run == 'true'
+        env:
+          FORCE: ${{ inputs.force && '--force' || '' }}
+          ONLY: ${{ inputs.only }}
+        run: |
+          mkdir -p "$LW_DIR"
+          args=()
+          [ -n "$FORCE" ] && args+=(--force)
+          [ -n "$ONLY" ] && args+=(--only "$ONLY")
+          scripts/library-watch/detect-changes.sh "${args[@]}" > "$LW_DIR/changes.json"
+          scripts/library-watch/discover-candidates.sh > "$LW_DIR/candidates.json"
+      - id: summary
+        if: steps.gate.outputs.run == 'true'
+        run: |
+          changed=$(jq '.changed | length' "$LW_DIR/changes.json")
+          removed=$(jq '(.archived | length) + (.renamed | length)' "$LW_DIR/changes.json")
+          candidates=$(jq 'length' "$LW_DIR/candidates.json")
+          needs_ai=false; has_work=false
+          [ $((changed + candidates)) -gt 0 ] && needs_ai=true
+          [ $((changed + candidates + removed)) -gt 0 ] && has_work=true
+          {
+            echo "needs_ai=$needs_ai"
+            echo "has_work=$has_work"
+          } >> "$GITHUB_OUTPUT"
+          {
+            echo "### library-watch detect"
+            echo "- changed: $changed / archived+renamed: $removed / candidates: $candidates"
+            jq -r '.changed[] | "  - \(.repo): \(.last_commit[0:7])..\(.head[0:7])"' "$LW_DIR/changes.json"
+            jq -r '.missing[] | "- missing (要確認): \(.)"' "$LW_DIR/changes.json"
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v7
+        if: steps.summary.outputs.has_work == 'true'
+        with:
+          name: library-watch-detect
+          path: ${{ env.LW_DIR }}/
+          include-hidden-files: true
+          retention-days: 7
+
+  update:
+    # 差分か候補がある時だけ。AI (claude-code-action) が skill を編集し、結果を patch にして渡す。push 権限は持たない
+    needs: detect
+    if: needs.detect.outputs.has_work == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      pull-requests: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      LW_CLONE_DIR: ${{ github.workspace }}/.local/library-watch-clones
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: 作業ブランチを用意 (detect と同じ出発点)
+        run: scripts/library-watch/prepare-branch.sh --branch "$LW_BRANCH" --base "$LW_BASE"
+      - uses: actions/download-artifact@v8
+        with:
+          name: library-watch-detect
+          path: ${{ env.LW_DIR }}
+      - name: diff を集める (1 ライブラリ 60KB まで)
+        run: |
+          scripts/library-watch/collect-diff.sh --changes "$LW_DIR/changes.json" --out "$LW_DIR/diffs" \
+            --work-dir "$LW_CLONE_DIR" --max-bytes 60000
+      - uses: actions/setup-java@v6
+        if: needs.detect.outputs.needs_ai == 'true'
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: skill を更新 (AI)
+        if: needs.detect.outputs.needs_ai == 'true'
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ github.token }}
+          prompt: |
+            .github/library-watch/prompt.md を読み、その手順に従って作業する。
+            - 入力: ${{ env.LW_DIR }}/ (changes.json / candidates.json / diffs/)
+            - clone: ${{ env.LW_CLONE_DIR }}
+            - 実行: ${{ github.event_name }} (force=${{ inputs.force || false }}, only=${{ inputs.only || '(all)' }})
+          claude_args: |
+            --max-turns 80
+            --allowedTools "Read,Write,Edit,Glob,Grep,Bash(scripts/library-watch/update-state.sh:*),Bash(bash skills/:*),Bash(git -C:*),Bash(git log:*),Bash(git diff:*),Bash(git status:*),Bash(gh api:*),Bash(ls:*),Bash(find:*),Bash(jq:*),Bash(mkdir:*),Bash(mktemp:*)"
+      - name: 調べた commit を一覧に記録 (archive 済みは外す)
+        run: scripts/library-watch/update-state.sh record --changes "$LW_DIR/changes.json"
+      - name: PR 本文を用意
+        run: |
+          if [ ! -s "$LW_DIR/pr-body.md" ]; then
+            {
+              echo "## library-watch $(date -u +%F)"
+              echo
+              echo "AI による skill 更新はなし (差分・候補が無く、一覧の整理だけ)。"
+              jq -r '.archived[] | "- archive されたため一覧から外した: \(.)"' "$LW_DIR/changes.json"
+              jq -r '.renamed[] | "- rename を反映: \(.from) → \(.to)"' "$LW_DIR/changes.json"
+            } > "$LW_DIR/pr-body.md"
+          fi
+          cp "$LW_DIR/pr-body.md" "$RUNNER_TEMP/pr-body.md"
+      - name: 変更を patch にする
+        run: |
+          git add -A -- . ':(exclude).local' ':(exclude).github/workflows' ':(exclude)scripts'
+          git diff --cached --binary > "$RUNNER_TEMP/changes.patch"
+          git diff --cached --stat
+      - uses: actions/upload-artifact@v7
+        with:
+          name: library-watch-result
+          path: |
+            ${{ runner.temp }}/changes.patch
+            ${{ runner.temp }}/pr-body.md
+          retention-days: 14
+
+  pr:
+    # patch を固定ブランチに commit して force-push し、PR を作る / 更新する (1 回の実行で PR 1 本)
+    needs: [detect, update]
+    if: needs.detect.outputs.has_work == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: 作業ブランチを用意 (update と同じ出発点)
+        run: scripts/library-watch/prepare-branch.sh --branch "$LW_BRANCH" --base "$LW_BASE"
+      - uses: actions/download-artifact@v8
+        with:
+          name: library-watch-result
+          path: ${{ runner.temp }}/result
+      - name: commit・push・PR
+        run: |
+          scripts/library-watch/publish-pr.sh --branch "$LW_BRANCH" --base "$LW_BASE" \
+            --patch "$RUNNER_TEMP/result/changes.patch" --body "$RUNNER_TEMP/result/pr-body.md"
