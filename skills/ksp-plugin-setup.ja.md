@@ -10,8 +10,9 @@ KSP plugin (Symbol Processor) プロジェクトを [cream.kt](https://github.co
 機械的な作業 — `example/` のコピー、ソースセットへのディレクトリ再マッピング、全プレースホルダー
 置換、`Greeting*` / `Example*` 系ファイルの rename、rules の配置 — は `scripts/scaffold.sh`
 (`--dry-run` / `--force` / `--skip-*` オプション付き) が決定的に行い、`scripts/verify.sh` が
-4 つのビルド確認をログ保存 (`.local/tmp/`) 付きで実行する。AI エージェントの責務は、入力の確認・
-script の実行・配置ファイルのレビュー・golden 初回記録の確認だけ。
+ビルド確認 (ksp テスト・golden・`jvmTest`・ktlint・BCV の `apiCheck`) をログ保存 (`.local/tmp/`)
+付きで実行する。AI エージェントの責務は、入力の確認・script の実行・配置ファイルのレビュー・
+golden と API dump の初回記録の確認だけ。
 
 インストール不要の一回限り版は
 [`ksp-plugin-setup` プロンプト](../prompts/ksp-plugin-setup.ja.md) にある。
@@ -37,9 +38,9 @@ KSP プラグインのプロジェクトをセットアップして。
 | モジュール | 説明 |
 |---|---|
 | `<project-name>-runtime/` | アノテーション宣言**のみ** (実行時ロジックゼロ)。だから KMP 全ターゲット。publish 対象 |
-| `<project-name>-ksp/` | processor 本体。JVM only (KSP の制約)、`-Xcontext-parameters`。publish 対象 |
+| `<project-name>-ksp/` | processor 本体。JVM only (KSP の制約)、context parameters で記述。publish 対象 |
 | `test/` | KMP 統合テスト。processor を実際に適用し、生成コードの振る舞いを全ターゲットで検証 |
-| `buildLogic/` | root の version catalog を共有する included build。convention plugin は lint のみの最小構成 |
+| `buildLogic/` | root の version catalog を共有する plugin build (`pluginManagement { includeBuild(...) }`)。convention は `buildLogic.lint` と `buildLogic.publish` |
 
 ### processor の層
 
@@ -68,11 +69,14 @@ feature 間の依存は禁止。
 
 | ファイル | 説明 |
 |---|---|
-| `gradle/libs.versions.toml` | 自プロジェクトの version も含む SSoT |
+| `gradle/libs.versions.toml` | 自プロジェクトの version も含む SSoT (Kotlin 2.4 / KSP 2.3 / AGP 9) |
+| `buildLogic.publish` | runtime / ksp 共通の Maven Central 公開設定。artifactId は project path 由来、POM は module の description、ローカル publish は署名なし |
+| `build.gradle.kts` | binary-compatibility-validator (klib 検証込み) で公開 API を `api/*.api` に固定 |
 | `gradle.properties` | configuration cache + build cache、`ksp.incremental=false` |
-| `test/build.gradle.kts` | KSP × KMP workaround (`*Test` の ksp タスクを残す理由つき) |
-| `.github/workflows/gradle.yml` | `matrix.include` で OS 最小化。concurrency / timeout つき |
-| `.github/workflows/publish.yml` | GitHub Release `published` トリガ (pre-release でも発火) |
+| `test/build.gradle.kts` | KSP × KMP workaround (`*Test` の ksp タスクを残す理由つき)。Android は AGP 9 の `com.android.kotlin.multiplatform.library` |
+| `.github/workflows/gradle.yml` | `matrix.include` で OS 最小化。PR のみ cancel、失敗時 reports upload、集約用 `final` job |
+| `.github/workflows/publish.yml` | GitHub Release `published` トリガ (pre-release でも発火)。tag と catalog の版不一致・`-SNAPSHOT` は publish しない |
+| `.run/` · `.gitignore` | ksp テスト / golden 更新の IntelliJ run config。Gradle と AI エージェント作業ファイルの ignore |
 
 ### 生成先に置かれるルール
 

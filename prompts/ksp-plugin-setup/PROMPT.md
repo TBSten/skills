@@ -23,7 +23,7 @@ git -C /tmp/tbsten-skills sparse-checkout set skills/ksp-plugin-setup
 2. **パッケージ名 / Group ID** — 例: `com.example.myplugin`
 3. **最初のアノテーション名** — 例: `@Greeting`。feature ディレクトリ名の由来になる
 4. **セットアップ範囲** — デフォルトは全て。test モジュールを外すなら `--skip-test-module`、CI を外すなら `--skip-ci`、`.claude/rules/` を外すなら `--skip-rules`
-5. **Kotlin / KSP バージョン** — デフォルトは example の version catalog の値。変えるなら `--kotlin-version` / `--ksp-version` (KSP は `<kotlin>-<ksp>` 形式のフル文字列)
+5. **Kotlin / KSP バージョン** — デフォルトは example の version catalog の値。変えるなら `--kotlin-version` / `--ksp-version` (KSP 2.3.0 以降は Kotlin と独立した版)
 
 ## セットアップ手順
 
@@ -70,9 +70,9 @@ gradle wrapper が無ければ先に生成する (`gradle wrapper`)。その後:
 bash /tmp/tbsten-skills/skills/ksp-plugin-setup/scripts/verify.sh --project-dir <生成先> --fresh
 ```
 
-verify.sh は 4 コマンド (`:<name>-ksp:test` / golden 記録 / `jvmTest` / `ktlintCheck`) を順に実行し、ログを `<生成先>/.local/tmp/` に保存して SUCCESS / FAILED サマリを出す。`--fresh` は scaffold 直後用で、golden 記録を先に実行する。
+verify.sh は `:<name>-ksp:test` / golden 記録 / `jvmTest` / `ktlintCheck` / `apiCheck` を順に実行し、ログを `<生成先>/.local/tmp/` に保存して SUCCESS / FAILED サマリを出す。`--fresh` は scaffold 直後用で、golden 記録と `apiDump` を先に実行する。Android SDK が必要 (`ANDROID_HOME` か `local.properties` の `sdk.dir`)。
 
-golden の初回記録後は **必ず中身を読んでからコミットする**。最初の記録が誤った出力を捕まえる唯一の機会で、以降は差分しか見えなくなる。
+golden と `api/*.api` の初回記録後は **必ず中身を読んでからコミットする**。最初の記録が誤った出力を捕まえる唯一の機会で、以降は差分しか見えなくなる。
 
 ## セットアップ完了メッセージ
 

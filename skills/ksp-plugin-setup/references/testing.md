@@ -40,7 +40,8 @@ is a test-only dependency.
 4. Copy the three Konsist specs (`AllKotlinFilesTest`, `feature/ArchTest`, `core/ArchTest`) and
    update `KonsistSupport.kt`'s constants: root package, module name, allowed root files, allowed
    `core` sub-packages, composition-root type names.
-5. Run once with the update flag to record the first goldens, then **read them** before committing —
+5. Run once with the update flag (or the `:<project-name>-ksp:test (update)` run configuration in
+   `.run/`) to record the first goldens, then **read them** before committing —
    the first recording is the moment to catch wrong output, and after that a diff is all you see.
 
 ## Adding a feature's tests

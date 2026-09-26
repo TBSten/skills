@@ -38,7 +38,19 @@ The runtime module holds **declarations only** so it can target every Kotlin pla
 - Nest auxiliary markers inside their parent (`@Greeting.Exclude`) rather than sharing one top-level
   marker: `@Target` can then be narrowed per parent, and `@Parent.Marker` self-documents at the use
   site. An annotation only ever used as a value takes an empty `@Target()`.
-- `explicitApi()` plus a `@RequiresOptIn` marker for anything internal-but-public.
+- `explicitApi()` plus a `@RequiresOptIn` marker for anything internal-but-public. The example has
+  none (its runtime is annotations and tokens only); add one the moment generated code needs a
+  runtime helper that users must not call:
+
+  ```kotlin
+  @RequiresOptIn(level = RequiresOptIn.Level.ERROR, message = "Internal <project-name> API.")
+  @Retention(AnnotationRetention.BINARY)
+  public annotation class InternalExampleApi
+  ```
+
+  Then have generated code carry `@OptIn(InternalExampleApi::class)`, and register the marker in the
+  root `apiValidation { nonPublicMarkers.add(...) }` so BCV does not freeze those declarations as
+  public API.
 
 ## Generation: string append, not KotlinPoet
 
