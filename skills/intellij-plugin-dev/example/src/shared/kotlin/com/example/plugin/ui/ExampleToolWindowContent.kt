@@ -10,8 +10,8 @@ import androidx.compose.ui.unit.dp
 import org.jetbrains.jewel.ui.component.Text
 
 /**
- * tool window に表示する内容の model。
- * PSI 非依存に保つ (ナビゲーションが要るなら ide-integration.md §4 の SourceAnchor 型を足す)。
+ * What the tool window shows. Keep it free of PSI so that the preview can build it; add a
+ * source-anchor type if nodes need to navigate to code.
  */
 data class ExampleModel(
     val title: String,
@@ -19,9 +19,8 @@ data class ExampleModel(
 )
 
 /**
- * plugin 本体 (bundled Jewel) と preview (standalone Jewel) の両方でコンパイルされる共有
- * Composable (references/setup/preview.md の source set 共有)。両者に存在する Jewel/Compose API
- * だけを使う。ラベルは英語を既定にする (日本語は実測で文字化けしうる — references/gotchas.md)。
+ * Compiled into both the plugin (bundled Jewel) and the preview (standalone Jewel), so it may
+ * only use Jewel/Compose API present in both.
  */
 @Composable
 fun ExampleToolWindowContent(model: ExampleModel, modifier: Modifier = Modifier) {
@@ -30,8 +29,7 @@ fun ExampleToolWindowContent(model: ExampleModel, modifier: Modifier = Modifier)
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(model.title)
-        // CUSTOMIZE: 実 UI (図の Compose Canvas / 表など) に置き換える。
-        // 行数の多い表は LazyColumn にする (全 row eager compose を避ける — ide-integration.md §7)。
+        // CUSTOMIZE: replace with the real UI. Use LazyColumn for long lists.
         model.items.forEach { item ->
             Text("- $item")
         }
