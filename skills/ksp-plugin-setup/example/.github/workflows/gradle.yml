@@ -4,18 +4,21 @@ on:
   push:
     branches: [ "main" ]
   pull_request:
+  # Lets publish.yml (or another workflow) reuse this as a gate.
   workflow_call:
 
 permissions:
   contents: read
 
-# Supersede an in-flight run when the same branch/PR is pushed again.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
-  cancel-in-progress: true
+  # One in-flight run per PR / branch. Only PR runs are cancelled: every commit on main has to be
+  # verified on its own.
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:
+    name: ${{ matrix.target }}
     # `include` (not a full axis product) so each target runs on the CHEAPEST runner that can host
     # it: only the Apple targets need macOS.
     strategy:
@@ -24,50 +27,84 @@ jobs:
         include:
           - target: iosSimulatorArm64Test
             os: macos-latest
+            konan: true
           - target: jvmTest
             os: ubuntu-latest
           - target: linuxX64Test
             os: ubuntu-latest
-          - target: testDebugUnitTest
+            konan: true
+          # AGP 9 KMP library plugin: Android unit tests are `testAndroidHostTest`.
+          - target: testAndroidHostTest
             os: ubuntu-latest
+          # :<project-name>-ksp:test (kctfork + Konsist)
           - target: test
             os: ubuntu-latest
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # Runs first in every job: a tampered wrapper would otherwise execute before any check.
       - name: Validate Gradle wrapper
-        uses: gradle/actions/wrapper-validation@v4
-      - name: Cache Kotlin/Native dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.konan
-          key: ${{ runner.os }}-konan-${{ hashFiles('**/gradle/libs.versions.toml') }}
-          restore-keys: ${{ runner.os }}-konan-
+        uses: gradle/actions/wrapper-validation@v6
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           java-version: '17'
           distribution: 'temurin'
+      # Kotlin/Native downloads its toolchain to ~/.konan, outside Gradle's caches. Key it on the
+      # catalog (where the Kotlin version lives), not on lock files the project does not have.
+      - name: Cache Kotlin/Native
+        if: ${{ matrix.konan }}
+        uses: actions/cache@v6
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ hashFiles('gradle/libs.versions.toml') }}
+          restore-keys: konan-${{ runner.os }}-
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v6
       - name: ${{ matrix.target }}
-        run: ./gradlew ${{ matrix.target }}
+        run: ./gradlew ${{ matrix.target }} --stacktrace
+      - name: Upload reports
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: reports-${{ matrix.target }}
+          path: |
+            **/build/reports/
+            **/build/test-results/
+          retention-days: 7
+          if-no-files-found: ignore
 
-  ktlint:
+  # Formatting and the published API are checked in their own job so a lint failure never hides a
+  # real test failure.
+  lint:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Validate Gradle wrapper
-        uses: gradle/actions/wrapper-validation@v4
+        uses: gradle/actions/wrapper-validation@v6
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           java-version: '17'
           distribution: 'temurin'
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew ktlintCheck
+        uses: gradle/actions/setup-gradle@v6
+      - run: ./gradlew ktlintCheck apiCheck --stacktrace
+
+  # Single aggregate status for branch protection: require `final` instead of every matrix entry,
+  # so adding or renaming a target never needs a settings change.
+  final:
+    if: ${{ always() }}
+    needs: [ build, lint ]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: All jobs succeeded
+        run: |
+          if [ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" = "true" ]; then
+            echo "::error::build or lint did not succeed"
+            exit 1
+          fi

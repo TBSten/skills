@@ -10,6 +10,11 @@ on:
 permissions:
   contents: read
 
+# Never run two publishes at once, and never cancel one that is uploading.
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
 jobs:
   publish:
     name: Release build and publish
@@ -17,18 +22,58 @@ jobs:
     runs-on: macos-latest
     timeout-minutes: 90
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
+      - uses: actions/checkout@v7
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v6
+      # The version to publish is the catalog's `<project-name>` entry; the release tag must agree.
+      - name: Tag matches the version in the catalog
+        if: ${{ github.event_name == 'release' }}
+        run: |
+          catalog=$(sed -n 's/^<project-name> = "\(.*\)"/\1/p' gradle/libs.versions.toml | head -n 1)
+          tag="${GITHUB_REF_NAME#v}"
+          echo "catalog=$catalog  tag=$tag"
+          if [ "$catalog" != "$tag" ]; then
+            echo "::error::gradle/libs.versions.toml has $catalog but the tag is $tag. Align them before publishing."
+            exit 1
+          fi
+      - name: Version is not a SNAPSHOT
+        run: |
+          catalog=$(sed -n 's/^<project-name> = "\(.*\)"/\1/p' gradle/libs.versions.toml | head -n 1)
+          case "$catalog" in
+            *-SNAPSHOT)
+              echo "::error::$catalog is a SNAPSHOT. Bump it to a release version first."
+              exit 1
+              ;;
+          esac
+      - name: Set up JDK 17
+        uses: actions/setup-java@v6
         with:
           distribution: 'temurin'
-          java-version: '21'
+          java-version: '17'
+      - name: Cache Kotlin/Native
+        uses: actions/cache@v6
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ hashFiles('gradle/libs.versions.toml') }}
+          restore-keys: konan-${{ runner.os }}-
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
       - name: Publish to Maven Central
         # The configuration cache is disabled here: the publish tasks are not compatible with it.
-        run: ./gradlew publishAndReleaseToMavenCentral --no-configuration-cache
+        run: ./gradlew publishAndReleaseToMavenCentral --no-configuration-cache --stacktrace
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.SIGNING_KEY_ID }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_KEY_CONTENTS }}
+      - name: Upload reports
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: publish-reports
+          path: |
+            **/build/reports/
+            **/build/test-results/
+          retention-days: 7
+          if-no-files-found: ignore
