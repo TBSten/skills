@@ -1,0 +1,81 @@
+# @bootup:file-if docs-site
+# docs サイト (docs/: Astro Starlight) + Dokka API リファレンスをビルドして GitHub Pages へデプロイする。
+# 初回は リポジトリ Settings > Pages > Source を "GitHub Actions" にしておくこと。
+name: Docs
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'docs/**'
+      # モジュールを増やしたらここにも足す
+      - 'example-lib-core/**'
+      - 'build-logic/**'
+      - 'build.gradle.kts'
+      - 'gradle/libs.versions.toml'
+      - '.github/workflows/docs.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# デプロイは 1 本ずつ。走っているデプロイは止めない
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v6
+      # Dokka HTML を docs/public/api-docs/ に出力する (Astro が /api-docs/ として配信)
+      - name: ./gradlew generateApiDocs
+        run: ./gradlew generateApiDocs --stacktrace
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: docs/package.json
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          # lockfile をまだコミットしていない初期状態では cache を無効にする (setup-node が失敗するため)
+          cache: ${{ hashFiles('docs/pnpm-lock.yaml') != '' && 'pnpm' || '' }}
+          cache-dependency-path: ${{ hashFiles('docs/pnpm-lock.yaml') != '' && 'docs/pnpm-lock.yaml' || '' }}
+      - name: pnpm install
+        working-directory: docs
+        run: |
+          if [ -f pnpm-lock.yaml ]; then
+            pnpm install --frozen-lockfile
+          else
+            echo "::warning::docs/pnpm-lock.yaml が無いので lockfile 無しで install する。pnpm install で生成してコミットすること"
+            pnpm install --no-frozen-lockfile
+          fi
+      - name: pnpm run build
+        working-directory: docs
+        run: pnpm run build
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: docs/dist
+
+  deploy:
+    name: deploy
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,49 @@
+---
+title: Installation
+description: Add example-lib to your Gradle project.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Replace `<example-lib-version>` with the latest version:
+[![Maven Central](https://img.shields.io/maven-central/v/<group-id>/example-lib-core.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/<group-id>/example-lib-core)
+
+Requires Kotlin 2.2 or later.
+
+<Tabs syncKey="build">
+<TabItem label="Kotlin Multiplatform">
+
+```kotlin title="module/build.gradle.kts"
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation("<group-id>:example-lib-core:<example-lib-version>")
+        }
+    }
+}
+```
+
+</TabItem>
+<TabItem label="JVM / Android">
+
+```kotlin title="module/build.gradle.kts"
+dependencies {
+    implementation("<group-id>:example-lib-core:<example-lib-version>")
+}
+```
+
+</TabItem>
+<TabItem label="Version catalog">
+
+```toml title="gradle/libs.versions.toml"
+[versions]
+example-lib = "<example-lib-version>"
+
+[libraries]
+example-lib-core = { module = "<group-id>:example-lib-core", version.ref = "example-lib" }
+```
+
+</TabItem>
+</Tabs>
+
+Next: [Basic usage](/<repo>/guides/basic-usage/)

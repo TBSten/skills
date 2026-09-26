@@ -1,0 +1,55 @@
+### Gradle ###
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+# 複数 agent が同じツリーを並列ビルドする時の --project-cache-dir (どの階層でも無視する)
+.gradle-agent-*/
+
+### Kotlin ###
+.kotlin
+
+### IntelliJ IDEA ###
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# @bootup:if kmp
+### Android ###
+# この端末の Android SDK の場所。可能なら ANDROID_HOME を使う
+local.properties
+.cxx/
+captures/
+# @bootup:end
+
+# @bootup:if kmp
+### Xcode ###
+xcuserdata/
+# @bootup:end
+
+### OS / Editor ###
+.DS_Store
+.vscode/
+
+### Secrets ###
+*.gpg
+*.jks
+
+### AI Agent ###
+.local/
+CLAUDE.local.md
+.claude/*.local.*
+.claude/worktrees/
+.playwright-mcp/
+# @bootup:if docs-site
+
+### Dokka ###
+# ./gradlew generateApiDocs の出力。docs サイト (Astro) の public/ 経由で配信する生成物なのでコミットしない
+/docs/public/api-docs/
+
+### Docs site (Astro) ###
+node_modules/
+/docs/dist/
+/docs/.astro/
+# @bootup:end

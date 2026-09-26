@@ -148,6 +148,19 @@ gh skill install tbsten/skills intellij-plugin-dev
 </tr>
 <tr>
 <td></td>
+<td><a href="./skills/kotlin-library-bootup.ja.md">kotlin-library-bootup</a></td>
+<td>
+
+```sh
+gh skill install tbsten/skills kotlin-library-bootup
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>CI・publish・docs 付きの Kotlin/KMP ライブラリを一式立ち上げる</td>
+</tr>
+<tr>
+<td></td>
 <td><a href="./skills/ksp-plugin-setup.ja.md">ksp-plugin-setup</a></td>
 <td>
 
