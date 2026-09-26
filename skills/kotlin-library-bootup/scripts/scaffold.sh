@@ -26,7 +26,7 @@
 #   --targets         standard (既定): android / jvm / js / wasmJs / iosArm64 / iosSimulatorArm64
 #                     full          : standard + macos / watchos / tvos / linux / mingw / androidNative / wasmWasi
 #                     jvm           : kotlin("jvm") のみ。Android / Apple 関連 (AGP, CI の android / ios job) は生成しない
-#   --module-name     最初のライブラリモジュール名 (既定: <name>-core)。単一モジュールで終わる予定なら <name> も可
+#   --module-name     最初のライブラリモジュール名 (既定: <name>-core)。--name と同名は不可 (project accessor が衝突する)
 #   --kotlin-version  gradle/libs.versions.toml の kotlin を上書きする (既定: example の値)
 #   --skip-integration-test  integrationTest/ (独立 Gradle ビルド) と CI の integration-test job を生成しない
 #   --skip-ai-skills  assets/project/.claude/skills/ を生成しない
@@ -129,6 +129,9 @@ echo "$NAME" | grep -Eq "$KEBAB_RE" \
 echo "$MODULE" | grep -Eq "$KEBAB_RE" \
     || die "--module-name '$MODULE' が kebab-case でない" \
         "Gradle project 名と artifactId に使う" "小文字英数字とハイフンのみの名前にする (例: my-lib-core)"
+[ "$MODULE" != "$NAME" ] || die "--module-name が --name と同じ ('$NAME')" \
+    "settings.gradle.kts は TYPESAFE_PROJECT_ACCESSORS を有効にしており、ルートプロジェクトと同名のサブプロジェクトは accessor (projects.<camel>) が衝突してビルドできない" \
+    "--module-name を省略する (既定: $NAME-core) か、$NAME-runtime / $NAME-api のような別名にする"
 echo "$PKG" | grep -Eq '^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$' \
     || die "--package '$PKG' がパッケージ名として不正" \
         "Kotlin の package 宣言とディレクトリパスに使う" \
