@@ -32,7 +32,7 @@ IDE プラグインは「実装したものを IDE に入れて手で触る」�
 ## 動作の流れ
 
 1. **Step 1**: SKILL.md の「中心思想」で検証を 6 チャネルに分解し、主軸 2 本 (機能テスト / PNG 目視) で回す方針を確認する
-2. **Step 2**: 同梱の `example/` から `scripts/scaffold.sh` でプラグインモジュールを生成し (script は読解・再実装せずそのまま実行する)、`references/setup/` (basics → preview → snapshot) を設計解説として読む
+2. **Step 2**: 同梱の `example/` から `scripts/scaffold.sh` でプラグインモジュールを生成して `scripts/verify.sh --fresh` でビルドを確認し (script は読解・再実装せずそのまま実行する)、`references/setup/` (basics → preview → snapshot) を設計解説として読む
 3. **Step 3**: 実装したい観点に応じて usage reference を開く (機能テスト = `analysis-api-testing.md` / 見た目 = `headless-preview.md` / IDE 組み込み = `ide-integration.md`)
 4. **Step 4**: headless で閉じられない対話・タイミングは `driver-smoke.md` の Driver スモークを定期チェックポイントに置く
 5. **Step 5**: Compose Desktop / IntelliJ 固有の罠に当たったら `gotchas.md` の索引から一次記載へ飛ぶ
@@ -41,8 +41,9 @@ IDE プラグインは「実装したものを IDE に入れて手で触る」�
 
 | ファイル | 内容 |
 |---|---|
-| `example/` | references の snippet を整合する 1 プロジェクトに束ねた動く scaffold (`com.example.plugin`・独立 Gradle ビルド): build 配線 / plugin.xml / Compose tool window + 共有 Composable / `PreviewMain.kt`・`PreviewChecks.kt` / AA テスト harness。コード片の SSoT |
-| `scripts/scaffold.sh` | `example/` から新規プラグインモジュールを生成する (`--dest` / `--package` / `--plugin-id` / `--plugin-name`、`--dry-run` / `--force`)。冪等 (`--force` なし上書き禁止)・末尾 1 行 JSON |
+| `example/` | references の snippet を整合する 1 プロジェクトに束ねた動く scaffold (`com.example.intellijplugindev`・独立 Gradle ビルド): build 配線 / plugin.xml / Compose tool window + 共有 Composable / `PreviewMain.kt`・`PreviewChecks.kt` / AA テスト harness / 雛形テスト (`ToolWindowEP.EP_NAME` での Tool Window 登録検査・最小の AA スモーク・preview ゲート)。コード片の SSoT |
+| `scripts/scaffold.sh` | `example/` から新規プラグインモジュールを生成する (`--dest` / `--package` / `--plugin-id` / `--plugin-name`、任意で `--tool-window-id` / `--vendor`、`--dry-run` / `--force`)。`rootProject.name` は `--dest` のディレクトリ名。`.gitignore` も生成 (既存なら触らない)。生成物のコメントは英語で repo 単体で読める。冪等 (`--force` なし上書き禁止)・末尾 1 行 JSON。`bash` を付けて呼ぶ |
+| `scripts/verify.sh` | 生成したモジュールのビルド確認を決まった順に回す: `buildPlugin` → `test` → `updatePreview` (`--fresh` の時のみ。golden を生成・焼き直す) → `verifyPreview` → `verifyPlugin` (IDE をダウンロードするので `--with-verify-plugin` の時のみ)。`--only` / `--skip` / `--gradle-args`。Gradle wrapper が無ければ直し方を出して止まる。ログは `<project>/.local/tmp/<time>-<label>.log`、末尾 1 行 JSON |
 | `references/setup/basics.md` | 基本 build 配線 (intellijPlatform / SDK 261 / bundled Kotlin(AA)・Jewel・Compose・Skiko / JBR21 / K2 / since-until)。統合ディストリの罠・stdlib 非同梱 |
 | `references/setup/preview.md` | preview (headless PNG) を焼く build 配線 (source set 共有 / standalone Jewel・Compose Desktop / `:icons` / `updatePreview`・`verifyPreview` タスク登録) |
 | `references/setup/snapshot.md` | VRT golden の配線 (`snapshots/preview` 置き場 / update=同期・verify=比較 / alpha=255・managed clean ゲート / CI ゲート) |
@@ -50,7 +51,7 @@ IDE プラグインは「実装したものを IDE に入れて手で触る」�
 | `references/headless-preview.md` | `renderComposeScene` + Jewel standalone + VRT golden。推奨ワークフロー (baseline → verify → 目視 → 人間確認) と自動ゲート |
 | `references/ide-integration.md` | tool window / `addComposeTab` / gutter line marker / エディタ追従 / ナビ / PSI 挿入 / lifecycle (stale race・dumb mode) / 性能 (background 化・cancellation・`runCatching` の罠) |
 | `references/driver-smoke.md` | 実 IDE を駆動する Driver スモーク。2 層構成 (機能テスト厚く + Driver 薄く) / UI ツリー (locator) の覗き方 / 内部デバッグ AnAction |
-| `references/gotchas.md` | Compose Desktop / IntelliJ 固有のハマりどころ (ピンチが来ない・AS vs IDEA build スキュー・描画方針の却下記録) と各罠の索引 |
+| `references/gotchas.md` | Compose Desktop / IntelliJ 固有のハマりどころ (ピンチが来ない・AS vs IDEA build スキュー・描画方針の却下記録・headless preview の日本語表示・CI での golden と OS・classpath / サンドボックスの残骸) と各罠の索引 |
 
 ## 前提条件
 

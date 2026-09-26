@@ -1,6 +1,6 @@
-@file:OptIn(InternalComposeUiApi::class) // renderComposeScene (references/headless-preview.md 中核レシピ)
+@file:OptIn(InternalComposeUiApi::class) // renderComposeScene
 
-package com.example.plugin.preview
+package com.example.intellijplugindev.preview
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -8,8 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.InternalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.renderComposeScene
-import com.example.plugin.ui.ExampleModel
-import com.example.plugin.ui.ExampleToolWindowContent
+import com.example.intellijplugindev.ui.ExampleModel
+import com.example.intellijplugindev.ui.ExampleToolWindowContent
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.intui.standalone.theme.IntUiTheme
 import org.jetbrains.skia.EncodedImageFormat
@@ -17,19 +17,22 @@ import java.io.File
 import kotlin.system.exitProcess
 
 /**
- * headless preview harness (references/headless-preview.md の参照実装 / SSoT)。
- * Jewel/Compose の UI を IDE を起動せず PNG に焼き、gallery を書き、VRT golden と同期/比較する。
+ * Headless preview: renders the Jewel/Compose UI to PNGs without starting an IDE, writes a
+ * gallery, and syncs or compares the PNGs with the golden snapshots.
  *
- * 起動は gradle の `updatePreview` / `verifyPreview` (references/setup/preview.md で JavaExec 配線):
- * - `update` — 全 PNG を焼く → gallery を書く → golden (snapshots/preview) を強制同期
- * - `verify` — 全 PNG を焼いて golden と比較。差分 (changed/new/missing) があれば非ゼロ終了。
- *   report は build/preview/report/index.html
+ * Run through Gradle:
+ * - `./gradlew updatePreview` — render all PNGs, write build/preview/index.html, and overwrite the
+ *   golden (snapshots/preview) with them.
+ * - `./gradlew verifyPreview` — render all PNGs and compare them with the golden; exit non-zero on
+ *   any difference (changed / new / missing). The report is build/preview/report/index.html.
  *
- * 日々の回し方 (まず verify、golden 更新は人間承認の後だけ) は headless-preview.md「推奨ワークフロー」。
+ * Verify first; update the golden only after a human has approved the difference.
  */
 
-/** 1 枚の preview PNG になるシナリオ。CUSTOMIZE: 実 UI の matrix に置き換える。
- * 正常系だけでなく degraded/edge (narrow 幅・長い名前・空状態など) を網羅する (headless-preview.md)。 */
+/**
+ * One preview PNG per scenario and theme. CUSTOMIZE: replace with the matrix of the real UI,
+ * covering edge cases (narrow width, long names, empty state) as well as the happy path.
+ */
 private data class Scenario(
     val name: String,
     val width: Int,
@@ -38,20 +41,20 @@ private data class Scenario(
 )
 
 private val scenarios = listOf(
-    Scenario("default", width = 480, height = 320, model = ExampleModel("Example", listOf("Alpha", "Beta", "Gamma"))),
-    // narrow 幅 (折返し・はみ出しの検知用)
+    Scenario("default", width = 480, height = 320, model = ExampleModel("Example Plugin", listOf("Alpha", "Beta", "Gamma"))),
+    // Narrow width, to catch wrapping and overflow.
     Scenario(
         "narrow", width = 320, height = 320,
-        model = ExampleModel("Example (narrow)", listOf("A very long item name that should wrap or clip", "Beta")),
+        model = ExampleModel("Example Plugin (narrow)", listOf("A very long item name that should wrap or clip", "Beta")),
     ),
 )
 
 private val themes = listOf("light" to false, "dark" to true)
 
 fun main(args: Array<String>) {
-    // gradle の jvmArgs でも渡しているが、単体起動 (IDE の Run 等) でも成立するよう二重に設定する
+    // Also passed as jvmArgs by Gradle; set here too so that running main() directly works.
     System.setProperty("java.awt.headless", "true")
-    System.setProperty("skiko.renderApi", "SOFTWARE") // IDE 不要・SW ラスタライズ
+    System.setProperty("skiko.renderApi", "SOFTWARE") // software rasterizer, no GPU needed
 
     val mode = args.firstOrNull()
     if (mode != "update" && mode != "verify") {
@@ -59,11 +62,11 @@ fun main(args: Array<String>) {
         exitProcess(2)
     }
 
-    // JavaExec の working dir = プラグインモジュールのプロジェクトディレクトリ前提
+    // Relative to the working directory, which Gradle's JavaExec sets to the project directory.
     val outDir = File("build/preview")
-    val goldenDir = File("snapshots/preview") // コミット対象の golden (setup/snapshot.md)
+    val goldenDir = File("snapshots/preview") // committed
 
-    // managed 出力の事前 clean (rename/削除した旧 scenario の残骸を掃除 — setup/snapshot.md)
+    // Drop PNGs of renamed or removed scenarios before rendering.
     PreviewChecks.cleanManagedOutputs(outDir)
     outDir.mkdirs()
 
@@ -75,17 +78,17 @@ fun main(args: Array<String>) {
     }
     writeGallery(outDir, expected.sorted())
 
-    // 自動ゲート (目視の自己弁護を排す — headless-preview.md / setup/snapshot.md)
+    // Machine-checked gates, so that a visual review cannot talk itself into a broken image.
     val gateFailures = buildList {
         addAll(PreviewChecks.unexpectedFileSet(outDir, expected))
         addAll(
             PreviewChecks.transparentCornerPngs(expected.sorted().map { File(outDir, it) }).map {
-                "透明角 PNG: ${it.name} — render root を theme surface で塗る (headless-preview.md)"
+                "transparent corner: ${it.name} — paint the render root with the theme background"
             },
         )
     }
     if (gateFailures.isNotEmpty()) {
-        System.err.println("preview 自動ゲート失敗 (${gateFailures.size} 件):")
+        System.err.println("preview gates failed (${gateFailures.size}):")
         gateFailures.forEach { System.err.println("  - $it") }
         exitProcess(1)
     }
@@ -93,31 +96,31 @@ fun main(args: Array<String>) {
     when (mode) {
         "update" -> {
             PreviewChecks.syncGolden(outDir, goldenDir, expected)
-            println("golden を更新した: ${goldenDir.path} (${expected.size} PNGs)。差分を確認して commit する")
+            println("golden updated: ${goldenDir.path} (${expected.size} PNGs). Review the diff and commit it.")
             println("gallery: ${File(outDir, "index.html").path}")
         }
         "verify" -> {
             val diff = PreviewChecks.diffAgainstGolden(outDir, goldenDir, expected)
             if (diff.isEmpty()) {
-                println("verifyPreview OK: golden と一致 (${expected.size} PNGs)")
+                println("verifyPreview OK: matches the golden (${expected.size} PNGs)")
             } else {
                 val report = writeReport(outDir, goldenDir, diff)
-                System.err.println("verifyPreview 失敗: golden との差分あり")
+                System.err.println("verifyPreview failed: differs from the golden")
                 diff.changed.forEach { System.err.println("  changed: $it") }
-                diff.new.forEach { System.err.println("  new (golden 未登録): $it") }
-                diff.missing.forEach { System.err.println("  missing (golden にだけある): $it") }
-                System.err.println("before/after の目視は ${report.path} を開く。意図した変更なら人間承認後に updatePreview")
+                diff.new.forEach { System.err.println("  new (not in the golden): $it") }
+                diff.missing.forEach { System.err.println("  missing (only in the golden): $it") }
+                System.err.println("Open ${report.path} to compare before/after. If the change is intended, run updatePreview after approval.")
                 exitProcess(1)
             }
         }
     }
 }
 
-/** 中核レシピ (headless-preview.md): standalone Jewel Int UI theme + renderComposeScene → PNG */
+/** Standalone Jewel Int UI theme + renderComposeScene → PNG. */
 private fun renderScenario(scenario: Scenario, dark: Boolean, out: File) {
     val image = renderComposeScene(width = scenario.width, height = scenario.height) {
-        IntUiTheme(isDark = dark) { // standalone Jewel Int UI → テーマ忠実
-            // render root を theme の panel background で全面塗装する (透明角の自動検査を通すため)
+        IntUiTheme(isDark = dark) {
+            // Paint the whole root with the theme background; the transparent-corner gate relies on it.
             Box(Modifier.fillMaxSize().background(JewelTheme.globalColors.panelBackground)) {
                 ExampleToolWindowContent(scenario.model)
             }
@@ -126,7 +129,7 @@ private fun renderScenario(scenario: Scenario, dark: Boolean, out: File) {
     out.writeBytes(image.encodeToData(EncodedImageFormat.PNG)!!.bytes)
 }
 
-/** 全 PNG を 1 ページで目視できる gallery を書く (エージェント/人間の自己目視用) */
+/** One page showing every PNG, for review by an agent or a human. */
 private fun writeGallery(outDir: File, names: List<String>) {
     val rows = names.joinToString("\n") { name ->
         """<figure><img src="$name" alt="$name"><figcaption>$name</figcaption></figure>"""
@@ -148,7 +151,7 @@ private fun writeGallery(outDir: File, names: List<String>) {
     )
 }
 
-/** verify 失敗時の before/after report。golden/actual を report 配下へコピーして自己完結にする */
+/** Before/after report of a failed verify. Copies golden and actual PNGs so that it stands alone. */
 private fun writeReport(outDir: File, goldenDir: File, diff: PreviewChecks.GoldenDiff): File {
     val reportDir = File(outDir, "report").apply { mkdirs() }
     File(reportDir, "golden").mkdirs()

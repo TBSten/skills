@@ -34,9 +34,50 @@
 - **JCEF + Mermaid で図を描く案は却下**: JCEF 非搭載環境に依存する。
 - **PlantUML jar 同梱は却下**: 重い。
 - **`mermaid-cli` でビルド内ラスタライズは却下**: Node + Chromium 必須。→ 図は Compose Canvas を自前描画。
-- **日本語ラベルは実測で文字化けしうる** → 図/生成物のラベルは英語を既定にする。
+- **日本語ラベル** → 下記「headless preview の日本語表示」。図/生成物のラベルを英語にしておくのが一番安全。
 - **plain Swing プレビュー / 自前 Graphics2D canvas / JB* を test で描画は supersede** → Jewel standalone +
   `renderComposeScene` に一本化 (テーマ忠実 & headless。詳細は SKILL.md「中心思想」の旧案節)。
+
+## headless preview の日本語表示
+
+- **macOS では表示される (確認済み)**: `renderComposeScene` + standalone Jewel (`IntUiTheme`) +
+  `-Dskiko.renderApi=SOFTWARE` で、フォントを指定しない `Text("日本語")` が漢字・かな・カナとも正しく描かれた。
+  既定フォントに無い字形は OS のフォントへフォールバックしていると考えられる。
+- **Linux (CI) は未検証**: 同じ仕組みなら CJK フォントが入っていない環境 (素の CI イメージ・コンテナ) では
+  豆腐 (□) になる見込み。回避策の候補 (いずれも未検証): CI に CJK フォントを入れる
+  (例: Debian/Ubuntu の `fonts-noto-cjk`) / フォントファイルを preview の resources に同梱して
+  `FontFamily` を明示する。どちらにしても golden は OS 間で一致しない (次節)。
+- 豆腐になっても preview の自動ゲート (透明角・ファイル集合) は通ってしまう。日本語 UI なら日本語の
+  scenario を 1 つ入れて PNG を目で見る。
+
+## golden と OS (CI で `verifyPreview` を回すとき)
+
+描画は **同一マシンでだけ** バイト決定的。フォント・アンチエイリアス・Skiko のバイナリが OS ごとに違うので、
+macOS で作った golden は Linux の CI ではほぼ確実にバイト一致しない (未検証だが前提にしておく)。選択肢:
+
+| 方針 | やり方 | 向く場面 |
+|---|---|---|
+| golden を CI の OS で作る | CI (または同じ OS のコンテナ) で `updatePreview` を回し、出た PNG を artifact から取って commit する。ローカルの macOS では `verifyPreview` が落ちるので、ローカルは gallery の目視だけにする | VRT を CI の門番にしたい |
+| CI では描けることだけ見る | CI は `updatePreview` を回して成否 (描画が例外なく終わる・自動ゲートが通る) だけを見る。golden 比較はローカル (golden を作った OS) でだけ `verifyPreview` | 開発者が 1 つの OS にそろっている |
+| OS ごとに golden を持つ | `snapshots/preview/<os>/` のように分け、`verifyPreview` が実行中の OS の golden と比べる (example は未対応。`PreviewMain.kt` の golden パスを OS で切り替える改修が要る) | 複数 OS で開発し、どこでも VRT を回したい |
+
+どれにするかは最初の golden を commit する前に決める。決めずに macOS の golden を commit して CI で
+`verifyPreview` を回すと、毎回落ちる門番になる。
+
+## build / test classpath
+
+- **shared のクラスが test の classpath で二重になる**: `testImplementation(sourceSets["preview"].output)`
+  のため、`src/shared` のクラスが main と preview の両方から test の classpath に載る。test が shared の
+  クラスを直接使わない限り実害は無い (雛形の test は使っていない)。shared のクラスを test から使うなら、
+  `PreviewChecks` だけを別の source set (例: `previewChecks`) に切り出し、test はそれだけに依存させる。
+  そもそも UI に依存しない純ロジックは shared ではなく `src/main` に置く (`setup/preview.md`)。
+- **消したクラスがサンドボックスに残る**: `.intellijPlatform/sandbox/.../plugins-test/.../lib/` には前回の
+  test / runIde で使った plugin の jar が残る。クラスを消した後にリポジトリ全体を grep すると、そこに
+  引っかかって「取り残しがある」ように見える。取り残しを探すときは `.intellijPlatform/` と `build/` を除いて
+  grep する (`git grep`、または `.gitignore` を読む `rg` なら自動で除かれる)。
+- **`.intellijPlatform/` はコミットしない**: 初回ビルドでプラグインモジュール直下に大量の未追跡ファイルが
+  出る。scaffold が生成する `.gitignore` に `build/` `.gradle/` `.intellijPlatform/` `.kotlin/` `.local/` (verify.sh のログ) が入っている
+  (既存の `.gitignore` があった場合は生成しないので、自分で足す)。
 
 ## 索引 (各罠の一次記載)
 

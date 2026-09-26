@@ -1,23 +1,24 @@
-package com.example.plugin.preview
+package com.example.intellijplugindev.preview
 
 import java.io.File
 import javax.imageio.ImageIO
 
 /**
- * preview 出力の純粋な自動ゲート (references/setup/snapshot.md「自動ゲート」)。
- * Compose に依存しない純 JVM 実装に保つ — `testImplementation(sourceSets["preview"].output)` で
- * test からも叩ける (standalone Compose の二重ロードを避けるため、ここに Compose を import しない)。
+ * Automatic gates over the preview output.
+ *
+ * Kept pure JVM so that `test` can call it through `testImplementation(sourceSets["preview"].output)`:
+ * do not import Compose here, or standalone Compose would be loaded next to the IDE's bundled one.
  */
 object PreviewChecks {
 
-    /** managed な生成物のパターン。これ以外は clean / golden 同期で触らない */
+    /** Files this harness owns. Anything else is left alone by clean and golden sync. */
     private val managedPng = Regex("""preview-.*\.png""")
 
     fun isManagedPng(name: String): Boolean = managedPng.matches(name)
 
     /**
-     * 生成前に管理下の生成物 (preview-*.png / index.html / report/) を消す。
-     * rename/削除した旧 scenario の PNG が gallery / golden に残り続けるのを防ぐ。
+     * Deletes the owned outputs (preview-*.png / index.html / report/) before rendering, so that
+     * PNGs of renamed or removed scenarios do not linger in the gallery or the golden.
      */
     fun cleanManagedOutputs(dir: File) {
         dir.listFiles()?.forEach { f ->
@@ -26,31 +27,31 @@ object PreviewChecks {
         File(dir, "report").deleteRecursively()
     }
 
-    /** expected filename set との完全一致検査。問題を人間可読メッセージで返す (空 = OK) */
+    /** Checks that the rendered PNGs are exactly [expected]. Returns readable problems (empty = OK). */
     fun unexpectedFileSet(dir: File, expected: Set<String>): List<String> {
         val actual = dir.listFiles()
             ?.filter { it.isFile && isManagedPng(it.name) }
             ?.map { it.name }?.toSet().orEmpty()
         return buildList {
-            (actual - expected).sorted().forEach { add("期待に無い PNG が生成された: $it") }
-            (expected - actual).sorted().forEach { add("期待した PNG が生成されなかった: $it") }
+            (actual - expected).sorted().forEach { add("unexpected PNG rendered: $it") }
+            (expected - actual).sorted().forEach { add("expected PNG not rendered: $it") }
         }
     }
 
     /**
-     * 四隅 pixel を含む alpha=255 検査 (references/headless-preview.md「自動ゲート」)。
-     * render root が theme surface を塗らないと透明背景 PNG になり、暗い viewer で
-     * 黒 marker / 薄線 / table header が消える。透明版が要るときだけ別 suffix にして除外する。
+     * Returns the PNGs whose corner pixels are not fully opaque. When the render root does not paint
+     * the theme surface the background is transparent, and dark markers, thin lines and table
+     * headers vanish in a dark viewer. Give intentionally transparent PNGs another suffix.
      */
     fun transparentCornerPngs(pngs: List<File>): List<File> = pngs.filter { file ->
-        if (!file.isFile) return@filter false // 存在しない分は unexpectedFileSet 側で検出する
-        val img = ImageIO.read(file) ?: return@filter true // デコード不能も fail 扱い
+        if (!file.isFile) return@filter false // missing files are reported by unexpectedFileSet
+        val img = ImageIO.read(file) ?: return@filter true // an undecodable file fails too
         val xs = intArrayOf(0, img.width - 1)
         val ys = intArrayOf(0, img.height - 1)
         xs.any { x -> ys.any { y -> (img.getRGB(x, y) ushr 24) != 0xFF } }
     }
 
-    /** verify の結果。changed = バイト不一致 / new = golden 未登録 / missing = golden にだけある */
+    /** Result of verify. changed = bytes differ / new = not in the golden / missing = only in the golden. */
     data class GoldenDiff(
         val changed: List<String>,
         val new: List<String>,
@@ -60,8 +61,8 @@ object PreviewChecks {
     }
 
     /**
-     * verify: 焼いた PNG を golden (snapshots/preview) と比較する。golden は変更しない。
-     * 同一マシンで描画がバイト決定的なことを利用したバイト比較 (references/setup/snapshot.md)。
+     * verify: compares the rendered PNGs with the golden (snapshots/preview) byte by byte, relying on
+     * rendering being deterministic on one machine. Does not modify the golden.
      */
     fun diffAgainstGolden(outDir: File, goldenDir: File, expected: Set<String>): GoldenDiff {
         val goldenNames = goldenDir.listFiles()
@@ -79,7 +80,7 @@ object PreviewChecks {
         )
     }
 
-    /** update: golden を強制同期する (stale golden の削除も行う)。managed PNG 以外 (.gitkeep 等) は残す */
+    /** update: makes the golden equal to the rendered PNGs, deleting stale ones. Keeps non-owned files (.gitkeep etc.). */
     fun syncGolden(outDir: File, goldenDir: File, expected: Set<String>) {
         goldenDir.mkdirs()
         goldenDir.listFiles()?.forEach { f ->

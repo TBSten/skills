@@ -1,8 +1,10 @@
-// 独立ビルド (references/setup/basics.md):
-// 1 つの Gradle ビルド内で Kotlin Gradle Plugin を複数版併用できず、プラグインは
-// 「ターゲット IDE 同梱の Kotlin 以下」でビルドせねばならないため、本体リポジトリの
-// サブプロジェクトにせず自前 settings を持つ。task は必ずこのディレクトリをカレントにして叩く
-// (root からは ./gradlew -p <plugin-module> ...)。
+// An independent build, not a subproject of the surrounding repository: one Gradle build cannot mix
+// two versions of the Kotlin Gradle Plugin, and a plugin must be compiled with a Kotlin no newer
+// than the one bundled in its target IDE. Run every task from this directory
+// (or `./gradlew -p <this-directory> ...` from the repository root).
+
+// Without this import `intellijPlatform { defaultRepositories() }` below does not resolve.
+import org.jetbrains.intellij.platform.gradle.extensions.intellijPlatform
 
 pluginManagement {
     repositories {
@@ -12,10 +14,9 @@ pluginManagement {
 }
 
 plugins {
-    // NOTE: version はここに書き、build.gradle.kts 側の id("org.jetbrains.intellij.platform") は
-    // version 無指定にする (両方に書くと classpath 衝突 — setup/basics.md)。
-    // 値は gradle/libs.versions.toml の intellijPlatformGradlePlugin と一致させる
-    // (settings の plugins block からは version catalog を参照できない)。
+    // The version is written here only; build.gradle.kts applies the plugin without one, as
+    // writing it in both places makes the classpaths collide. Keep it equal to
+    // `intellijPlatformGradlePlugin` in gradle/libs.versions.toml, which this block cannot read.
     id("org.jetbrains.intellij.platform.settings") version "2.18.1"
 }
 
@@ -25,7 +26,7 @@ dependencyResolutionManagement {
     repositories {
         mavenCentral()
         google()
-        // IntelliJ Platform SDK / bundled plugin / intellij-dependencies (icons 等) の解決
+        // The IntelliJ Platform SDK, its bundled plugins and intellij-dependencies (icons etc.).
         intellijPlatform {
             defaultRepositories()
         }

@@ -15,11 +15,13 @@
   で焼き直して差分を commit する。
 - CI は `verifyPreview` をゲートにする (golden と不一致なら fail)。**独立ビルドなので root の通常
   test/check では走らない** → root/CI から独立ビルドを明示呼び出しする quality gate を足す。
+- **golden は OS をまたいでバイト一致しない**。CI の OS とローカルの OS が違うなら、golden をどこで作るかを
+  最初に決める (選択肢は `gotchas.md`「golden と OS」)。
 
 ## 自動ゲート (目視の自己弁護を排す)
 
 `PreviewMain` / `PreviewChecks` が update・verify 双方で走らせる不変条件。golden 比較の手前で
-silent な劣化を止める。実装 (SSoT): `example/src/preview/kotlin/com/example/plugin/preview/PreviewMain.kt`
+silent な劣化を止める。実装 (SSoT): `example/src/preview/kotlin/com/example/intellijplugindev/preview/PreviewMain.kt`
 + `PreviewChecks.kt`。
 
 - **透明角の自動検査**: render root が theme surface を塗らないと透明背景 PNG になり、暗い viewer で
@@ -38,5 +40,5 @@ preview の純粋な出力チェック (alpha / stale 削除など、Compose に
 ない → bundled Compose との二重ロードを避ける)。
 
 実体は `example/build.gradle.kts` の `testImplementation(sourceSets["preview"].output)` (SSoT)。
-test 側の例: `example/src/test/kotlin/com/example/plugin/PreviewOutputGateTest.kt`
+test 側の例: `example/src/test/kotlin/com/example/intellijplugindev/PreviewOutputGateTest.kt`
 (透明角検出 / expected filename set / changed・new・missing 分類を PreviewChecks 単体で検証)。

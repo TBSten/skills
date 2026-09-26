@@ -1,6 +1,6 @@
-package com.example.plugin
+package com.example.intellijplugindev
 
-import com.example.plugin.preview.PreviewChecks
+import com.example.intellijplugindev.preview.PreviewChecks
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -12,9 +12,9 @@ import java.io.File
 import javax.imageio.ImageIO
 
 /**
- * preview の純出力ゲートを test から叩く (references/setup/snapshot.md「test から純出力ゲートを叩く」)。
- * PreviewChecks は純 JVM (Compose 非依存) なので、`testImplementation(sourceSets["preview"].output)`
- * だけで standalone Compose を classpath に載せずにテストできる。
+ * Tests the pure-JVM preview gates. PreviewChecks does not touch Compose, so
+ * `testImplementation(sourceSets["preview"].output)` is enough and standalone Compose stays off
+ * the test classpath.
  */
 class PreviewOutputGateTest {
 
@@ -34,7 +34,7 @@ class PreviewOutputGateTest {
     }
 
     @Test
-    fun `透明角のある PNG だけを検出する`() {
+    fun `detects only the PNGs with a transparent corner`() {
         val dir = tmp.newFolder()
         val opaque = writePng(dir, "preview-opaque-light.png", transparentCorner = false)
         val transparent = writePng(dir, "preview-transparent-dark.png", transparentCorner = true)
@@ -45,7 +45,7 @@ class PreviewOutputGateTest {
     }
 
     @Test
-    fun `expected filename set との不一致を両方向で検出する`() {
+    fun `reports mismatches with the expected file names in both directions`() {
         val dir = tmp.newFolder()
         writePng(dir, "preview-default-light.png", transparentCorner = false)
         writePng(dir, "preview-stale-light.png", transparentCorner = false)
@@ -56,15 +56,15 @@ class PreviewOutputGateTest {
         )
 
         assertEquals(2, problems.size)
-        assertTrue(problems.any { it.contains("preview-stale-light.png") })   // 期待に無い
-        assertTrue(problems.any { it.contains("preview-default-dark.png") })  // 生成されなかった
+        assertTrue(problems.any { it.contains("preview-stale-light.png") })   // not expected
+        assertTrue(problems.any { it.contains("preview-default-dark.png") })  // not rendered
     }
 
     @Test
-    fun `golden との差分を changed と new と missing に分類する`() {
+    fun `classifies differences from the golden into changed, new and missing`() {
         val outDir = tmp.newFolder("out")
         val goldenDir = tmp.newFolder("golden")
-        // same: 両方に同一内容 / changed: 内容が違う / new: golden に無い / missing: golden にだけある
+        // same: identical in both / changed: different bytes / new: not in the golden / missing: only in the golden
         writePng(outDir, "preview-same-light.png", transparentCorner = false)
         File(goldenDir, "preview-same-light.png").writeBytes(File(outDir, "preview-same-light.png").readBytes())
         writePng(outDir, "preview-changed-light.png", transparentCorner = false)
