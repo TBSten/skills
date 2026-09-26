@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!--
+  The API reference (Dokka output) exists only once, in English, under /<repo>/api-docs/.
+  Starlight prefixes the locale to the sidebar `link`, so Japanese pages point to
+  /<repo>/ja/api-docs/. This single page catches that URL and forwards it, which is far
+  cheaper than copying the whole Dokka output per locale.
+-->
+<title>API reference</title>
+<link rel="canonical" href="/<repo>/api-docs/">
+<meta http-equiv="refresh" content="0; url=/<repo>/api-docs/">
+<script>location.replace('/<repo>/api-docs/' + location.hash);</script>
+</head>
+<body>
+<p><a href="/<repo>/api-docs/">API reference</a></p>
+</body>
+</html>

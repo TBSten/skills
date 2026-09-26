@@ -1,0 +1,26 @@
+---
+title: example-lib
+description: <description>
+template: splash
+hero:
+  tagline: <description>
+  actions:
+    - text: はじめる
+      link: /<repo>/ja/get-started/introduction/
+      icon: right-arrow
+    - text: API リファレンス
+      link: /<repo>/api-docs/
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+<CardGrid>
+	<Card title="インストール" icon="add-document">
+		Kotlin Multiplatform / JVM プロジェクトに example-lib を追加します。[インストール](/<repo>/ja/get-started/installation/) を参照してください。
+	</Card>
+	<Card title="ガイド" icon="open-book">
+		基本的な API を順に学びます。[基本的な使い方](/<repo>/ja/guides/basic-usage/) を参照してください。
+	</Card>
+</CardGrid>
