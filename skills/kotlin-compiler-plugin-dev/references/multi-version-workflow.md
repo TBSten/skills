@@ -227,6 +227,8 @@ Step では `sed -i` で `gradle/libs.versions.toml` の `kotlin = "..."` / `com
 - [ ] kctfork version selection を確認 (新 minor で要更新の可能性)
 - [ ] Compose マップを更新 (KMP/CMP プロジェクトの場合)
 - [ ] README 両言語 + `docs/support-kotlin-versions.md` に反映
+- [ ] Gradle plugin の Kotlin 版ガード (`SUPPORTED_KOTLIN_MIN` / `MAX_TESTED_EXCLUSIVE`) を更新
+- [ ] 次リリースの bump を決める: 版の追加 = MINOR / 削除 = MAJOR (`./release-operations.md`)
 - [ ] 全バージョンでテスト GREEN (Beta / RC は self-skip 可で OK)
 - [ ] reflection shim を追加した場合は `IrXxxCompat.kt` 等にコメントで原因 issue (KT-xxxxx) を明記
 - [ ] capability flag を追加した場合は KDoc に "Implementations" の真偽表を記載

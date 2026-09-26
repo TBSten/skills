@@ -104,18 +104,40 @@ kctfork バージョンマップと CI YAML の詳細: `kotlin-compiler-plugin-d
 
 ---
 
+## consumer 側 Kotlin の床
+
+独立リリースでは、ビルドに使う Kotlin (例: 2.3.20) より古い Kotlin (例: 2.0.x) の利用者に runtime / Gradle plugin を読ませる必要がある。Kotlin は 1 つ先の metadata までしか読めないため、次を揃える (debuggable-compiler-plugin で 2.0〜2.4 対応時に必要だった):
+
+| 対象 | 設定 | 無いと起きること |
+|---|---|---|
+| runtime (KMP) / gradle-plugin | `compilerOptions { apiVersion = KOTLIN_2_0; languageVersion = KOTLIN_2_0 }` (最古の対応版) | 利用側 compiler が `metadata version 2.3.0, expected 2.0.0` で拒否 |
+| gradle.properties | `kotlin.stdlib.default.dependency=false` | KGP が `kotlin-stdlib:<ビルド版>` を依存に自動追加する |
+| runtime commonMain / gradle-plugin | `compileOnly(libs.kotlin.stdlib)` (版は明示) | 公開 metadata の stdlib 要求で利用者の stdlib が強制的に引き上げられ、古い compiler が読めない |
+| runtime (Android target あり) | `GenerateModuleMetadata` / `GenerateMavenPom` の `doLast` で `kotlin-stdlib` 依存を除去 | `androidMain` は `implementation(stdlib)` が必須で、そこから stdlib 要求が漏れる |
+| 他の transitive 依存 (compose.runtime 等) | 同じく `compileOnly` にして利用者の版に任せる | 利用者の Compose 等が引き上げられる |
+
+native / wasm の compiler plugin classpath は JVM と別 variant で解決されるため、compat module を transitive 依存にしている場合は `getPluginArtifactForNative()` でも同じ座標を返す (debuggable は未指定だと native で `ClassNotFoundException: ...compat...` になった)。
+
+## Apple target の切り替え
+
+Xcode の無い環境 (CommandLineTools のみ) では iOS / macOS の link・test が `xcrun` で失敗する。runtime / KMP integration test で `-PenableAppleTargets=true` の時だけ Apple target を宣言し、release は `macos-latest` で `-PenableAppleTargets=true` を付けて全 target を公開する構成にできる (capture-compiler-plugin)。
+
 ## バイナリ互換性 (BCV)
 
-ランタイムライブラリの公開 API を Binary Compatibility Validator (BCV) で保護する:
+ランタイムライブラリの公開 API を Binary Compatibility Validator (BCV) で保護する。KMP runtime は klib 検証も有効にする (native / js / wasm の ABI も対象になる):
 
 ```kotlin
-// runtime/build.gradle.kts
+// root build.gradle.kts
 plugins {
-    id("org.jetbrains.kotlinx.binary-compatibility-validator")
+    id("org.jetbrains.kotlinx.binary-compatibility-validator") version "<bcv>"
+}
+apiValidation {
+    @OptIn(kotlinx.validation.ExperimentalBCVApi::class)
+    klib { enabled = true }
 }
 ```
 
-`./gradlew apiDump` で API snapshot を生成し、PR で意図しない破壊的変更を検知する。
+`./gradlew apiDump` で API snapshot を生成してコミットし、CI の `apiCheck` で意図しない破壊的変更を検知する (apiDump 前は `check` が失敗するので scaffold には含めていない)。
 
 ---
 

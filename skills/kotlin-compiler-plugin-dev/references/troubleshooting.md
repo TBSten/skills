@@ -213,3 +213,39 @@ camel 変換ルール: kebab → camel, underscore も camel boundary 扱い。 
 **原因**: IDE が plugin の ShadowJar ではなく、 個別の `compat-kXX-X.X.X-dev.jar` を classpath に並べていて、 `META-INF/services` の merge が効いていない。
 
 **対処**: gradle-plugin 側で plugin artifact として **常に shadow jar を参照** する設定にする (`SubpluginArtifact("me.tbsten.compose-preview-lab", "compiler-plugin", version)` で main artifact のみ参照、 各 compat module は別 publish しない)。
+
+---
+
+## 14. `libs.versions.kotlin` が version ではなく group になる
+
+**症状**: `libs.versions.kotlin.get()` がコンパイルエラー / `-Ptest.kotlin` 用の baseline 取得が壊れる。
+
+**原因**: catalog に `kotlin = "..."` と `kotlin-compiler-k21 = "..."` のような **既存キー + `-xxx`** のキーが並ぶと、accessor 上 `kotlin` が group になり、plain の version accessor が隠れる。
+
+**対処**: compat module 用の pin は別 prefix にする (`compat-embeddable-k21 = "2.1.21"`)。どうしても並べる場合は `libs.versions.kotlin.asProvider().get()` で明示する (capture はこちら)。
+
+---
+
+## 15. `Class '...Registrar' is not abstract and does not implement abstract base class member: val pluginId`
+
+**原因**: Kotlin 2.3.0 で `CompilerPluginRegistrar.pluginId` が abstract メンバーとして追加された。2.2.x 以下には存在しない。
+
+**対処**: 2.3.0+ に対してコンパイルするモジュールでは `override val pluginId = "<plugin-id>"` を書く。2.3 未満の `kotlin-compiler-embeddable` に対してコンパイルする compat module に Registrar を置く場合は override しない (置き場所を baseline 側に寄せるのが簡単)。
+
+---
+
+## 16. 古い Kotlin の利用者で `metadata version 2.3.0, expected 2.0.0`
+
+**症状**: plugin 自体の dispatch は正しいのに、利用側 (Kotlin 2.0 / 2.1) のコンパイルが runtime や Gradle plugin の class を読めない。
+
+**原因**: runtime / Gradle plugin がビルド時の Kotlin の metadata で出ている、または公開 metadata の `kotlin-stdlib:<ビルド版>` 要求で利用者の stdlib が引き上げられている。
+
+**対処**: `apiVersion` / `languageVersion` を最古の対応版に固定し、stdlib を `compileOnly` + `kotlin.stdlib.default.dependency=false`、Android target がある場合は `.module` / POM から stdlib を除去する。詳細は `kotlin-compiler-plugin-setup` の `references/multi-version-setup.md`「consumer 側 Kotlin の床」。
+
+---
+
+## 17. Gradle TestKit の E2E が毎回違うテストで `OutOfMemoryError: Metaspace`
+
+**原因**: TestKit が起動する子 Gradle daemon は fixture に `gradle.properties` が無いと既定 (metaspace 384MiB) で動き、Kotlin compiler + plugin (+ KSP) のロードで枯渇する。
+
+**対処**: fixture に `org.gradle.jvmargs=-Xmx1g -XX:MaxMetaspaceSize=768m` と `kotlin.daemon.jvmargs` を置く (親 build と同時に生きるので大きくしすぎない)。構成は `kotlin-compiler-plugin-setup` の `references/testing-patterns.md`。

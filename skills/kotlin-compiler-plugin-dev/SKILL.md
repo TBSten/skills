@@ -90,6 +90,10 @@ details ファイルには以下が含まれる:
 - 具体的な動作の詳細
 - 診断メッセージの一覧
 
+### 実装時の API 確認 (外部 guide)
+
+選んだ FIR / IR Extension の具体的な書き方 (最新 API・実装手順・テスト/デバッグ方法) を確認するときは、外部 skill kitakkun/kotlin-compiler-plugin-skills の該当トピック guide を読む。トピック対応表・取得方法 (ローカルインストール優先、なければ raw URL)・本 skill の references との使い分けは [`references/external-kitakkun-skills.md`](references/external-kitakkun-skills.md) を参照。
+
 ## Step 4: deepwiki MCP で最新ソースコードを深掘り (任意)
 
 deepwiki MCP が利用可能な場合、details/ の情報だけでは不十分なとき、deepwiki で最新のソースコードを確認する。
@@ -206,6 +210,7 @@ mcp__deepwiki__ask_question
 | `scripts/compiler-plugin-test.sh` | `assets/scripts/compiler-plugin-test.sh` | コピー後 `chmod +x`。`<version>` 単体 / `--all` (SSOT 全バージョン + 失敗一覧) |
 | `scripts/supported-kotlin-versions.txt` | `assets/scripts/supported-kotlin-versions.txt` | SSOT。実際のサポートバージョンに合わせて編集 |
 | `.github/workflows/compiler-plugin-test.yml` | `assets/workflows/compiler-plugin-test.yml` | 既存 `pull-request.yml` への job マージも可 |
+| `scripts/smoke-test.sh` | `assets/scripts/smoke-test.sh` | 任意。publishToMavenLocal → 独立 consumer を対象 Kotlin でビルド → `javap` で注入シンボル検証 (`--absent` で zero-overhead 検証)。使い方は `references/release-operations.md` |
 
 ### よく使う詳細リファレンス
 
@@ -218,6 +223,8 @@ mcp__deepwiki__ask_question
 | capability flag の設計 / self-skip | [`references/version-gating.md`](references/version-gating.md) |
 | reflection shim (小さな差分の吸収) | [`references/reflection-shim.md`](references/reflection-shim.md) |
 | 失敗パターン別の原因と対処 | [`references/troubleshooting.md`](references/troubleshooting.md) |
+| 公開 artifact の smoke / ローカル並列 matrix / semver (Kotlin 版追加=MINOR・削除=MAJOR) / プロジェクト内 skill・rule の型 | [`references/release-operations.md`](references/release-operations.md) |
+| API 差分の吸収方針 (併読) | kitakkun の `multi-version-kotlin-support` guide ([`references/external-kitakkun-skills.md`](references/external-kitakkun-skills.md)) |
 
 ### サポートバージョン追加・削除モードの出力
 

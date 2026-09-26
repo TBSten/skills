@@ -46,6 +46,8 @@
 | `references/version-gating.md` | capability flag の設計 + テストの self-skip |
 | `references/reflection-shim.md` | 小さな差分を吸収する reflection shim |
 | `references/troubleshooting.md` | 失敗パターン別の原因と対処 |
+| `references/release-operations.md` | 運用: 公開 artifact の mavenLocal smoke (`javap`)・CI matrix のローカル並列再現・semver 方針 (Kotlin 版追加 = MINOR / 削除 = MAJOR)・プロジェクト内 skill と `paths` 付き `.claude/rules` の型・テスト戦略マトリクス |
+| `references/external-kitakkun-skills.md` | 外部 skill kitakkun/kotlin-compiler-plugin-skills の 24 guide の対応表 (raw URL・インストール方法) と、本 skill の references との使い分け |
 
 ## 同梱アセット
 
@@ -56,12 +58,17 @@
 | `assets/scripts/compiler-plugin-test.sh` | `scripts/` (+ `chmod +x`) | バージョン別テスト実行 script。`--all` で SSOT 全バージョンをループし失敗一覧を出力 |
 | `assets/scripts/supported-kotlin-versions.txt` | `scripts/` | サポート Kotlin バージョンの SSOT テンプレート (プロジェクトに合わせて編集) |
 | `assets/workflows/compiler-plugin-test.yml` | `.github/workflows/` | SSOT 駆動 dynamic CI matrix (resolve + test job) |
+| `assets/scripts/smoke-test.sh` | `scripts/` (+ `chmod +x`) | 任意。publishToMavenLocal → 独立 consumer を指定 Kotlin 版でビルド → `javap -p -c` で注入シンボルを検証 (`--absent` で zero-overhead 検証) |
 
 ## 前提条件
 
 - Kotlin プロジェクトと compiler plugin のソースコード（または作成計画）
 - サポートバージョン追加・削除を行う場合は、複数バージョン対応基盤 (compat module layer または source set separation) が既に存在すること。基盤の初期セットアップは `kotlin-compiler-plugin-setup` の Step 4 (Multi-Kotlin Version Support) を参照
 - 任意: deepwiki MCP サーバー（設定するとソースコード探索が強化される）
+
+## 関連
+
+- [kitakkun/kotlin-compiler-plugin-skills](https://github.com/kitakkun/kotlin-compiler-plugin-skills) (MIT, kitakkun 作) — FIR/IR Extension の API、公式テストインフラ、デバッグ、Gradle 連携、複数バージョン対応のトピック別 guide (Kotlin 2.4.x 基準、Kotlin compiler ソースで裏取り済み)。本 skill の `details/` が「どの既存プラグインが同じことをしているか」、kitakkun guide が「現行 API でどう書くか」を担う。内容はコピーせずリンクで参照する (`references/external-kitakkun-skills.md` 参照)
 
 ## インストール
 
