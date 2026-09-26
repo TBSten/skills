@@ -9,7 +9,7 @@
 #               [--group-id <id>] [--owner <owner>] [--repo <repo>] [--description <text>]
 #               [--developer-id <id>] [--developer-name <name>]
 #               [--targets standard|full|jvm] [--module-name <kebab-case>]
-#               [--kotlin-version <v>]
+#               [--kotlin-version <v>] [--ksp-version <v>]
 #               [--skip-integration-test] [--skip-ai-skills] [--skip-docs-site] [--skip-ci]
 #               [--dry-run] [--force]
 #
@@ -27,9 +27,11 @@
 #                     full          : standard + macos / watchos / tvos / linux / mingw / androidNative / wasmWasi
 #                     jvm           : kotlin("jvm") のみ。Android / Apple 関連 (AGP, CI の android / ios job) は生成しない
 #   --module-name     最初のライブラリモジュール名 (既定: <name>-core)。--name と同名は不可 (project accessor が衝突する)
-#   --kotlin-version  gradle/libs.versions.toml の kotlin を上書きする (既定: example の値)
+#   --kotlin-version  gradle/libs.versions.toml の kotlin を上書きする (既定: example の値)。
+#                     KSP / kotest / AGP 等は追従しない (KSP2 は Kotlin と独立した版番号で、対応表を人が確認する必要がある)
+#   --ksp-version     gradle/libs.versions.toml の ksp を上書きする (KMP のみ。kotest を JS/Wasm/Native で動かすのに使う)
 #   --skip-integration-test  integrationTest/ (独立 Gradle ビルド) と CI の integration-test job を生成しない
-#   --skip-ai-skills  assets/project/.claude/skills/ を生成しない
+#   --skip-ai-skills  .claude/skills/ (bump-library-version / release-note / verify-changes) を生成しない
 #   --skip-docs-site  assets/project/docs/ と .github/workflows/docs.yml / CI の docs job を生成しない
 #                     (Dokka の出力先は docs/public/api-docs ではなく build/api-docs になる)
 #   --skip-ci         .github/ を生成しない
@@ -55,6 +57,8 @@
 # ディレクトリ再マッピング:
 #   example/**            -> <dest>/** (--targets jvm の時だけ <module>/src/commonMain|commonTest -> src/main|test)
 #   assets/project/**     -> <dest>/** (存在すれば。example と同じパスがあればエラー)
+#   パス要素の dot- 接頭辞は . に戻す (dot-claude -> .claude, dot-github -> .github, dot-run -> .run 等)。
+#   skill 内に .claude/skills 等を置くと、このリポジトリやインストール先で実際に読み込まれてしまうため
 #   gradle wrapper は properties のみ同梱 (jar / gradlew は verify.sh --bootstrap-wrapper か `gradle wrapper` で生成)
 #
 # 出力: 配置ファイル一覧 + 次の手順 + 1 行 JSON {"ok":true,"files":N,"dest":"...",...}
@@ -82,7 +86,7 @@ die() {
 
 # ---------------------------------------------------------------- 引数パース
 DEST="" NAME="" PKG="" GROUP_ID="" OWNER="" REPO="" DESCRIPTION=""
-DEV_ID="" DEV_NAME="" TARGETS="standard" MODULE="" KOTLIN_VERSION=""
+DEV_ID="" DEV_NAME="" TARGETS="standard" MODULE="" KOTLIN_VERSION="" KSP_VERSION=""
 SKIP_IT=false SKIP_AI=false SKIP_DOCS=false SKIP_CI=false DRY_RUN=false FORCE=false
 
 need_value() {
@@ -104,6 +108,7 @@ while [ $# -gt 0 ]; do
         --targets)               need_value "$@"; TARGETS=$2; shift 2 ;;
         --module-name)           need_value "$@"; MODULE=$2; shift 2 ;;
         --kotlin-version)        need_value "$@"; KOTLIN_VERSION=$2; shift 2 ;;
+        --ksp-version)           need_value "$@"; KSP_VERSION=$2; shift 2 ;;
         --skip-integration-test) SKIP_IT=true; shift ;;
         --skip-ai-skills)        SKIP_AI=true; shift ;;
         --skip-docs-site)        SKIP_DOCS=true; shift ;;
@@ -141,6 +146,14 @@ case "$TARGETS" in
     *) die "--targets '$TARGETS' が不正" "standard / full / jvm のいずれかで生成内容を切り替える" \
         "--targets standard (既定) / full / jvm のどれかを渡す" ;;
 esac
+if [ -n "$KSP_VERSION" ]; then
+    echo "$KSP_VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+([-.][A-Za-z0-9.-]+)?$' \
+        || die "--ksp-version '$KSP_VERSION' がバージョン形式でない" \
+            "gradle/libs.versions.toml の ksp にそのまま書き込む" "2.3.12 のような形式で渡す"
+fi
+if [ -n "$KSP_VERSION" ] && [ "$TARGETS" = jvm ]; then
+    die "--ksp-version は --targets jvm では使えない" "jvm 構成は KSP を使わない (catalog に ksp が無い)" "--ksp-version を外す"
+fi
 if [ -n "$KOTLIN_VERSION" ]; then
     echo "$KOTLIN_VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+([-.][A-Za-z0-9.-]+)?$' \
         || die "--kotlin-version '$KOTLIN_VERSION' がバージョン形式でない" \
@@ -321,6 +334,12 @@ transform_full() {
     '
 }
 
+undot_path() {
+    # skill 内では "dot-" 接頭辞で保管しているパス要素 (dot-claude 等) を "." 始まりに戻す。
+    # .claude/skills や ignore 設定をそのまま置くと、このリポジトリやインストール先で実際に効いてしまうため
+    printf '%s' "$1" | perl -pe 's{(^|/)dot-}{$1.}g'
+}
+
 transform_path() {
     local p
     p=$(printf '%s' "$1" | transform_full)
@@ -332,11 +351,10 @@ transform_path() {
 }
 
 apply_versions_toml() {
-    if [ -n "$KOTLIN_VERSION" ]; then
-        K_V=$KOTLIN_VERSION perl -pe 's/^kotlin = "[^"]*"/kotlin = "$ENV{K_V}"/'
-    else
-        cat
-    fi
+    K_KOTLIN=$KOTLIN_VERSION K_KSP=$KSP_VERSION perl -pe '
+        s/^kotlin = "[^"]*"/kotlin = "$ENV{K_KOTLIN}"/ if $ENV{K_KOTLIN} ne "";
+        s/^ksp = "[^"]*"/ksp = "$ENV{K_KSP}"/ if $ENV{K_KSP} ne "";
+    '
 }
 
 is_binary() {
@@ -373,7 +391,7 @@ add_plan() {
 }
 
 while IFS= read -r src; do
-    rel=${src#"$EXAMPLE_DIR"/}
+    rel=$(undot_path "${src#"$EXAMPLE_DIR"/}")
     case "$rel" in
         .github/*)        $SKIP_CI && continue ;;
         integrationTest/*) $SKIP_IT && continue ;;
@@ -386,7 +404,7 @@ ASSETS_FOUND=false
 if [ -d "$ASSETS_DIR" ]; then
     ASSETS_FOUND=true
     while IFS= read -r src; do
-        rel=${src#"$ASSETS_DIR"/}
+        rel=$(undot_path "${src#"$ASSETS_DIR"/}")
         case "$rel" in
             .claude/skills/*) $SKIP_AI && continue ;;
             docs/*)           $SKIP_DOCS && continue ;;
