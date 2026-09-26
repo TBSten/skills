@@ -9,13 +9,14 @@ pluginManagement {
 // Mirror the root build: auto-provision the JDK 17 toolchain for this included build too, so
 // `jvmToolchain(17)` in convention/build.gradle.kts resolves even without a matching local JDK.
 plugins {
-    id("org.gradle.toolchains.foojay-resolver-convention") version "0.9.0"
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
 dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        // Resolves the plugin markers (`<id>:<id>.gradle.plugin:<version>`) convention depends on.
         gradlePluginPortal()
     }
     // Share the root version catalog so buildLogic never pins its own versions.

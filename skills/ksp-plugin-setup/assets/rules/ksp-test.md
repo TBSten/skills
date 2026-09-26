@@ -103,4 +103,5 @@ Four settings the `test` task must have, each for a concrete reason:
 - **JVM-only module**: `kotest-runner-junit5` + `useJUnitPlatform()`. No KSP, no `io.kotest` plugin.
 - **KMP module**: the `io.kotest` plugin (applied **after** `ksp`, since its wiring is KSP-based),
   `kotest-framework-engine` in `commonTest`, and `kotest-runner-junit5` in **both** `jvmTest` and
-  `androidUnitTest` (the latter does not inherit the former).
+  `androidHostTest` (the latter does not inherit the former; it exists only with `withHostTest {}`
+  under the AGP 9 `com.android.kotlin.multiplatform.library` plugin).

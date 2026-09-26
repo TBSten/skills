@@ -6,29 +6,11 @@ import com.google.devtools.ksp.KspExperimental
 // generated declarations on every target — the complement to the JVM-only kctfork suite.
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.androidKmpLibrary)
     alias(libs.plugins.ksp)
     // kotest must be applied AFTER ksp: its multiplatform framework wiring is itself KSP-based.
     alias(libs.plugins.kotest)
     id("buildLogic.lint")
-}
-
-android {
-    namespace = "com.example.ksppluginsetup.test"
-    compileSdk =
-        libs.versions.android.compileSdk
-            .get()
-            .toInt()
-    defaultConfig {
-        minSdk =
-            libs.versions.android.minSdk
-                .get()
-                .toInt()
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
 }
 
 kotlin {
@@ -36,7 +18,20 @@ kotlin {
 
     iosSimulatorArm64()
     jvm()
-    androidTarget()
+    android {
+        namespace = "com.example.ksppluginsetup.test"
+        compileSdk =
+            libs.versions.android.compileSdk
+                .get()
+                .toInt()
+        minSdk =
+            libs.versions.android.minSdk
+                .get()
+                .toInt()
+        // AGP 9's KMP library plugin creates no unit-test compilation unless asked for. The task is
+        // `testAndroidHostTest` (it was `testDebugUnitTest` with com.android.library).
+        withHostTest {}
+    }
 
     sourceSets {
         commonMain.dependencies {
@@ -49,9 +44,9 @@ kotlin {
         jvmTest.dependencies {
             implementation(libs.kotestRunnerJunit5)
         }
-        // androidUnitTest does NOT inherit jvmTest, so it needs the kotest JUnit5 runner of its own
+        // androidHostTest does NOT inherit jvmTest, so it needs the kotest JUnit5 runner of its own
         // to discover specs.
-        androidUnitTest.dependencies {
+        getByName("androidHostTest").dependencies {
             implementation(libs.kotestRunnerJunit5)
         }
     }
@@ -99,19 +94,16 @@ fun Project.setupKspForMultiplatformWorkaround() {
 }
 setupKspForMultiplatformWorkaround()
 
-/** ktlint would otherwise race the generator over commonMain, and then lint the generated output. */
+/**
+ * ktlint would otherwise race the generator over commonMain. (Linting the generated output itself is
+ * prevented by buildLogic.lint, which excludes every file under build/.)
+ */
 fun ktlintWithKspWorkaround() {
     tasks.named("runKtlintFormatOverCommonMainSourceSet") {
         dependsOn("kspCommonMainKotlinMetadata")
     }
     tasks.named("runKtlintCheckOverCommonMainSourceSet") {
         dependsOn("kspCommonMainKotlinMetadata")
-    }
-
-    ktlint {
-        filter {
-            exclude("**/build/generated/**")
-        }
     }
 }
 ktlintWithKspWorkaround()

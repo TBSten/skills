@@ -41,7 +41,7 @@ KSP plugin プロジェクトを、実運用に到達した構成 ([cream.kt](ht
    - [x] CI (GitHub Actions matrix) — 外すなら `--skip-ci`
    - [x] `.claude/rules/` (規約の常設) — 外すなら `--skip-rules`
 5. **Kotlin / KSP バージョン** — デフォルトは `example/gradle/libs.versions.toml` の値。
-   変えるなら `--kotlin-version` / `--ksp-version` (KSP は `<kotlin>-<ksp>` 形式のフル文字列)
+   変えるなら `--kotlin-version` / `--ksp-version` (KSP 2.3.0 以降は Kotlin と独立した版)
 
 ### Step 1: scaffold script の実行
 
@@ -83,8 +83,12 @@ script 自身 (と冒頭コメント) が SSoT。script が行うことの要約
 - **ksp モジュールの層**: root 直下 3 ファイルのみ / 依存は feature → core → util の一方向
   (唯一の上向きは feature → ProcessContext) / feature 間依存禁止 / `feature/`・`core/` 直下に
   `.kt` を置かない / 層ごとに context を絞る
-- **version catalog がすべての SSoT**。KSP のバージョンは `<kotlin>-<ksp>` 形式で Kotlin とセットで
-  上げる。foojay resolver は root と buildLogic の両方に必要。詳細は references/build-and-ci.md
+- **version catalog がすべての SSoT** (自プロジェクトの版も)。buildLogic は plugin marker を
+  catalog の `[plugins]` から導出し、publish 設定は `buildLogic.publish` に集約 (artifactId は
+  path 由来)。KSP 2.3 以降は Kotlin と独立した版。詳細は references/build-and-ci.md
+- **Android は AGP 9 の `com.android.kotlin.multiplatform.library`** (`kotlin { android { } }`)。
+  unit test は `withHostTest {}` + タスク `testAndroidHostTest`
+- **公開 API は BCV (klib 込み) で固定**。`api/*.api` をレビューしてコミットする
 - **KSP × KMP workaround** (test モジュール): `kspCommonMainKotlinMetadata` の生成物を commonMain の
   srcDir に足す。ただし `*Test` の ksp タスクは無効化しない (kotest の per-target launcher に必要)
 - **テスト基盤**: kctfork e2e / facet 形式 Markdown golden / generator 駆動 snapshot / 診断 golden /
@@ -97,18 +101,20 @@ publish が必要な場合、GPG 鍵・secrets・Sonatype 登録まで含む完�
 
 ### Step 3: ビルド確認
 
-gradle wrapper が無ければ先に生成する (`gradle wrapper`)。その後:
+gradle wrapper が無ければ先に生成する (`gradle wrapper`)。Android SDK の場所 (`ANDROID_HOME` か
+`local.properties` の `sdk.dir`) も必要 (無ければ verify.sh が直し方付きで止まる)。その後:
 
 ```sh
 bash "${CLAUDE_SKILL_DIR}/scripts/verify.sh" --project-dir <生成先> --fresh
 ```
 
-verify.sh は SKILL の 4 コマンド (`:<name>-ksp:test` / golden 記録 / `jvmTest` / `ktlintCheck`) を
+verify.sh は `:<name>-ksp:test` / golden 記録 / `jvmTest` / `ktlintCheck` / `apiCheck` を
 順に実行し、ログを `<生成先>/.local/tmp/` に保存して SUCCESS / FAILED サマリを出す。
-`--fresh` は scaffold 直後用で、golden 記録を先に実行する。
+`--fresh` は scaffold 直後用で、golden 記録と `apiDump` を先に実行する。他の agent と並列に
+Gradle を回す時は `--gradle-arg --project-cache-dir --gradle-arg <dir>` でキャッシュを分ける。
 
-golden の初回記録後は **必ず中身を読んでからコミットする**。最初の記録が誤った出力を捕まえる
-唯一の機会で、以降は差分しか見えなくなる。
+golden と `api/*.api` の初回記録後は **必ず中身を読んでからコミットする**。最初の記録が誤った
+出力を捕まえる唯一の機会で、以降は差分しか見えなくなる。
 
 ## リソース
 
@@ -142,6 +148,7 @@ golden の初回記録後は **必ず中身を読んでからコミットする*
 - :<project-name>-ksp:test: [SUCCESS / FAILED]
 - jvmTest: [SUCCESS / FAILED]
 - ktlintCheck: [SUCCESS / FAILED]
+- apiCheck: [SUCCESS / FAILED]
 
 ### 次のステップ
 1. runtime に自分のアノテーションを宣言する

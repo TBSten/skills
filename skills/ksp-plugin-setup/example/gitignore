@@ -1,0 +1,26 @@
+*.iml
+.gradle
+.idea
+.kotlin
+.DS_Store
+build
+captures
+.externalNativeBuild
+.cxx
+local.properties
+xcuserdata/
+# So we don't accidentally commit private keys
+*.gpg
+*.jks
+
+### Gradle (per-agent project caches) ###
+# Created by `--project-cache-dir .gradle-agent-<name>` when several agents build in parallel.
+.gradle-agent-*/
+
+### AI agents ###
+# Scratch space for logs / tickets / reports — never committed.
+.local/
+CLAUDE.local.md
+.claude/*.local.*
+.claude/worktrees/
+.playwright-mcp/

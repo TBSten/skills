@@ -2,9 +2,11 @@
 // annotation declarations it looks up.
 plugins {
     alias(libs.plugins.kotlinJvm)
-    alias(libs.plugins.vanniktech.mavenPublish)
+    id("buildLogic.publish")
     id("buildLogic.lint")
 }
+
+description = "<one-line description>"
 
 kotlin {
     explicitApi()
@@ -14,8 +16,7 @@ kotlin {
         "com.google.devtools.ksp.KspExperimental",
     )
     // Layered `context(...)` parameters (ProcessContext for feature, narrowed capabilities for core)
-    // still need the opt-in flag on Kotlin 2.2.x.
-    compilerOptions.freeCompilerArgs.add("-Xcontext-parameters")
+    // are stable since Kotlin 2.4; on 2.2.x / 2.3.x add `-Xcontext-parameters` to freeCompilerArgs.
     sourceSets.named("test") {
         languageSettings.optIn("org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi")
     }
@@ -47,43 +48,9 @@ tasks.named<Test>("test") {
     maxHeapSize = "2g"
     forkEvery = 25L
     // `-D` flags do NOT propagate to the test worker JVM automatically — forward explicitly.
-    System.getProperty("<project-name>.snapshot.update")?.let {
+    // `providers.systemProperty` (not System.getProperty) keeps the value a tracked input, so the
+    // configuration cache is invalidated and the task re-runs when the flag changes.
+    providers.systemProperty("<project-name>.snapshot.update").orNull?.let {
         systemProperty("<project-name>.snapshot.update", it)
-    }
-}
-
-mavenPublishing {
-    publishToMavenCentral()
-
-    if (!gradle.startParameter.taskNames.contains("publishToMavenLocal")) {
-        signAllPublications()
-    }
-
-    coordinates(group.toString(), "<project-name>-ksp", version.toString())
-
-    pom {
-        name = "<project-name> ksp plugin"
-        description = "<one-line description>"
-        inceptionYear = "<year>"
-        url = "https://github.com/<owner>/<repo>/"
-        licenses {
-            license {
-                name.set("MIT")
-                url.set("https://opensource.org/licenses/MIT")
-                distribution.set("https://opensource.org/licenses/MIT")
-            }
-        }
-        developers {
-            developer {
-                id = "<owner>"
-                name = "<owner>"
-                url = "https://github.com/<owner>/"
-            }
-        }
-        scm {
-            url.set("https://github.com/<owner>/<repo>/")
-            connection.set("scm:git:git://github.com/<owner>/<repo>.git")
-            developerConnection.set("scm:git:git://github.com/<owner>/<repo>.git")
-        }
     }
 }

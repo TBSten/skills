@@ -10,8 +10,9 @@ the shape from drifting afterwards.
 The mechanical work — copying `example/`, remapping directories into source sets, substituting
 every placeholder, renaming the `Greeting*` / `Example*` files and installing the rules — is done
 deterministically by `scripts/scaffold.sh` (with `--dry-run` / `--force` / `--skip-*` options), and
-`scripts/verify.sh` runs the four build checks with logs saved under `.local/tmp/`. The agent only
-confirms the inputs, runs the scripts, reviews the placed files and reads the first goldens.
+`scripts/verify.sh` runs the build checks (ksp tests, goldens, `jvmTest`, ktlint, BCV `apiCheck`) with
+logs saved under `.local/tmp/`. The agent only confirms the inputs, runs the scripts, reviews the
+placed files and reads the first goldens and API dumps.
 
 A one-shot version that needs no install is available as the
 [`ksp-plugin-setup` prompt](../prompts/ksp-plugin-setup.md).
@@ -37,9 +38,9 @@ Set up a KSP plugin project.
 | Module | Description |
 |---|---|
 | `<project-name>-runtime/` | Annotation declarations **only** — zero runtime logic, so it targets every Kotlin platform. Published |
-| `<project-name>-ksp/` | The processor. JVM only (a KSP limitation), `-Xcontext-parameters`. Published |
+| `<project-name>-ksp/` | The processor. JVM only (a KSP limitation), written with context parameters. Published |
 | `test/` | KMP integration tests: applies the processor for real and verifies generated code behaviour on every target |
-| `buildLogic/` | Included build sharing the root version catalog; one minimal convention plugin (lint) |
+| `buildLogic/` | Plugin build (`pluginManagement { includeBuild(...) }`) sharing the root version catalog: `buildLogic.lint` and `buildLogic.publish` conventions |
 
 ### Processor Layers
 
@@ -68,11 +69,14 @@ upward edge. Feature-to-feature dependencies are forbidden.
 
 | File | Description |
 |---|---|
-| `gradle/libs.versions.toml` | Single source of truth, including the project's own version |
+| `gradle/libs.versions.toml` | Single source of truth, including the project's own version (Kotlin 2.4 / KSP 2.3 / AGP 9) |
+| `buildLogic.publish` | Maven Central publishing shared by runtime / ksp: artifactId from the project path, POM from the module description, local publish without signing |
+| `build.gradle.kts` | binary-compatibility-validator with klib validation freezes the published API in `api/*.api` |
 | `gradle.properties` | Configuration cache + build cache, `ksp.incremental=false` |
-| `test/build.gradle.kts` | The KSP × KMP workaround (and why the `*Test` KSP tasks must stay enabled) |
-| `.github/workflows/gradle.yml` | `matrix.include` to minimise runner cost, with concurrency and timeouts |
-| `.github/workflows/publish.yml` | Triggered by GitHub Release `published` (fires for pre-releases too) |
+| `test/build.gradle.kts` | The KSP × KMP workaround (and why the `*Test` KSP tasks must stay enabled); Android via the AGP 9 `com.android.kotlin.multiplatform.library` plugin |
+| `.github/workflows/gradle.yml` | `matrix.include` to minimise runner cost, PR-only cancellation, report upload on failure, a single `final` status check |
+| `.github/workflows/publish.yml` | Triggered by GitHub Release `published` (fires for pre-releases too); refuses a tag that differs from the catalog version or a `-SNAPSHOT` |
+| `.run/` · `.gitignore` | IntelliJ run configs for the ksp tests and golden update; ignores for Gradle and AI-agent scratch files |
 
 ### Rules Installed Into Your Project
 

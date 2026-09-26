@@ -53,7 +53,7 @@ feature ─▶ ProcessContext   (the only upward dependency; ProcessContext is a
 
 ## ProcessContext & context parameters
 
-- Requires `-Xcontext-parameters` (Kotlin 2.2.x).
+- Context parameters are stable since Kotlin 2.4; on 2.2.x / 2.3.x they need `-Xcontext-parameters`.
 - `ProcessContext = { resolver, options, codeGenerator, logger }`. **`logger` is non-null** — a
   `KSPLogger?` forces an unreachable fallback branch through every generator.
 - Declare only the capabilities a layer needs:
