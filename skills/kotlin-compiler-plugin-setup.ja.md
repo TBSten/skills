@@ -71,3 +71,8 @@ kctfork でインメモリコンパイルし、リフレクションで結果を
 - `compile(source)` — プラグイン登録済みでコンパイル
 - `shouldCompileOk()` — コンパイル成功を検証
 - `loadTopLevelField(name)` — クラスローダー経由でフィールド値を取得
+
+## 関連
+
+- [kitakkun/kotlin-compiler-plugin-skills](https://github.com/kitakkun/kotlin-compiler-plugin-skills) (MIT, kitakkun 作) — scaffold 後、bootstrap・公式テストインフラ (diagnostic / box テスト。kctfork と併用)・Gradle plugin 連携・複数バージョン対応の guide を参照する。内容はコピーせず raw URL で参照し、ローカルにインストール済みならそちらを優先する
+- [kotlin-compiler-plugin-dev](./kotlin-compiler-plugin-dev.ja.md) — 30+ プラグインの前例調査、FIR/IR Extension 向け kitakkun guide の全トピック対応表、サポート Kotlin バージョンの追加・削除

@@ -110,6 +110,19 @@ publish-convention が必要な場合は references/publish-convention.md を参
 ./gradlew :integration-test:test-kmp:jvmRun
 ```
 
+### 外部 guide: scaffold 後の実装・テスト・配布
+
+scaffold 後に FIR / IR の実装・テスト・Gradle plugin・multi-version を進めるときは、外部 skill [kitakkun/kotlin-compiler-plugin-skills](https://github.com/kitakkun/kotlin-compiler-plugin-skills) (MIT, kitakkun, Kotlin 2.4.x 基準) の guide を参照する。利用可能 skill 一覧に `kotlin-compiler-plugin` がある、または `~/.claude/plugins/cache/` 配下にインストール済みならそちらを優先し、なければ raw URL を WebFetch / `curl -fsSL` で取得する。
+
+| 用途 | guide (raw URL) |
+|---|---|
+| 登録・プロジェクト構成の全体像 | https://raw.githubusercontent.com/kitakkun/kotlin-compiler-plugin-skills/main/skills/kotlin-compiler-plugin/references/compiler-plugin-bootstrap/guide.md |
+| 公式テストインフラ (diagnostic / box テスト)。本 skill の kctfork テストと併用 | https://raw.githubusercontent.com/kitakkun/kotlin-compiler-plugin-skills/main/skills/kotlin-compiler-plugin/references/compiler-plugin-testing/guide.md |
+| Gradle plugin (`KotlinCompilerPluginSupportPlugin`) | https://raw.githubusercontent.com/kitakkun/kotlin-compiler-plugin-skills/main/skills/kotlin-compiler-plugin/references/gradle-plugin-integration/guide.md |
+| 複数 Kotlin バージョン対応 (Step 4 と併読) | https://raw.githubusercontent.com/kitakkun/kotlin-compiler-plugin-skills/main/skills/kotlin-compiler-plugin/references/multi-version-kotlin-support/guide.md |
+
+FIR / IR の個別 Extension (checker・宣言生成・call rewriting 等) の guide 一覧と使い分けは [external-kitakkun-skills.md](https://raw.githubusercontent.com/TBSten/skills/main/skills/kotlin-compiler-plugin-dev/references/external-kitakkun-skills.md) (`kotlin-compiler-plugin-dev` skill の reference) を参照。
+
 ### Step 4: Multi-Kotlin Version Support (上級、任意)
 
 1 つの JAR で複数の Kotlin バージョン (例: 2.0.0 〜 2.4.x) をサポートしたい場合に実施する。
@@ -120,7 +133,7 @@ publish-convention が必要な場合は references/publish-convention.md を参
   - **A: Source Set Separation** — Gradle がビルド時にソースディレクトリを切り替え。K1/K2 断絶の吸収に最適
   - **B: Compat Module Layer (metro スタイル)** — ServiceLoader で実装を動的選択。K2+ のパッチ差異の吸収に最適
 
-詳細なセットアップ手順と全コード例は `references/multi-version-setup.md` を参照。
+詳細なセットアップ手順と全コード例は `references/multi-version-setup.md` を参照。API 差分の吸収方針は上記外部 guide の `multi-version-kotlin-support` を併読する。
 バージョンの追加・削除の継続的な作業は `kotlin-compiler-plugin-dev` スキル (Step 6) を使用する。
 
 ## セットアップ完了メッセージ

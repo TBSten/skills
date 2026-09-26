@@ -90,6 +90,10 @@ details ファイルには以下が含まれる:
 - 具体的な動作の詳細
 - 診断メッセージの一覧
 
+### 実装時の API 確認 (外部 guide)
+
+選んだ FIR / IR Extension の具体的な書き方 (最新 API・実装手順・テスト/デバッグ方法) を確認するときは、外部 skill kitakkun/kotlin-compiler-plugin-skills の該当トピック guide を読む。トピック対応表・取得方法 (ローカルインストール優先、なければ raw URL)・本 skill の references との使い分けは [`references/external-kitakkun-skills.md`](references/external-kitakkun-skills.md) を参照。
+
 ## Step 4: deepwiki MCP で最新ソースコードを深掘り (任意)
 
 deepwiki MCP が利用可能な場合、details/ の情報だけでは不十分なとき、deepwiki で最新のソースコードを確認する。
@@ -218,6 +222,7 @@ mcp__deepwiki__ask_question
 | capability flag の設計 / self-skip | [`references/version-gating.md`](references/version-gating.md) |
 | reflection shim (小さな差分の吸収) | [`references/reflection-shim.md`](references/reflection-shim.md) |
 | 失敗パターン別の原因と対処 | [`references/troubleshooting.md`](references/troubleshooting.md) |
+| API 差分の吸収方針 (併読) | kitakkun の `multi-version-kotlin-support` guide ([`references/external-kitakkun-skills.md`](references/external-kitakkun-skills.md)) |
 
 ### サポートバージョン追加・削除モードの出力
 

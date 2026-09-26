@@ -48,6 +48,7 @@ This skill helps you:
 | `references/version-gating.md` | Capability flag design + test-side self-skip |
 | `references/reflection-shim.md` | Reflection shim to absorb small API drift without a new compat module |
 | `references/troubleshooting.md` | Failure pattern → root cause → remediation table |
+| `references/external-kitakkun-skills.md` | Topic map (24 guides, raw URLs, install steps) for the external kitakkun/kotlin-compiler-plugin-skills guides, and how to combine them with this skill's references |
 
 ## Bundled assets
 
@@ -64,3 +65,7 @@ Ready-to-copy files for target projects that lack the multi-version test infrast
 - A Kotlin project with compiler plugin source code (or a plan to create one)
 - For supported-version add/remove, the project must already have multi-version infrastructure (compat module layer or source set separation). For initial setup, see the `kotlin-compiler-plugin-setup` skill (Step 4: Multi-Kotlin Version Support)
 - Optional: deepwiki MCP server configured for enhanced source code exploration
+
+## Related
+
+- [kitakkun/kotlin-compiler-plugin-skills](https://github.com/kitakkun/kotlin-compiler-plugin-skills) (MIT, by kitakkun) — per-topic guides for FIR/IR extension APIs, official test infrastructure, debugging, Gradle integration, and multi-version support (Kotlin 2.4.x, verified against the Kotlin compiler source). This skill uses it for precedent research → API how-to: this skill's `details/` answers "which existing plugin does this", the kitakkun guides answer "how to write it with the current API". Referenced by link (not copied); see `references/external-kitakkun-skills.md`

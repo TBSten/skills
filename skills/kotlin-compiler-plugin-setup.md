@@ -71,3 +71,8 @@ Uses kctfork to compile Kotlin source in-memory and verify results via reflectio
 - `compile(source)` — compiles with plugin registered
 - `shouldCompileOk()` — asserts successful compilation
 - `loadTopLevelField(name)` — loads field value via classloader
+
+## Related
+
+- [kitakkun/kotlin-compiler-plugin-skills](https://github.com/kitakkun/kotlin-compiler-plugin-skills) (MIT, by kitakkun) — after scaffolding, the skill points to its guides for bootstrap, official test infrastructure (diagnostic / box tests, complementary to kctfork), Gradle plugin integration, and multi-version support. Referenced by raw URL (not copied); a locally installed copy is preferred
+- [kotlin-compiler-plugin-dev](./kotlin-compiler-plugin-dev.md) — precedent research across 30+ plugins, the full kitakkun topic map for FIR/IR extensions, and adding/removing supported Kotlin versions
