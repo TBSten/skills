@@ -40,7 +40,10 @@ README (en / ja) の Setup にこの表記がある。床や `kotlin` を変え�
 ## 床を変える時
 
 1. `gradle/libs.versions.toml` の `kotlinLanguageVersion` と `kotlinCoreLibrariesVersion` を同時に変える
-2. 床より新しい言語機能・stdlib API を使っている箇所がコンパイルエラーになるので直す
+2. 床より新しい言語機能・stdlib API を使っている箇所がコンパイルエラーになるので直す。
+   ただし床のバージョンでは preview 扱いに戻るだけの機能 (context parameters 等) は、
+   書き換えずに対応する `-X` フラグ (`-Xcontext-parameters` 等) を `freeCompilerArgs` に足せばよい
+   (自ライブラリのビルド自体は常にコンパイラの版で行うため、preview 警告以外の影響は無い)
 3. README (en / ja) の Kotlin 下限を直す
 
 jvm 構成 (`--targets jvm`) には JS / Wasm が無いので、床はそのまま効く。
