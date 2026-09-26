@@ -46,6 +46,7 @@
 | `references/version-gating.md` | capability flag の設計 + テストの self-skip |
 | `references/reflection-shim.md` | 小さな差分を吸収する reflection shim |
 | `references/troubleshooting.md` | 失敗パターン別の原因と対処 |
+| `references/release-operations.md` | 運用: 公開 artifact の mavenLocal smoke (`javap`)・CI matrix のローカル並列再現・semver 方針 (Kotlin 版追加 = MINOR / 削除 = MAJOR)・プロジェクト内 skill と `paths` 付き `.claude/rules` の型・テスト戦略マトリクス |
 | `references/external-kitakkun-skills.md` | 外部 skill kitakkun/kotlin-compiler-plugin-skills の 24 guide の対応表 (raw URL・インストール方法) と、本 skill の references との使い分け |
 
 ## 同梱アセット
@@ -57,6 +58,7 @@
 | `assets/scripts/compiler-plugin-test.sh` | `scripts/` (+ `chmod +x`) | バージョン別テスト実行 script。`--all` で SSOT 全バージョンをループし失敗一覧を出力 |
 | `assets/scripts/supported-kotlin-versions.txt` | `scripts/` | サポート Kotlin バージョンの SSOT テンプレート (プロジェクトに合わせて編集) |
 | `assets/workflows/compiler-plugin-test.yml` | `.github/workflows/` | SSOT 駆動 dynamic CI matrix (resolve + test job) |
+| `assets/scripts/smoke-test.sh` | `scripts/` (+ `chmod +x`) | 任意。publishToMavenLocal → 独立 consumer を指定 Kotlin 版でビルド → `javap -p -c` で注入シンボルを検証 (`--absent` で zero-overhead 検証) |
 
 ## 前提条件
 

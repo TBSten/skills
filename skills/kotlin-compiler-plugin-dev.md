@@ -48,6 +48,7 @@ This skill helps you:
 | `references/version-gating.md` | Capability flag design + test-side self-skip |
 | `references/reflection-shim.md` | Reflection shim to absorb small API drift without a new compat module |
 | `references/troubleshooting.md` | Failure pattern → root cause → remediation table |
+| `references/release-operations.md` | Operations: mavenLocal smoke test of published artifacts (`javap`), local parallel CI matrix, semver policy (adding a Kotlin version = MINOR, dropping = MAJOR), project-local skills / `.claude/rules` with `paths`, test-strategy matrix |
 | `references/external-kitakkun-skills.md` | Topic map (24 guides, raw URLs, install steps) for the external kitakkun/kotlin-compiler-plugin-skills guides, and how to combine them with this skill's references |
 
 ## Bundled assets
@@ -59,6 +60,7 @@ Ready-to-copy files for target projects that lack the multi-version test infrast
 | `assets/scripts/compiler-plugin-test.sh` | `scripts/` (+ `chmod +x`) | Per-version test runner; `--all` loops over the SSOT and reports failing versions |
 | `assets/scripts/supported-kotlin-versions.txt` | `scripts/` | SSOT template for supported Kotlin versions (edit to match the project) |
 | `assets/workflows/compiler-plugin-test.yml` | `.github/workflows/` | SSOT-driven dynamic CI matrix (resolve + test jobs) |
+| `assets/scripts/smoke-test.sh` | `scripts/` (+ `chmod +x`) | Optional. publishToMavenLocal → build an independent consumer with a given Kotlin version → verify injected symbols with `javap -p -c` (`--absent` checks zero overhead) |
 
 ## Prerequisites
 

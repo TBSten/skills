@@ -36,6 +36,16 @@
 - [ ] マルチプラットフォーム対応が必要な場合、各プラットフォームでの動作を考慮しているか
 - [ ] `GeneratedDeclarationKey` を使って生成した宣言を識別しているか (origin による判定)
 
+## Gradle plugin / 配布
+
+- [ ] 座標・plugin id・版を gradle.properties 等の SSoT から生成しているか (ハードコードの `VERSION` が無いか)
+- [ ] DSL は `Property` + `convention()` で既定値を持ち、渡す全キーが `CommandLineProcessor.pluginOptions` に宣言されているか
+- [ ] Kotlin plugin 未適用時に warn する fail-fast ガードがあるか
+- [ ] 利用側 Kotlin 版ガード (最小版未満はエラー / 未検証の新版は warn) があるか
+- [ ] Gradle plugin / compiler plugin が Java 17 bytecode、Gradle plugin の metadata 床 (`apiVersion`) が利用者の Gradle で読めるか
+- [ ] Gradle plugin を ProjectBuilder (sanity) と TestKit fixture (E2E) の両方でテストしているか
+- [ ] 公開 artifact を mavenLocal 経由の smoke で検証しているか (`release-operations.md`)
+
 ## 複数 Kotlin バージョン対応
 
 - [ ] バージョニング戦略が明確か (タンデムリリース / 独立リリース)
