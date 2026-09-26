@@ -84,25 +84,46 @@ tool window + 共有 Composable / `PreviewMain.kt`+`PreviewChecks.kt` / AA テ�
 example から生成する** (example がコード片の SSoT。references は設計解説と実ファイルへの参照)。
 
 ```sh
-skills/intellij-plugin-dev/scripts/scaffold.sh \
+bash "${CLAUDE_SKILL_DIR}/scripts/scaffold.sh" \
   --dest <plugin-module-dir> \
-  --package com.acme.myplugin \
-  --plugin-id com.acme.myplugin \
-  --plugin-name "My Plugin" \
+  --package <your-package> \
+  --plugin-id <your-plugin-id> \
+  --plugin-name "<Your Plugin>" \
+  [--tool-window-id "<Tool Window Title>"] [--vendor "<Your Name or Org>"] \
   [--dry-run] [--force]
 ```
 
+`bash` を付けて呼ぶ (インストール経路によっては実行権が落ちるため)。引数の効き先:
+
+| 引数 | 入る場所 | 省略時 |
+|---|---|---|
+| `--dest` | 生成先。**ディレクトリ名が `rootProject.name`** (= 配布 zip の名前) になる | 必須 |
+| `--package` | 全 Kotlin の package / ディレクトリ、`group`、preview の `mainClass` | 必須 |
+| `--plugin-id` | `plugin.xml` の `<id>` | 必須 |
+| `--plugin-name` | `plugin.xml` の `<name>`、UI の見出し、gallery のタイトル。PascalCase にしてクラス名接頭辞 (`<Name>ToolWindowFactory` など) にも使う | 必須 |
+| `--tool-window-id` | `plugin.xml` の `<toolWindow id>` (= Tool Window のタイトル) と `TOOL_WINDOW_ID` 定数 | `--plugin-name` |
+| `--vendor` | `plugin.xml` の `<vendor>` | `--plugin-name` (NOTE を出す) |
+
 - **script は読解・書き換え・再実装せず、そのまま実行する**。失敗したら stderr の
   `ERROR / why / fix` に従って引数を直して再実行する。既存ファイルは `--force` を明示しない
-  限り上書きしない (冪等)。末尾 1 行の JSON (`{"ok":true,...}`) で成否を判定する。
+  限り上書きしない (冪等)。`.gitignore` (`build/` `.gradle/` `.intellijPlatform/` `.kotlin/`) も
+  生成するが、既にあれば `--force` でも触らない。末尾 1 行の JSON (`{"ok":true,...}`) で成否を判定する。
+- 生成物のコメントは英語で、この skill の references への参照を含まない (利用先 repo 単体で読める)。
+  解説への案内は script のログ「次の手順」にだけ出す。
 - 生成後にやること:
   1. `// CUSTOMIZE` / `TODO(CUSTOMIZE)` マーカーを自分のプラグインに合わせて埋める
      (UI 本体 = `src/shared/.../ui/`、preview matrix = `PreviewMain.kt` の `scenarios`、
-     表示名や説明 = `plugin.xml`、Compose Multiplatform 版 = `gradle/libs.versions.toml`)。
-  2. Gradle wrapper は同梱していない → 既存 wrapper を使うか `gradle wrapper` で生成。
-  3. `./gradlew buildPlugin` (初回は SDK DL で ~4〜5 分) → `./gradlew test` →
+     説明 = `plugin.xml`)。
+  2. Gradle wrapper は同梱していない → 既存 repo の `gradlew` + `gradle/wrapper/` をコピーでよい
+     (確認済みの版は `references/setup/basics.md`)。
+  3. `./gradlew buildPlugin test` (初回は SDK DL で ~4〜5 分、2 回目以降 ~35 秒) →
      `./gradlew updatePreview` で golden を初回生成し `snapshots/preview/` を commit。
      以後の日々の回し方は `references/headless-preview.md` の「推奨ワークフロー」。
+  4. CI に `./gradlew verifyPlugin` を足す。雛形は `untilBuild` 上限無しで、その前提が Plugin Verifier の
+     ゲート (`pluginVerification { ides { recommended() } }` は配線済み)。足さないなら `untilBuild = "261.*"` に絞る。
+  5. CI で `verifyPreview` を回すなら、golden を作る OS を決める (`references/gotchas.md`「golden と OS」)。
+- 雛形のテストは 3 本: Tool Window の登録を `ToolWindowEP.EP_NAME` で検査 / 関数の戻り値の型を解決する
+  最小の AA スモーク / preview の純出力ゲート。AA スモークは実機能のテストができたら置き換える。
 - Driver 層 (`references/driver-smoke.md`) は example でも未配線の雛形のまま (推奨レシピ)。
 
 ## reference の索引
@@ -118,4 +139,4 @@ skills/intellij-plugin-dev/scripts/scaffold.sh \
 | `references/headless-preview.md` | UI (Jewel/Compose) の見た目を IDE 起動なしで確認したい / preview harness と VRT golden ゲートを組む |
 | `references/ide-integration.md` | tool window / `addComposeTab` / gutter line marker / エディタ追従 / ノード→ソースのナビ / PSI 挿入 (コード生成) を組む / lifecycle (stale race・dumb mode・invalidation)・性能 (background 化・cancellation・`runCatching` の罠) で詰まった |
 | `references/driver-smoke.md` | 実 IDE を駆動する E2E スモークを足す / 実 IDE の UI ツリー (locator) を覗く / 内部デバッグ AnAction を作る |
-| `references/gotchas.md` | Compose Desktop / IntelliJ 固有のハマりどころ (ピンチが来ない・AS vs IDEA build スキュー等) |
+| `references/gotchas.md` | Compose Desktop / IntelliJ 固有のハマりどころ (ピンチが来ない・AS vs IDEA build スキュー・headless の日本語表示・CI での golden と OS・shared の二重 classpath・サンドボックスに残る旧クラス等) |
