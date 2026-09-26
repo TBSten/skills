@@ -160,6 +160,19 @@ gh skill install tbsten/skills ksp-plugin-setup
 <td>KSP プラグインを 3 モジュール構成でスキャフォールド</td>
 </tr>
 <tr>
+<td></td>
+<td><a href="./skills/collector-compiler-plugin.ja.md">collector-compiler-plugin</a></td>
+<td>
+
+```sh
+gh skill install tbsten/skills collector-compiler-plugin
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>モジュール横断でアノテーション付きクラスをコンパイル時に収集する Compiler Plugin の scaffold</td>
+</tr>
+<tr>
 <td>🔵 Web フロントエンド</td>
 <td><a href="./skills/react-vite-supabase-starter.ja.md">react-vite-supabase-starter</a></td>
 <td>
