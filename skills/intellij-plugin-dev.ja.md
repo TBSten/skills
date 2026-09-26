@@ -41,8 +41,8 @@ IDE プラグインは「実装したものを IDE に入れて手で触る」�
 
 | ファイル | 内容 |
 |---|---|
-| `example/` | references の snippet を整合する 1 プロジェクトに束ねた動く scaffold (`com.example.plugin`・独立 Gradle ビルド): build 配線 / plugin.xml / Compose tool window + 共有 Composable / `PreviewMain.kt`・`PreviewChecks.kt` / AA テスト harness。コード片の SSoT |
-| `scripts/scaffold.sh` | `example/` から新規プラグインモジュールを生成する (`--dest` / `--package` / `--plugin-id` / `--plugin-name`、`--dry-run` / `--force`)。冪等 (`--force` なし上書き禁止)・末尾 1 行 JSON |
+| `example/` | references の snippet を整合する 1 プロジェクトに束ねた動く scaffold (`com.example.plugin`・独立 Gradle ビルド): build 配線 / plugin.xml / Compose tool window + 共有 Composable / `PreviewMain.kt`・`PreviewChecks.kt` / AA テスト harness / 雛形テスト (`ToolWindowEP.EP_NAME` での Tool Window 登録検査・最小の AA スモーク・preview ゲート)。コード片の SSoT |
+| `scripts/scaffold.sh` | `example/` から新規プラグインモジュールを生成する (`--dest` / `--package` / `--plugin-id` / `--plugin-name`、任意で `--tool-window-id` / `--vendor`、`--dry-run` / `--force`)。`rootProject.name` は `--dest` のディレクトリ名。`.gitignore` も生成 (既存なら触らない)。生成物のコメントは英語で repo 単体で読める。冪等 (`--force` なし上書き禁止)・末尾 1 行 JSON。`bash` を付けて呼ぶ |
 | `references/setup/basics.md` | 基本 build 配線 (intellijPlatform / SDK 261 / bundled Kotlin(AA)・Jewel・Compose・Skiko / JBR21 / K2 / since-until)。統合ディストリの罠・stdlib 非同梱 |
 | `references/setup/preview.md` | preview (headless PNG) を焼く build 配線 (source set 共有 / standalone Jewel・Compose Desktop / `:icons` / `updatePreview`・`verifyPreview` タスク登録) |
 | `references/setup/snapshot.md` | VRT golden の配線 (`snapshots/preview` 置き場 / update=同期・verify=比較 / alpha=255・managed clean ゲート / CI ゲート) |
@@ -50,7 +50,7 @@ IDE プラグインは「実装したものを IDE に入れて手で触る」�
 | `references/headless-preview.md` | `renderComposeScene` + Jewel standalone + VRT golden。推奨ワークフロー (baseline → verify → 目視 → 人間確認) と自動ゲート |
 | `references/ide-integration.md` | tool window / `addComposeTab` / gutter line marker / エディタ追従 / ナビ / PSI 挿入 / lifecycle (stale race・dumb mode) / 性能 (background 化・cancellation・`runCatching` の罠) |
 | `references/driver-smoke.md` | 実 IDE を駆動する Driver スモーク。2 層構成 (機能テスト厚く + Driver 薄く) / UI ツリー (locator) の覗き方 / 内部デバッグ AnAction |
-| `references/gotchas.md` | Compose Desktop / IntelliJ 固有のハマりどころ (ピンチが来ない・AS vs IDEA build スキュー・描画方針の却下記録) と各罠の索引 |
+| `references/gotchas.md` | Compose Desktop / IntelliJ 固有のハマりどころ (ピンチが来ない・AS vs IDEA build スキュー・描画方針の却下記録・headless preview の日本語表示・CI での golden と OS・classpath / サンドボックスの残骸) と各罠の索引 |
 
 ## 前提条件
 
