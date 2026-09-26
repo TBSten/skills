@@ -53,7 +53,10 @@ fun plugin(plugin: Provider<PluginDependency>): Provider<String> =
 ```
 
 Markers resolve from the Gradle Plugin Portal, so `gradlePluginPortal()` must be in buildLogic's
-`dependencyResolutionManagement.repositories`.
+`dependencyResolutionManagement.repositories`. Keep the Kotlin plugin marker there even though no
+convention applies it directly: vanniktech 0.36+ reads Kotlin Gradle Plugin classes and otherwise
+fails with "was not able to access Kotlin plugin classes". (With this included-build layout, modules
+keep using `alias(libs.plugins.x)`; only a `buildSrc` layout forces `id(...)`.)
 
 Put the **foojay resolver in both** `settings.gradle.kts` files. Without it in `buildLogic`,
 `jvmToolchain(17)` inside the included build fails with "No matching toolchains" on a machine whose
