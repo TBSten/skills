@@ -76,7 +76,7 @@ macOS で作った golden は Linux の CI ではほぼ確実にバイト一致�
   引っかかって「取り残しがある」ように見える。取り残しを探すときは `.intellijPlatform/` と `build/` を除いて
   grep する (`git grep`、または `.gitignore` を読む `rg` なら自動で除かれる)。
 - **`.intellijPlatform/` はコミットしない**: 初回ビルドでプラグインモジュール直下に大量の未追跡ファイルが
-  出る。scaffold が生成する `.gitignore` に `build/` `.gradle/` `.intellijPlatform/` `.kotlin/` が入っている
+  出る。scaffold が生成する `.gitignore` に `build/` `.gradle/` `.intellijPlatform/` `.kotlin/` `.local/` (verify.sh のログ) が入っている
   (既存の `.gitignore` があった場合は生成しないので、自分で足す)。
 
 ## 索引 (各罠の一次記載)

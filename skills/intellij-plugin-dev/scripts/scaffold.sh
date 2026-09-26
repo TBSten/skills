@@ -18,13 +18,13 @@
 #   Example                         -> --plugin-name の PascalCase (クラス名接頭辞。ファイル名にも適用され
 #                                      ExampleToolWindowFactory.kt 等が rename される)
 #
-# 追加で生成するもの: <dest>/.gitignore (build/ .gradle/ .intellijPlatform/ .kotlin/)。
+# 追加で生成するもの: <dest>/.gitignore (build/ .gradle/ .intellijPlatform/ .kotlin/ .local/)。
 #   既にあれば --force でも上書きしない (利用者の ignore 設定を壊さない)。
 #
 # 出力: 配置ファイル一覧 + 次の手順 + 末尾 1 行 JSON {"ok":true,"files":N,"dest":"..."}
 #
 # 生成後: SKILL.md「example scaffold」の手順に従う (CUSTOMIZE を埋める → gradle wrapper →
-# buildPlugin / test / updatePreview で golden 初回生成)。
+# scripts/verify.sh --fresh で buildPlugin / test / golden 初回生成 / verifyPreview)。
 
 set -euo pipefail
 
@@ -33,7 +33,7 @@ SKILL_DIR=$(dirname "$SCRIPT_DIR")
 EXAMPLE_DIR="$SKILL_DIR/example"
 
 usage() {
-    sed -n '/^# scaffold\.sh/,/^# buildPlugin/p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+    sed -n '/^# scaffold\.sh/,/^# scripts\/verify\.sh/p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
 }
 
 die() {
@@ -91,6 +91,7 @@ if [ -z "$VENDOR" ]; then VENDOR=$PLUGIN_NAME; VENDOR_DEFAULTED=true; fi
 
 check_display_value() {
     # plugin.xml (XML) と Kotlin の文字列リテラルにそのまま入る値なので、エスケープが要る文字を拒否する
+    # shellcheck disable=SC1003 # '\' は単一引用符内のバックスラッシュ 1 文字 (エスケープの意図ではない)
     case "$2" in
         *'"'*|*'\'*|*'<'*|*'>'*|*'&'*|*'$'*)
             die "$1 '$2' に使えない文字がある" \
@@ -201,12 +202,13 @@ if [ ${#conflicts[@]} -gt 0 ] && ! $FORCE && ! $DRY_RUN; then
 fi
 
 # ---------------------------------------------------------------- .gitignore
-# build 出力・SDK の ivy/sandbox (.intellijPlatform/)・Kotlin の作業ディレクトリをコミットさせない。
+# build 出力・SDK の ivy/sandbox (.intellijPlatform/)・Kotlin の作業ディレクトリ・verify.sh のログ (.local/) をコミットさせない。
 # 利用者の既存 .gitignore は --force でも触らない。
 GITIGNORE_CONTENT='build/
 .gradle/
 .intellijPlatform/
 .kotlin/
+.local/
 '
 GITIGNORE_EXISTS=false
 [ -e "$DEST/.gitignore" ] && GITIGNORE_EXISTS=true
@@ -247,7 +249,7 @@ for i in $(seq 0 $((TOTAL - 1))); do
 done
 
 if $GITIGNORE_EXISTS; then
-    GITIGNORE_NOTE="NOTE: .gitignore は既存のため生成しなかった — build/ .gradle/ .intellijPlatform/ .kotlin/ が ignore されているか確認する"
+    GITIGNORE_NOTE="NOTE: .gitignore は既存のため生成しなかった — build/ .gradle/ .intellijPlatform/ .kotlin/ .local/ が ignore されているか確認する"
 else
     printf '%s' "$GITIGNORE_CONTENT" > "$DEST_ABS/.gitignore"
     GITIGNORE_NOTE=""
@@ -266,8 +268,8 @@ $VENDOR_DEFAULTED && echo "NOTE: --vendor 省略のため <vendor> に --plugin-
 echo "## 次の手順 (解説は intellij-plugin-dev skill の references/ にある。生成物からは参照しない)"
 echo "  1. // CUSTOMIZE / TODO(CUSTOMIZE) を埋める (UI・preview の scenarios・plugin.xml の説明)"
 echo "  2. Gradle wrapper を置く (同梱していない。既存 repo の gradlew + gradle/wrapper をコピーでよい) — references/setup/basics.md"
-echo "  3. cd $DEST_ABS && ./gradlew buildPlugin test (初回は SDK DL 込みで ~4〜5 分、2 回目以降 ~35 秒)"
-echo "  4. ./gradlew updatePreview で golden を初回生成し snapshots/preview を commit — references/headless-preview.md"
-echo "  5. CI に ./gradlew verifyPlugin を足す (untilBuild 上限無しの前提) — references/setup/basics.md"
+echo "  3. bash $SCRIPT_DIR/verify.sh --project-dir $DEST_ABS --fresh (buildPlugin / test / golden 初回生成 / verifyPreview。初回は SDK DL 込みで ~4〜5 分)"
+echo "  4. snapshots/preview の PNG を目視して commit する。以後の回し方 — references/headless-preview.md"
+echo "  5. CI に ./gradlew verifyPlugin を足す (untilBuild 上限無しの前提。手元では verify.sh --with-verify-plugin) — references/setup/basics.md"
 echo "  6. CI で verifyPreview を回すなら golden を CI と同じ OS で作る — references/gotchas.md"
 echo "{\"ok\":true,\"files\":$TOTAL,\"dest\":\"$DEST_ABS\",\"package\":\"$PKG\",\"pluginId\":\"$PLUGIN_ID\"}"

@@ -32,7 +32,7 @@ Real-IDE channels (Driver / physical Android Studio) are pushed to periodic chec
 ## How it works
 
 1. **Step 1**: Use SKILL.md's "core idea" to decompose verification into 6 channels and confirm the two-anchor plan (functional tests / PNG review)
-2. **Step 2**: Generate the plugin module from the bundled `example/` with `scripts/scaffold.sh` (run it as-is — don't re-implement it), then read `references/setup/` (basics → preview → snapshot) as the design commentary
+2. **Step 2**: Generate the plugin module from the bundled `example/` with `scripts/scaffold.sh` and check the build with `scripts/verify.sh --fresh` (run both as-is — don't re-implement them), then read `references/setup/` (basics → preview → snapshot) as the design commentary
 3. **Step 3**: Open the usage reference for what you're implementing (functional tests = `analysis-api-testing.md` / appearance = `headless-preview.md` / IDE integration = `ide-integration.md`)
 4. **Step 4**: For interaction/timing that headless can't cover, place the Driver smoke from `driver-smoke.md` at a periodic checkpoint
 5. **Step 5**: On Compose Desktop / IntelliJ-specific traps, jump from the index in `gotchas.md` to its primary entry
@@ -43,6 +43,7 @@ Real-IDE channels (Driver / physical Android Studio) are pushed to periodic chec
 |---|---|
 | `example/` | A working scaffold (`com.example.intellijplugindev`, independent Gradle build) that bundles the reference snippets into one consistent project: build wiring, plugin.xml, Compose tool window + shared Composable, `PreviewMain.kt`/`PreviewChecks.kt`, the AA test harness, and starter tests (tool window registration via `ToolWindowEP.EP_NAME`, a minimal AA smoke test, preview gates). The SSoT for the code fragments |
 | `scripts/scaffold.sh` | Generates a new plugin module from `example/` (`--dest` / `--package` / `--plugin-id` / `--plugin-name`, optional `--tool-window-id` / `--vendor`, plus `--dry-run` / `--force`). `rootProject.name` comes from the `--dest` directory name. Also writes a `.gitignore` unless one exists. Generated comments are in English and self-contained. Idempotent (no overwrite without `--force`); prints a trailing one-line JSON result. Run it with `bash` |
+| `scripts/verify.sh` | Build check of the generated module in a fixed order: `buildPlugin` → `test` → `updatePreview` (only with `--fresh`, which creates or refreshes the golden) → `verifyPreview` → `verifyPlugin` (only with `--with-verify-plugin`, since it downloads IDEs). `--only` / `--skip` / `--gradle-args`. Stops with a fix when the Gradle wrapper is missing. Logs go to `<project>/.local/tmp/<time>-<label>.log`; prints a trailing one-line JSON result |
 | `references/setup/basics.md` | Base build wiring (intellijPlatform / SDK 261 / bundled Kotlin(AA), Jewel, Compose, Skiko / JBR21 / K2 / since-until). Unified-distribution trap; not bundling stdlib |
 | `references/setup/preview.md` | Build wiring to bake preview PNGs (shared source set / standalone Jewel & Compose Desktop / `:icons` / `updatePreview`·`verifyPreview` tasks) |
 | `references/setup/snapshot.md` | VRT golden wiring (`snapshots/preview` location / update=sync·verify=compare / alpha=255·managed-clean gates / CI gate) |

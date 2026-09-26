@@ -106,7 +106,7 @@ bash "${CLAUDE_SKILL_DIR}/scripts/scaffold.sh" \
 
 - **script は読解・書き換え・再実装せず、そのまま実行する**。失敗したら stderr の
   `ERROR / why / fix` に従って引数を直して再実行する。既存ファイルは `--force` を明示しない
-  限り上書きしない (冪等)。`.gitignore` (`build/` `.gradle/` `.intellijPlatform/` `.kotlin/`) も
+  限り上書きしない (冪等)。`.gitignore` (`build/` `.gradle/` `.intellijPlatform/` `.kotlin/` `.local/`) も
   生成するが、既にあれば `--force` でも触らない。末尾 1 行の JSON (`{"ok":true,...}`) で成否を判定する。
 - 生成物のコメントは英語で、この skill の references への参照を含まない (利用先 repo 単体で読める)。
   解説への案内は script のログ「次の手順」にだけ出す。
@@ -116,15 +116,29 @@ bash "${CLAUDE_SKILL_DIR}/scripts/scaffold.sh" \
      説明 = `plugin.xml`)。
   2. Gradle wrapper は同梱していない → 既存 repo の `gradlew` + `gradle/wrapper/` をコピーでよい
      (確認済みの版は `references/setup/basics.md`)。
-  3. `./gradlew buildPlugin test` (初回は SDK DL で ~4〜5 分、2 回目以降 ~35 秒) →
-     `./gradlew updatePreview` で golden を初回生成し `snapshots/preview/` を commit。
-     以後の日々の回し方は `references/headless-preview.md` の「推奨ワークフロー」。
+  3. `scripts/verify.sh` でビルド確認する。初回は `--fresh` で golden を生成し、`snapshots/preview/` の PNG を
+     目視してから commit する。以後の日々の回し方は `references/headless-preview.md` の「推奨ワークフロー」。
   4. CI に `./gradlew verifyPlugin` を足す。雛形は `untilBuild` 上限無しで、その前提が Plugin Verifier の
      ゲート (`pluginVerification { ides { recommended() } }` は配線済み)。足さないなら `untilBuild = "261.*"` に絞る。
   5. CI で `verifyPreview` を回すなら、golden を作る OS を決める (`references/gotchas.md`「golden と OS」)。
 - 雛形のテストは 3 本: Tool Window の登録を `ToolWindowEP.EP_NAME` で検査 / 関数の戻り値の型を解決する
   最小の AA スモーク / preview の純出力ゲート。AA スモークは実機能のテストができたら置き換える。
 - Driver 層 (`references/driver-smoke.md`) は example でも未配線の雛形のまま (推奨レシピ)。
+
+### ビルド確認 (scripts/verify.sh)
+
+```sh
+bash "${CLAUDE_SKILL_DIR}/scripts/verify.sh" --project-dir <plugin-module-dir> \
+  [--fresh] [--with-verify-plugin] [--only <steps>] [--skip <steps>] [--gradle-args "<args>"]
+```
+
+- **script は読解・書き換え・再実装せず、そのまま実行する**。実行する Gradle タスクと順序
+  (buildPlugin → test → updatePreview → verifyPreview → verifyPlugin)・ログの置き場は script が SSoT
+  (`--help` で確認できる)。末尾 1 行の JSON (`{"ok":...}`) で成否を判定し、FAILED の step は
+  表示されたログ (`<project>/.local/tmp/<time>-<label>.log`) を読んで原因を直す。
+- AI が決めるのは入力だけ: scaffold 直後、または人間が golden の差分を承認した後だけ `--fresh`
+  (golden を上書きする)。verifyPlugin は推奨 IDE をダウンロードするので、CI に足す前の確認など必要な時だけ
+  `--with-verify-plugin`。複数 agent で並列に回すなら `--gradle-args "--project-cache-dir <dir>"` で分ける。
 
 ## reference の索引
 
