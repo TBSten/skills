@@ -18,7 +18,9 @@
 #   --group-id <id>           (required) Maven groupId
 #   --plugin-id <id>          compiler plugin ID (default: --group-id)
 #   --package <pkg>           Kotlin パッケージ (default: --group-id から `-` を除去したもの)
-#   --kotlin-version <v>      libs.versions.toml の kotlin バージョン (default: example のまま)
+#   --kotlin-version <v>      libs.versions.toml の kotlin バージョン (default: example のまま)。
+#                             gradle.properties の SUPPORTED_KOTLIN_MIN (<major>.<minor>.0) /
+#                             SUPPORTED_KOTLIN_MAX_TESTED_EXCLUSIVE (次の minor) もここから導出
 #   --skip-gradle-plugin      gradle-plugin モジュールを生成しない
 #   --skip-integration-test   integration-test モジュールを生成しない
 #   --skip-test               compiler-plugin/src/test を生成しない
@@ -108,7 +110,7 @@ SRC_FILES="$( (cd "$EXAMPLE_DIR" && find . -type f ! -name '.DS_Store' | sed 's|
 
 included() {
     case "$1" in
-        gradle-plugin/*) [ "$SKIP_GRADLE_PLUGIN" = true ] && return 1 ;;
+        gradle-plugin/*|integration-test/test-gradle-plugin/*) [ "$SKIP_GRADLE_PLUGIN" = true ] && return 1 ;;
         integration-test/*) [ "$SKIP_INTEGRATION_TEST" = true ] && return 1 ;;
         compiler-plugin/src/test/*) [ "$SKIP_TEST" = true ] && return 1 ;;
     esac
@@ -179,15 +181,18 @@ while IFS=$(printf '\t') read -r src dst; do
     #   4. その他 (package 宣言 / import / FQN) → package
     #   5. クラス名 prefix Example → PascalCase 名
     #   6. gradle plugin 短縮名 examplePlugin → camelCase 名
-    #   7. rootProject.name "example-plugin" → kebab 名
+    #   7. プロジェクト名 example-plugin (rootProject.name / POM / ログ文言) → kebab 名
+    #   (0. gradle.properties の GROUP= / COMPILER_PLUGIN_ID= 行 → group-id / plugin-id)
     perl -pi -e '
+        s/^(GROUP=)\Qcom.example.compilerpluginsetup\E$/$1$ENV{SC_GROUP}/;
+        s/^(COMPILER_PLUGIN_ID=)\Qcom.example.compilerpluginsetup\E$/$1$ENV{SC_PLUGIN_ID}/;
         s/"\Qcom.example.compilerpluginsetup\E:/"$ENV{SC_GROUP}:/g;
         s/(groupId\s*=\s*)"\Qcom.example.compilerpluginsetup\E"/$1"$ENV{SC_GROUP}"/g;
         s/"\Qcom.example.compilerpluginsetup\E"/"$ENV{SC_PLUGIN_ID}"/g;
         s/\Qcom.example.compilerpluginsetup\E/$ENV{SC_PKG}/g;
         s/\bExample(?=[A-Z])/$ENV{SC_PASCAL}/g;
         s/\bexamplePlugin\b/$ENV{SC_CAMEL}/g;
-        s/"example-plugin"/"$ENV{SC_NAME}"/g;
+        s/\bexample-plugin\b/$ENV{SC_NAME}/g;
     ' "$DEST/$dst"
 done < "${TMPDIR:-/tmp}/scaffold-plan.$$"
 rm -f "${TMPDIR:-/tmp}/scaffold-plan.$$"
@@ -196,19 +201,45 @@ rm -f "${TMPDIR:-/tmp}/scaffold-plan.$$"
 if [ "$KOTLIN_VERSION" ] && [ -f "$DEST/gradle/libs.versions.toml" ]; then
     SC_KOTLIN="$KOTLIN_VERSION" perl -pi -e 's/^kotlin = ".*"/kotlin = "$ENV{SC_KOTLIN}"/' \
         "$DEST/gradle/libs.versions.toml"
+    # Gradle plugin の consumer Kotlin ガード: MIN = <major>.<minor>.0 / MAX_TESTED_EXCLUSIVE = 次の minor
+    _major="${KOTLIN_VERSION%%.*}"
+    _rest="${KOTLIN_VERSION#*.}"
+    _minor="${_rest%%.*}"
+    SC_MIN="${_major}.${_minor}.0" SC_MAX="${_major}.$((_minor + 1)).0" perl -pi -e '
+        s/^SUPPORTED_KOTLIN_MIN=.*/SUPPORTED_KOTLIN_MIN=$ENV{SC_MIN}/;
+        s/^SUPPORTED_KOTLIN_MAX_TESTED_EXCLUSIVE=.*/SUPPORTED_KOTLIN_MAX_TESTED_EXCLUSIVE=$ENV{SC_MAX}/;
+    ' "$DEST/gradle.properties"
 fi
 
-# ---------- skip したモジュールの include を settings から除去 ----------
+# ---------- skip したモジュールの include / CI タスク行を除去 ----------
+# workflow の gradle タスクは 1 行 1 タスクで書かれているので、行単位で落とす
+WORKFLOWS=""
+for _wf in "$DEST/.github/workflows/ci.yml" "$DEST/.github/workflows/release.yml"; do
+    [ -f "$_wf" ] && WORKFLOWS="$WORKFLOWS $_wf"
+done
+drop_lines() {
+    # drop_lines <perl-regex> <file>...
+    local re="$1"; shift
+    [ $# -gt 0 ] || return 0
+    SC_RE="$re" perl -ni -e 'print unless /$ENV{SC_RE}/' "$@"
+}
 SKIPPED=""
 if [ "$SKIP_GRADLE_PLUGIN" = true ]; then
-    perl -ni -e 'print unless /include\(":gradle-plugin"\)/' "$DEST/settings.gradle.kts"
+    drop_lines 'include\(":(gradle-plugin|integration-test:test-gradle-plugin)"\)' "$DEST/settings.gradle.kts"
+    # shellcheck disable=SC2086
+    drop_lines '^\s+:(gradle-plugin|integration-test:test-gradle-plugin):' $WORKFLOWS
     SKIPPED="${SKIPPED}\"gradle-plugin\","
 fi
 if [ "$SKIP_INTEGRATION_TEST" = true ]; then
-    perl -ni -e 'print unless /include\(":integration-test:/' "$DEST/settings.gradle.kts"
+    drop_lines 'include\(":integration-test:' "$DEST/settings.gradle.kts"
+    # shellcheck disable=SC2086
+    drop_lines '^\s+:integration-test:' $WORKFLOWS
     SKIPPED="${SKIPPED}\"integration-test\","
 fi
 if [ "$SKIP_TEST" = true ]; then
+    # テストが 0 件の test タスクは Gradle 9 で失敗するため CI から外す
+    # shellcheck disable=SC2086
+    drop_lines '^\s+:compiler-plugin:test$' $WORKFLOWS
     SKIPPED="${SKIPPED}\"test\","
 fi
 SKIPPED="${SKIPPED%,}"

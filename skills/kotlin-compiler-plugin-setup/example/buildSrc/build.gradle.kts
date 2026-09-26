@@ -8,4 +8,6 @@ kotlin {
 
 dependencies {
     implementation(libs.kotlinGradlePlugin)
+    // `publish` convention plugin uses the `mavenPublishing { }` DSL of vanniktech maven-publish.
+    implementation(libs.mavenPublishGradlePlugin)
 }

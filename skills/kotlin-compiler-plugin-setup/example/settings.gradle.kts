@@ -21,5 +21,6 @@ include(":runtime")
 include(":gradle-plugin")
 include(":integration-test:test-jvm")
 include(":integration-test:test-kmp")
+include(":integration-test:test-gradle-plugin")
 
 rootProject.name = "example-plugin"

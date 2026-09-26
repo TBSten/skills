@@ -82,3 +82,27 @@ test("multiple parameters") {
 # KMP (JVM ターゲット)
 ./gradlew :integration-test:test-kmp:jvmRun
 ```
+
+## Gradle plugin のテスト (2 層)
+
+`kotlinCompilerPluginClasspath` 直指定の integration test は Gradle plugin を通らない。Gradle plugin は次の 2 層で検証する:
+
+| 層 | モジュール | 手段 | 検証範囲 | 速度 |
+|---|---|---|---|---|
+| sanity | `:gradle-plugin:test` | `ProjectBuilder` + `(project as ProjectInternal).evaluate()` | DSL 登録・`convention` 既定値・runtime 依存の追加先 (JVM / KMP)・版比較 | 秒 |
+| E2E | `:integration-test:test-gradle-plugin:test` | Gradle TestKit (`GradleRunner`) + fixture | `plugins { id(...) }` での解決・compiler plugin の attach・runtime 依存・実コンパイル/実行 | 1 build 30〜90 秒 |
+
+### TestKit fixture の構成
+
+実ファイル: `example/integration-test/test-gradle-plugin/` (`build.gradle.kts` / `src/test/kotlin/.../ExampleGradlePluginE2eTest.kt` / `src/test/resources/fixtures/jvm-sample/`)
+
+- fixture は **root build に include しない独立 Gradle プロジェクト**。テストが temp dir にコピーしてから `GradleRunner.withProjectDir(...)` で起動する (src/test/resources に `build/` や `.gradle/` を作らない)
+- 本リポジトリのパス・Kotlin 版は `-Pe2e.rootBuildDir=` / `-Pe2e.kotlinVersion=` で渡す (test task の systemProperty 経由)。fixture の settings は `settings.providers.gradleProperty(...)` で読む
+- `pluginManagement { includeBuild(root) }` は plugin 解決用。通常依存 (`SubpluginArtifact` の `GROUP:compiler-plugin`、自動追加される `GROUP:runtime`) は **top-level の `includeBuild(root) { dependencySubstitution { ... } }` も必要**。KMP runtime は `runtime` と `runtime-jvm` の両方を substitute する
+- publish (mavenLocal / Maven Central) せずに未公開の成果物で利用者と同じ書き方を検証できる
+- fixture に `gradle.properties` で `-Xmx1g -XX:MaxMetaspaceSize=768m` を与える。TestKit の子 daemon は既定 (heap 512MiB / metaspace 384MiB) だと Kotlin compiler + plugin のロードで `OutOfMemoryError: Metaspace` になり、毎回違うテストが落ちる flaky になる
+- `--no-configuration-cache` を付ける (includeBuild + substitution と相性が悪い場合がある)
+- 検証したい配線 (plugin classpath / runtime classpath) は fixture 側の小さなタスクで stdout に出して assert する
+- 複数 Kotlin 版で回す場合は fixture の Kotlin 版を `-Pe2e.kotlinVersion` で差し替える
+
+KMP fixture (`kotlin("multiplatform")` + `commonMainImplementation` 追加の確認) が必要になったら `fixtures/kmp-sample/` を同じ形で追加する。

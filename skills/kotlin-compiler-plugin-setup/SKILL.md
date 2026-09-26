@@ -63,7 +63,7 @@ bash <skill-dir>/scripts/scaffold.sh \
 | `--dest` / `--name` / `--group-id` | 必須。生成先 / rootProject.name (kebab-case) / Maven groupId |
 | `--plugin-id` | compiler plugin ID (default: `--group-id`) |
 | `--package` | Kotlin パッケージ (default: `--group-id` から `-` を除去) |
-| `--kotlin-version` | Kotlin バージョン (default: example の値) |
+| `--kotlin-version` | Kotlin バージョン (default: example の値)。Gradle plugin の対応 Kotlin 範囲 (`SUPPORTED_KOTLIN_*`) もここから導出 |
 | `--skip-gradle-plugin` / `--skip-integration-test` / `--skip-test` | 確認事項 4 でスコープを絞った場合に使用 |
 | `--dry-run` | 生成予定一覧のみ表示 |
 | `--force` | 既存ファイルを上書き (デフォルトでは上書きしない) |
@@ -72,14 +72,18 @@ script は `example/` (実パッケージ `com.example.compilerpluginsetup` + `E
 
 ```
 <project-root>/
-├── buildSrc/                  # convention plugins (kotlin-jvm)
-├── compiler-plugin/           # 登録クラス群 + ExampleCompilerTest (kctfork + Kotest)
-├── gradle-plugin/             # KotlinCompilerPluginSupportPlugin
-├── runtime/                   # KMP API 宣言用モジュール
+├── buildSrc/                  # convention plugins (kotlin-jvm: JDK 21 で Java 17 bytecode / publish: vanniktech)
+├── compiler-plugin/           # 登録クラス群 (`enabled` オプション配線済み) + CompilerTest (kctfork + Kotest)
+├── gradle-plugin/             # KotlinCompilerPluginSupportPlugin + DSL + Kotlin 版ガード + BuildConfig 生成 + ProjectBuilder テスト
+├── runtime/                   # KMP API 宣言用モジュール (placeholder の Marker 1 つ)
 ├── integration-test/
 │   ├── test-jvm/              # JVM 単体の E2E テスト (Main.kt)
-│   └── test-kmp/              # KMP (JVM + JS) の E2E テスト (Main.kt)
+│   ├── test-kmp/              # KMP (JVM + JS) の E2E テスト (Main.kt)
+│   └── test-gradle-plugin/    # Gradle TestKit E2E (fixture + includeBuild。`plugins { id(...) }` の実利用形態)
+├── .github/workflows/         # ci.yml (PR) / release.yml (tag push → Maven Central + GitHub Release)
+├── gradle.properties          # GROUP / VERSION_NAME / plugin id / 対応 Kotlin 範囲 / POM_* の SSoT + ビルド高速化設定
 ├── gradle/libs.versions.toml
+├── build.gradle.kts           # allprojects { group / version } (gradle.properties から)
 └── settings.gradle.kts
 ```
 
@@ -88,26 +92,29 @@ script は `example/` (実パッケージ `com.example.compilerpluginsetup` + `E
 script の stdout (末尾 1 行の JSON を含む) と生成ファイルを確認する:
 
 1. `settings.gradle.kts` の `rootProject.name` とモジュール構成が意図どおりか
-2. `CommandLineProcessor.pluginId` / `gradlePlugin { create(...) { id = ... } }` が指定した Plugin ID か
+2. `gradle.properties` の `GROUP` / `COMPILER_PLUGIN_ID` / `SUPPORTED_KOTLIN_*`、`CommandLineProcessor.pluginId` / `Registrar.pluginId` が指定値か
 3. `gradle/libs.versions.toml` の Kotlin バージョン
 4. 置換漏れが無いか: `grep -rn "compilerpluginsetup\|Example[A-Z]" <project-root>` がヒットしないこと (script も自動チェック済み)
+5. `gradle.properties` の `POM_*` (`TODO-owner`) は公開前にユーザーの GitHub リポジトリへ直すよう伝える
 
 各生成ファイルの設計解説は references を参照:
 
 | ファイル群 | 解説 |
 |---|---|
 | CommandLineProcessor / Registrar / IrExtension / FirExtensionRegistrar | references/plugin-registration.md |
-| ExampleGradlePlugin (KotlinCompilerPluginSupportPlugin) | references/gradle-plugin-impl.md |
-| ExampleCompilerTest (compile ヘルパー) / integration-test | references/testing-patterns.md |
-
-publish-convention が必要な場合は references/publish-convention.md を参照。
+| ExampleGradlePlugin / Extension / KotlinVersionGuard / BuildConfig 生成 | references/gradle-plugin-impl.md |
+| CompilerTest (kctfork) / integration-test / ProjectBuilder・TestKit テスト | references/testing-patterns.md |
+| publish convention / gradle.properties / CI・release workflow | references/publish-convention.md |
 
 ### Step 3: ビルド確認
 
+scaffold は Gradle wrapper を生成しない。`gradlew` が無ければ先に `gradle wrapper --gradle-version <最新安定版>` を実行する。
+
 ```bash
-./gradlew jvmTest
-./gradlew :integration-test:test-jvm:run
-./gradlew :integration-test:test-kmp:jvmRun
+./gradlew :compiler-plugin:test :gradle-plugin:test :runtime:jvmTest
+./gradlew :integration-test:test-jvm:run :integration-test:test-kmp:jvmRun
+./gradlew :integration-test:test-gradle-plugin:test   # TestKit E2E (数分かかる)
+./gradlew publishToMavenLocal --no-configuration-cache # 公開設定の確認 (plugin marker も出る)
 ```
 
 ### 外部 guide: scaffold 後の実装・テスト・配布
@@ -148,19 +155,24 @@ FIR / IR の個別 Extension (checker・宣言生成・call rewriting 等) の g
 - runtime/ (Multiplatform API declarations)
 - integration-test/test-jvm/ (JVM E2E test)
 - integration-test/test-kmp/ (KMP E2E test)
+- integration-test/test-gradle-plugin/ (Gradle TestKit E2E)
+- .github/workflows/ (ci.yml / release.yml)
 
 ### 依存関係
 - kotlin-compiler-embeddable: <version>
 - auto-service + KSP
 - kctfork: <version>
 - kotest: <version>
+- vanniktech maven-publish: <version>
 
 ### ビルド結果
-- jvmTest: [SUCCESS / FAILED]
-- integration-test: [SUCCESS / FAILED]
+- unit (compiler-plugin / gradle-plugin / runtime): [SUCCESS / FAILED]
+- integration-test (jvm / kmp / gradle-plugin TestKit): [SUCCESS / FAILED]
+- publishToMavenLocal: [SUCCESS / FAILED]
 
 ### 次のステップ
 1. compiler-plugin/src/main/kotlin/ の <Prefix>Transformer (no-op skeleton) に IR 変換を実装、必要なら <Prefix>FirExtensionRegistrar に FIR checker を登録
-2. runtime/src/commonMain/kotlin/ に公開 API を宣言
-3. compiler-plugin/src/test/ の <Prefix>CompilerTest にテストケースを追加
+2. runtime/src/commonMain/kotlin/ の placeholder (<Prefix>Marker) を公開 API に置き換える
+3. compiler-plugin/src/test/ の <Prefix>CompilerTest と TestKit fixture にテストケースを追加
+4. 公開前: gradle.properties の POM_* を埋め、Secrets を登録 (release.yml 冒頭コメント参照) して `vX.Y.Z` tag を push
 ```

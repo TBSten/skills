@@ -28,19 +28,23 @@ The skill runs `scripts/scaffold.sh`, which copies the complete project skeleton
 
 | Module | Description |
 |---|---|
-| `buildSrc/` | Convention plugins (kotlin-jvm with JUnit5 + test logging) |
-| `compiler-plugin/` | Compiler plugin with AutoService + KSP, FIR + IR extensions |
-| `gradle-plugin/` | Gradle plugin wrapper (KotlinCompilerPluginSupportPlugin) |
-| `runtime/` | Kotlin Multiplatform API declarations |
+| `buildSrc/` | Convention plugins: `kotlin-jvm` (JDK 21 toolchain, Java 17 bytecode, JUnit5 + test logging) and `publish` (vanniktech maven-publish, signing only when a key is present) |
+| `compiler-plugin/` | Compiler plugin with AutoService + KSP, FIR + IR extensions, an `enabled` CLI option wired end to end |
+| `gradle-plugin/` | Gradle plugin wrapper (KotlinCompilerPluginSupportPlugin) with a `Property` + `convention()` DSL, fail-fast guard, consumer Kotlin version guard and a generated `BuildConfig` |
+| `runtime/` | Kotlin Multiplatform API declarations (one placeholder marker) |
 | `integration-test/test-jvm/` | JVM end-to-end test with `kotlinCompilerPluginClasspath` |
 | `integration-test/test-kmp/` | KMP (JVM + JS) end-to-end test with `kotlinCompilerPluginClasspath` |
+| `integration-test/test-gradle-plugin/` | Gradle TestKit E2E: a fixture build applies `plugins { id(...) }` and resolves everything via `includeBuild` + `dependencySubstitution` |
+| `.github/workflows/` | `ci.yml` (PR-only cancel, paths-ignore, reports on failure, `final` fan-in job) and `release.yml` (tag push, tag == version check, Maven Central, GitHub Release) |
 
 ### Build Configuration
 
 | File | Description |
 |---|---|
+| `gradle.properties` | SSoT for `GROUP` / `VERSION_NAME` / plugin ID / supported Kotlin range / `POM_*`, plus build speed settings (caching, configuration cache, parallel, KT-82395 workaround) |
+| `build.gradle.kts` | `allprojects { group; version }` from gradle.properties |
 | `settings.gradle.kts` | Multi-module project with foojay toolchain resolver |
-| `gradle/libs.versions.toml` | Version catalog (Kotlin, KSP, AutoService, kctfork, Kotest) |
+| `gradle/libs.versions.toml` | Version catalog (Kotlin, KSP, AutoService, kctfork, Kotest, maven-publish) |
 | `buildSrc/build.gradle.kts` | kotlin-dsl with shared version catalog |
 
 ### Testing Infrastructure
@@ -49,8 +53,9 @@ The skill runs `scripts/scaffold.sh`, which copies the complete project skeleton
 |---|---|
 | kctfork (KotlinCompilation) | In-memory compilation for unit tests |
 | Kotest (FunSpec) | Test framework with JUnit5 runner |
-| Integration test (JVM) | JVM application module with `kotlinCompilerPluginClasspath` |
-| Integration test (KMP) | KMP module (JVM + JS) with `kotlinCompilerPluginClasspath` |
+| Integration test (JVM / KMP) | Modules with `kotlinCompilerPluginClasspath` |
+| Gradle plugin sanity | `ProjectBuilder` tests for DSL defaults and runtime dependency wiring |
+| Gradle plugin E2E | Gradle TestKit + fixture project (a consumer-style build, no publishing needed) |
 
 ## Key Concepts
 

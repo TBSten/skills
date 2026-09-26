@@ -1,10 +1,14 @@
 [versions]
+# NOTE: Do not add keys that start with "kotlin-" (e.g. `kotlin-compiler-k21`). A dashed key that
+# extends an existing key turns `libs.versions.kotlin` into a group and breaks the plain accessor.
+# Use a different prefix such as `compat-embeddable-k21`.
 kotlin = "2.3.10"
 ksp = "2.3.6"
 autoService = "1.1.1"
 autoServiceKsp = "1.2.0"
 kctfork = "0.12.1"
 kotest = "6.0.0.M2"
+mavenPublish = "0.37.0"
 
 [libraries]
 kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -14,6 +18,7 @@ autoServiceKsp = { module = "dev.zacsweers.autoservice:auto-service-ksp", versio
 kctforkCore = { module = "dev.zacsweers.kctfork:core", version.ref = "kctfork" }
 kotestRunnerJunit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
 kotestAssertionsCore = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
+mavenPublishGradlePlugin = { module = "com.vanniktech:gradle-maven-publish-plugin", version.ref = "mavenPublish" }
 
 [plugins]
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

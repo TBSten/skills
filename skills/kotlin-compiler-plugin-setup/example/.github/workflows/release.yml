@@ -1,0 +1,84 @@
+# Release: push a `vX.Y.Z` tag (VERSION_NAME in gradle.properties must match) ->
+# tests -> Maven Central (runtime / compiler-plugin / gradle-plugin + plugin marker) ->
+# GitHub Release with generated notes (`-` in the tag = pre-release).
+#
+# workflow_dispatch runs everything except publishing unless dryRun=false.
+#
+# Secrets (Settings -> Secrets and variables -> Actions). The ORG_GRADLE_PROJECT_ prefix makes
+# Gradle read them as project properties, so no mapping table is needed:
+#   ORG_GRADLE_PROJECT_mavenCentralUsername / ORG_GRADLE_PROJECT_mavenCentralPassword
+#     (Central Portal user token)
+#   ORG_GRADLE_PROJECT_signingInMemoryKey   (ASCII-armored GPG private key)
+#   ORG_GRADLE_PROJECT_signingInMemoryKeyId (optional) / ORG_GRADLE_PROJECT_signingInMemoryKeyPassword
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      dryRun:
+        description: 'Skip publishing (build / test only)'
+        type: boolean
+        default: true
+
+concurrency:
+  # Workflow-scoped: two publishes racing to Maven Central are never OK. Never cancel.
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    # macOS publishes the Apple (iOS / macOS) klibs of the KMP runtime as well.
+    runs-on: macos-latest
+    timeout-minutes: 90
+    permissions:
+      contents: write # GitHub Release
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Check tag == VERSION_NAME
+        if: github.event_name == 'push'
+        run: |
+          version=$(grep '^VERSION_NAME=' gradle.properties | cut -d= -f2)
+          if [ "v$version" != "${GITHUB_REF_NAME}" ]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match VERSION_NAME=$version in gradle.properties" >&2
+            exit 1
+          fi
+
+      # One task per line (scaffold.sh drops the lines of skipped modules).
+      - name: Tests
+        run: >-
+          ./gradlew --stacktrace
+          :compiler-plugin:test
+          :gradle-plugin:test
+          :runtime:jvmTest
+          :integration-test:test-jvm:run
+          :integration-test:test-gradle-plugin:test
+
+      - name: Publish to Maven Central
+        if: github.event_name == 'push' || inputs.dryRun == false
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralUsername }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralPassword }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKey }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKeyId }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKeyPassword }}
+        # Signing tasks of vanniktech are not configuration-cache safe.
+        run: ./gradlew publishAndReleaseToMavenCentral --no-configuration-cache --stacktrace
+
+      - name: Create GitHub Release
+        if: github.event_name == 'push'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          generate_release_notes: true
+          prerelease: ${{ contains(github.ref_name, '-') }}

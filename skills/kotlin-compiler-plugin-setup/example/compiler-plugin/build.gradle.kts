@@ -1,5 +1,6 @@
 plugins {
     id("buildsrc.convention.kotlin-jvm")
+    id("buildsrc.convention.publish")
     alias(libs.plugins.ksp)
 }
 
@@ -20,4 +21,12 @@ dependencies {
     testImplementation(libs.kctforkCore)
     testImplementation(libs.kotestRunnerJunit5)
     testImplementation(libs.kotestAssertionsCore)
+}
+
+// Coordinates / license / scm come from the root build + gradle.properties (POM_*).
+mavenPublishing {
+    pom {
+        name.set("example-plugin compiler plugin")
+        description.set("Kotlin compiler plugin (FIR + IR) of example-plugin")
+    }
 }

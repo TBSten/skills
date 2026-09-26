@@ -18,28 +18,16 @@ Kotlin Compiler Plugin の登録に必要なクラスの設計解説。
 
 ### CLI オプションの追加
 
-Gradle plugin から compiler plugin に設定を渡す場合、`AbstractCliOption` を companion object に定義して `pluginOptions` から返す:
+skeleton には `enabled` オプション 1 つが配線済み (`ExampleCommandLineProcessor` の `CliOption` + `CompilerConfigurationKey` → `ExampleRegistrar` が `false` なら何も登録しない → Gradle DSL `examplePlugin { enabled = false }`)。オプションを増やすときはこの 3 点を同じ形で追加する。
 
-```kotlin
-companion object {
-    val OPTION_ENABLED = AbstractCliOption(
-        optionName = "enabled",
-        valueDescription = "<true|false>",
-        description = "Whether the plugin is enabled",
-        required = false,
-    )
-}
-
-override val pluginOptions: Collection<AbstractCliOption> = listOf(OPTION_ENABLED)
-```
-
-受け取った値の処理には `processOption` を override する。Gradle 側の渡し方は `gradle-plugin-impl.md` を参照。
+- Gradle plugin が渡す `SubpluginOption` のキーは **全て** `pluginOptions` に宣言する (未宣言だと kotlinc が unknown option で失敗する)
+- Gradle 側の渡し方は `gradle-plugin-impl.md` を参照
 
 ## CompilerPluginRegistrar
 
 - `ExtensionStorage.registerExtensions` で FIR extension (`FirExtensionRegistrarAdapter.registerExtension`) と IR extension (`IrGenerationExtension.registerExtension`) を登録する
 - K2 compiler をサポートする場合は `supportsK2 = true` を設定
-- **注意**: `CompilerPluginRegistrar` に `pluginId` プロパティは存在しない (宣言するとコンパイルエラー)。Plugin ID は `CommandLineProcessor` 側で宣言する
+- **注意**: `CompilerPluginRegistrar.pluginId` は Kotlin 2.3.0 で abstract メンバーとして追加された。2.3.0 以上では `override val pluginId` が必須、2.2.x 以下では存在しない (override するとコンパイルエラー)。compat module 等で 2.3 未満の compiler に対してコンパイルする場合は外す。値は `CommandLineProcessor.pluginId` と一致させる
 
 ### FIR vs IR の使い分け
 
