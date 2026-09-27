@@ -17,6 +17,9 @@ const TEMPLATE = resolve(HERE, '../assets/board-template.html');
 const START = '/* ===== BOARD DATA START ===== */';
 const END = '/* ===== BOARD DATA END ===== */';
 const KINDS = ['anchor', 'pr', 'task', 'human', 'idea'];
+/* 1 グループ（エピック / エピック外）のタスク数がこれ以上なら、分割を促す warn を出す。
+   カンバンの折り返し件数（テンプレートの KANBAN_COL_MAX）とは別の値 */
+const GROUP_WARN_MIN = 20;
 
 /* ---- 引数 --------------------------------------------------------------- */
 const argv = process.argv.slice(2);
@@ -199,6 +202,25 @@ epics.forEach(e => {
           : ' → 直し方: 同じエピックのメンバーの col が連続するように振り直す'));
   }
 });
+
+/* 1 グループにタスクが多すぎると、図の枠もカンバンの段も一目で読めなくなる。
+   ビルドは止めず、分け方の指針つきで warn する。グループの単位は図の枠・カンバンの段と同じ
+   （epic ごと + エピック外）。main などのアンカーは数えない。 */
+{
+  const groups = new Map();
+  items.filter(i => i.kind !== 'anchor').forEach(i => {
+    const g = i.epic || '';
+    groups.set(g, (groups.get(g) || 0) + 1);
+  });
+  for (const [g, n] of groups) {
+    if (n < GROUP_WARN_MIN) continue;
+    warn(g
+      ? `グループ "${g}" に ${n} 件ある。${GROUP_WARN_MIN} 件以上は 1 つの枠・段では読み切れない`
+        + ' → 直し方: 関連の強いものごとに epics を分け（サブグループ化）、items の epic を振り直す'
+      : `エピック外に ${n} 件ある。${GROUP_WARN_MIN} 件以上は 1 つの段では読み切れない`
+        + ' → 直し方: 関連の強いものごとに epics を作り、items に epic を付けてまとめる');
+  }
+}
 
 const edges = Array.isArray(data.edges) ? data.edges : [];
 edges.forEach((e, ix) => {

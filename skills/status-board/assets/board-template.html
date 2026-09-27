@@ -198,8 +198,10 @@ a{color:var(--text-link)} a:hover{color:var(--text-link-hover)}
 .col-name{font-size:13px;font-weight:700;letter-spacing:.04em}
 .col-n{margin-left:auto;font-family:var(--tbs-font-mono);font-size:11px;color:var(--text-muted)}
 .col-x{background:transparent;border:0;color:var(--tbs-navy-300);cursor:pointer;font-size:12px;padding:0 2px}
-/* 列の中は高さを制限しない。チケットが多い段はカンバン全体の縦スクロールで見る */
-.col-body{flex:0 0 auto;display:flex;flex-direction:column;gap:8px;padding:2px 10px 10px}
+/* 列の中は高さを制限しない。チケットが多い段はカンバン全体の縦スクロールで見る。
+   KANBAN_COL_MAX 件を超えた列は .col-stack を横に並べて折り返す（列幅は JS が件数から決める） */
+.col-body{flex:0 0 auto;display:flex;flex-direction:row;align-items:flex-start;gap:10px;padding:2px 10px 10px}
+.col-stack{flex:0 0 216px;min-width:0;display:flex;flex-direction:column;gap:8px}
 .cardstack{display:flex;flex-direction:column;gap:6px}
 .tkt{display:flex;flex-direction:column;gap:4px;background:var(--tbs-white);
      border:1px solid var(--tbs-sky-400);border-radius:10px;padding:9px 10px;cursor:pointer;
@@ -318,6 +320,15 @@ const CY = 206;   /* レーンの中心線 */
 const M  = 28;    /* 図全体の余白 */
 const COMPACT_K = 0.7;  /* この縮尺を下回ると意味的ズームに入る */
 const K_MIN = 0.001, K_MAX = 2.4;  /* 最小 0.1% まで引ける */
+/* カンバンの 1 列（エピック × ステータス）に縦へ積むカードの上限。超えたら同じ列の中で
+   右隣へ折り返し、この件数ずつの小列に分ける（1 列だけが縦に長く伸びて段が読めなくなるため） */
+const KANBAN_COL_MAX = 10;
+/* 配列を size 件ずつに切る。カンバンの折り返しと __verify() で共有する */
+const chunk = (arr, size) => {
+  const out = [];
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+  return out;
+};
 
 /* ══════════════════════════════════════════════════════════════════════════
    2. ユーティリティ
@@ -365,6 +376,19 @@ function wrap(text, maxU) {
 const statusOf = id => STATUSES.find(s => s.id === id) || STATUSES[STATUSES.length - 1];
 const byId = {}; ITEMS.forEach(i => { byId[i.id] = i; });
 
+/* 完了扱いのステータス。collect.mjs は merged PR / closed issue をすべて 'closed' に寄せる */
+const DONE_STATUSES = ['closed'];
+/* メンバーが 1 件以上あり、全員が完了のエピックの id。図では最初から 1 ノードに畳む
+   （片付いた塊で図を占有しない）。メンバー 0 件のエピックは完了扱いにしない。
+   純関数にしてあるのは __verify() が合成データで判定を確かめるため */
+function doneEpicIds(epics, items) {
+  return epics.filter(e => {
+    const mem = items.filter(i => i.epic === e.id);
+    return mem.length > 0 && mem.every(i => DONE_STATUSES.includes(i.status));
+  }).map(e => e.id);
+}
+const defaultFolded = () => Object.fromEntries(doneEpicIds(EPICS, ITEMS).map(id => [id, true]));
+
 /* 確認欄の保存。キーはファイル名ではなくボード名なので、再生成しても引き継がれる。
    file:// で開くと localStorage が使えないブラウザがあるため、失敗しても黙って諦める
    （その場合はページを開いている間だけ保持される）。 */
@@ -395,7 +419,7 @@ const S = {
   expanded:!!PROPS.showChildren,
   hidden:{},                       /* status id -> true で非表示 */
   collapsed:Object.fromEntries(STATUSES.filter(s => s.collapsedByDefault).map(s => [s.id, true])),
-  folded:{},                       /* epic id -> true で 1 ノードに畳む */
+  folded:defaultFolded(),          /* epic id -> true で 1 ノードに畳む。既定は全員完了のエピック */
   fullMap:false,                   /* 図だけの全画面表示 */
   trace:null,                      /* { id, dir:'up'|'down', set:Set } 依存の推移的な点灯 */
   tour:null,                       /* { ix } NEXT ツアーの現在位置 */
@@ -879,15 +903,14 @@ function kanbanMarkup() {
           + `<button class="col-chip" data-toggle-col="${esc(s.id)}">${esc(s.label)} ${items.length}</button></div>`;
         return;
       }
-      let cards = '';
-      items.forEach(i => {
+      const card = i => {
         const isSel = sset.has(i.id);
         const url = (i.links || []).length ? i.links[0].url : null;
         const mark = i.human ? '🙋' : (i.next ? 'NEXT ' + i.next : '');
         const markStyle = i.human
           ? `background:#FCEBEE;border:1px solid ${C.heart}`
           : `background:${C.coin};border:1px solid ${C.navy800}`;
-        cards += `<div class="cardstack">`
+        return `<div class="cardstack">`
           + `<div class="tkt${isSel ? ' on' : ''}" data-item="${esc(i.id)}" data-from="kanban">`
           + `<div class="tkt-hd"><span class="tkt-key">${esc(i.key)}</span>`
           + (mark ? `<span class="tkt-mark" style="${markStyle}">${esc(mark)}</span>` : '')
@@ -899,8 +922,12 @@ function kanbanMarkup() {
               + `<span class="kid-key">${esc(k.key)}</span>`
               + `<div class="kid-title">${esc(k.title)}</div></div>`).join('')
           + `</div>`;
-      });
-      colsHtml += `<div class="col" data-col="${esc(key)}" style="background:${s.pane};border:1px solid ${s.stroke}55">`
+      };
+      const stacks = chunk(items, KANBAN_COL_MAX);
+      const cards = stacks.map(st => `<div class="col-stack">${st.map(card).join('')}</div>`).join('');
+      /* 小列 n 本ぶんの幅: 左右 padding 20 + 216n + 間隔 10(n-1)。n = 1 なら既定の 236px */
+      const colW = 20 + 216 * stacks.length + 10 * (stacks.length - 1);
+      colsHtml += `<div class="col" data-col="${esc(key)}" style="flex-basis:${colW}px;background:${s.pane};border:1px solid ${s.stroke}55">`
         + `<div class="col-hd"><span class="col-dot" style="background:${s.stroke}"></span>`
         + `<span class="col-name" style="color:${s.stroke}">${esc(s.label)}</span>`
         + `<span class="col-n">${items.length}</span>`
@@ -1317,6 +1344,8 @@ function tourEnd() {
      sel      … 選択中の item id（選択順）
      hide     … チップで非表示にした status id
      collapse … 畳んだカンバン列の status id。既定と違うときだけ付く（空 = 全部展開）
+     fold     … 図で 1 ノードに畳んだ epic id。既定（全員完了のエピック）と違うときだけ付く
+                （空 = 全部展開）。手で開閉した状態がリロード後も既定より優先される
      q        … 検索語（空なら付かない）
      full     … 1 なら図だけの全画面
      trace    … up:<id> / down:<id>。トレース中の向きと起点
@@ -1327,6 +1356,8 @@ function tourEnd() {
    知らない id はロード時に捨てるので、古い URL を開いても壊れない。 */
 const DEFAULT_COLLAPSED = STATUSES.filter(s => s.collapsedByDefault).map(s => s.id).sort().join(' ');
 const isStatusId = id => STATUSES.some(s => s.id === id);
+const DEFAULT_FOLDED = Object.keys(defaultFolded()).sort().join(' ');
+const isEpicId = id => EPICS.some(e => e.id === id);
 function syncUrl() {
   try {
     const p = new URLSearchParams(location.search);   /* 知らないパラメータは残す */
@@ -1335,6 +1366,8 @@ function syncUrl() {
     put('hide', Object.keys(S.hidden).filter(k => S.hidden[k]).join(' '));
     const col = Object.keys(S.collapsed).filter(k => S.collapsed[k]).sort().join(' ');
     if (col === DEFAULT_COLLAPSED) p.delete('collapse'); else p.set('collapse', col);
+    const fold = Object.keys(S.folded).filter(k => S.folded[k]).sort().join(' ');
+    if (fold === DEFAULT_FOLDED) p.delete('fold'); else p.set('fold', fold);
     put('q', S.q);
     put('full', S.fullMap ? '1' : '');
     put('trace', S.trace ? S.trace.dir + ':' + S.trace.id : '');
@@ -1350,6 +1383,7 @@ function restoreFromUrl() {
     if (p.has('sel')) S.sel = ids('sel').filter(id => byId[id]);
     if (p.has('hide')) S.hidden = Object.fromEntries(ids('hide').filter(isStatusId).map(id => [id, true]));
     if (p.has('collapse')) S.collapsed = Object.fromEntries(ids('collapse').filter(isStatusId).map(id => [id, true]));
+    if (p.has('fold')) S.folded = Object.fromEntries(ids('fold').filter(isEpicId).map(id => [id, true]));
     if (p.has('q')) S.q = p.get('q') || '';
     if (p.has('trace')) {
       const m = (p.get('trace') || '').split(':');
@@ -1656,7 +1690,29 @@ function __verify() {
        検証できない。ここから先は全列を開いて見る（元の畳み状態は finally が戻す） */
     S.collapsed = {}; render();
 
-    const onMap = ITEMS.filter(i => i.col !== undefined && i.kanban !== false);
+    /* カンバンの折り返し。1 列が KANBAN_COL_MAX 件ずつの小列に分かれ、件数は崩れない */
+    const ck = chunk(Array.from({ length:KANBAN_COL_MAX * 2 + 1 }, (_, i) => i), KANBAN_COL_MAX);
+    check(ck.length === 3 && ck[0].length === KANBAN_COL_MAX && ck[2].length === 1,
+          `折り返しの切り方がおかしい: ${ck.map(x => x.length).join('/')}`);
+    check(chunk([], KANBAN_COL_MAX).length === 0 && chunk([1], KANBAN_COL_MAX).length === 1,
+          '折り返しの切り方がおかしい（0 件 / 1 件）');
+    let wrapped = 0;
+    document.querySelectorAll('#kanban .col').forEach(col => {
+      const n = Number(col.querySelector('.col-n').textContent);
+      const stacks = [...col.querySelectorAll('.col-stack')];
+      check(stacks.length === Math.ceil(n / KANBAN_COL_MAX),
+            `カンバン列の折り返し数が合わない: ${col.dataset.col} ${n} 件 / ${stacks.length} 列`);
+      check(stacks.every(st => st.querySelectorAll(':scope > .cardstack').length <= KANBAN_COL_MAX),
+            `カンバン列に ${KANBAN_COL_MAX} 件を超えて縦に積まれている: ${col.dataset.col}`);
+      /* 小列が列の枠からはみ出していない（列幅の計算ずれ検出） */
+      const cb = col.getBoundingClientRect();
+      check(stacks.every(st => st.getBoundingClientRect().right <= cb.right + 1),
+            `折り返した小列が列の枠からはみ出している: ${col.dataset.col}`);
+      if (stacks.length > 1) wrapped++;
+    });
+    info.kanbanWrapped = wrapped;
+
+    const onMap =ITEMS.filter(i => i.col !== undefined && i.kanban !== false);
     const first = onMap[0];
     if (first) {
       els.kanban.scrollTop = 40;
@@ -1769,6 +1825,34 @@ function __verify() {
       S.folded = {}; render();
       check(nodesOf().length === before, `エピックを戻せない: ${ep.id}`);
     }
+
+    /* 全員完了のエピックだけが既定で畳まれる。判定は合成データで 3 通り見る */
+    const dz = doneEpicIds(
+      [{ id:'all-done' }, { id:'has-open' }, { id:'empty' }],
+      [{ epic:'all-done', status:DONE_STATUSES[0] }, { epic:'all-done', status:DONE_STATUSES[0] },
+       { epic:'has-open', status:DONE_STATUSES[0] }, { epic:'has-open', status:'review' }]);
+    check(dz.includes('all-done'), '全員完了のエピックが既定で畳まれない');
+    check(!dz.includes('has-open'), '未完了を含むエピックが既定で畳まれている');
+    check(!dz.includes('empty'), 'メンバー 0 件のエピックが既定で畳まれている');
+    /* 実データでも、既定の畳みが「全員完了」のエピックと一致し、図で 1 ノードに集約される */
+    const dfl = defaultFolded();
+    EPICS.forEach(e => {
+      const mem = ITEMS.filter(i => i.epic === e.id);
+      const done = mem.length > 0 && mem.every(i => DONE_STATUSES.includes(i.status));
+      check(!!dfl[e.id] === done, `既定の畳みが完了状態と合わない: ${e.id}`);
+    });
+    const onMapDone = Object.keys(dfl).filter(id => ITEMS.some(i => i.epic === id && i.col !== undefined));
+    if (onMapDone.length) {
+      S.folded = dfl; render();
+      onMapDone.forEach(id => {
+        check(!!document.querySelector(`#zoomG [data-node="epic:${CSS.escape(id)}"]`),
+              `全員完了のエピックが既定で 1 ノードに畳まれない: ${id}`);
+        check(!ITEMS.some(i => i.epic === id && document.querySelector(`#zoomG [data-node="${CSS.escape(i.id)}"]`)),
+              `既定で畳んだエピックのメンバーが図に残っている: ${id}`);
+      });
+      S.folded = {}; render();
+    }
+    info.defaultFolded = Object.keys(dfl).join(' ') || '(none)';
 
     try {
       const svg = exportSvgText();

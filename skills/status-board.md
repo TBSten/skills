@@ -11,7 +11,8 @@ Reading the example above:
   blocked on a human, and the gold `NEXT 1` marks the next move. **Open decisions sit directly
   beneath whatever they hold up, with a dashed red arrow pushing up into it** — far easier to read
   than a long edge sweeping across the whole graph
-- **Kanban (bottom)** — one band per epic, showing only the status columns that band actually has
+- **Kanban (bottom)** — one band per epic, showing only the status columns that band actually has.
+  A column with more than 10 cards wraps into side-by-side stacks of 10
 - **Detail panel (right)** — body, dependencies (prerequisite / blocked-by / next), and linked PRs
   for the current selection
 - **Filter row (top)** — status chips; pressing one dims the graph and removes the column from the kanban
@@ -30,7 +31,9 @@ to `.local/status-board/<yyyy-MM-dd-HH-mm>.html`. CSS and JS are inlined, so it 
 
 Drag to pan and wheel to zoom; zooming out triggers **semantic zoom**, dropping detail lines so the
 whole chain stays readable. Clicking an epic label folds that group into a single node and reroutes
-its dependency edges. The graph alone can be exported as SVG or PNG — and Shift-clicking several
+its dependency edges. Epics whose tickets are all closed start folded (an epic with no tickets
+stays open); a manual fold/unfold is kept in the URL (`?fold=`) and wins over that default.
+The graph alone can be exported as SVG or PNG — and Shift-clicking several
 tickets exports **a view with only those lifted out of the rest** (see below).
 A 全画面 (fullscreen) button expands the graph alone to fill the viewport; press it again or Esc to return.
 
