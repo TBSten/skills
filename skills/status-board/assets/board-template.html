@@ -365,6 +365,19 @@ function wrap(text, maxU) {
 const statusOf = id => STATUSES.find(s => s.id === id) || STATUSES[STATUSES.length - 1];
 const byId = {}; ITEMS.forEach(i => { byId[i.id] = i; });
 
+/* 完了扱いのステータス。collect.mjs は merged PR / closed issue をすべて 'closed' に寄せる */
+const DONE_STATUSES = ['closed'];
+/* メンバーが 1 件以上あり、全員が完了のエピックの id。図では最初から 1 ノードに畳む
+   （片付いた塊で図を占有しない）。メンバー 0 件のエピックは完了扱いにしない。
+   純関数にしてあるのは __verify() が合成データで判定を確かめるため */
+function doneEpicIds(epics, items) {
+  return epics.filter(e => {
+    const mem = items.filter(i => i.epic === e.id);
+    return mem.length > 0 && mem.every(i => DONE_STATUSES.includes(i.status));
+  }).map(e => e.id);
+}
+const defaultFolded = () => Object.fromEntries(doneEpicIds(EPICS, ITEMS).map(id => [id, true]));
+
 /* 確認欄の保存。キーはファイル名ではなくボード名なので、再生成しても引き継がれる。
    file:// で開くと localStorage が使えないブラウザがあるため、失敗しても黙って諦める
    （その場合はページを開いている間だけ保持される）。 */
@@ -395,7 +408,7 @@ const S = {
   expanded:!!PROPS.showChildren,
   hidden:{},                       /* status id -> true で非表示 */
   collapsed:Object.fromEntries(STATUSES.filter(s => s.collapsedByDefault).map(s => [s.id, true])),
-  folded:{},                       /* epic id -> true で 1 ノードに畳む */
+  folded:defaultFolded(),          /* epic id -> true で 1 ノードに畳む。既定は全員完了のエピック */
   fullMap:false,                   /* 図だけの全画面表示 */
   trace:null,                      /* { id, dir:'up'|'down', set:Set } 依存の推移的な点灯 */
   tour:null,                       /* { ix } NEXT ツアーの現在位置 */
@@ -1317,6 +1330,8 @@ function tourEnd() {
      sel      … 選択中の item id（選択順）
      hide     … チップで非表示にした status id
      collapse … 畳んだカンバン列の status id。既定と違うときだけ付く（空 = 全部展開）
+     fold     … 図で 1 ノードに畳んだ epic id。既定（全員完了のエピック）と違うときだけ付く
+                （空 = 全部展開）。手で開閉した状態がリロード後も既定より優先される
      q        … 検索語（空なら付かない）
      full     … 1 なら図だけの全画面
      trace    … up:<id> / down:<id>。トレース中の向きと起点
@@ -1327,6 +1342,8 @@ function tourEnd() {
    知らない id はロード時に捨てるので、古い URL を開いても壊れない。 */
 const DEFAULT_COLLAPSED = STATUSES.filter(s => s.collapsedByDefault).map(s => s.id).sort().join(' ');
 const isStatusId = id => STATUSES.some(s => s.id === id);
+const DEFAULT_FOLDED = Object.keys(defaultFolded()).sort().join(' ');
+const isEpicId = id => EPICS.some(e => e.id === id);
 function syncUrl() {
   try {
     const p = new URLSearchParams(location.search);   /* 知らないパラメータは残す */
@@ -1335,6 +1352,8 @@ function syncUrl() {
     put('hide', Object.keys(S.hidden).filter(k => S.hidden[k]).join(' '));
     const col = Object.keys(S.collapsed).filter(k => S.collapsed[k]).sort().join(' ');
     if (col === DEFAULT_COLLAPSED) p.delete('collapse'); else p.set('collapse', col);
+    const fold = Object.keys(S.folded).filter(k => S.folded[k]).sort().join(' ');
+    if (fold === DEFAULT_FOLDED) p.delete('fold'); else p.set('fold', fold);
     put('q', S.q);
     put('full', S.fullMap ? '1' : '');
     put('trace', S.trace ? S.trace.dir + ':' + S.trace.id : '');
@@ -1350,6 +1369,7 @@ function restoreFromUrl() {
     if (p.has('sel')) S.sel = ids('sel').filter(id => byId[id]);
     if (p.has('hide')) S.hidden = Object.fromEntries(ids('hide').filter(isStatusId).map(id => [id, true]));
     if (p.has('collapse')) S.collapsed = Object.fromEntries(ids('collapse').filter(isStatusId).map(id => [id, true]));
+    if (p.has('fold')) S.folded = Object.fromEntries(ids('fold').filter(isEpicId).map(id => [id, true]));
     if (p.has('q')) S.q = p.get('q') || '';
     if (p.has('trace')) {
       const m = (p.get('trace') || '').split(':');
@@ -1769,6 +1789,34 @@ function __verify() {
       S.folded = {}; render();
       check(nodesOf().length === before, `エピックを戻せない: ${ep.id}`);
     }
+
+    /* 全員完了のエピックだけが既定で畳まれる。判定は合成データで 3 通り見る */
+    const dz = doneEpicIds(
+      [{ id:'all-done' }, { id:'has-open' }, { id:'empty' }],
+      [{ epic:'all-done', status:DONE_STATUSES[0] }, { epic:'all-done', status:DONE_STATUSES[0] },
+       { epic:'has-open', status:DONE_STATUSES[0] }, { epic:'has-open', status:'review' }]);
+    check(dz.includes('all-done'), '全員完了のエピックが既定で畳まれない');
+    check(!dz.includes('has-open'), '未完了を含むエピックが既定で畳まれている');
+    check(!dz.includes('empty'), 'メンバー 0 件のエピックが既定で畳まれている');
+    /* 実データでも、既定の畳みが「全員完了」のエピックと一致し、図で 1 ノードに集約される */
+    const dfl = defaultFolded();
+    EPICS.forEach(e => {
+      const mem = ITEMS.filter(i => i.epic === e.id);
+      const done = mem.length > 0 && mem.every(i => DONE_STATUSES.includes(i.status));
+      check(!!dfl[e.id] === done, `既定の畳みが完了状態と合わない: ${e.id}`);
+    });
+    const onMapDone = Object.keys(dfl).filter(id => ITEMS.some(i => i.epic === id && i.col !== undefined));
+    if (onMapDone.length) {
+      S.folded = dfl; render();
+      onMapDone.forEach(id => {
+        check(!!document.querySelector(`#zoomG [data-node="epic:${CSS.escape(id)}"]`),
+              `全員完了のエピックが既定で 1 ノードに畳まれない: ${id}`);
+        check(!ITEMS.some(i => i.epic === id && document.querySelector(`#zoomG [data-node="${CSS.escape(i.id)}"]`)),
+              `既定で畳んだエピックのメンバーが図に残っている: ${id}`);
+      });
+      S.folded = {}; render();
+    }
+    info.defaultFolded = Object.keys(dfl).join(' ') || '(none)';
 
     try {
       const svg = exportSvgText();
