@@ -191,6 +191,17 @@ a{color:var(--text-link)} a:hover{color:var(--text-link-hover)}
 /* 入れ子のエピック: 子の段は親の段の中に、親の色の縦線でインデントして並べる */
 .band-kids{display:flex;flex-direction:column;gap:22px;margin:4px 0 0 5px;padding-left:14px;border-left:2px dashed}
 .strip{display:flex;align-items:flex-start;gap:10px;overflow-x:auto;padding-bottom:2px}
+/* 列が段の幅に収まらないときは横スクロールになる。macOS などのオーバーレイスクロールバーでは
+   スクロールできることが見えず、右端の列が切れているだけに見える。入れ子の段はインデントの分だけ
+   幅が狭く、はみ出しやすい。そこで (1) バーを出せる環境では常に出し (2) 右にまだ列があるあいだは
+   右端に「›」のフェードを重ねる（.more は markStrips() が付け外しする。はみ出していない段には付かない） */
+.strip::-webkit-scrollbar{height:8px}
+.strip::-webkit-scrollbar-track{background:var(--tbs-sky-100);border-radius:4px}
+.strip::-webkit-scrollbar-thumb{background:var(--tbs-sky-400);border-radius:4px}
+.strip.more::after{content:'›';position:sticky;right:0;flex:0 0 36px;margin-left:-46px;align-self:stretch;
+  display:flex;align-items:flex-start;justify-content:flex-end;padding:8px 4px 0 0;font-size:22px;font-weight:700;
+  color:var(--tbs-navy-400);background:linear-gradient(to right,rgba(255,255,255,0),var(--surface-card) 70%);
+  pointer-events:none}
 .col{flex:0 0 236px;min-width:0;display:flex;flex-direction:column;border-radius:10px;overflow:hidden}
 .col-folded{flex:0 0 auto;display:flex;align-items:flex-start;padding-top:6px}
 .col-chip{font-family:var(--tbs-font-body);font-size:12px;font-weight:700;color:var(--tbs-navy-400);
@@ -1187,6 +1198,13 @@ function keepScroll(fn) {
     if (v != null) s.scrollLeft = v;
   });
 }
+/* 右にまだ見えていない列がある段に .more を付ける（右端の「›」フェード）。
+   描画・段の横スクロール・ウィンドウのリサイズのたびに付け直す */
+function markStrips(only) {
+  (only ? [only] : els.kanban.querySelectorAll('[data-strip]')).forEach(s => {
+    s.classList.toggle('more', s.scrollLeft + s.clientWidth < s.scrollWidth - 1);
+  });
+}
 function render() {
   renderMap();
   applyView();
@@ -1194,6 +1212,7 @@ function render() {
     els.chips.innerHTML = chipsMarkup();
     els.kanban.innerHTML = kanbanMarkup();
   });
+  markStrips();
   els.side.innerHTML = detailMarkup();
   els.btnChildren.classList.toggle('on', S.expanded);
   if (els.btnTour) {
@@ -1633,7 +1652,12 @@ function init() {
     store.set(t.dataset.id, t.dataset.field, t.value);
     renderMap();
     keepScroll(() => { els.kanban.innerHTML = kanbanMarkup(); });
+    markStrips();
   });
+
+  /* 段の横スクロール（scroll はバブリングしないので capture で拾う）とリサイズで「›」を付け直す */
+  els.kanban.addEventListener('scroll', e => { if (e.target.dataset && e.target.dataset.strip) markStrips(e.target); }, true);
+  window.addEventListener('resize', () => markStrips());
 
   /* --- サイズ追従。手で動かした後は勝手に再フィットしない --- */
   if (window.ResizeObserver) new ResizeObserver(() => measure(false)).observe(els.pane);
@@ -2001,6 +2025,27 @@ function __verify() {
       S.folded = {}; render();
       info.nested = nested.map(e => `${e.parent}›${e.id}`).join(' ');
     }
+    /* 段の列のはみ出し。段自体はカンバンの枠に収まり、列が段の幅を超えるなら、横スクロールで
+       右端の列まで届き、右にまだ列があるあいだは「›」（.more）が出ている。
+       スクロールバーの有無は環境（オーバーレイ・headless）で変わるので見ない */
+    const kb = els.kanban.getBoundingClientRect();
+    let overflowing = 0;
+    document.querySelectorAll('#kanban [data-strip]').forEach(s => {
+      const id = s.dataset.strip;
+      check(s.getBoundingClientRect().right <= kb.right + 1, `カンバンの段がカンバンの枠からはみ出している: ${id}`);
+      const over = s.scrollWidth > s.clientWidth + 1;
+      check(s.classList.contains('more') === (over && s.scrollLeft + s.clientWidth < s.scrollWidth - 1),
+            `右に隠れた列があるのに「›」が出ない（または隠れていないのに出る）: ${id}`);
+      if (!over) return;
+      overflowing++;
+      const x0 = s.scrollLeft;
+      s.scrollLeft = s.scrollWidth; markStrips(s);
+      const last = s.lastElementChild.getBoundingClientRect();
+      check(last.right <= s.getBoundingClientRect().right + 1, `横スクロールしても右端の列に届かない: ${id}`);
+      check(!s.classList.contains('more'), `右端までスクロールしても「›」が消えない: ${id}`);
+      s.scrollLeft = x0; markStrips(s);
+    });
+    info.kanbanOverflow = overflowing;
     /* カンバンの入れ子。子の段は親の段の中にあり、インデントされている（図に出ない子も対象） */
     EPICS.filter(e => e.parent != null).forEach(e => {
       const b = document.querySelector(`#kanban [data-band="${CSS.escape(e.id)}"]`);
