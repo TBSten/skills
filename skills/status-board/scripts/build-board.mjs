@@ -276,7 +276,8 @@ if (nestOk) epics.forEach(e => {
 
 /* 1 グループにタスクが多すぎると、図の枠もカンバンの段も一目で読めなくなる。
    ビルドは止めず、分け方の指針つきで warn する。グループの単位は図の枠・カンバンの段と同じ
-   （epic ごと + エピック外）。main などのアンカーは数えない。 */
+   （epic ごと + エピック外）。main などのアンカーは数えない。
+   入れ子の親は「直下のメンバーだけ」で数える（子エピックに分けたら warn が消えるように）。 */
 {
   const groups = new Map();
   items.filter(i => i.kind !== 'anchor').forEach(i => {
@@ -285,14 +286,13 @@ if (nestOk) epics.forEach(e => {
   });
   for (const [g, n] of groups) {
     if (n < GROUP_WARN_MIN) continue;
-    /* epics は入れ子にできないので、nested group は label の「親 › 子」で表す */
     const fixes = g
       ? ` → 直し方: (a) group 化: 関連の強いものごとに epics を並列に分け、items の epic を振り直す`
-        + ` / (b) nested group 化: 中に階層があるなら "${g}" を子テーマごとの epics に分け、`
-        + `label を "<親> › <子>" にして親子関係を表す（epics の入れ子はスキーマ未対応）`
+        + ` / (b) nested group 化: 中に階層があるなら子テーマごとの epics を "parent": "${g}" 付きで作り、`
+        + `items の epic を子エピックに振り直す（子エピックに分けたぶんは "${g}" の件数から外れる）`
       : ' → 直し方: (a) group 化: 関連の強いものごとに epics を作り、items に epic を付けてまとめる'
-        + ' / (b) nested group 化: 大きなテーマの中に階層があるなら子テーマごとに epics を作り、'
-        + 'label を "<親> › <子>" にして親子関係を表す（epics の入れ子はスキーマ未対応）';
+        + ' / (b) nested group 化: 大きなテーマを親エピックにし、子テーマごとの epics に "parent": "<親の id>" を付けて'
+        + '入れ子にし、items の epic を子エピックに振る';
     warn(g
       ? `グループ "${g}" に ${n} 件ある。${GROUP_WARN_MIN} 件以上は 1 つの枠・段では読み切れない${fixes}`
       : `エピック外に ${n} 件ある。${GROUP_WARN_MIN} 件以上は 1 つの段では読み切れない${fixes}`);
