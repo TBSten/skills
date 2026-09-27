@@ -116,6 +116,8 @@ node $SB/scripts/build-board.mjs $W/board.json --overlay $W/overlay.json -o "$OU
 
 overlay を書かなかったら `--overlay` ごと省く。検証に落ちたら**指摘のとおり overlay を直す**
 （テンプレートや検証を緩める方向へ逃げない）。
+`warn: グループ "…" に N 件ある` / `warn: エピック外に N 件ある`（1 グループ 20 件以上）が出たら、関連の強いものごとに
+overlay で `epics` を分けて `epic` を振り直し、ビルドし直す（エピック外なら epics を作ってまとめる）。
 
 **ここで絶対パスをユーザーに報告する。**「検証はバックグラウンドで続ける」と添える。
 
