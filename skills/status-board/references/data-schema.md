@@ -15,7 +15,7 @@ node scripts/build-board.mjs <board.json> [--overlay <overlay.json>] -o <out.htm
   "meta":     { "title", "repoUrl", "repoLabel", "updatedAt" },
   "props":    { "showChildren", "dimUnrelated", "nodeWidth" },
   "statuses": [ { "id", "label", "short", "stroke", "fill", "pane", "collapsedByDefault" } ],
-  "epics":    [ { "id", "label", "fill", "border" } ],
+  "epics":    [ { "id", "label", "fill", "border", "parent" } ],
   "urgency":  [ "statuses[].id", ... ],
   "items":    [ { ... } ],
   "edges":    [ { "from", "to", "kind", "label" } ]
@@ -61,7 +61,8 @@ node scripts/build-board.mjs <board.json> [--overlay <overlay.json>] -o <out.htm
 
 ## epics — 図の枠 = カンバンの段
 
-`{ id, label, fill, border }` すべて必須。`fill` は薄い面、`border` は破線の色。
+`{ id, label, fill, border }` は必須。`fill` は薄い面、`border` は破線の色。
+`parent`（任意）に別のエピックの `id` を書くと、そのエピックの子になる（[入れ子](#入れ子--parent)）。
 
 **同じエピックのメンバーの `col` は連続させる。** 範囲内に別のエピック（またはエピック無し）の
 ノードが入っているとビルドがエラーで止まる。図の枠が重なって読めなくなるため。
@@ -71,6 +72,33 @@ node scripts/build-board.mjs <board.json> [--overlay <overlay.json>] -o <out.htm
 
 1 グループ（エピック 1 つ、またはエピック外）にアンカー以外のタスクが 20 件以上あると、
 ビルドが分割を促す warn を出す（止めはしない）。
+
+### 入れ子 — `parent`
+
+```jsonc
+"epics": [
+  { "id": "api",      "label": "API 刷新",   "fill": "#EAF6F7", "border": "#3F4B7F" },
+  { "id": "api-auth", "label": "認証",       "fill": "#FBF5EA", "border": "#E0A32E", "parent": "api" },
+  { "id": "api-docs", "label": "ドキュメント", "fill": "#EDF6F2", "border": "#3E9E7A", "parent": "api" }
+]
+```
+
+- **深さは 3 段まで**（親 › 子 › 孫）。`parent` が存在しない・循環する・4 段以上になるとビルドが止まる
+- **`items[].epic` は親エピックを指してもよい。** そのチケットは親の「直下のメンバー」になり、
+  子エピックの枠の外・親の枠の中に置かれる
+- 図: 子の枠は親の枠の内側に描かれ、親の枠は直下のメンバーと子の枠をすべて包む
+- `col` の連続性は**子孫を含めた部分木**で見る。つまり
+  - 親の範囲 ⊇ 子の範囲（子孫のメンバーは親の範囲にも入る）
+  - 兄弟の子エピック同士の範囲は重ねない
+  - 親の直下メンバーを子の範囲の中の `col` に置かない（子の枠がそれを包んでしまう）
+- 畳み: 親を畳むと子孫ごと 1 ノードになり、子孫宛ての依存線はその箱にまとまる。子だけを畳むこともできる
+  （箱は親の枠の中に残る）。親を開き直すと、子の畳み状態はそのまま戻る
+- 完了判定（既定の畳み）は**子孫を含めた全メンバー**で行う。子に未完了があれば親は開いたまま。
+  直下メンバーが 0 件でも、子孫が全部完了なら親は畳まれる
+- カンバン: 子の段は親の段の中にインデントして並ぶ。親の段の列には直下のメンバーだけが出る。
+  段見出しの件数は子孫を含めた数
+- 20 件の warn は**直下のメンバーだけ**で数える。子エピックに分けた分は親の件数から外れるので、
+  子に振り直せば warn が消える
 
 ## urgency
 
@@ -88,7 +116,7 @@ node scripts/build-board.mjs <board.json> [--overlay <overlay.json>] -o <out.htm
 | `kind` | ○ | `anchor` / `pr` / `task` / `human` / `idea` |
 | `col` | — | 図のレーン番号（整数）。**省略するとカンバンだけに出る** |
 | `anchorY` | — | そのレーンで中心線から外して置く時の y。300 くらいまで |
-| `epic` | — | `epics[].id` |
+| `epic` | — | `epics[].id`。入れ子の親を指してもよい（親の直下メンバーになる） |
 | `human` | — | `true` で 🙋 人間待ちチップ |
 | `next` | — | 1 から振る「次にやる順」。金色の NEXT 旗。多くても 3 つまで |
 | `meta[]` | — | 図のノード内に出る補足行。1〜2 行 |
@@ -173,7 +201,7 @@ GitHub への問い合わせは **GraphQL 1 往復だけ**（PR 一覧・CI・�
 | `status` | CI・draft・未 resolve コメント・`reviewDecision` から下の順で判定 |
 | `meta[]` | `CI 6/8 pass` / `未 resolve コメント 2 件` / `draft` / `merged` |
 | `col` と `edges` | stacked PR（base が別 PR の head）の連なりから深さを算出 |
-| `epics` | 2 本以上の stacked PR の連なりを 1 エピックに。枠が重なる配置になる場合は作らない |
+| `epics` | 2 本以上の stacked PR の連なりを 1 エピックに。枠が重なる配置になる場合は作らない（`parent` は付けない。入れ子は overlay で足す） |
 | `next` | 図に出ている未完了のものを緊急度順に並べ、上位 3 件へ 1〜3 を振る |
 | issue / ローカルブランチ | `col` を振らずカンバンのみ。関係するものは後から昇格する |
 
@@ -226,6 +254,8 @@ merged PR は最大 6 件）。塩漬けの issue とブランチを全部載せ
 
 既存の値を変えたいだけなら `id` とそのフィールドだけ書けばよい
 （例: `{"items":[{"id":"pr200","next":1}]}`）。
+エピックの入れ子も同じで、`{"epics":[{"id":"stack1","parent":"api"}]}` で既存のエピックを子にできる。
+`"parent": null` を書くと入れ子を外してトップレベルに戻す。
 
 `col` を持つ item を足すとき、その col がエピックの範囲内なら `epic` も付ける。
 忘れてもビルドが直し方つきで止めるので、先に悩まない。
@@ -251,6 +281,8 @@ merged PR は最大 6 件）。塩漬けの issue とブランチを全部載せ
 - 端点が居なくなった `edges`（相手の PR が merge されて板から消えた等）
 - board から消えた item への部分上書き（`{"id","next"}` だけのような差分）
 - 消えた epic への参照（`epic` フィールドだけ外す）
+- board から消えた epic への部分上書き（`label` の無い `{"id","parent"}` のような差分）
+- 消えた epic を指す `parent`（`parent` フィールドだけ外してトップレベルに戻す）
 - `next`（毎回 collect が振り直す）
 
 引き継ぐかどうかは呼び出し元が決める: **まだ生きている項目だけ残して `overlay.json` にする。**
@@ -264,7 +296,8 @@ merged PR は最大 6 件）。塩漬けの issue とブランチを全部載せ
 - `items[].kind` が 5 種以外
 - `edges[].from/to` が `items` に無い、`col` を持たない、`from.col >= to.col`（`block` を除く）
 - `edges[].kind` が 3 種以外
-- エピックの `col` 範囲に別のノードが入っている
+- `epics[].parent` が存在しない / 循環している / 入れ子が 3 段を超える
+- エピックの `col` 範囲（子孫エピックのメンバーを含む）に別のノードが入っている
 - `next` の重複
 - `links[]` の `url` / `label` 欠け、`children[]` の `key` / `title` 欠け
 - `ask` が文字列でも配列でもない

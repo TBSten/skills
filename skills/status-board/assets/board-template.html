@@ -32,6 +32,7 @@ addEventListener('unhandledrejection', e => __errors.push('rejection: ' + e.reas
        STATUSES … カンバンの列 = ノードの色。自由に増減してよい
                   { id, label, short, stroke, fill, pane, collapsedByDefault }
        EPICS    … 図の枠 = カンバンの段。所属チケットの col は連続させること
+                  parent に別のエピックの id を書くと入れ子になる（親の枠が子の枠を包む）
        URGENCY  … 畳んだエピックの代表ステータスを決める優先順（上ほど緊急）
        ITEMS    … チケット 1 件 = 1 行。col を省くとカンバンにだけ出る
        EDGES    … 依存線。左レーン → 右レーンの向きだけ
@@ -187,7 +188,20 @@ a{color:var(--text-link)} a:hover{color:var(--text-link-hover)}
 .band-hd h3{margin:0;font-size:14px;font-weight:700;letter-spacing:.06em;color:var(--text-strong)}
 .band-hd .n{font-family:var(--tbs-font-mono);font-size:11px;color:var(--text-muted)}
 .dash{width:12px;height:12px;border-radius:3px}
+/* 入れ子のエピック: 子の段は親の段の中に、親の色の縦線でインデントして並べる */
+.band-kids{display:flex;flex-direction:column;gap:22px;margin:4px 0 0 5px;padding-left:14px;border-left:2px dashed}
 .strip{display:flex;align-items:flex-start;gap:10px;overflow-x:auto;padding-bottom:2px}
+/* 列が段の幅に収まらないときは横スクロールになる。macOS などのオーバーレイスクロールバーでは
+   スクロールできることが見えず、右端の列が切れているだけに見える。入れ子の段はインデントの分だけ
+   幅が狭く、はみ出しやすい。そこで (1) バーを出せる環境では常に出し (2) 右にまだ列があるあいだは
+   右端に「›」のフェードを重ねる（.more は markStrips() が付け外しする。はみ出していない段には付かない） */
+.strip::-webkit-scrollbar{height:8px}
+.strip::-webkit-scrollbar-track{background:var(--tbs-sky-100);border-radius:4px}
+.strip::-webkit-scrollbar-thumb{background:var(--tbs-sky-400);border-radius:4px}
+.strip.more::after{content:'›';position:sticky;right:0;flex:0 0 36px;margin-left:-46px;align-self:stretch;
+  display:flex;align-items:flex-start;justify-content:flex-end;padding:8px 4px 0 0;font-size:22px;font-weight:700;
+  color:var(--tbs-navy-400);background:linear-gradient(to right,rgba(255,255,255,0),var(--surface-card) 70%);
+  pointer-events:none}
 .col{flex:0 0 236px;min-width:0;display:flex;flex-direction:column;border-radius:10px;overflow:hidden}
 .col-folded{flex:0 0 auto;display:flex;align-items:flex-start;padding-top:6px}
 .col-chip{font-family:var(--tbs-font-body);font-size:12px;font-weight:700;color:var(--tbs-navy-400);
@@ -319,6 +333,8 @@ const GYB = 54;   /* 同上。block の起点の手前だけ広くして、上�
 const CY = 206;   /* レーンの中心線 */
 const M  = 28;    /* 図全体の余白 */
 const COMPACT_K = 0.7;  /* この縮尺を下回ると意味的ズームに入る */
+const NEST_PAD = 14;      /* 入れ子のエピック枠: 親の枠が子の枠から張り出す幅（左右・下） */
+const NEST_PAD_TOP = 34;  /* 同上の上側。親のラベルが子のラベルと重ならない高さ */
 const K_MIN = 0.001, K_MAX = 2.4;  /* 最小 0.1% まで引ける */
 /* カンバンの 1 列（エピック × ステータス）に縦へ積むカードの上限。超えたら同じ列の中で
    右隣へ折り返し、この件数ずつの小列に分ける（1 列だけが縦に長く伸びて段が読めなくなるため） */
@@ -376,14 +392,41 @@ function wrap(text, maxU) {
 const statusOf = id => STATUSES.find(s => s.id === id) || STATUSES[STATUSES.length - 1];
 const byId = {}; ITEMS.forEach(i => { byId[i.id] = i; });
 
+/* エピックの入れ子。parent は build-board.mjs が「存在する・循環しない・深すぎない」を
+   検証済み。epics の中で id とその子孫エピックの id を集める（純関数。__verify() の合成データでも使う） */
+function subtreeIn(epics, id) {
+  const out = new Set([id]);
+  let grew = true;
+  while (grew) {
+    grew = false;
+    epics.forEach(e => {
+      if (!out.has(e.id) && e.parent != null && out.has(e.parent)) { out.add(e.id); grew = true; }
+    });
+  }
+  return out;
+}
+const SUBTREE = {}; EPICS.forEach(e => { SUBTREE[e.id] = subtreeIn(EPICS, e.id); });
+const epicParent = id => { const e = EPICS.find(x => x.id === id); return e && e.parent != null ? e.parent : null; };
+/* id 自身と祖先の並び（内 → 外）。上限は検証の深さ上限より十分大きい安全弁 */
+const epicChain = id => { const out = []; for (let p = id; p != null && out.length < 16; p = epicParent(p)) out.push(p); return out; };
+const hasNest = EPICS.some(e => e.parent != null);
+/* 畳まれている祖先（自身を含む）のうち一番外側。親を畳むと子孫ごと 1 ノードになる */
+const foldRootOf = (epicId, folded) => {
+  let r = null;
+  epicChain(epicId).forEach(id => { if (folded[id]) r = id; });
+  return r;
+};
+
 /* 完了扱いのステータス。collect.mjs は merged PR / closed issue をすべて 'closed' に寄せる */
 const DONE_STATUSES = ['closed'];
 /* メンバーが 1 件以上あり、全員が完了のエピックの id。図では最初から 1 ノードに畳む
    （片付いた塊で図を占有しない）。メンバー 0 件のエピックは完了扱いにしない。
+   メンバーは子孫エピックのチケットまで含めて数える（子に未完了があれば親も開いたまま）。
    純関数にしてあるのは __verify() が合成データで判定を確かめるため */
 function doneEpicIds(epics, items) {
   return epics.filter(e => {
-    const mem = items.filter(i => i.epic === e.id);
+    const sub = subtreeIn(epics, e.id);
+    const mem = items.filter(i => sub.has(i.epic));
     return mem.length > 0 && mem.every(i => DONE_STATUSES.includes(i.status));
   }).map(e => e.id);
 }
@@ -507,13 +550,13 @@ function graph(opts) {
 
   const fsT = compact ? 17 : 13, fsK = compact ? 13 : 10.5, lhT = compact ? 22 : 18;
 
-  /* 畳まれていないエピックのメンバー + エピック無しのノード */
-  const src = ITEMS.filter(i => i.col !== undefined && !(i.epic && folded[i.epic]));
+  /* 畳まれていないエピックのメンバー + エピック無しのノード（畳んだ祖先の下に居るものも除く） */
+  const src = ITEMS.filter(i => i.col !== undefined && !(i.epic && foldRootOf(i.epic, folded)));
 
-  /* 畳まれたエピックは 1 ノードに集約する */
+  /* 畳まれたエピックは子孫ごと 1 ノードに集約する。畳んだ祖先の下に居るエピックはその祖先に吸われる */
   EPICS.forEach(e => {
-    if (!folded[e.id]) return;
-    const mem = ITEMS.filter(i => i.epic === e.id && i.col !== undefined);
+    if (!folded[e.id] || foldRootOf(e.id, folded) !== e.id) return;
+    const mem = ITEMS.filter(i => SUBTREE[e.id].has(i.epic) && i.col !== undefined);
     if (!mem.length) return;
     const nx = mem.filter(m => m.next).map(m => m.next);
     src.push({
@@ -529,6 +572,27 @@ function graph(opts) {
   /* 使われている col だけを詰めてレーン番号に割り当てる（空レーンは作らない） */
   const usedCols = Array.from(new Set(src.map(i => i.col))).sort((a, b) => a - b);
   const colIdx = {}; usedCols.forEach((c, ix) => { colIdx[c] = ix; });
+
+  /* 描く枠 = 畳まれていない（畳んだ祖先も無い）エピック。各枠が包むノードは、
+     子孫エピックのメンバー + 畳まれた子孫エピックの箱（箱は親エピックの枠に属する） */
+  const frameEpicOf = i => i.kind === 'epic' ? epicParent(i.epic) : i.epic;
+  const openEpics = EPICS.filter(e => !foldRootOf(e.id, folded));
+  const inFrame = (e, i) => { const fe = frameEpicOf(i); return fe != null && SUBTREE[e.id].has(fe); };
+
+  /* 入れ子の枠はレーンの外へ NEST_PAD ずつ張り出す。レーン境界で閉じる枠と開く枠が
+     合わせて 3 つ以上あると GX では足りずに隣の枠と重なるので、その境界だけ広げる。
+     入れ子が無ければ閉じる枠・開く枠は高々 1 つずつなので、レーン位置は変わらない */
+  const extra = usedCols.map(() => 0);
+  if (hasNest) {
+    const spans = openEpics.map(e => {
+      const cs = src.filter(i => inFrame(e, i)).map(i => colIdx[i.col]);
+      return cs.length ? { lo:Math.min.apply(null, cs), hi:Math.max.apply(null, cs) } : null;
+    }).filter(Boolean);
+    for (let j = 0; j + 1 < usedCols.length; j++) {
+      const k = spans.filter(sp => sp.hi === j).length + spans.filter(sp => sp.lo === j + 1).length;
+      extra[j + 1] = extra[j] + NEST_PAD * Math.max(0, k - 2);
+    }
+  }
 
   const nodes = src.map(i => {
     const st = statusOf(i.status);
@@ -571,7 +635,7 @@ function graph(opts) {
     });
     cols[c] = base;
     cols[c].forEach(n => {
-      const laneX = M + colIdx[Number(c)] * (W + GX);
+      const laneX = M + colIdx[Number(c)] * (W + GX) + extra[colIdx[Number(c)]];
       const gap = blockSrc.has(n.i.id) ? GYB : GY;
       n.x = laneX + (W - n.w) / 2;
       if (cursor === null) n.y = n.i.anchorY !== undefined ? n.i.anchorY : CY - n.h / 2;
@@ -584,20 +648,27 @@ function graph(opts) {
 
   const map = {}; nodes.forEach(n => { map[n.i.id] = n; });
 
-  /* エピック枠 */
-  const frames = [];
-  EPICS.forEach(e => {
-    if (folded[e.id]) return;
-    const mem = nodes.filter(n => n.i.epic === e.id);
-    if (!mem.length) return;
-    const x1 = Math.min.apply(null, mem.map(n => n.x)) - 16;
-    const x2 = Math.max.apply(null, mem.map(n => n.x + n.w)) + 16;
-    const y1 = Math.min.apply(null, mem.map(n => n.y)) - 30;
-    const y2 = Math.max.apply(null, mem.map(n => n.y + n.h)) + 16;
-    frames.push({ e, x:x1, y:y1, w:x2 - x1, h:y2 - y1 });
+  /* エピック枠。親の枠は直下メンバーと子の枠をすべて包むので、深い（子）方から決める。
+     描く順は浅い（親）方から。子の枠が親の枠の上に重なって見えるようにするため */
+  const depthOf = id => epicChain(id).length - 1;
+  const byDepth = openEpics.map((e, ix) => ({ e, ix, d:depthOf(e.id) }));
+  const fr = {};
+  byDepth.slice().sort((a, b) => b.d - a.d || a.ix - b.ix).forEach(({ e, d }) => {
+    const mem = nodes.filter(n => frameEpicOf(n.i) === e.id);
+    const kids = openEpics.filter(k => epicParent(k.id) === e.id && fr[k.id]).map(k => fr[k.id]);
+    if (!mem.length && !kids.length) return;
+    const xs1 = mem.map(n => n.x - 16).concat(kids.map(k => k.x - NEST_PAD));
+    const xs2 = mem.map(n => n.x + n.w + 16).concat(kids.map(k => k.x + k.w + NEST_PAD));
+    const ys1 = mem.map(n => n.y - 30).concat(kids.map(k => k.y - NEST_PAD_TOP));
+    const ys2 = mem.map(n => n.y + n.h + 16).concat(kids.map(k => k.y + k.h + NEST_PAD));
+    const x1 = Math.min.apply(null, xs1), x2 = Math.max.apply(null, xs2);
+    const y1 = Math.min.apply(null, ys1), y2 = Math.max.apply(null, ys2);
+    fr[e.id] = { e, x:x1, y:y1, w:x2 - x1, h:y2 - y1, depth:d };
     minX = Math.min(minX, x1); minY = Math.min(minY, y1 - 12);
     maxX = Math.max(maxX, x2); maxY = Math.max(maxY, y2);
   });
+  const frames = byDepth.slice().sort((a, b) => a.d - b.d || a.ix - b.ix)
+    .map(x => fr[x.e.id]).filter(Boolean);
 
   if (!nodes.length) { minX = 0; minY = 0; maxX = 1; maxY = 1; }
   return { nodes, map, frames, minX, minY,
@@ -624,7 +695,8 @@ const txt = (t, x, y, fs, fw, fill, ff, anchor) =>
    依存線の繋ぎ替えと隣接判定の両方で使う */
 const viaOf = g => id => {
   const it = byId[id];
-  return (it && it.epic && g.folded[it.epic]) ? 'epic:' + it.epic : id;
+  const root = it && it.epic ? foldRootOf(it.epic, g.folded) : null;
+  return root ? 'epic:' + root : id;
 };
 
 /* 依存線 1 本ごとの経路（cubic Bézier）。描画 (svgBody) と並走検出 (__verify) で共有する。
@@ -746,7 +818,7 @@ function svgBody(g, opts) {
   /* 畳んだエピックの箱は、メンバーの誰かがトレースに入っていれば点灯扱い */
   const traceHas = id => !trace ? false
     : (id.indexOf('epic:') === 0
-        ? ITEMS.some(m => m.epic === id.slice(5) && trace.has(m.id))
+        ? ITEMS.some(m => (SUBTREE[id.slice(5)] || new Set()).has(m.epic) && trace.has(m.id))
         : trace.has(id));
 
   const opacityFor = id => {
@@ -882,14 +954,17 @@ function svgBody(g, opts) {
 /* ══════════════════════════════════════════════════════════════════════════
    6. カンバンと詳細パネルの生成
    ══════════════════════════════════════════════════════════════════════════ */
+/* 段はエピックの入れ子どおりに入れ子にする。子の段は親の段の中（.band-kids）に入り、
+   親の段の列には直下のメンバーだけが出る。件数バッジは子孫まで含めた数 */
 function kanbanMarkup() {
-  const bands = EPICS.map(e => ({ id:e.id, label:e.label, color:e.border }))
+  const bands = EPICS.filter(e => e.parent == null).map(e => ({ id:e.id, label:e.label, color:e.border }))
     .concat([{ id:'none', label:'エピック外', color:C.navy300 }]);
   const sset = selSet();
-  let out = '';
-  bands.forEach(bd => {
+  const bandOf = bd => {
     const pool = ITEMS.filter(i => (i.epic || 'none') === bd.id && i.kanban !== false);
-    if (!pool.length) return;
+    const kidsHtml = EPICS.filter(e => e.parent != null && e.parent === bd.id)
+      .map(e => bandOf({ id:e.id, label:e.label, color:e.border })).join('');
+    if (!pool.length && !kidsHtml) return '';
 
     /* そのエピックが実際に持っているステータス列だけ出す */
     let colsHtml = '';
@@ -934,13 +1009,18 @@ function kanbanMarkup() {
         + `<button class="col-x" title="折りたたむ" data-toggle-col="${esc(s.id)}">×</button></div>`
         + `<div class="col-body">${cards}</div></div>`;
     });
-    if (!colsHtml) return;
+    if (!colsHtml && !kidsHtml) return '';
 
-    out += `<div class="band"><div class="band-hd">`
+    const total = bd.id === 'none' ? pool.length
+      : ITEMS.filter(i => SUBTREE[bd.id].has(i.epic) && i.kanban !== false).length;
+    return `<div class="band" data-band="${esc(bd.id)}"><div class="band-hd">`
       + `<span class="dash" style="background:${bd.color}"></span>`
-      + `<h3>${esc(bd.label)}</h3><span class="n">${pool.length}</span></div>`
-      + `<div class="strip" data-strip="${esc(bd.id)}">${colsHtml}</div></div>`;
-  });
+      + `<h3>${esc(bd.label)}</h3><span class="n">${total}</span></div>`
+      + (colsHtml ? `<div class="strip" data-strip="${esc(bd.id)}">${colsHtml}</div>` : '')
+      + (kidsHtml ? `<div class="band-kids" style="border-left-color:${bd.color}">${kidsHtml}</div>` : '')
+      + `</div>`;
+  };
+  const out = bands.map(bandOf).join('');
   return out || `<div class="band"><div class="band-hd"><h3>該当なし</h3></div></div>`;
 }
 
@@ -1118,6 +1198,13 @@ function keepScroll(fn) {
     if (v != null) s.scrollLeft = v;
   });
 }
+/* 右にまだ見えていない列がある段に .more を付ける（右端の「›」フェード）。
+   描画・段の横スクロール・ウィンドウのリサイズのたびに付け直す */
+function markStrips(only) {
+  (only ? [only] : els.kanban.querySelectorAll('[data-strip]')).forEach(s => {
+    s.classList.toggle('more', s.scrollLeft + s.clientWidth < s.scrollWidth - 1);
+  });
+}
 function render() {
   renderMap();
   applyView();
@@ -1125,6 +1212,7 @@ function render() {
     els.chips.innerHTML = chipsMarkup();
     els.kanban.innerHTML = kanbanMarkup();
   });
+  markStrips();
   els.side.innerHTML = detailMarkup();
   els.btnChildren.classList.toggle('on', S.expanded);
   if (els.btnTour) {
@@ -1564,7 +1652,12 @@ function init() {
     store.set(t.dataset.id, t.dataset.field, t.value);
     renderMap();
     keepScroll(() => { els.kanban.innerHTML = kanbanMarkup(); });
+    markStrips();
   });
+
+  /* 段の横スクロール（scroll はバブリングしないので capture で拾う）とリサイズで「›」を付け直す */
+  els.kanban.addEventListener('scroll', e => { if (e.target.dataset && e.target.dataset.strip) markStrips(e.target); }, true);
+  window.addEventListener('resize', () => markStrips());
 
   /* --- サイズ追従。手で動かした後は勝手に再フィットしない --- */
   if (window.ResizeObserver) new ResizeObserver(() => measure(false)).observe(els.pane);
@@ -1623,9 +1716,36 @@ function __verify() {
           '図に作業ノードが 1 つも無い（アンカーのみ）。カンバンに作業があるのに図が空');
 
     const fr = [...document.querySelectorAll('#zoomG [data-fold]')]
-      .map(g => ({ id:g.dataset.fold, r:box(g.parentNode.querySelector('rect')) }));
+      .map(g => ({ id:g.dataset.fold, r:box(g.parentNode.querySelector('rect')), lb:box(g) }));
+    /* 入れ子の親子（祖先・子孫）は包含が正しい形なので重なり判定から外し、内側にあるかを見る */
+    const inside = (a, b) => a.x > b.x && a.y > b.y && a.x + a.w < b.x + b.w && a.y + a.h < b.y + b.h;
+    const related = (a, b) => epicChain(a).includes(b) || epicChain(b).includes(a);
+    for (let i = 0; i < fr.length; i++) for (let j = i + 1; j < fr.length; j++) {
+      if (!related(fr[i].id, fr[j].id)) {
+        check(!hit(fr[i].r, fr[j].r), `エピック枠が重なっている: ${fr[i].id} x ${fr[j].id}`);
+        continue;
+      }
+      const [inner, outer] = epicChain(fr[i].id).includes(fr[j].id) ? [fr[i], fr[j]] : [fr[j], fr[i]];
+      check(inside(inner.r, outer.r), `子エピックの枠が親の枠の内側に無い: ${inner.id} ⊄ ${outer.id}`);
+    }
+    /* 入れ子の親子で枠のラベル同士が重ならない（親のラベルが子のラベルに縦に詰まる事故の検出）。
+       TODO: 隣り合う無関係な枠で、枠より長いラベルが隣のラベルに食い込むのは入れ子以前からある。
+             検出すると既存のボードが落ちるので、ラベルの省略表示と合わせて別途扱う */
     for (let i = 0; i < fr.length; i++) for (let j = i + 1; j < fr.length; j++)
-      check(!hit(fr[i].r, fr[j].r), `エピック枠が重なっている: ${fr[i].id} x ${fr[j].id}`);
+      if (related(fr[i].id, fr[j].id))
+        check(!hit(fr[i].lb, fr[j].lb), `入れ子のエピック枠のラベルが重なっている: ${fr[i].id} x ${fr[j].id}`);
+    /* 枠は部分木（子孫エピックを含む）のノードをすべて包み、それ以外のノードは包まない */
+    fr.forEach(f => {
+      const sub = SUBTREE[f.id] || new Set([f.id]);
+      nodesOf().forEach(n => {
+        const it = byId[n.dataset.node];
+        const fe = it ? it.epic : epicParent(n.dataset.node.slice(5));
+        const nb = box(n.querySelector('rect, polygon') || n);
+        if (fe != null && sub.has(fe)) check(inside(nb, f.r), `枠 ${f.id} がメンバー ${n.dataset.node} を包んでいない`);
+        else check(!hit(nb, f.r), `枠 ${f.id} が無関係なノード ${n.dataset.node} に重なっている`);
+      });
+    });
+    info.frames = fr.length;
 
     /* 依存線の並走。画面の縮尺・畳みに依らないよう、書き出しと同じ全体レイアウトで見る */
     const gAll = graph({ compact:false, folded:{} });
@@ -1814,7 +1934,7 @@ function __verify() {
 
     /* メンバー 1 件のエピックは畳んでもノード数が 1→1 で減らないため、
        「メンバー数 → 1 に置き換わる」ことを厳密に見る */
-    const epPick = EPICS.map(e => ({ e, n: ITEMS.filter(i => i.epic === e.id && i.col !== undefined).length }))
+    const epPick = EPICS.map(e => ({ e, n: ITEMS.filter(i => SUBTREE[e.id].has(i.epic) && i.col !== undefined).length }))
       .filter(x => x.n > 0).sort((a, b) => b.n - a.n)[0];
     if (epPick) {
       const ep = epPick.e;
@@ -1834,25 +1954,106 @@ function __verify() {
     check(dz.includes('all-done'), '全員完了のエピックが既定で畳まれない');
     check(!dz.includes('has-open'), '未完了を含むエピックが既定で畳まれている');
     check(!dz.includes('empty'), 'メンバー 0 件のエピックが既定で畳まれている');
+    /* 入れ子: 完了判定は子孫のメンバーまで含める */
+    const dn = doneEpicIds(
+      [{ id:'p1' }, { id:'c1', parent:'p1' },                       /* 直下は完了・子に未完了 */
+       { id:'p2' }, { id:'c2', parent:'p2' },                       /* 子は完了・直下に未完了 */
+       { id:'p3' }, { id:'c3', parent:'p3' }, { id:'g3', parent:'c3' }, /* 直下 0・子孫すべて完了 */
+       { id:'c4', parent:'p3' }],                                   /* 空の子（p3 の判定に影響しない） */
+      [{ epic:'p1', status:DONE_STATUSES[0] }, { epic:'c1', status:'review' },
+       { epic:'p2', status:'review' }, { epic:'c2', status:DONE_STATUSES[0] },
+       { epic:'c3', status:DONE_STATUSES[0] }, { epic:'g3', status:DONE_STATUSES[0] }]);
+    check(!dn.includes('p1'), '子に未完了がある親エピックが既定で畳まれている');
+    check(!dn.includes('p2') && dn.includes('c2'), '直下に未完了がある親を畳んでいる / 完了した子を畳まない');
+    check(dn.includes('p3') && dn.includes('c3') && dn.includes('g3'), '子孫がすべて完了の親エピック（直下 0 件）が畳まれない');
+    check(!dn.includes('c4'), '空の子エピックが既定で畳まれている');
     /* 実データでも、既定の畳みが「全員完了」のエピックと一致し、図で 1 ノードに集約される */
     const dfl = defaultFolded();
     EPICS.forEach(e => {
-      const mem = ITEMS.filter(i => i.epic === e.id);
+      const mem = ITEMS.filter(i => SUBTREE[e.id].has(i.epic));
       const done = mem.length > 0 && mem.every(i => DONE_STATUSES.includes(i.status));
       check(!!dfl[e.id] === done, `既定の畳みが完了状態と合わない: ${e.id}`);
     });
-    const onMapDone = Object.keys(dfl).filter(id => ITEMS.some(i => i.epic === id && i.col !== undefined));
+    /* 畳んだ祖先の下に居るエピックは、その祖先の箱に吸われて自分の箱を持たない */
+    const onMapDone = Object.keys(dfl).filter(id => foldRootOf(id, dfl) === id
+      && ITEMS.some(i => SUBTREE[id].has(i.epic) && i.col !== undefined));
     if (onMapDone.length) {
       S.folded = dfl; render();
       onMapDone.forEach(id => {
         check(!!document.querySelector(`#zoomG [data-node="epic:${CSS.escape(id)}"]`),
               `全員完了のエピックが既定で 1 ノードに畳まれない: ${id}`);
-        check(!ITEMS.some(i => i.epic === id && document.querySelector(`#zoomG [data-node="${CSS.escape(i.id)}"]`)),
+        check(!ITEMS.some(i => SUBTREE[id].has(i.epic) && document.querySelector(`#zoomG [data-node="${CSS.escape(i.id)}"]`)),
               `既定で畳んだエピックのメンバーが図に残っている: ${id}`);
       });
       S.folded = {}; render();
     }
     info.defaultFolded = Object.keys(dfl).join(' ') || '(none)';
+
+    /* --- エピックの入れ子 --- */
+    const nested = EPICS.filter(e => e.parent != null
+      && ITEMS.some(i => SUBTREE[e.id].has(i.epic) && i.col !== undefined));
+    if (nested.length) {
+      S.folded = {}; render();
+      const rectOf = id => { const g = document.querySelector(`#zoomG [data-fold="${CSS.escape(id)}"]`);
+                             return g ? box(g.parentNode.querySelector('rect')) : null; };
+      nested.forEach(c => {
+        const rc = rectOf(c.id), rp = rectOf(c.parent);
+        check(!!rc && !!rp, `入れ子の枠が描かれない: ${c.parent} › ${c.id}`);
+        if (rc && rp) check(inside(rc, rp), `子エピックの枠が親の枠の内側に無い: ${c.id} ⊄ ${c.parent}`);
+      });
+      /* 親を畳むと子孫ごと 1 ノードに消える */
+      const top = EPICS.find(e => e.parent == null && nested.some(c => epicChain(c.id).includes(e.id)));
+      if (top) {
+        S.folded = { [top.id]:true }; render();
+        check(!!document.querySelector(`#zoomG [data-node="epic:${CSS.escape(top.id)}"]`), `親エピックを畳んでもノードが出ない: ${top.id}`);
+        const left = ITEMS.filter(i => SUBTREE[top.id].has(i.epic) && document.querySelector(`#zoomG [data-node="${CSS.escape(i.id)}"]`));
+        check(!left.length, `親エピックを畳んでも子孫のチケットが残る: ${left.map(i => i.id).join(', ')}`);
+        const kidFrames = [...SUBTREE[top.id]].filter(id => document.querySelector(`#zoomG [data-fold="${CSS.escape(id)}"]`));
+        check(!kidFrames.length, `親エピックを畳んでも子孫の枠が残る: ${kidFrames.join(', ')}`);
+        /* 子孫宛ての依存線は畳んだ箱にまとまる（箱の外との線は残る） */
+        const via = viaOf(graph({ compact:false, folded:S.folded }));
+        check(ITEMS.filter(i => SUBTREE[top.id].has(i.epic) && i.col !== undefined)
+                .every(i => via(i.id) === 'epic:' + top.id), `畳んだ親の箱に子孫の依存線がまとまらない: ${top.id}`);
+      }
+      /* 子だけを畳む。親の枠は残り、子の箱は親の枠の中に入る */
+      const c = nested[0];
+      S.folded = { [c.id]:true }; render();
+      const cn = document.querySelector(`#zoomG [data-node="epic:${CSS.escape(c.id)}"]`);
+      const rp = rectOf(c.parent);
+      check(!!cn && !!rp, `子エピックだけを畳めない: ${c.id}`);
+      if (cn && rp) check(inside(box(cn.querySelector('rect')), rp), `畳んだ子エピックの箱が親の枠の外に出る: ${c.id}`);
+      S.folded = {}; render();
+      info.nested = nested.map(e => `${e.parent}›${e.id}`).join(' ');
+    }
+    /* 段の列のはみ出し。段自体はカンバンの枠に収まり、列が段の幅を超えるなら、横スクロールで
+       右端の列まで届き、右にまだ列があるあいだは「›」（.more）が出ている。
+       スクロールバーの有無は環境（オーバーレイ・headless）で変わるので見ない */
+    const kb = els.kanban.getBoundingClientRect();
+    let overflowing = 0;
+    document.querySelectorAll('#kanban [data-strip]').forEach(s => {
+      const id = s.dataset.strip;
+      check(s.getBoundingClientRect().right <= kb.right + 1, `カンバンの段がカンバンの枠からはみ出している: ${id}`);
+      const over = s.scrollWidth > s.clientWidth + 1;
+      check(s.classList.contains('more') === (over && s.scrollLeft + s.clientWidth < s.scrollWidth - 1),
+            `右に隠れた列があるのに「›」が出ない（または隠れていないのに出る）: ${id}`);
+      if (!over) return;
+      overflowing++;
+      const x0 = s.scrollLeft;
+      s.scrollLeft = s.scrollWidth; markStrips(s);
+      const last = s.lastElementChild.getBoundingClientRect();
+      check(last.right <= s.getBoundingClientRect().right + 1, `横スクロールしても右端の列に届かない: ${id}`);
+      check(!s.classList.contains('more'), `右端までスクロールしても「›」が消えない: ${id}`);
+      s.scrollLeft = x0; markStrips(s);
+    });
+    info.kanbanOverflow = overflowing;
+    /* カンバンの入れ子。子の段は親の段の中にあり、インデントされている（図に出ない子も対象） */
+    EPICS.filter(e => e.parent != null).forEach(e => {
+      const b = document.querySelector(`#kanban [data-band="${CSS.escape(e.id)}"]`);
+      if (!b) return;                            /* カンバンに出るチケットが無い子 */
+      const pb = b.parentElement && b.parentElement.closest('[data-band]');
+      check(!!pb && pb.dataset.band === e.parent, `カンバンで子エピックの段が親の段の中に無い: ${e.id}`);
+      if (pb) check(b.getBoundingClientRect().left > pb.getBoundingClientRect().left, `カンバンで子エピックの段がインデントされない: ${e.id}`);
+    });
 
     try {
       const svg = exportSvgText();
