@@ -11,7 +11,8 @@ Reading the example above:
   blocked on a human, and the gold `NEXT 1` marks the next move. **Open decisions sit directly
   beneath whatever they hold up, with a dashed red arrow pushing up into it** — far easier to read
   than a long edge sweeping across the whole graph
-- **Kanban (bottom)** — one band per epic, showing only the status columns that band actually has
+- **Kanban (bottom)** — one band per epic, showing only the status columns that band actually has.
+  A column with more than 10 cards wraps into side-by-side stacks of 10
 - **Detail panel (right)** — body, dependencies (prerequisite / blocked-by / next), and linked PRs
   for the current selection
 - **Filter row (top)** — status chips; pressing one dims the graph and removes the column from the kanban
