@@ -214,11 +214,17 @@ epics.forEach(e => {
   });
   for (const [g, n] of groups) {
     if (n < GROUP_WARN_MIN) continue;
+    /* epics は入れ子にできないので、nested group は label の「親 › 子」で表す */
+    const fixes = g
+      ? ` → 直し方: (a) group 化: 関連の強いものごとに epics を並列に分け、items の epic を振り直す`
+        + ` / (b) nested group 化: 中に階層があるなら "${g}" を子テーマごとの epics に分け、`
+        + `label を "<親> › <子>" にして親子関係を表す（epics の入れ子はスキーマ未対応）`
+      : ' → 直し方: (a) group 化: 関連の強いものごとに epics を作り、items に epic を付けてまとめる'
+        + ' / (b) nested group 化: 大きなテーマの中に階層があるなら子テーマごとに epics を作り、'
+        + 'label を "<親> › <子>" にして親子関係を表す（epics の入れ子はスキーマ未対応）';
     warn(g
-      ? `グループ "${g}" に ${n} 件ある。${GROUP_WARN_MIN} 件以上は 1 つの枠・段では読み切れない`
-        + ' → 直し方: 関連の強いものごとに epics を分け（サブグループ化）、items の epic を振り直す'
-      : `エピック外に ${n} 件ある。${GROUP_WARN_MIN} 件以上は 1 つの段では読み切れない`
-        + ' → 直し方: 関連の強いものごとに epics を作り、items に epic を付けてまとめる');
+      ? `グループ "${g}" に ${n} 件ある。${GROUP_WARN_MIN} 件以上は 1 つの枠・段では読み切れない${fixes}`
+      : `エピック外に ${n} 件ある。${GROUP_WARN_MIN} 件以上は 1 つの段では読み切れない${fixes}`);
   }
 }
 
