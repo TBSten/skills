@@ -188,6 +188,8 @@ a{color:var(--text-link)} a:hover{color:var(--text-link-hover)}
 .band-hd h3{margin:0;font-size:14px;font-weight:700;letter-spacing:.06em;color:var(--text-strong)}
 .band-hd .n{font-family:var(--tbs-font-mono);font-size:11px;color:var(--text-muted)}
 .dash{width:12px;height:12px;border-radius:3px}
+/* 入れ子のエピック: 子の段は親の段の中に、親の色の縦線でインデントして並べる */
+.band-kids{display:flex;flex-direction:column;gap:22px;margin:4px 0 0 5px;padding-left:14px;border-left:2px dashed}
 .strip{display:flex;align-items:flex-start;gap:10px;overflow-x:auto;padding-bottom:2px}
 .col{flex:0 0 236px;min-width:0;display:flex;flex-direction:column;border-radius:10px;overflow:hidden}
 .col-folded{flex:0 0 auto;display:flex;align-items:flex-start;padding-top:6px}
@@ -941,14 +943,17 @@ function svgBody(g, opts) {
 /* ══════════════════════════════════════════════════════════════════════════
    6. カンバンと詳細パネルの生成
    ══════════════════════════════════════════════════════════════════════════ */
+/* 段はエピックの入れ子どおりに入れ子にする。子の段は親の段の中（.band-kids）に入り、
+   親の段の列には直下のメンバーだけが出る。件数バッジは子孫まで含めた数 */
 function kanbanMarkup() {
-  const bands = EPICS.map(e => ({ id:e.id, label:e.label, color:e.border }))
+  const bands = EPICS.filter(e => e.parent == null).map(e => ({ id:e.id, label:e.label, color:e.border }))
     .concat([{ id:'none', label:'エピック外', color:C.navy300 }]);
   const sset = selSet();
-  let out = '';
-  bands.forEach(bd => {
+  const bandOf = bd => {
     const pool = ITEMS.filter(i => (i.epic || 'none') === bd.id && i.kanban !== false);
-    if (!pool.length) return;
+    const kidsHtml = EPICS.filter(e => e.parent != null && e.parent === bd.id)
+      .map(e => bandOf({ id:e.id, label:e.label, color:e.border })).join('');
+    if (!pool.length && !kidsHtml) return '';
 
     /* そのエピックが実際に持っているステータス列だけ出す */
     let colsHtml = '';
@@ -993,13 +998,18 @@ function kanbanMarkup() {
         + `<button class="col-x" title="折りたたむ" data-toggle-col="${esc(s.id)}">×</button></div>`
         + `<div class="col-body">${cards}</div></div>`;
     });
-    if (!colsHtml) return;
+    if (!colsHtml && !kidsHtml) return '';
 
-    out += `<div class="band"><div class="band-hd">`
+    const total = bd.id === 'none' ? pool.length
+      : ITEMS.filter(i => SUBTREE[bd.id].has(i.epic) && i.kanban !== false).length;
+    return `<div class="band" data-band="${esc(bd.id)}"><div class="band-hd">`
       + `<span class="dash" style="background:${bd.color}"></span>`
-      + `<h3>${esc(bd.label)}</h3><span class="n">${pool.length}</span></div>`
-      + `<div class="strip" data-strip="${esc(bd.id)}">${colsHtml}</div></div>`;
-  });
+      + `<h3>${esc(bd.label)}</h3><span class="n">${total}</span></div>`
+      + (colsHtml ? `<div class="strip" data-strip="${esc(bd.id)}">${colsHtml}</div>` : '')
+      + (kidsHtml ? `<div class="band-kids" style="border-left-color:${bd.color}">${kidsHtml}</div>` : '')
+      + `</div>`;
+  };
+  const out = bands.map(bandOf).join('');
   return out || `<div class="band"><div class="band-hd"><h3>該当なし</h3></div></div>`;
 }
 
@@ -1991,6 +2001,14 @@ function __verify() {
       S.folded = {}; render();
       info.nested = nested.map(e => `${e.parent}›${e.id}`).join(' ');
     }
+    /* カンバンの入れ子。子の段は親の段の中にあり、インデントされている（図に出ない子も対象） */
+    EPICS.filter(e => e.parent != null).forEach(e => {
+      const b = document.querySelector(`#kanban [data-band="${CSS.escape(e.id)}"]`);
+      if (!b) return;                            /* カンバンに出るチケットが無い子 */
+      const pb = b.parentElement && b.parentElement.closest('[data-band]');
+      check(!!pb && pb.dataset.band === e.parent, `カンバンで子エピックの段が親の段の中に無い: ${e.id}`);
+      if (pb) check(b.getBoundingClientRect().left > pb.getBoundingClientRect().left, `カンバンで子エピックの段がインデントされない: ${e.id}`);
+    });
 
     try {
       const svg = exportSvgText();
