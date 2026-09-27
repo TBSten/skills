@@ -352,7 +352,7 @@ notes.forEach(n => console.error(`note: ${n}`));
    を書く。overlay（会話由来の人間待ち・未決・構想）はセッションを跨ぐとそこにしか
    残らないので、--prev の最新 snapshot から取り出して下書きの隣に overlay.prev.json
    として置く。呼び出し元に残す判断は「片付いたかどうか」だけ。機械的に死ぬもの
-   （端点が消えた edge・board から消えた item への部分上書き・消えた epic 参照・next）
+   （端点が消えた edge・board から消えた item / epic への部分上書き・消えた epic 参照・消えた親を指す parent・next）
    はここで落とす。 */
 {
   const itemIds = new Set(items.map(i => i.id));
@@ -398,9 +398,22 @@ notes.forEach(n => console.error(`note: ${n}`));
       }
       return true;
     });
-    const rest = { ...ov, items: kept, edges: edgesKept };
+    /* epics: 消えたエピックへの部分上書き（label が無い差分）は落とし、消えた親を指す parent は外す */
+    const epicsKept = [];
+    const epicAlive = new Set([...epicIds, ...(ov.epics || []).filter(e => e && e.id && e.label).map(e => e.id)]);
+    (ov.epics || []).forEach(e => {
+      if (!e || !e.id) return;
+      if (!epicAlive.has(e.id)) { drops.push(`epic ${e.id}（部分上書きの相手が消えた）`); return; }
+      const c = { ...e };
+      if (c.parent != null && !epicAlive.has(c.parent)) {
+        drops.push(`epic ${c.id}.parent "${c.parent}"（消えたので外した）`); delete c.parent;
+      }
+      epicsKept.push(c);
+    });
+    const rest = { ...ov, items: kept, edges: edgesKept, epics: epicsKept };
     if (!kept.length) delete rest.items;
     if (!edgesKept.length) delete rest.edges;
+    if (!epicsKept.length) delete rest.epics;
     if (Object.keys(rest).length) {
       const prevOut = join(dirname(outPath), 'overlay.prev.json');
       writeFileSync(prevOut, JSON.stringify(rest, null, 2), 'utf8');

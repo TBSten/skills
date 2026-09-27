@@ -20,6 +20,9 @@ const KINDS = ['anchor', 'pr', 'task', 'human', 'idea'];
 /* 1 グループ（エピック / エピック外）のタスク数がこれ以上なら、分割を促す warn を出す。
    カンバンの折り返し件数（テンプレートの KANBAN_COL_MAX）とは別の値 */
 const GROUP_WARN_MIN = 20;
+/* エピックの入れ子（epics[].parent）の深さの上限。親 › 子 › 孫 の 3 段まで。
+   これより深いと図の枠が何重にもなって、どの枠が何を包んでいるのか読めなくなる */
+const EPIC_DEPTH_MAX = 3;
 
 /* ---- 引数 --------------------------------------------------------------- */
 const argv = process.argv.slice(2);
@@ -47,7 +50,8 @@ let data = load(input, 'board.json');
    7KB の board.json を書き直させず、足したいものだけ 10〜20 行書けば済むようにする。
 
      meta / props      … 浅くマージ
-     statuses / epics  … id で upsert（無ければ末尾に追加）
+     statuses / epics  … id で upsert（無ければ末尾に追加）。epics の parent もフィールドとして
+                         上書きできる（"parent": null で入れ子を外してトップレベルに戻す）
      items             … id で upsert（既存はフィールド単位で上書き）
      edges             … from+to が同じものは置き換え、無ければ追加
      urgency           … あれば丸ごと差し替え
@@ -147,6 +151,63 @@ epics.forEach((e, ix) => {
   }
 });
 
+/* エピックの入れ子。parent は別のエピックの id（null / 省略でトップレベル）。
+   親が無い・循環・深すぎるものは図の枠が描けないので止める。
+   ここが通れば parentOf を辿る処理は必ず有限回で終わる（nestOk が false なら後段で辿らない）。 */
+const parentOf = id => {
+  const e = epics.find(x => x.id === id);
+  return e && e.parent != null ? e.parent : null;
+};
+let nestOk = true;
+epics.forEach((e, ix) => {
+  if (e.parent == null) return;
+  const at = e.id ? `epics[${e.id}]` : `epics[${ix}]`;
+  if (typeof e.parent !== 'string' || !epicIds.has(e.parent)) {
+    err(`${at}.parent "${e.parent}" が epics に無い → 直し方: 親にしたいエピックの id を書くか、parent を消してトップレベルにする`);
+    nestOk = false;
+  }
+});
+if (nestOk) {
+  const reported = new Set();
+  epics.forEach(e => {
+    if (!e.id) return;
+    const chain = [e.id];
+    let p = parentOf(e.id);
+    while (p != null) {
+      if (chain.includes(p)) {
+        const loop = chain.slice(chain.indexOf(p)).concat([p]);
+        const key = loop.slice(0, -1).sort().join(' ');
+        if (!reported.has(key)) {
+          reported.add(key);
+          err(`epics の parent が循環している: ${loop.join(' → ')} → 直し方: どれか 1 つの parent を消してトップレベルにする`);
+        }
+        nestOk = false;
+        return;
+      }
+      chain.push(p);
+      p = parentOf(p);
+    }
+    if (chain.length > EPIC_DEPTH_MAX) {
+      err(`epics "${e.id}" の入れ子が ${chain.length} 段ある（上限 ${EPIC_DEPTH_MAX} 段）: `
+        + chain.slice().reverse().join(' › ')
+        + ` → 直し方: 中間のエピックをまとめるか、parent を浅いエピックに付け替える`);
+      nestOk = false;
+    }
+  });
+}
+/* id とその子孫エピックの id（入れ子が正しいときだけ使う） */
+const subtreeOf = id => {
+  const out = new Set([id]);
+  let grew = true;
+  while (grew) {
+    grew = false;
+    epics.forEach(e => {
+      if (e.id && !out.has(e.id) && e.parent != null && out.has(e.parent)) { out.add(e.id); grew = true; }
+    });
+  }
+  return out;
+};
+
 const items = Array.isArray(data.items) ? data.items : [];
 if (!items.length) err('items が空');
 const itemIds = new Set();
@@ -186,20 +247,30 @@ const byId = new Map(items.filter(i => i.id).map(i => [i.id, i]));
 
 /* エピックのレーンは連続していないと図の枠が重なる。
    「そのエピックが使う col の範囲に、他のエピック / エピック無しのノードが居ない」
-   を条件として見る。 */
-epics.forEach(e => {
-  const mem = items.filter(i => i.epic === e.id && i.col !== undefined);
+   を条件として見る。入れ子では「そのエピック」を子孫エピックのメンバーまで含めた
+   部分木で数える。これで 親の範囲 ⊇ 子の範囲、兄弟の範囲は重ならない、が同時に保たれる。
+   親の直下メンバーが子の範囲に入るのも同じ理由で弾く（子の枠が親の直下メンバーを包んでしまう）。 */
+if (nestOk) epics.forEach(e => {
+  if (!e.id) return;
+  const sub = subtreeOf(e.id);
+  const mem = items.filter(i => sub.has(i.epic) && i.col !== undefined);
   if (!mem.length) { warn(`epics "${e.id}" に図へ出るチケットが無い（枠は描かれない）`); return; }
   const lo = Math.min(...mem.map(m => m.col)), hi = Math.max(...mem.map(m => m.col));
-  const intruders = items.filter(i => i.col !== undefined && i.col >= lo && i.col <= hi && i.epic !== e.id);
+  const intruders = items.filter(i => i.col !== undefined && i.col >= lo && i.col <= hi && !sub.has(i.epic));
   if (intruders.length) {
     const noEpic = intruders.filter(i => !i.epic).map(i => i.id);
+    const anc = new Set();
+    for (let p = parentOf(e.id); p != null; p = parentOf(p)) anc.add(p);
+    const fromAnc = intruders.filter(i => anc.has(i.epic)).map(i => i.id);
     err(`epics "${e.id}" の col 範囲 ${lo}..${hi} に別のノードが入っている: `
       + intruders.map(i => `${i.id}(col=${i.col}${i.epic ? `, epic=${i.epic}` : ''})`).join(', ')
       + (noEpic.length
           ? ` → 直し方: ${noEpic.join(' / ')} に "epic": "${e.id}" を付ける（その枠の中に置く）か、`
             + `枠の外の col (${lo - 1} 以下 か ${hi + 1} 以上) にずらす`
-          : ' → 直し方: 同じエピックのメンバーの col が連続するように振り直す'));
+          : fromAnc.length
+            ? ` → 直し方: 親エピックの直下メンバー ${fromAnc.join(' / ')} は子エピック "${e.id}" の col 範囲の外`
+              + ` (${lo - 1} 以下 か ${hi + 1} 以上) にずらすか、"epic": "${e.id}" に振り直す`
+            : ' → 直し方: 同じエピックのメンバーの col が連続するように振り直す'));
   }
 });
 
