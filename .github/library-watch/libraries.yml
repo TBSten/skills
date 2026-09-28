@@ -70,3 +70,33 @@ ignored:
     reason: 検証用の practice リポジトリ
   - repo: TBSten/compose-custom-scroll-bar
     reason: Compose UI コンポーネント 1 つのサンプル。1 年以上更新無く、Gradle/CI 面で新規性のある技法も無い
+  - repo: TBSten/WebSocketDebugToolPractice
+    reason: 検証用の practice リポジトリ
+  - repo: TBSten/ktor-extensions
+    reason: description・topics 無し、1 年以上更新無し。内容から公開ライブラリと確認できない
+  - repo: TBSten/ktor-library-gradle-plugin-template
+    reason: description・topics 無し、1 年以上更新無し。テンプレートの中身を公開ライブラリと確認できない
+  - repo: TBSten/ktor-static-generation-sample
+    reason: サンプル実装
+  - repo: TBSten/cmp-history-api-sample
+    reason: サンプル実装
+  - repo: TBSten/scroll-jump-sample
+    reason: サンプル実装
+  - repo: TBSten/kmp-history-api
+    reason: description・topics 無し、2 年以上更新無し。内容から公開ライブラリと確認できない
+  - repo: TBSten/android-ci-practice
+    reason: 検証用の practice リポジトリ
+  - repo: TBSten/android-graph-practice
+    reason: 検証用の practice リポジトリ
+  - repo: TBSten/android-light-practice
+    reason: 検証用の practice リポジトリ
+  - repo: TBSten/android-media3-practice
+    reason: 検証用の practice リポジトリ
+  - repo: TBSten/compose-deeplink-prac
+    reason: 検証用の practice リポジトリ
+  - repo: TBSten/compose-animated-content-clip
+    reason: 個人の実験的な UI サンプル。1 年以上更新無く、再利用できる技法も無い
+  - repo: TBSten/android-flux-prac
+    reason: 検証用の practice リポジトリ
+  - repo: TBSten/step-counter-prac
+    reason: 検証用の practice リポジトリ
