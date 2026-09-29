@@ -237,6 +237,19 @@ gh skill install tbsten/skills pr-fix-loop
 <td>✅ Active</td>
 <td>Drive many PRs to green: classify CI failures, handle comments, chain rebases</td>
 </tr>
+<tr>
+<td>🟡 Testing / Verification</td>
+<td><a href="./skills/check-method-level.md">check-method-level</a></td>
+<td>
+
+```sh
+gh skill install tbsten/skills check-method-level
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>Score how strong a test / verification method is on 9 axes via a script</td>
+</tr>
 </table>
 
 ## 📝 Available Rules

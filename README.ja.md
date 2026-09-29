@@ -237,6 +237,19 @@ gh skill install tbsten/skills pr-fix-loop
 <td>✅ Active</td>
 <td>複数 PR を並行して green に。CI 失敗の分類・修正委譲、コメント対応、stacked PR の rebase 連鎖</td>
 </tr>
+<tr>
+<td>🟡 テスト・検証</td>
+<td><a href="./skills/check-method-level.ja.md">check-method-level</a></td>
+<td>
+
+```sh
+gh skill install tbsten/skills check-method-level
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>テスト・動作確認の方法の強さを 9 軸で採点し、script で検証レベルを算出</td>
+</tr>
 </table>
 
 ## 📝 利用可能なルール

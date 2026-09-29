@@ -153,6 +153,7 @@ group は **日本語グループ名** で記載する (絵文字は付けない
 | 🟣 | Kotlin ライブラリ/ツール開発 | Kotlin Library / Tool Development |
 | 🔵 | Web フロントエンド | Web Frontend |
 | ⚫️ | Git / GitHub | Git / GitHub |
+| 🟡 | テスト・検証 | Testing / Verification |
 
 新規追加時のデフォルトは `Experimental` (ユーザーの指示があればそれに従う)。
 既存 prompt の status を後から変更する場合は `change-status` スキルを使う。
