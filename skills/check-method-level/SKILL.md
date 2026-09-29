@@ -73,7 +73,7 @@ ai-context は observer が ai-* のときだけ必須。
 ユーザには短く伝える。スクリプトの出力を全部貼らない。
 
 ```
-検証レベル: B (122/197) — ViewModel の unit test
+検証レベル: B (122 / 197 点満点) — ViewModel の unit test
 弱点: scope=unit・env=mock。次の一手は integration test 化、staging での実行
 ```
 

@@ -73,7 +73,8 @@ When planning or comparing verification methods, report the cost next to the sco
 
 ```text
 $ ... --build-cost=add-case --run-cost=hours..minutes
-Score: 122/197 Level B (Scope: unit)
+Score: 122 out of 197 (62%)
+Level: B (S > A > B > C > D > E > -), Scope: unit
 Axes: scope=unit env=mock ...
 Cost: build=add-case run=minutes..hours
 ```
@@ -88,7 +89,8 @@ python3 "${CLAUDE_SKILL_DIR}/scripts/calc-check-method-level.py" \
 
 ```text
 Method: ViewModel unit test
-Score: 122/197 Level B (Scope: unit)
+Score: 122 out of 197 (62%)
+Level: B (S > A > B > C > D > E > -), Scope: unit
 Axes: scope=unit env=mock execution=ci evidence=structured oracle=assertion observer=machine coverage=broad repeatability=full
 Next: scope→integration, env→test, evidence→render-tree
 ```
@@ -108,7 +110,8 @@ An E2E check where an AI looks at screenshots (e.g. via Playwright) and compares
 ```text
 $ ... --scope=e2e --env=staging --execution=manual --evidence=screenshot --oracle=spec \
       --observer=ai-high --ai-context=spec --coverage=multiple --repeatability=mostly
-Score: 156/197 Level A (Scope: e2e)
+Score: 156 out of 197 (79%)
+Level: A (S > A > B > C > D > E > -), Scope: e2e
 Next: oracle→assertion, coverage→broad, env→prod-like
 ```
 
@@ -117,7 +120,8 @@ Reading the code and deciding "looks fine":
 ```text
 $ ... --scope=static --env=none --execution=manual --evidence=source --oracle=heuristic \
       --observer=ai-high --ai-context=result-only --coverage=unknown --repeatability=none
-Score: 33/197 Level D (Scope: static)
+Score: 33 out of 197 (17%)
+Level: D (S > A > B > C > D > E > -), Scope: static
 ```
 
 A screenshot test on the JVM (in-between values):
@@ -125,7 +129,8 @@ A screenshot test on the JVM (in-between values):
 ```text
 $ ... --scope=unit..integration --env=emulator..mock --execution=ci --evidence=screenshot \
       --oracle=snapshot --observer=machine --coverage=multiple --repeatability=full
-Score: 137/197 Level A (Scope: unit..integration)
+Score: 137 out of 197 (70%)
+Level: A (S > A > B > C > D > E > -), Scope: unit..integration
 Note: scope=unit..integration は選択肢の中間として扱った
 Note: env=test..mock は選択肢の中間として扱った
 ```
