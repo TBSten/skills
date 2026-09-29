@@ -147,6 +147,7 @@ rule の所属グループも status と同じく **英語詳細ドキュメン�
 | 🟣 | Kotlin ライブラリ/ツール開発 | Kotlin Library / Tool Development |
 | 🔵 | Web フロントエンド | Web Frontend |
 | ⚫️ | Git / GitHub | Git / GitHub |
+| 🟡 | テスト・検証 | Testing / Verification |
 
 適切なグループが無い場合は、CLAUDE.md の Group 表とこの表に新グループを追加した上で使う。
 
