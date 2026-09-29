@@ -1,6 +1,7 @@
 """検証スコアの軸と選択肢の定義 (SSoT)。
 
-選択肢は強い順に並べる。段階 (rank) は並び順から決まり、最後の選択肢が 0。
+スコア軸 (AXES) の選択肢は強い順に並べる。段階 (rank) は並び順から決まり、最後の選択肢が 0。
+コスト軸 (COST_AXES) はスコアに含めない (weight=0)。選択肢は安い順に並べる。
 重み (weight) と rank はこのディレクトリの script の中だけで使い、出力には出さない (理由は calc-check-method-level.py の docstring)。
 """
 
@@ -22,7 +23,7 @@ class Axis:
     key: str
     title: str
     weight: int
-    choices: Tuple[Choice, ...]  # 強い順
+    choices: Tuple[Choice, ...]  # スコア軸は強い順、コスト軸は安い順
 
     @property
     def max_rank(self) -> int:
@@ -42,6 +43,18 @@ class Axis:
 
     def keywords(self) -> str:
         return " > ".join(choice.name for choice in self.choices)
+
+
+def normalize_keyword(text: str) -> str:
+    return text.strip().lower().replace("_", "-")
+
+
+def is_number(text: str) -> bool:
+    try:
+        float(text)
+        return True
+    except ValueError:
+        return False
 
 
 def _c(name: str, desc: str, *aliases: str) -> Choice:
@@ -123,6 +136,25 @@ AXES: Tuple[Axis, ...] = (
 )
 
 AXIS_BY_KEY = {axis.key: axis for axis in AXES}
+
+COST_AXES: Tuple[Axis, ...] = (
+    Axis("build-cost", "Build Cost", 0, (
+        _c("existing", "既存の検証をそのまま実行できる。追加の構築なし", "none", "reuse"),
+        _c("add-case", "既存の基盤・ヘルパーの範囲、または使い捨てのコードでケース・手順を追加する", "case", "scratch"),
+        _c("new-harness", "新しいテスト用ライブラリ・fixture・fake・script 等の導入・作成が必要", "harness"),
+        _c("new-environment", "新しい実行環境 (staging・emulator・実機・DB・外部サービスの sandbox 等) の用意が必要",
+           "environment", "new-env"),
+        _c("external", "プロジェクト外の調達・契約・権限・他者の協力が必要", "procurement"),
+    )),
+    Axis("run-cost", "Run Cost", 0, (
+        _c("seconds", "1 回の実行が 1 分未満", "instant", "sec"),
+        _c("minutes", "1 回の実行が 1〜10 分", "min"),
+        _c("tens-of-minutes", "1 回の実行が 10〜60 分", "under-hour"),
+        _c("hours", "1 回の実行が 1 時間〜1 日", "hour"),
+        _c("days", "1 回の実行が 1 日以上", "day"),
+    )),
+)
+COST_AXIS_BY_KEY = {axis.key: axis for axis in COST_AXES}
 AI_OBSERVERS = ("ai-high", "ai-standard", "ai-light")
 
 # Level の閾値 (score 以上)。強い順。

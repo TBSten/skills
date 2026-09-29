@@ -56,6 +56,28 @@ Weights and ranks live only inside the script (`scripts/method_level_axes.py`) a
 An AI that knows the weights tends to be generous on the heavily weighted axes and values.
 This formula is documented outside the skill directory (in this document), so it is not loaded into the context when the skill runs.
 
+## Cost (build-cost / run-cost)
+
+When planning or comparing verification methods, report the cost next to the score (optional in post-hoc reports and miss analyses).
+
+| Axis | What it measures | Choices (cheaper to the left) |
+|---|---|---|
+| build-cost | What must be newly built to run this verification | existing > add-case > new-harness > new-environment > external |
+| run-cost | Time for one run (including waiting and human work) | seconds > minutes > tens-of-minutes > hours > days |
+
+- **Why cost is not mixed into the score**: the score expresses how much confidence the verification gives. Subtracting cost would make "weak" and "strong but expensive" indistinguishable, bias choices toward cheap weak checks, and blur the cause in miss analyses
+- **Why two axes**: building and running cost behave differently. A CI E2E suite is expensive to build and cheap to run; manual QA is cheap to build and expensive to run
+- **Why fact-based definitions**: levels such as `low` / `medium` / `high` leave "what counts as medium" to the AI and drift. The choices are verifiable facts instead: what has to be newly prepared, and how many minutes one run takes
+- When an estimate has a spread, give a range such as `--run-cost=minutes..tens-of-minutes`. Unlike the in-between values of score axes, it is not averaged; it is shown as a cheap-to-expensive range
+- Give both axes together (only one exits with code 2). Money and maintenance (e.g. fixing flaky tests) are not axes; mention them in prose when they matter
+
+```text
+$ ... --build-cost=add-case --run-cost=hours..minutes
+Score: 122/197 Level B (Scope: unit)
+Axes: scope=unit env=mock ...
+Cost: build=add-case run=minutes..hours
+```
+
 ## Usage
 
 ```sh
@@ -118,7 +140,8 @@ check-method-level/
 ├── references/rubric.md                   # Definitions and examples (read only when unsure)
 └── scripts/
     ├── calc-check-method-level.py         # Score calculator
-    ├── method_level_axes.py               # Axes, choices, weights, levels (SSoT)
+    ├── method_level_axes.py               # Axes (score and cost), choices, weights, levels (SSoT)
+    ├── method_level_cost.py               # Cost axes: parsing and output
     └── test_calc_check_method_level.py    # Tests
 ```
 
