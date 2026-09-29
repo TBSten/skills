@@ -110,6 +110,47 @@ Observer が AI のときだけ使う。「高性能 AI + Screenshot だけ」�
 | adhoc | Ad-hoc / 一時的な確認 |
 | none | 再現可能な検証手順なし |
 
+## Cost (スコアに含まない)
+
+検証方法を検討・計画・比較する時に、スコアとは別に示す。各表は上ほど安い。
+build-cost と run-cost はセットで指定する。見積もりに幅がある場合は `minutes..tens-of-minutes` のように範囲で指定する (平均は取らず、幅のまま表示される)。
+金額や保守の手間 (flaky 対応等) は含まない。効いてくる場合は文章で添える。
+
+### Build Cost: この検証を行うために今回 (計画なら今後) 追加で必要な構築
+
+| 名前 | 定義 |
+|---|---|
+| existing | 既存の検証をそのまま実行できる。追加の構築なし |
+| add-case | 既存の基盤・ヘルパーの範囲、または使い捨てのコードでケース・手順を追加する |
+| new-harness | 新しいテスト用ライブラリ・fixture・fake・script 等の導入・作成が必要 |
+| new-environment | 新しい実行環境 (staging・emulator・実機・DB・外部サービスの sandbox 等) の用意が必要 |
+| external | プロジェクト外の調達・契約・権限・他者の協力が必要 |
+
+### Run Cost: 1 回の実行に要する時間
+
+待ち時間 (CI のキュー・ビルド・デプロイ待ち) と人の作業時間を含む。構築にかかる時間は含まない。
+
+| 名前 | 定義 |
+|---|---|
+| seconds | 1 分未満 |
+| minutes | 1〜10 分 |
+| tens-of-minutes | 10〜60 分 |
+| hours | 1 時間〜1 日 |
+| days | 1 日以上 |
+
+### 判定例
+
+| 状況 | 判定 |
+|---|---|
+| scratch ファイルや `main()` を書いて動かす | build=add-case (使い捨てのコード) |
+| Playwright 導入済みのプロジェクトで E2E ケースを追加 | build=add-case |
+| Playwright 未導入のプロジェクトで E2E を書く | build=new-harness |
+| emulator や staging をこれから用意する | build=new-environment |
+| 実機の購入、外部 API の契約・権限申請が必要 | build=external |
+| push して CI の結果を待つ (待ち時間 20 分) | run=tens-of-minutes (待ち時間も含む) |
+| QA 担当に依頼して翌日に結果が返る | run=days |
+| 既存の unit test を手元で再実行 | build=existing run=seconds |
+
 ## 判定例
 
 | 検証 | 特徴 |

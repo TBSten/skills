@@ -9,7 +9,7 @@ import sys
 import unittest
 from pathlib import Path
 
-from method_level_axes import AXES
+from method_level_axes import AXES, COST_AXES
 
 SCRIPTS = Path(__file__).resolve().parent
 CALC = SCRIPTS / "calc-check-method-level.py"
@@ -18,6 +18,7 @@ RUBRIC_MD = SCRIPTS.parent / "references" / "rubric.md"
 
 BASE_UNIT = ["--scope=unit", "--env=mock", "--execution=ci", "--evidence=structured", "--oracle=assertion",
              "--observer=machine", "--coverage=broad", "--repeatability=full"]
+COST = ["--build-cost=add-case", "--run-cost=minutes"]
 ALL_NONE = ["--scope=none", "--env=none", "--execution=none", "--evidence=source", "--oracle=none",
             "--observer=none", "--coverage=unknown", "--repeatability=none"]
 
@@ -143,6 +144,9 @@ class OutputTest(unittest.TestCase):
             "verbose": run(*BASE_UNIT, "-v").stdout,
             "json": run(*BASE_UNIT, "--format=json").stdout,
             "missing": run().stderr,
+            "cost_text": run(*BASE_UNIT, *COST).stdout,
+            "cost_verbose": run(*BASE_UNIT, *COST, "-v").stdout,
+            "cost_json": run(*BASE_UNIT, *COST, "--format=json").stdout,
         }
         for name, out in outputs.items():
             self.assertIsNone(leak.search(out), f"{name}: {out}")
@@ -150,10 +154,76 @@ class OutputTest(unittest.TestCase):
         self.assertEqual(json_axes["scope"], {"value": "unit", "interpolated": False})
 
 
+class CostTest(unittest.TestCase):
+    def cost_of(self, *args: str) -> dict:
+        proc = run(*BASE_UNIT, *args, "--format=json")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        return json.loads(proc.stdout)["cost"]
+
+    def test_両方指定すると_Axes_の直後に_Cost_行を出す(self):
+        out = run(*BASE_UNIT, *COST).stdout.splitlines()
+        self.assertTrue(out[1].startswith("Axes: "))
+        self.assertEqual(out[2], "Cost: build=add-case run=minutes")
+
+    def test_未指定なら_Cost_行を出さず_JSON_は_null(self):
+        self.assertNotIn("Cost:", run(*BASE_UNIT).stdout)
+        self.assertIsNone(json.loads(run(*BASE_UNIT, "--format=json").stdout)["cost"])
+
+    def test_片方だけの指定はエラーで足りない方の選択肢を示す(self):
+        proc = run(*BASE_UNIT, "--build-cost=add-case")
+        self.assertEqual(proc.returncode, 2)
+        self.assertIn("--run-cost が無い: seconds > minutes > tens-of-minutes > hours > days", proc.stderr)
+        self.assertEqual(run(*BASE_UNIT, "--run-cost=minutes").returncode, 2)
+
+    def test_cost_未指定でも必須軸不足のエラーは従来どおり(self):
+        proc = run("--scope=unit")
+        self.assertIn("必須の軸が指定されていない: env execution", proc.stderr)
+        self.assertNotIn("cost", proc.stderr)
+
+    def test_数値と未知の値は受け付けない(self):
+        self.assertIn("数値は指定できない", run(*BASE_UNIT, "--build-cost=3", "--run-cost=minutes").stderr)
+        self.assertIn("不明な値 'forever'", run(*BASE_UNIT, "--build-cost=existing", "--run-cost=forever").stderr)
+
+    def test_エイリアスと大文字を受け付ける(self):
+        self.assertEqual(self.cost_of("--build-cost=Harness", "--run-cost=min"), {"build": "new-harness", "run": "minutes"})
+
+    def test_範囲指定を受け付け安い順に正規化する(self):
+        self.assertEqual(self.cost_of("--build-cost=existing", "--run-cost=hours..minutes"),
+                         {"build": "existing", "run": "minutes..hours"})
+        self.assertEqual(self.cost_of("--build-cost=add-case..new-environment", "--run-cost=seconds..hours"),
+                         {"build": "add-case..new-environment", "run": "seconds..hours"})
+
+    def test_同じキーワードの範囲は単一値として扱う(self):
+        self.assertEqual(self.cost_of("--build-cost=existing", "--run-cost=minutes..min")["run"], "minutes")
+
+    def test_範囲に_3_つ以上のキーワードはエラー(self):
+        proc = run(*BASE_UNIT, "--build-cost=existing", "--run-cost=seconds..minutes..hours")
+        self.assertEqual(proc.returncode, 2)
+        self.assertIn("範囲はキーワード 2 つまで", proc.stderr)
+
+    def test_範囲指定では_Note_を出さない(self):
+        self.assertNotIn("Note:", run(*BASE_UNIT, "--build-cost=existing..external", "--run-cost=seconds..days").stdout)
+
+    def test_cost_はスコアと_Level_と_Next_に影響しない(self):
+        base = json.loads(run(*BASE_UNIT, "--format=json").stdout)
+        for build, run_cost in (("existing", "seconds"), ("external", "days"), ("existing..external", "seconds..days")):
+            data = json.loads(run(*BASE_UNIT, f"--build-cost={build}", f"--run-cost={run_cost}", "--format=json").stdout)
+            self.assertEqual((data["score"], data["level"], data["next"]), (base["score"], base["level"], base["next"]))
+
+    def test_verbose_はスコア軸と区別して意味を表示(self):
+        out = run(*BASE_UNIT, *COST, "-v").stdout
+        self.assertIn("-- Cost (スコアに含まない) --", out)
+        self.assertIn("1 回の実行が 1〜10 分", out)
+
+    def test_list_と_help_に任意であることを示す(self):
+        self.assertIn("--run-cost (任意。左ほど安い): seconds > minutes", run("--list").stdout)
+        self.assertIn("コスト軸 (任意。スコアには含まない", run("--help").stdout)
+
+
 class DocsTest(unittest.TestCase):
     def test_SKILL_md_の早見表がスクリプトの選択肢と同じ順番(self):
         text = SKILL_MD.read_text(encoding="utf-8")
-        for axis in AXES:
+        for axis in AXES + COST_AXES:
             row = re.search(rf"^\| {re.escape(axis.key)} \| (.+) \|$", text, re.M)
             self.assertIsNotNone(row, axis.key)
             names = [re.sub(r"\s*\(.*\)$", "", part).strip() for part in row.group(1).split(" > ")]

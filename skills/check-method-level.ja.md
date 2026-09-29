@@ -56,6 +56,28 @@ Verification Score =
 重みを知った AI は、点数の大きい軸や値を甘く見積もる方向に判断が偏りやすいため。
 このスコア式の説明もスキルのディレクトリ外 (このドキュメント) に置いており、スキル実行時の context には載らない。
 
+## コスト (build-cost / run-cost)
+
+検証方法を検討・計画・比較する時は、スコアとは別にコストも示す (実施後の報告や見逃しの分析では任意)。
+
+| 軸 | 何を表すか | 選択肢 (左ほど安い) |
+|---|---|---|
+| build-cost | この検証のために追加で必要な構築 | existing > add-case > new-harness > new-environment > external |
+| run-cost | 1 回の実行時間 (待ち時間・人の作業時間を含む) | seconds > minutes > tens-of-minutes > hours > days |
+
+- **スコアに混ぜない理由**: スコアは「その検証でどれだけ確信を持てるか」を表す。コストを引くと「弱い検証」と「強いけど高い検証」が区別できなくなり、安くて弱い検証を選ぶ方向に判断が偏る。見逃しの分析でも原因の軸がぼやける
+- **2 軸に分けた理由**: 構築コストと実行コストは性質が違う。CI の E2E は構築が高く実行は安い。手動 QA は構築が安く実行が高い
+- **事実ベースで定義した理由**: `low` / `medium` / `high` のような段階は何を medium とするかの判断が AI に委ねられ、ぶれやすい。「何を新しく用意するか」「1 回に何分かかるか」という確認できる事実で選ばせる
+- 見積もりに幅がある場合は `--run-cost=minutes..tens-of-minutes` のように範囲で指定する。スコア軸の中間指定と違い平均は取らず、安い順に並べた幅のまま表示する
+- 2 軸はセットで指定する (片方だけだと exit 2)。金額・保守の手間 (flaky 対応等) は軸に含めていないので、必要なら文章で添える
+
+```text
+$ ... --build-cost=add-case --run-cost=hours..minutes
+Score: 122/197 Level B (Scope: unit)
+Axes: scope=unit env=mock ...
+Cost: build=add-case run=minutes..hours
+```
+
 ## 使い方
 
 ```sh
@@ -118,7 +140,8 @@ check-method-level/
 ├── references/rubric.md                   # 各値の定義と判定例 (判定に迷った時だけ読む)
 └── scripts/
     ├── calc-check-method-level.py         # スコア算出 script
-    ├── method_level_axes.py               # 軸・選択肢・重み・Level の定義 (SSoT)
+    ├── method_level_axes.py               # 軸 (スコア・コスト)・選択肢・重み・Level の定義 (SSoT)
+    ├── method_level_cost.py               # コスト軸の解決と出力
     └── test_calc_check_method_level.py    # テスト
 ```
 

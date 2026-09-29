@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """検証方法の強さ (Verification Score) を算出する。
 
-軸と選択肢: method_level_axes.py (SSoT) / 詳細な定義: ../references/rubric.md
+軸と選択肢: method_level_axes.py (SSoT) / コスト軸: method_level_cost.py / 詳細な定義: ../references/rubric.md
 
 重みと段階の数値は出力 (help / list / verbose / json / Next) に出さない。
 呼び出し元 AI がそれらを知ると、点数の大きい軸・値を甘く見積もる方向に判断が偏るため。
@@ -17,7 +17,10 @@ import sys
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 
-from method_level_axes import AI_OBSERVERS, AXES, AXIS_BY_KEY, LEVELS, Axis, Choice
+from method_level_axes import (AI_OBSERVERS, AXES, AXIS_BY_KEY, COST_AXES, LEVELS, Axis, Choice, is_number,
+                               normalize_keyword)
+from method_level_cost import (Cost, cost_help_lines, cost_json, cost_line, cost_list_lines, cost_verbose_lines,
+                               resolve_costs)
 
 EXIT_USAGE = 2
 INTERPOLATION_SEP = ".."
@@ -51,24 +54,16 @@ class Result:
     next_steps: List[str]
     notes: List[str]
     warnings: List[str]
-
-
-def _is_number(text: str) -> bool:
-    try:
-        float(text)
-        return True
-    except ValueError:
-        return False
+    costs: Optional[Dict[str, Cost]]
 
 
 def resolve(axis: Axis, raw: str) -> Value:
-    text = raw.strip().lower().replace("_", "-")
-    parts = [part.strip() for part in text.split(INTERPOLATION_SEP)]
+    parts = [part.strip() for part in normalize_keyword(raw).split(INTERPOLATION_SEP)]
     if len(parts) > 2:
         raise UsageError(f"--{axis.key}: 中間指定はキーワード 2 つまで: '{raw}'")
     choices = []
     for part in parts:
-        if _is_number(part):
+        if is_number(part):
             raise UsageError(f"--{axis.key}: 数値は指定できない ('{raw}')。キーワードで指定する: {axis.keywords()}")
         choice = axis.find(part)
         if choice is None:
@@ -98,8 +93,8 @@ def _missing_message(missing: List[str]) -> str:
     return "\n".join(lines)
 
 
-def resolve_all(raw: Dict[str, Optional[str]]) -> Tuple[Dict[str, Value], bool]:
-    """全軸を解決する。戻り値は (値, observer が AI か)。不足・不正は UsageError。"""
+def resolve_all(raw: Dict[str, Optional[str]]) -> Tuple[Dict[str, Value], bool, Optional[Dict[str, Cost]]]:
+    """全軸を解決する。戻り値は (値, observer が AI か, cost)。不足・不正は UsageError。"""
     missing = [key for key in REQUIRED if not (raw[key] or "").strip()]
     errors: List[str] = []
     values: Dict[str, Value] = {}
@@ -129,10 +124,13 @@ def resolve_all(raw: Dict[str, Optional[str]]) -> Tuple[Dict[str, Value], bool]:
                 errors.append(f"--ai-context は observer が AI の時のみ指定できる (observer={values['observer'].label})")
             values["ai-context"] = Value(0, none.name, none.desc, (none,))
 
+    costs, cost_errors = resolve_costs(raw)
+    errors += cost_errors
+
     if missing or errors:
         message = "\n".join(([_missing_message(missing)] if missing else []) + errors)
         raise UsageError(message)
-    return values, is_ai
+    return values, is_ai, costs
 
 
 def _warnings(values: Dict[str, Value]) -> List[str]:
@@ -155,7 +153,7 @@ def _warnings(values: Dict[str, Value]) -> List[str]:
 
 
 def evaluate(raw: Dict[str, Optional[str]], label: str = "") -> Result:
-    values, is_ai = resolve_all(raw)
+    values, is_ai, costs = resolve_all(raw)
     shown = tuple(axis.key for axis in AXES if axis.key != "ai-context" or is_ai)
     score_float = sum(values[axis.key].rank * axis.weight for axis in AXES)
     score = math.floor(score_float + 0.5)
@@ -172,7 +170,8 @@ def evaluate(raw: Dict[str, Optional[str]], label: str = "") -> Result:
     gaps.sort(key=lambda gap: -gap[0])
 
     notes = [f"{key}={values[key].label} は選択肢の中間として扱った" for key in shown if values[key].interpolated]
-    return Result(label, score, max_score, level, values, shown, [g[1] for g in gaps[:3]], notes, _warnings(values))
+    next_steps = [g[1] for g in gaps[:3]]
+    return Result(label, score, max_score, level, values, shown, next_steps, notes, _warnings(values), costs)
 
 
 def render_text(result: Result, verbose: bool) -> str:
@@ -184,8 +183,12 @@ def render_text(result: Result, verbose: bool) -> str:
         for key in result.shown_axes:
             value = result.values[key]
             lines.append(f"  {AXIS_BY_KEY[key].title:<19} {value.label:<22} {value.desc}")
+        if result.costs:
+            lines += cost_verbose_lines(result.costs)
     else:
         lines.append("Axes: " + " ".join(f"{key}={result.values[key].label}" for key in result.shown_axes))
+        if result.costs:
+            lines.append(cost_line(result.costs))
     if result.next_steps:
         lines.append("Next: " + ", ".join(result.next_steps))
     lines += [f"Note: {note}" for note in result.notes]
@@ -204,6 +207,7 @@ def render_json(result: Result) -> str:
         "next": result.next_steps,
         "notes": result.notes,
         "warnings": result.warnings,
+        "cost": cost_json(result.costs),
     }, ensure_ascii=False, indent=2)
 
 
@@ -219,6 +223,7 @@ def _choices_help() -> str:
         "中間指定: 選択肢のどれにも当てはまらず 2 つの間に当たる場合は '--scope=unit..integration' のように書く。",
         "--ai-context は --observer が AI (ai-high / ai-standard / ai-light) の時のみ必須。",
     ]
+    lines += cost_help_lines()
     return "\n".join(lines)
 
 
@@ -237,6 +242,8 @@ def build_parser() -> argparse.ArgumentParser:
     for key in ("evidence", "oracle", "observer", "coverage", "repeatability"):
         parser.add_argument(f"--{key}", metavar="KEYWORD")
     parser.add_argument("--ai-context", "--ai-context-quality", dest="ai_context", metavar="KEYWORD")
+    parser.add_argument("--build-cost", dest="build_cost", metavar="KEYWORD", help="構築コスト (任意。--run-cost とセット)")
+    parser.add_argument("--run-cost", dest="run_cost", metavar="KEYWORD", help="1 回の実行コスト (任意。--build-cost とセット)")
     parser.add_argument("--label", default="", help="検証方法の名前 (任意。出力に表示するだけ)")
     parser.add_argument("--format", choices=("text", "json"), default="text")
     parser.add_argument("-v", "--verbose", action="store_true", help="軸ごとの値と意味を表で表示")
@@ -247,9 +254,9 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: Optional[List[str]] = None) -> int:
     args = build_parser().parse_args(argv)
     if args.list:
-        print("\n".join(f"--{axis.key}: {axis.keywords()}" for axis in AXES))
+        print("\n".join([f"--{axis.key}: {axis.keywords()}" for axis in AXES] + cost_list_lines()))
         return 0
-    raw = {axis.key: getattr(args, axis.key.replace("-", "_")) for axis in AXES}
+    raw = {axis.key: getattr(args, axis.key.replace("-", "_")) for axis in AXES + COST_AXES}
     try:
         result = evaluate(raw, args.label)
     except UsageError as e:
