@@ -48,7 +48,7 @@ class ScoreTest(unittest.TestCase):
         proc = run(*[f"--{axis.key}={axis.choices[0].name}" for axis in AXES if axis.key != "ai-context"],
                    "--format=json")
         data = json.loads(proc.stdout)
-        self.assertEqual((data["score"], data["max"], data["level"]), (197, 197, "S"))
+        self.assertEqual((data["score"], data["max"], data["percent"], data["level"]), (197, 197, 100, "S"))
 
     def test_未検証は_0_点(self):
         proc = run(*ALL_NONE, "--format=json")
@@ -119,9 +119,10 @@ class OutputTest(unittest.TestCase):
     def test_既定の出力はコンパクト(self):
         out = run(*BASE_UNIT, "--label=ViewModel").stdout.splitlines()
         self.assertEqual(out[0], "Method: ViewModel")
-        self.assertEqual(out[1], "Score: 122/197 Level B (Scope: unit)")
-        self.assertTrue(out[2].startswith("Axes: scope=unit env=mock"))
-        self.assertEqual(out[3], "Next: scope→integration, env→test, evidence→render-tree")
+        self.assertEqual(out[1], "Score: 122 out of 197 (62%)")
+        self.assertEqual(out[2], "Level: B (S > A > B > C > D > E > -), Scope: unit")
+        self.assertTrue(out[3].startswith("Axes: scope=unit env=mock"))
+        self.assertEqual(out[4], "Next: scope→integration, env→test, evidence→render-tree")
 
     def test_中間指定は_Note_に残り_Next_は上側の次の段階を示す(self):
         out = run("--scope=unit..integration", *BASE_UNIT[1:]).stdout
@@ -162,8 +163,8 @@ class CostTest(unittest.TestCase):
 
     def test_両方指定すると_Axes_の直後に_Cost_行を出す(self):
         out = run(*BASE_UNIT, *COST).stdout.splitlines()
-        self.assertTrue(out[1].startswith("Axes: "))
-        self.assertEqual(out[2], "Cost: build=add-case run=minutes")
+        self.assertTrue(out[2].startswith("Axes: "))
+        self.assertEqual(out[3], "Cost: build=add-case run=minutes")
 
     def test_未指定なら_Cost_行を出さず_JSON_は_null(self):
         self.assertNotIn("Cost:", run(*BASE_UNIT).stdout)

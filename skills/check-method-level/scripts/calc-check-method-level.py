@@ -174,11 +174,20 @@ def evaluate(raw: Dict[str, Optional[str]], label: str = "") -> Result:
     return Result(label, score, max_score, level, values, shown, next_steps, notes, _warnings(values), costs)
 
 
+LEVEL_SCALE = " > ".join([name for name, _ in LEVELS] + ["-"])
+
+
+def _percent(result: Result) -> int:
+    return math.floor(result.score * 100 / result.max_score + 0.5)
+
+
 def render_text(result: Result, verbose: bool) -> str:
     lines = []
     if result.label:
         lines.append(f"Method: {result.label}")
-    lines.append(f"Score: {result.score}/{result.max_score} Level {result.level} (Scope: {result.values['scope'].label})")
+    # 何点満点か・Level が全体のどこかを出力だけで読み取れるようにする (Level の閾値は出さない)
+    lines.append(f"Score: {result.score} out of {result.max_score} ({_percent(result)}%)")
+    lines.append(f"Level: {result.level} ({LEVEL_SCALE}), Scope: {result.values['scope'].label}")
     if verbose:
         for key in result.shown_axes:
             value = result.values[key]
@@ -201,6 +210,7 @@ def render_json(result: Result) -> str:
         "label": result.label,
         "score": result.score,
         "max": result.max_score,
+        "percent": _percent(result),
         "level": result.level,
         "axes": {key: {"value": result.values[key].label, "interpolated": result.values[key].interpolated}
                  for key in result.shown_axes},
