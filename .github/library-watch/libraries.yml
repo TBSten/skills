@@ -24,7 +24,7 @@ libraries:
   - repo: TBSten/katachi
     skills: [kotlin-library-bootup, kotlin-maven-central-publish]
     paths: ["*.gradle.kts", gradle.properties, gradle/, buildSrc/, .github/, .claude/, CLAUDE.md, docs/, architecture-test/]
-    last_commit: 5316a8c77103f97da2f559fe1e1ad1e202c42e12
+    last_commit: 20828c85a900679ee16803317244f663450619f8
   - repo: TBSten/compose-preview-lab
     skills: [kotlin-library-bootup, kotlin-compiler-plugin-setup, kotlin-compiler-plugin-dev, exploratory-nightly-verification, exploratory-pr-verification, pr-fix-loop]
     paths: ["*.gradle.kts", gradle.properties, gradle/, buildLogic/, .github/, .claude/, CLAUDE.md, docs/, scripts/]

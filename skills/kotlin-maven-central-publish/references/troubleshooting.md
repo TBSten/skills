@@ -12,6 +12,7 @@
 | 署名で `BAD_PASSPHRASE` / `Could not read PGP secret key` | `SIGNING_PASSWORD` が鍵のパスフレーズと不一致、または `GPG_KEY_CONTENTS` が armor 全体 (BEGIN〜END 行) でない | `scripts/setup-secrets.sh --key-id <鍵>` で再登録 |
 | Central の検証で `Invalid signature` / `Could not find a public key` | 公開鍵がキーサーバーに届いていない | `gpg --keyserver keyserver.ubuntu.com --send-keys <FINGERPRINT>` (反映に数分〜) |
 | Central の検証で `Javadocs must be provided` / `Sources must be provided` | javadoc / sources jar が無い | vanniktech の既定 (`configureBasedOnAppliedPlugins`) を上書きしていないか確認。Dokka を使うなら `dokkaGeneratePublicationJavadoc` を渡す (`dokkaGenerate` は空 jar) |
+| Gradle plugin モジュールが同じ座標で `maven` と `pluginMaven` の 2 publication を上げる | `java-gradle-plugin` を convention より後に書いた、または `KotlinJvm(...)` を選んだ | `GradlePlugin(...)` に分岐し、`java-gradle-plugin` を先に書く (`references/convention-options.md` §7) |
 | Kotlin の古い版の利用者で全シンボルが `Unresolved reference` | 成果物の metadata が新しすぎる | `languageVersion` / `apiVersion` / `coreLibrariesVersion` の床を下げる (`references/convention-options.md` §6) |
 | iOS ターゲットで `xcrun ... non-zero exit code: 72` | Command Line Tools のみで Xcode 本体が無い | Xcode をインストールし `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`。CI は macOS runner を使う |
 | publish.yml が pre-release で起動しない | `types: [released]` や `[prereleased]` を使っている | `types: [published]` にする |
