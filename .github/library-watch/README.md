@@ -14,7 +14,7 @@ update  (AI)        collect-diff → claude-code-action (prompt.md) → update-s
 pr                  prepare-branch → publish-pr: 固定ブランチ library-watch/auto に force-push し PR を作成 / 更新
 ```
 
-- **1 回の実行で PR 1 本**。ブランチは `library-watch/auto` 固定。前回の PR が open のままなら、そのブランチを main に rebase して続きから作業し、同じ PR を更新する (前回の本文は `<details>` に残る)。rebase が衝突した時は main から作り直す
+- **1 回の実行で PR 1 本**。ブランチは `library-watch/auto` 固定。前回の PR が open のままなら、そのブランチを main に rebase して続きから作業し、同じ PR を更新する (前回の本文は `<details>` に残る)。PR タイトルは `library-watch(<YYYY-MM-DD>): Kotlin ライブラリの差分を skill に反映` で、日付は最後に実行した日 (UTC) に更新される。rebase が衝突した時は main から作り直す
 - 前回から HEAD が動いていないライブラリはスキップする。候補も無ければ AI は呼ばれない
 - 各ライブラリの `last_commit` の更新は、skill の更新と同じ PR に入る。PR をマージした時点で「そこまで調べた」ことになる
 - archive されたライブラリは一覧から外し、`ignored` に理由付きで移す。rename は自動で名前を直す
