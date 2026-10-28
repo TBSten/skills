@@ -12,6 +12,8 @@
       "properties": {
         "appName": { "type": "string" },
         "pointer": { "type": "string", "description": "Agent への案内（ソースの場所・ログの形）。参照実装の intro 行に相当" },
+        "kind": { "enum": ["element", "elements", "text", "page", "site"], "description": "【実績: Web 参照実装】何を選んだか。無ければ target の有無から推す（あれば element、無ければ page）。記録の frontmatter の kind になる" },
+        "pageOpenedAt": { "type": "number", "description": "【実績: Web 参照実装】画面を開いた時刻（epoch ms。Web は performance.timeOrigin）。受け口がソースの更新時刻と比べて stale を決める" },
         "comment": { "type": "string", "maxLength": 20000, "description": "参照実装の上限は 20,000 字。空でも保存する（『（書いていません）』と入る）" },
         "target": {
           "type": "object",
@@ -20,7 +22,10 @@
             "screen": { "type": "string", "description": "画面の ID（参照実装: top / detail / dialog:<名前>）" },
             "path": { "type": "string", "description": "名前の道筋（data-fb / testID / Semantics label を外側からつないだもの）。無い要素は「祖先の道筋 › 要素の説明」" },
             "element": { "type": "string", "description": "要素の種類とラベル（button.punch-btn「退勤」）" },
-            "selector": { "type": "string", "description": "CSS セレクタの道筋（Web のみ）" },
+            "selector": { "type": "string", "description": "CSS セレクタの道筋（Web のみ）。保存の前に引き直して同じ要素に戻ったものだけ（references/build/locate.md）" },
+            "xpath": { "type": "string", "description": "【実績: Web 参照実装】XPath（Web のみ）。selector と同じく引き直して確かめたものだけ" },
+            "fragment": { "type": "string", "description": "【実績: Web 参照実装】テキストフラグメントの URL（#:~:text=…）。テキストを選んだとき" },
+            "source": { "type": "string", "description": "【実績: Web 参照実装】ソースの行 path:12-14（Markdown 由来のページなど、取れる場合だけ）" },
             "rect": { "$ref": "#/$defs/rect" },
             "click": { "type": "object", "properties": { "x": { "type": "number" }, "y": { "type": "number" } } },
             "state": { "type": "object", "description": "その要素に関わる状態（押せるか・押せない理由・値など。アプリ固有の stateOf で足す）", "additionalProperties": { "type": ["string", "number", "boolean", "null"] } }
@@ -42,5 +47,25 @@
     "elementPng": { "type": ["string", "null"], "description": "要素の周りの切り抜き PNG（base64）" },
     "shotError": { "type": ["string", "null"] }
   },
-  "$defs": { "rect": { "type": "object", "required": ["x", "y", "width", "height"], "properties": { "x": { "type": "number" }, "y": { "type": "number" }, "width": { "type": "number" }, "height": { "type": "number" } }, "description": "CSS px / dp。ウィンドウの左上から" } }
+  "$defs": {
+    "recordFrontmatter": {
+      "description": "【実績: Web 参照実装】保存された記録（Markdown）の先頭の frontmatter（schema 1）。送信 body ではなく、受け口が書き loop が読む。値は JSON の書き方（YAML としても読める）。frontmatter の無い記録は旧形（schema 0）として読み、キーが無いのは「情報が無い」で異常ではない（references/concepts.md）",
+      "type": "object",
+      "required": ["schema", "kind", "created", "omitted"],
+      "properties": {
+        "schema": { "const": 1 },
+        "id": { "type": "string", "description": "yymmdd-xx。書けるのは Sink が採番した id を文に渡せる場合だけ（TS 版の putEntry は text に関数を渡せる）" },
+        "kind": { "enum": ["element", "elements", "text", "page", "site"] },
+        "screen": { "type": "string" },
+        "target": { "type": "string", "description": "部品の道筋（data-fb など）" },
+        "source": { "type": "string", "description": "ソースの行 path:12-14" },
+        "created": { "type": "string", "format": "date-time" },
+        "dirty": { "type": "boolean", "description": "記録の時点で、ソースに未コミットの変更があった（行番号は作業ツリーのもの）。分からなければ書かない" },
+        "stale": { "type": "boolean", "description": "画面を開いた後にソースが変わった（位置・文言がずれているかもしれない）。分からなければ書かない。false でも新しいとは限らない（references/loop/lessons.md）" },
+        "omitted": { "type": "array", "items": { "type": "string" }, "description": "載せなかった節（オプションで外したもの）。本文の「（オプションでオフ: …）」の 1 行と同じ" },
+        "attachments": { "type": "array", "items": { "type": "string" }, "description": "添付の参照（パス・URL）" }
+      }
+    },
+    "rect": { "type": "object", "required": ["x", "y", "width", "height"], "properties": { "x": { "type": "number" }, "y": { "type": "number" }, "width": { "type": "number" }, "height": { "type": "number" } }, "description": "CSS px / dp。ウィンドウの左上から" }
+  }
 }

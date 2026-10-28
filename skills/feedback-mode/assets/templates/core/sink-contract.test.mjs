@@ -63,6 +63,38 @@ for (const [kind, make] of Object.entries(kinds)) {
       await close();
     }
   });
+
+  test(`Sink 契約 [${kind}]: その日の記録がすべて archived でも番号を再利用しない。archive の 2 回目は何もしない`, async () => {
+    const { sink, close } = await make();
+    try {
+      const d = new Date(2026, 9, 25, 9);
+      const a = await sink.putEntry({ text: 'a', now: d });
+      const first = await sink.archive(a.id, { note: '対応した' });
+      const again = await sink.archive(a.id, { note: 'もう一度' });
+      assert.equal(again.state, 'archived');
+      assert.equal(first.bytes, again.bytes); // 対応メモを二重にしない
+      assert.deepEqual(await sink.list({ state: 'open' }), []);
+      assert.equal((await sink.putEntry({ text: 'b', now: d })).id, '261025-02');
+    } finally {
+      await close();
+    }
+  });
+
+  test(`Sink 契約 [${kind}]: 上書きする文書（writeDoc / readDoc。capabilities.doc のときだけ）`, async (t) => {
+    const { sink, close } = await make();
+    try {
+      if (!sink.capabilities.doc) return t.skip('この Sink は文書を持たない');
+      assert.equal(await sink.readDoc('memo/a.md'), null);
+      await sink.writeDoc('memo/a.md', 'v1');
+      await sink.writeDoc('./memo//a.md', 'v2'); // 正規形にして同じ文書
+      assert.equal(await sink.readDoc('memo/a.md'), 'v2');
+      for (const bad of ['../x.md', '/etc/passwd', '', 'a\\b']) await assert.rejects(() => sink.writeDoc(bad, 'x'));
+      await sink.putEntry({ text: 'e', now: new Date(2026, 9, 26) });
+      assert.deepEqual((await sink.list()).map((e) => e.id), ['261026-01']); // 文書は記録に数えない
+    } finally {
+      await close();
+    }
+  });
 }
 
 test('HTTP Sink: トークンが無い・違うと拒否される。受け口の裏のファイルにも保存される', async () => {

@@ -2,6 +2,7 @@
 
 凡例・用語は `references/concepts.md`（【実績】【追加】【未検証】。置き場・Sink・Transport・受け口の意味もそこ）。コードは `assets/templates/`。
 **検証状況**: コードを実際に動かして確かめたのは、`assets/templates/core/`（node:test 17 件。Sink の契約テストをメモリ・ファイル・HTTP の 3 実装に掛けた）と、`assets/templates/web/feedback-mode.js` + `feedback-dev-server.mjs` + `file-sink.mjs`（ヘッドレス Electron で「ホバー → クリック → 吹き出し → 送信 → 置き場に記録ができる・下の要素にクリックが届かない・Esc で出る・`enabled` を渡さないと何もしない」を確認）と、`scripts/check-no-feedback-in-prod.sh`（偽の成果物で検出・非検出を確認）だけ。ほかのテンプレート（Electron の配線・React Native・Flutter・下のネイティブ断片）は**書いただけで未検証**。
+追記: `assets/templates/core/` は node:test 32 件（schema 1・writeDoc・採番の競合を足した）、`core-ts/` は vitest 28 件、`web/astro/` は Astro 7 の最小プロジェクトで「dev で toolbar から要素を選んで保存 → 置き場に schema 1 の記録・リンクは動かない・Esc で出る・幅 390px のタッチでシート（16px・44px）」「build の dist で検査が通り、統合を本番にも登録すると検査が落ちる」を確認した（§2.1）。
 
 ## 0. 共通方針
 
@@ -106,6 +107,27 @@ DOM が無いので §3 のネイティブ方式（部品の registry か、ビ�
 - ホットキーは既存のショートカットとぶつからないものに（`Alt+Shift+F`）。Mac の Alt+文字は別の文字になることがあるので `e.code` で判定している【追加】。
 - 本番: §0.1。
 - 認証が要る画面のスクリーンショットや、ユーザの個人情報が写る画面では、送信前にプレビューを出す・要素を伏せる、などを検討する【追加】【未検証】。
+- 場所を一意に指す手がかり（XPath・CSS セレクタは保存の前に引き直す・テキストフラグメント・Markdown 由来のページのソースの行）: `locate.md`。操作（popover・モードの外の右クリック・ページ全体への送信・スマホのタップとシート）: `interaction.md`。ページと箇所ごとの継続メモ: `memo.md`。
+
+### 2.1 Astro の Dev Toolbar に載せる【実績: Astro 7 + Starlight の docs サイト】
+
+フレームワークが dev 用の toolbar を持っていれば、それが「既存のデバッグ基盤」（§0.2）になる。Astro はその代表で、入口・本番からの除外・画面とサーバーの通り道がそろっている。ひな形: `assets/templates/web/astro/`（`feedback-integration.ts`・`feedback-app.ts`・`protocol.ts`・`check-no-dev-tools-in-dist.sh`。コアは `scripts/copy-core.sh` で同じフォルダの `core/` に置く）。
+
+- **`command === 'dev'` のときだけ登録する**: 統合の `astro:config:setup` で `command !== 'dev'` なら何もしない。`addDevToolbarApp({ id, name, icon, entrypoint })` で toolbar のアプリにする。build・preview・sync には toolbar アプリも、下のログのバッファも、Markdown のプラグインも出ない。FAB・ホットキー・`enabled` の保険は要らない（統合そのものが登録されない）。
+- **保存は toolbar のメッセージで受ける**: `astro:server:setup` の `toolbar.on('<id>:save', …)` で受け、Sink に書いて `toolbar.send('<id>:result', …)` で返す。ブラウザ側は toolbar アプリの `server.send` / `server.on`。Vite の HMR の WebSocket に乗るので、HTTP の受け口・ポート・CORS・トークンが要らない（Electron の IPC と同じ位置づけ）。結果は `requestId` で依頼と対応づけ、時間切れ（約 10 秒）で失敗にする。`server.on` の購読は外せないので、アプリの `init` で 1 回だけ登録する。
+- **受け口で形と大きさを確かめる**: `astro dev --host` で LAN に出すと、同じネットワークからページを開いた人が保存できる。依頼の形・コメントの字数・全体の大きさ・添付の数と大きさを受け口で検査し、`--host` のときは起動時に「LAN から書き込める」と警告を 1 行出す。
+- **ログのバッファは head-inline**: `injectScript('head-inline', …)` で、ページのどの script より前に入れる（toolbar アプリの `init` より前のエラー・hydration の失敗も拾う）。中身は console の error / warn / log・未捕捉の例外・unhandledrejection・画像や script の読み込み失敗（capture の `error`）・Vite の `vite:error`（`/@vite/client` を動的 import して `createHotContext(...).on('vite:error')`）を、件数と字数の上限つきのリングバッファに溜めるだけ。バンドルを通らないので ES5 の文字列で書く。これは feedback 専用の暫定のログで、ログ基盤ではない（`architecture.md` §2.5）。
+- **Markdown のソースの行**（任意）: `astro:config:done` で Markdown の processor にプラグインを差す（`locate.md` §4。Astro 7 は Sätteri）。
+- **本番の dist を grep する検査を CI に入れる**: `check-no-dev-tools-in-dist.sh <dist>` を build の後に 1 ステップ足す。toolbar アプリの id・ログのバッファの global 名・dev だけの属性名・dev だけの依存名を grep し、1 つでもあれば落とす。**dist に html が 1 つも無いときも落とす**（ビルドの失敗を「何も見つからない」で通さない）。パターンは統合の定数と突き合わせるテストを置くとずれない。
+
+  ```yaml
+  # 例: GitHub Actions の docs のジョブ
+  - run: pnpm run build
+  - run: sh <dev 専用の場所>/check-no-dev-tools-in-dist.sh dist
+  ```
+- 置き場は `.local/feedback/` のような git に入らない場所にし、環境変数（ひな形は `FEEDBACK_DIR`）で差し替えられるようにする。検証では本物の置き場を汚さないよう、一時ディレクトリに向ける。
+- 依存を動的 import する（スクショのライブラリなど）なら、`optimizeDeps.include` に先に入れる。入れないと、初めて読んだ瞬間に Vite がページを再読み込みする【未検証: 作りかけ。`interaction.md` §5】。
+- Astro 7 より前の版の toolbar API（`app` / `server` の helpers）は【未検証】。
 
 ## 3. モバイル
 
@@ -147,6 +169,8 @@ PixelCopy.request(window, bmp, { /* 完了後に PNG へ */ }, Handler(Looper.ge
 Jetpack Compose は `Modifier.testTag("…")` / `semantics` を付け、`SemanticsNode` の境界から選ぶ。
 
 ## 4. 差分の早見表
+
+Web で Astro の Dev Toolbar に載せる場合（§2.1）【実績】: 選択は `elementsFromPoint`、送信は toolbar のメッセージ、置き場は受け口（統合）の裏の file、ログは head-inline のバッファ、本番から外すのは `command === 'dev'` の登録と dist の grep。
 
 | 項目 | Electron【実績】 | Web【追加】 | Tauri【未検証】 | RN / Flutter【未検証】 | ネイティブ【未検証】 |
 |---|---|---|---|---|---|

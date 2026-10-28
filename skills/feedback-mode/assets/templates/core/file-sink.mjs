@@ -9,7 +9,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { ARCHIVE_DIR, ID_PATTERN, entryId, feedbackDay, nextSeqFromIds } from './feedback-core.mjs';
+import { ARCHIVE_DIR, ID_PATTERN, entryId, feedbackDay, nextSeqFromIds, safeDocPath } from './feedback-core.mjs';
 
 export const DEFAULT_INBOX_DIR = 'feedback'; // 参照実装の feedback.dir の既定
 export const DEFAULT_ATTACH_DIR = '.local/tmp/feedback'; // 参照実装のスクショの置き場（環境変数で変更）
@@ -66,23 +66,34 @@ export const resolveFeedbackDir = resolveInside;
 /**
  * 文を <repoRoot>/<dir>/yymmdd-xx.md として追加する。上書きしない（wx）。
  * 先に同じ名前を作られたら番号を数え直して最大 MAX_ATTEMPTS 回まで試す。失敗したら理由つきで投げる。
+ * 数えてから書くまでの間に、別のプロセスが同じ番号を保存して archived/ へ移すと、wx は通るのに番号が重なる。
+ * そのため archived/ に同じ名前があれば、書く前も書いた後も「取られた」として数え直す。
  */
-export function saveFeedbackFile({ repoRoot, dir = DEFAULT_INBOX_DIR, text, now = new Date(), beforeWrite }) {
+export function saveFeedbackFile({ repoRoot, dir = DEFAULT_INBOX_DIR, text, now = new Date(), beforeWrite, afterWrite }) {
   const abs = resolveInside(repoRoot, dir);
   fs.mkdirSync(abs, { recursive: true });
   const day = feedbackDay(now);
+  const archivedHas = (name) => fs.existsSync(path.join(abs, ARCHIVE_DIR, name));
   let last = '';
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     const name = feedbackFileName(day, nextFeedbackSeq(abs, day));
     const file = path.join(abs, name);
     beforeWrite?.(file, attempt);
+    last = name;
+    if (archivedHas(name)) continue;
     try {
       fs.writeFileSync(file, text, { encoding: 'utf8', flag: 'wx' });
-      return { file, rel: path.relative(repoRoot, file).split(path.sep).join('/'), name, bytes: Buffer.byteLength(text, 'utf8'), attempts: attempt };
     } catch (err) {
       if (err?.code !== 'EEXIST') throw new Error(`保存できませんでした: ${path.relative(repoRoot, file)} に書けません（原文: ${err?.message ?? err}）`);
-      last = name;
+      continue;
     }
+    afterWrite?.(file, attempt); // beforeWrite と同じくテスト用（競合を差し込む）
+    // 書いた後にも確かめる。Inbox の同じ名前はもう自分のものなので、ここを通れば以後この番号は重ならない。
+    if (archivedHas(name)) {
+      fs.rmSync(file, { force: true });
+      continue;
+    }
+    return { file, rel: path.relative(repoRoot, file).split(path.sep).join('/'), name, bytes: Buffer.byteLength(text, 'utf8'), attempts: attempt };
   }
   throw new Error(`${MAX_ATTEMPTS} 回試しても空いている名前を取れませんでした（最後は ${last}）`);
 }
@@ -124,11 +135,14 @@ export function saveShots({ windowPng, elementPng, baseDir, now = new Date() }) 
 /**
  * @param {{ repoRoot: string, dir?: string, attachDir?: string }} o
  *   dir: 置き場（リポジトリルートからの相対）。attachDir: 添付の置き場（相対。参照実装は .local/tmp/feedback）
+ *   上書きする文書（writeDoc / readDoc。メモ機能が使う）は置き場の中（<dir>/<relPath>）に置く。list は直下の記録だけを数えるので混ざらない。
+ * @returns {import('./feedback-core.mjs').Sink}
  */
 export function createFileSink({ repoRoot, dir = DEFAULT_INBOX_DIR, attachDir = DEFAULT_ATTACH_DIR }) {
   const root = path.resolve(repoRoot);
   const inbox = () => resolveInside(root, dir);
   const rel = (f) => path.relative(root, f).split(path.sep).join('/');
+  const docFile = (relPath) => resolveInside(root, path.posix.join(dir.split(path.sep).join('/'), safeDocPath(relPath)));
   const locate = (id) => {
     if (!ID_PATTERN.test(id)) throw new Error(`id が不正です: ${id}`); // パス区切りを含められない
     for (const [state, d] of [['open', inbox()], ['archived', path.join(inbox(), ARCHIVE_DIR)]]) {
@@ -143,7 +157,7 @@ export function createFileSink({ repoRoot, dir = DEFAULT_INBOX_DIR, attachDir = 
   };
   return {
     kind: 'file',
-    capabilities: { put: true, list: true, read: true, archive: true },
+    capabilities: { put: true, list: true, read: true, archive: true, doc: true },
     async putAttachments(files, { now = new Date() } = {}) {
       const byName = Object.fromEntries(files.map((f) => [f.name, f.data]));
       const r = saveShots({ windowPng: byName['window.png'], elementPng: byName['element.png'], baseDir: resolveInside(root, attachDir), now });
@@ -180,6 +194,29 @@ export function createFileSink({ repoRoot, dir = DEFAULT_INBOX_DIR, attachDir = 
       if (note) fs.appendFileSync(file, `\n---\n対応メモ: ${note}\n`);
       fs.renameSync(file, dest); // 参照実装の「mv」
       return info(id, 'archived', dest);
+    },
+    /** 上書きする文書（メモ）。同じディレクトリの tmp に書いてから rename する（読み手に書きかけが見えない）【追加】 */
+    async writeDoc(relPath, text) {
+      const abs = docFile(relPath);
+      fs.mkdirSync(path.dirname(abs), { recursive: true });
+      const tmpFile = `${abs}.${process.pid}.${Math.random().toString(36).slice(2)}.tmp`;
+      try {
+        fs.writeFileSync(tmpFile, text, 'utf8');
+        fs.renameSync(tmpFile, abs);
+      } catch (err) {
+        fs.rmSync(tmpFile, { force: true });
+        throw err;
+      }
+    },
+    /** 無ければ null */
+    async readDoc(relPath) {
+      const abs = docFile(relPath);
+      try {
+        return fs.readFileSync(abs, 'utf8');
+      } catch (err) {
+        if (err?.code === 'ENOENT') return null;
+        throw err;
+      }
     },
   };
 }

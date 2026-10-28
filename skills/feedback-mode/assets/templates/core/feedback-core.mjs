@@ -5,6 +5,8 @@
  *   - Sink（フィードバック置き場）の契約（下の JSDoc）と submitFeedback（スクショの添付 → 文の組み立て → 置き場へ保存の一連）【追加】
  *   - 採番の規則 nextSeqFromIds（置き場が何であっても同じ。archived の番号も数える）【実績】
  *   - redact（秘密情報の伏せ字）【実績】/ cropRect（スクショの切り抜き範囲）【実績】/ buildFeedbackMarkdown（文の組み立て）【追加】
+ *   - 記録の形 schema 1（frontmatter の kind / omitted / dirty / stale。meta を渡したときだけ書く。旧形と両方を読める parseRecordFrontmatter）【実績: Web 参照実装】
+ *   - safeDocPath（上書きする文書 = メモの置き場の相対パスの検査）【実績: Web 参照実装】
  * 置き場の実装は別ファイル:
  *   file-sink.mjs   ローカルのファイル（参照実装の feedbackFile.ts・feedbackShots.ts の写し）【実績】
  *   memory-sink.mjs メモリ（テスト・契約の確認用）【追加】
@@ -37,12 +39,14 @@
  *
  * @typedef {Object} Sink                  フィードバック置き場
  * @property {string} kind                 'file' | 'memory' | 'http' | …
- * @property {{put:boolean,list:boolean,read:boolean,archive:boolean}} capabilities  できること。できない操作は呼ぶと投げる（例: 一方向のフォームへの送信は put だけ）
+ * @property {{put:boolean,list:boolean,read:boolean,archive:boolean,doc?:boolean}} capabilities  できること。できない操作は呼ぶと投げる（例: 一方向のフォームへの送信は put だけ）。doc は writeDoc / readDoc を持つか
  * @property {(files: Attachment[], ctx?: {now?: Date}) => Promise<PutAttachmentsResult>} putAttachments  添付を保存し、文に書く参照を返す。putEntry より先に呼ぶ
  * @property {(entry: {text: string, now?: Date}) => Promise<EntryInfo & {attempts?: number}>} putEntry     採番して保存する。上書きしない・競合したら採番し直す・名前にユーザ入力を入れない（参照実装の規則）
  * @property {(q?: {state?: 'open'|'archived'|'all'}) => Promise<EntryInfo[]>} list     一覧（id の昇順）
  * @property {(id: string) => Promise<{text: string} & EntryInfo>} read                 1 件の全文
- * @property {(id: string, opts?: {note?: string}) => Promise<EntryInfo>} archive       対応済みにする（参照実装では mv。note があれば末尾に 1 行追記してよい）
+ * @property {(id: string, opts?: {note?: string}) => Promise<EntryInfo>} archive       対応済みにする（参照実装では mv。note があれば末尾に 1 行追記してよい）。2 回目は何もしない
+ * @property {(relPath: string, text: string) => Promise<void>} [writeDoc]  任意（capabilities.doc）。置き場の中の文書を上書きする（メモ機能）。採番しない・記録に数えない
+ * @property {(relPath: string) => Promise<string|null>} [readDoc]          任意（capabilities.doc）。無ければ null
  */
 
 export const ARCHIVE_DIR = 'archived';
@@ -92,6 +96,19 @@ export function nextSeqFromIds(ids, day) {
     if (m && m[1] === day) max = Math.max(max, Number(m[2]));
   }
   return max + 1;
+}
+
+/**
+ * 上書きする文書（writeDoc / readDoc）の相対パスを `/` 区切りの正規形にする。置き場の外に出るもの（絶対パス・`..`・空・NUL・`\\`）は投げる。
+ * `./memo//a.md` → `memo/a.md`。シンボリックリンクの確認はファイルの Sink がする。
+ */
+export function safeDocPath(relPath) {
+  if (typeof relPath !== 'string' || relPath === '' || relPath.includes('\0') || relPath.includes('\\')) throw new Error(`パスが使えません: ${JSON.stringify(relPath)}`);
+  if (relPath.startsWith('/') || /^[A-Za-z]:/.test(relPath)) throw new Error(`絶対パスは使えません: ${relPath}`);
+  const parts = relPath.split('/').filter((p) => p !== '' && p !== '.');
+  if (parts.length === 0) throw new Error(`パスが空です: ${relPath}`);
+  if (parts.includes('..')) throw new Error(`.. で置き場の外には出せません: ${relPath}`);
+  return parts.join('/');
 }
 
 // ---------------------------------------------------------------------------
@@ -148,17 +165,63 @@ export function block(lines, lang = 'text') {
 
 const kv = (obj) => Object.entries(obj ?? {}).map(([k, v]) => `- ${k}: ${v === null || v === undefined ? 'null' : one(typeof v === 'object' ? JSON.stringify(v) : v)}`);
 
+// ---------------------------------------------------------------------------
+// 記録の形 schema 1（frontmatter）【実績: Web 参照実装】。旧形（frontmatter なし）も読めるように、書くのは meta を渡したときだけ
+
+/** frontmatter の schema の値。frontmatter の無い旧形は 0 として扱う */
+export const RECORD_SCHEMA = 1;
+/** 何を選んだか: 要素 1 つ / 複数の要素 / テキストの選択 / 画面（ページ）全体 / アプリ（サイト）全体 */
+export const RECORD_KINDS = ['element', 'elements', 'text', 'page', 'site'];
+
+/** payload.kind があればそれ。無ければ target の有無から推す（部品を選んだら element、選ばなければ page） */
+export function kindOf(payload) {
+  if (RECORD_KINDS.includes(payload?.kind)) return payload.kind;
+  return payload?.target ? 'element' : 'page';
+}
+
+/**
+ * frontmatter（YAML。値は JSON の書き方にするので、YAML としても JSON としても読める）。値が無いキーは書かない。
+ * meta: { id?, created?: Date, dirty?: boolean, stale?: boolean, attachments?: string[] }
+ *   dirty = 記録の時点で、選んだ場所のソースに未コミットの変更があった / stale = 画面を開いた後にソースが変わった。
+ *   どちらも受け口（ソースと git が見える側）が決める。分からなければ書かない（false と書かない）。
+ */
+export function recordFrontmatter(payload, omittedIds, meta = {}) {
+  const rows = [['schema', RECORD_SCHEMA], ['id', meta.id], ['kind', kindOf(payload)], ['screen', payload?.target?.screen], ['target', payload?.target?.path], ['source', payload?.target?.source],
+    ['created', (meta.created ?? new Date()).toISOString()], ['dirty', meta.dirty], ['stale', meta.stale], ['omitted', omittedIds], ['attachments', meta.attachments?.length ? meta.attachments : undefined]];
+  return ['---', ...rows.filter(([, v]) => v !== undefined && v !== null && v !== '').map(([k, v]) => `${k}: ${JSON.stringify(v)}`), '---'].join('\n');
+}
+
+/**
+ * 記録の frontmatter を読む。新形（schema 1）と旧形（frontmatter なし・手書きのメモ）の両方を受ける。
+ * 旧形は { schema: 0 } を返す（キーが無いのは「情報が無い」で、異常ではない）。値は JSON として読めなければ文字列のまま。
+ */
+export function parseRecordFrontmatter(text) {
+  const m = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(String(text));
+  if (!m) return { schema: 0 };
+  const out = {};
+  for (const line of m[1].split(/\r?\n/)) {
+    const kv = /^([A-Za-z_][\w-]*):\s*(.*)$/.exec(line);
+    if (!kv) continue;
+    try { out[kv[1]] = JSON.parse(kv[2]); } catch { out[kv[1]] = kv[2]; }
+  }
+  if (typeof out.schema !== 'number') out.schema = 0;
+  return out;
+}
+
 /**
  * payload の形は assets/templates/feedback.schema.json。
  *   appName, pointer（Agent への案内: ソースの場所・ログの形）, comment,
  *   target { path, element, selector, rect, click, screen, state }, shots { window, element, error }（参照 = Sink が返した refs）,
  *   env {…}, screen {…}, view {…}, logs [{ ts, level, text }]
  */
-export function buildFeedbackMarkdown(payload, options = DEFAULT_OPTIONS, { logLimitBytes = 200 * 1024 } = {}) {
+export function buildFeedbackMarkdown(payload, options = DEFAULT_OPTIONS, { logLimitBytes = 200 * 1024, meta } = {}) {
   const o = normalizeOptions(options);
   const off = SECTIONS.filter((id) => !o[id]);
-  const lines = [`# ${payload.appName ?? 'app'}: 画面へのフィードバック`, ''];
+  // meta を渡したときだけ schema 1 の frontmatter を先頭に置く（渡さなければ旧形と同じ文。後方互換）
+  const lines = meta ? [recordFrontmatter(payload, off, meta), ''] : [];
+  lines.push(`# ${payload.appName ?? 'app'}: 画面へのフィードバック`, '');
   if (payload.pointer) lines.push(payload.pointer, '');
+  if (meta?.stale) lines.push('注意: 画面を開いた後にソースが変わっています。記録の位置・文言は今のソースとずれているかもしれません。', '');
   if (off.length > 0) lines.push(`（オプションでオフ: ${off.map((id) => SECTION_HEADINGS[id]).join('・')}）`, '');
   const comment = (payload.comment ?? '').trim();
   lines.push('## フィードバックの文', '', ...(comment === '' ? ['（書いていません）'] : comment.split(/\r?\n/).map((l) => `> ${l}`)));
@@ -167,6 +230,10 @@ export function buildFeedbackMarkdown(payload, options = DEFAULT_OPTIONS, { logL
     lines.push('', '## 選んだ位置', '');
     lines.push(`- 画面: ${code(t.screen ?? '')}`, `- 部品の道筋（data-fb / testID など）: ${code(t.path ?? '')}`, `- 要素: ${one(t.element ?? '')}`);
     if (t.selector) lines.push(`- セレクタ: ${code(t.selector)}`);
+    // 場所を一意に指す手がかり（references/build/locate.md）。xpath / selector は保存の前に引き直して同じ要素に戻ったものだけを送る
+    if (t.xpath) lines.push(`- XPath: ${code(t.xpath)}`);
+    if (t.fragment) lines.push(`- テキストフラグメント URL: ${t.fragment}`);
+    if (t.source) lines.push(`- ソースの行: ${code(t.source)}`);
     if (t.rect) lines.push(`- 矩形: x ${Math.round(t.rect.x)}・y ${Math.round(t.rect.y)}・${Math.round(t.rect.width)} × ${Math.round(t.rect.height)}（CSS px / dp。ウィンドウの左上から）`);
     if (t.click) lines.push(`- クリックした座標: (${Math.round(t.click.x)}, ${Math.round(t.click.y)})`);
     lines.push('- 要素の状態:', ...(Object.keys(t.state ?? {}).length ? kv(t.state).map((l) => `  ${l}`) : ['  - なし']));
@@ -231,11 +298,11 @@ export function assertSink(sink) {
 
 /**
  * スクショを添付として保存 → 参照を文に入れて組み立て → 置き場へ保存。
- * @param {{ sink: Sink, payload: object, options?: object, windowPng?: Uint8Array|null, elementPng?: Uint8Array|null, shotError?: string|null, now?: Date }} req
+ * @param {{ sink: Sink, payload: object, options?: object, windowPng?: Uint8Array|null, elementPng?: Uint8Array|null, shotError?: string|null, now?: Date, meta?: {dirty?: boolean, stale?: boolean} }} req
  * @returns {Promise<{ ok: true } & EntryInfo & { text: string, shots: object }>}
  * 参照実装と同じく、スクショ失敗は投げず文に理由を書く。保存（putEntry）の失敗は投げる（呼ぶ側が吹き出しに理由を出してモードを続ける）。
  */
-export async function submitFeedback({ sink, payload, options, windowPng = null, elementPng = null, shotError = null, now = new Date() }) {
+export async function submitFeedback({ sink, payload, options, windowPng = null, elementPng = null, shotError = null, now = new Date(), meta }) {
   assertSink(sink);
   const opt = normalizeOptions(options);
   let shots = { dir: null, window: null, element: null, error: null };
@@ -253,7 +320,9 @@ export async function submitFeedback({ sink, payload, options, windowPng = null,
       shots.error = shotError ?? 'スクリーンショットが空でした';
     }
   }
-  const text = buildFeedbackMarkdown({ ...payload, shots }, opt);
+  // meta（{ dirty?, stale? }）を渡すと schema 1 の frontmatter を書く。created と添付の参照はここで足す
+  const recordMeta = meta ? { created: now, ...meta, attachments: [shots.window, shots.element].filter(Boolean) } : undefined;
+  const text = buildFeedbackMarkdown({ ...payload, shots }, opt, { meta: recordMeta });
   const info = await sink.putEntry({ text, now });
   return { ok: true, ...info, text, shots };
 }

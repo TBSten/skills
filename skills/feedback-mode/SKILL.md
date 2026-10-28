@@ -19,7 +19,7 @@ metadata:
 アプリのフィードバックモード（作る）と、溜まったフィードバックの消化ループ（回す）の入口。**呼ばれたら、まず環境を判定し、build か loop のどちらか一方の入口だけを読む**。両方を最初から読まない。
 
 > **具体パスは参照実装（社内向け Electron ツール）の例**: この skill に出てくる `feedback/`・`feedback/archived/`・`.local/tmp/feedback/`・`yymmdd-xx.md`・`npm run check` などは参照実装での値。**自分の環境（アプリの種類・リポジトリ・保存先）に置き換えて読む**。置き場は抽象語「フィードバック置き場（Inbox）」、保存先の差し替え層は「Sink」（`references/concepts.md`）。
-> 凡例: 【実績】参照実装で確認済み / 【追加】汎用化で足した設計・コード / 【未検証】推測・未検証。
+> 凡例: 【実績】参照実装で確認済み（【実績: Web 参照実装】は Astro + Starlight の docs サイトで確認済み）/ 【追加】汎用化で足した設計・コード / 【未検証】推測・未検証。
 > パスは特記がなければ、この SKILL.md があるディレクトリ（`${CLAUDE_SKILL_DIR}`）基準。
 
 ## 1. 判定（最初にやる）
@@ -49,17 +49,17 @@ bash "${CLAUDE_SKILL_DIR}/scripts/detect.sh" <対象リポジトリのルート>
 | 入口 | いつ読む | 中身 |
 |---|---|---|
 | `references/loop/loop.md` | 実践（消化ループ） | 自環境への置き換え表・運用ルール・手順 0〜7・Sink ごとの読み方/閉じ方・分類・履歴・報告の形。補助: `references/loop/subagent-prompt.md`・`references/loop/full-check.md`・`references/loop/lessons.md` |
-| `references/build/build.md` | 構築 | 前提（**debug ビルドだけに配線し本番に入れない**）・手順 1〜13（1b 既存のデバッグ基盤に乗る、1c ログ基盤は別タスク、を含む）・チェックリスト・既知の制約。詳細: `references/build/architecture.md`・`references/build/platforms.md`。コード: `assets/templates/`、コアのコピーとテスト: `scripts/copy-core.sh`、本番検査: `scripts/check-no-feedback-in-prod.sh` |
-| `references/concepts.md` | 用語・記録の形・Sink の契約が必要になったとき（両側が参照） | 凡例・用語表（Inbox / Archive / Sink / 履歴）・記録の名前と構成・状態遷移・Sink の契約 |
+| `references/build/build.md` | 構築 | 前提（**debug ビルドだけに配線し本番に入れない**）・手順 1〜13（1b 既存のデバッグ基盤に乗る、1c ログ基盤は別タスク、を含む）・チェックリスト・既知の制約。詳細: `references/build/architecture.md`・`references/build/platforms.md`（Astro の Dev Toolbar は §2.1）・`references/build/locate.md`（場所を一意に指す）・`references/build/interaction.md`（popover・右クリックの入口・スマホ）・`references/build/memo.md`（ページと箇所ごとの継続メモ）。コード: `assets/templates/`、コアのコピーとテスト: `scripts/copy-core.sh`、本番検査: `scripts/check-no-feedback-in-prod.sh` |
+| `references/concepts.md` | 用語・記録の形・Sink の契約が必要になったとき（両側が参照） | 凡例・用語表（Inbox / Archive / Sink / 履歴）・記録の名前と構成（schema 1 の frontmatter）・状態遷移・Sink の契約・フィードバックとメモの違い |
 
 ```
 feedback-mode/
 ├ SKILL.md           判定と入口だけ
 ├ references/
 │  ├ concepts.md     用語・記録の形・Sink の契約（共通）
-│  ├ build/          build.md / architecture.md / platforms.md
+│  ├ build/          build.md / architecture.md / platforms.md / locate.md / interaction.md / memo.md
 │  └ loop/           loop.md / subagent-prompt.md / full-check.md / lessons.md
-├ assets/templates/  導入先にコピーするコード（core/ electron/ web/ mobile/ existing-debug/ と schema・記録の例）
+├ assets/templates/  導入先にコピーするコード（core/ core-ts/ electron/ web/（web/astro/）mobile/ existing-debug/ と schema・記録とメモの例）
 └ scripts/           detect.sh / copy-core.sh / check-no-feedback-in-prod.sh
 ```
 

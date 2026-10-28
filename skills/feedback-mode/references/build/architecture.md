@@ -146,12 +146,13 @@ feedback の価値の多くは「ログ」節が決める（記録の約 67K 字
 
 インターフェース（`putAttachments` → `putEntry`・`list`・`read`・`archive`、`capabilities`）は `references/concepts.md`「Sink の契約」。
 
-Sink が守る規則（参照実装 `feedbackFile.ts` 由来【実績】）: ① id は日付 + 連番（`yymmdd-xx`）で、**対応済みの番号も数えて再利用しない** ② 上書きしない・競合したら採番し直す ③ id・名前にユーザ入力を入れない（パス区切りを含められない）④ スクショ失敗は投げずに理由を返す（文に「撮れませんでした」と出る）⑤ 保存の失敗は理由つきで投げる（画面が吹き出しに出してモードを続ける）。redact は Sink ではなく `buildFeedbackMarkdown` の 1 か所（コピーと保存で同じ文）。
+Sink が守る規則（参照実装 `feedbackFile.ts` 由来【実績】）: ① id は日付 + 連番（`yymmdd-xx`）で、**対応済みの番号も数えて再利用しない**（数えてから書くまでに別のプロセスが同じ番号を保存して archive する競合も、書く前と書いた後に Archive を確かめて避ける。`references/concepts.md`「名前と採番」） ② 上書きしない・競合したら採番し直す ③ id・名前にユーザ入力を入れない（パス区切りを含められない）④ スクショ失敗は投げずに理由を返す（文に「撮れませんでした」と出る）⑤ 保存の失敗は理由つきで投げる（画面が吹き出しに出してモードを続ける）。redact は Sink ではなく `buildFeedbackMarkdown` の 1 か所（コピーと保存で同じ文）。
 
 | 実装 | 状態 | 概要 |
 |---|---|---|
 | **ローカルのファイル** `file-sink.mjs` | 【実績】の写し。node:test と契約テストで確認済み | `<リポジトリ>/feedback/yymmdd-xx.md` + `feedback/archived/` + 添付は `.local/tmp/feedback/<日時>/`。`archive` = `rename`（参照実装の mv）。保存先はルート内・シンボリックリンクで外に出ない。`repoRoot` / `dir` / `attachDir` で読み替える |
 | **メモリ** `memory-sink.mjs` | 【追加】テスト・モックアップ用 | 契約テストの基準 |
+| **TypeScript 版（ファイル・メモリ）** `core-ts/` | 【実績: Web 参照実装】vitest の契約テスト（`sink-contract.test.ts`）でファイル版とメモリ版に同じテストを掛ける | 型付きの導入先（Astro・Vite・Next など）向け。契約は同じで、上書きする文書（`writeDoc` / `readDoc`。メモ機能）と、`putEntry` の `text` に関数（採番した id を受けて文を作る。frontmatter に id を書くため）を足した。置き場のルートの下に `archived/`・`attachments/`・文書（`memo/…`）を置く。テストは導入先で `vitest run`（vitest を devDependencies に） |
 | **HTTP**（同じ LAN の開発機の受け口へ） `http-sink.mjs` + `web/feedback-dev-server.mjs` | 【追加】Node 同士・localhost の契約テストは確認済み。**LAN 越し・スマホ実機は【未検証】** | 受け口が裏で別の Sink（通常は file-sink）を持つ。`POST /__feedback/attachments` `POST /__feedback/entries` `GET /__feedback/entries[/:id]` `POST /__feedback/entries/:id/archive`。LAN に出すなら `FEEDBACK_TOKEN`（ヘッダ `x-feedback-token`）必須。受け口でも redact を掛ける。**画面側が JS で文を組み立てられないとき**（Flutter・ネイティブ）は、HTTP Sink ではなく submission（`POST /__feedback`、生の payload + base64 画像）を送り、受け口が `submitFeedback` する |
 | Issue トラッカー（GitHub Issues・Jira 等） | 【未検証】概要のみ | `putAttachments` = 添付アップロードまたは別ストレージの URL（Issue API は画像を直接受けないものが多い）、`putEntry` = Issue 作成（id = Issue 番号か `yymmdd-xx` をタイトルに）、`list`/`read` = Issue 検索・取得、`archive` = クローズ + ラベル。採番は tracker に任せるので `yymmdd-xx` は付けない選択もある。認証トークンは受け口（サーバ側・CI）にだけ置き、画面側に出さない。個人情報・ログが外部サービスに出る点の同意が要る |
 | クラウドストレージ（S3・GCS・Drive 等） | 【未検証】概要のみ | `putEntry` = オブジェクトを `inbox/<id>.md` に作成（条件付き書き込み = `If-None-Match` で上書きなしを担保）、`archive` = `archived/` 配下へコピー + 削除、`list` = prefix 一覧。署名付き URL で添付。Agent は同じ SDK か CLI で読む |

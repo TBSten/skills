@@ -16,6 +16,7 @@ export function toBase64(bytes) {
   return btoa(bin);
 }
 
+/** @returns {import('./feedback-core.mjs').Sink} */
 export function createHttpSink({ baseUrl, token = null, fetchImpl = globalThis.fetch }) {
   const base = baseUrl.replace(/\/+$/, '');
   const call = async (method, p, body) => {
@@ -27,7 +28,7 @@ export function createHttpSink({ baseUrl, token = null, fetchImpl = globalThis.f
   };
   return {
     kind: 'http',
-    capabilities: { put: true, list: true, read: true, archive: true },
+    capabilities: { put: true, list: true, read: true, archive: true, doc: false }, // doc（writeDoc / readDoc）は受け口に経路が無い
     async putAttachments(files, { now } = {}) {
       const j = await call('POST', '/__feedback/attachments', { now: now?.toISOString(), files: files.map((f) => ({ name: f.name, mime: f.mime ?? 'application/octet-stream', dataBase64: toBase64(f.data) })) });
       return { refs: j.refs ?? {}, dir: j.dir ?? null, error: j.error ?? null };

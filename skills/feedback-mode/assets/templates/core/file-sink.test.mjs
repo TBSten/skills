@@ -56,3 +56,38 @@ test('FileSink の id はパス区切りを含められない（list/read/archiv
   await assert.rejects(() => sink.read('../../etc/passwd'), /不正/);
   await assert.rejects(() => sink.archive('261023-01/../x'), /不正/);
 });
+
+test('採番と書き込みの間に、別のプロセスが同じ番号を保存して archived/ へ移しても、番号が重ならない', () => {
+  const root = tmp();
+  const now = new Date(2026, 9, 23, 10);
+  saveFeedbackFile({ repoRoot: root, text: 'a', now });
+  const arch = path.join(root, 'feedback', 'archived');
+  // 1 回目: 数えた直後に 02 が archived に現れる（書く前に気づく）
+  const b = saveFeedbackFile({ repoRoot: root, text: 'b', now, beforeWrite: (f, n) => { if (n === 1) { fs.mkdirSync(arch, { recursive: true }); fs.writeFileSync(path.join(arch, path.basename(f)), 'other'); } } });
+  assert.equal(b.name, '261023-03.md');
+  assert.equal(fs.readFileSync(path.join(arch, '261023-02.md'), 'utf8'), 'other');
+  assert.ok(!fs.existsSync(path.join(root, 'feedback', '261023-02.md')));
+  // 2 回目: 確かめた後・書いた直後に 04 が archived に現れる（書いた後に気づき、自分の分を消して数え直す）
+  const c = saveFeedbackFile({ repoRoot: root, text: 'c', now, afterWrite: (f, n) => { if (n === 1) fs.writeFileSync(path.join(arch, path.basename(f)), 'other2'); } });
+  assert.equal(c.name, '261023-05.md');
+  assert.equal(c.attempts, 2);
+  assert.ok(!fs.existsSync(path.join(root, 'feedback', '261023-04.md')));
+  const ids = [...fs.readdirSync(path.join(root, 'feedback')), ...fs.readdirSync(arch)].filter((n) => n.endsWith('.md'));
+  assert.equal(new Set(ids).size, ids.length);
+});
+
+test('writeDoc / readDoc: 置き場の中に上書きで書き、tmp を残さない。記録には数えない', async () => {
+  const root = tmp();
+  const sink = createFileSink({ repoRoot: root });
+  await sink.writeDoc('memo/ja/a.md', 'v1');
+  await sink.writeDoc('memo/ja/a.md', 'v2');
+  assert.equal(await sink.readDoc('memo/ja/a.md'), 'v2');
+  assert.equal(fs.readFileSync(path.join(root, 'feedback/memo/ja/a.md'), 'utf8'), 'v2');
+  assert.deepEqual(fs.readdirSync(path.join(root, 'feedback/memo/ja')), ['a.md']);
+  assert.equal(await sink.readDoc('memo/none.md'), null);
+  assert.deepEqual(await sink.list(), []);
+  const outside = tmp();
+  fs.symlinkSync(outside, path.join(root, 'feedback', 'link'));
+  await assert.rejects(() => sink.writeDoc('link/x.md', 'x'), /外/);
+  assert.deepEqual(fs.readdirSync(outside), []);
+});
