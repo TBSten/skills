@@ -79,6 +79,18 @@ test('schema 1: meta を渡したときだけ frontmatter。渡さなければ�
   assert.equal(body, old);
 });
 
+test('schema 1: 選んだ位置（target）をオフにしたら、frontmatter にも画面・道筋・ソースを書かない', () => {
+  const withSource = { ...payload, target: { ...payload.target, source: 'src/Header.tsx:12' } };
+  const md = buildFeedbackMarkdown(withSource, { target: false }, { meta: {} });
+  const fm = parseRecordFrontmatter(md);
+  assert.ok(fm.omitted.includes('target'));
+  for (const key of ['screen', 'target', 'source']) assert.ok(!(key in fm), `${key} が frontmatter に残っている`);
+  assert.doesNotMatch(md, /home|ヘッダ\/保存|src\/Header\.tsx/);
+  // オンなら書く
+  const on = parseRecordFrontmatter(buildFeedbackMarkdown(withSource, {}, { meta: {} }));
+  assert.equal(on.source, 'src/Header.tsx:12');
+});
+
 test('schema 1: dirty / stale は分からなければ書かない（false と書かない）', () => {
   const fm = parseRecordFrontmatter(buildFeedbackMarkdown(payload, {}, { meta: {} }));
   assert.ok(!('dirty' in fm) && !('stale' in fm));

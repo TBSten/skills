@@ -1,8 +1,8 @@
 # プラットフォーム別の実装指針
 
 凡例・用語は `references/concepts.md`（【実績】【追加】【未検証】。置き場・Sink・Transport・受け口の意味もそこ）。コードは `assets/templates/`。
-**検証状況**: コードを実際に動かして確かめたのは、`assets/templates/core/`（node:test 17 件。Sink の契約テストをメモリ・ファイル・HTTP の 3 実装に掛けた）と、`assets/templates/web/feedback-mode.js` + `feedback-dev-server.mjs` + `file-sink.mjs`（ヘッドレス Electron で「ホバー → クリック → 吹き出し → 送信 → 置き場に記録ができる・下の要素にクリックが届かない・Esc で出る・`enabled` を渡さないと何もしない」を確認）と、`scripts/check-no-feedback-in-prod.sh`（偽の成果物で検出・非検出を確認）だけ。ほかのテンプレート（Electron の配線・React Native・Flutter・下のネイティブ断片）は**書いただけで未検証**。
-追記: `assets/templates/core/` は node:test 32 件（schema 1・writeDoc・採番の競合を足した）、`core-ts/` は vitest 28 件、`web/astro/` は Astro 7 の最小プロジェクトで「dev で toolbar から要素を選んで保存 → 置き場に schema 1 の記録・リンクは動かない・Esc で出る・幅 390px のタッチでシート（16px・44px）」「build の dist で検査が通り、統合を本番にも登録すると検査が落ちる」を確認した（§2.1）。
+**検証状況**: コードを実際に動かして確かめたのは、`assets/templates/core/`（node:test 36 件。Sink の契約テストをメモリ・ファイル・HTTP の 3 実装に掛けた）と、`assets/templates/web/feedback-mode.js` + `feedback-dev-server.mjs` + `file-sink.mjs`（ヘッドレス Electron で「ホバー → クリック → 吹き出し → 送信 → 置き場に記録ができる・下の要素にクリックが届かない・Esc で出る・`enabled` を渡さないと何もしない」を確認）と、`scripts/check-no-feedback-in-prod.sh`（偽の成果物で検出・非検出を確認）だけ。ほかのテンプレート（Electron の配線・React Native・Flutter・下のネイティブ断片）は**書いただけで未検証**。
+追記: `assets/templates/core/` は node:test 36 件（schema 1・writeDoc・採番の競合を足した）、`core-ts/` は vitest 32 件、`web/astro/` は Astro 7 の最小プロジェクトで「dev で toolbar から要素を選んで保存 → 置き場に schema 1 の記録・リンクは動かない・Esc で出る・幅 390px のタッチでシート（16px・44px）」「build の dist で検査が通り、統合を本番にも登録すると検査が落ちる」を確認した（§2.1）。
 
 ## 0. 共通方針
 

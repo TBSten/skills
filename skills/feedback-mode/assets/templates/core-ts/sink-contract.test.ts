@@ -1,6 +1,6 @@
 // Sink の契約テスト（vitest）。file と memory に同じテストを掛ける。新しい実装を足したら makers に 1 つ足すだけでよい。【実績: Web 参照実装】
 // 回し方: 導入先で `npx vitest run <このフォルダ>`（vitest を devDependencies に入れる）。
-import { mkdir, mkdtemp, readdir, readFile, rm, stat, symlink, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readdir, readFile, rename, rm, stat, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, describe, expect, it } from 'vitest'
@@ -56,6 +56,14 @@ describe.each(Object.keys(makers))('Sink 契約 [%s]', (kind) => {
 		const { sink } = await make()
 		const e = await sink.putEntry({ text: (id) => `id: ${id}`, now: day })
 		expect((await sink.read(e.id)).text).toBe(`id: ${e.id}`)
+	})
+
+	it('text の関数が投げたら、記録を残さず番号も使わない', async () => {
+		const { sink, root } = await make()
+		await expect(sink.putEntry({ text: () => { throw new Error('組み立てに失敗') }, now: day })).rejects.toThrow('組み立てに失敗')
+		expect(await ids(sink, 'all')).toEqual([])
+		if (root) expect((await readdir(root).catch(() => [] as string[])).filter((n) => n.endsWith('.md'))).toEqual([])
+		expect((await sink.putEntry({ text: 'a', now: day })).id).toBe('261029-01')
 	})
 
 	it('上書きしない: 何度保存しても別の記録になり、前の本文が残る', async () => {
@@ -166,6 +174,54 @@ describe('Sink [file] だけの契約', () => {
 		expect((await s2.putEntry({ text: 'b', now: day })).id).toBe('261029-04') // 03 は書いた直後に取られた → 消して数え直す
 		const all = [...(await readdir(root)), ...(await readdir(arch))].filter((n) => n.endsWith('.md'))
 		expect(new Set(all).size).toBe(all.length)
+	})
+
+	it('書いた直後に、自分の記録が対応済み（archived/）へ移されても、二重に保存しない', async () => {
+		const root = join(await tmp(), 'feedback')
+		const arch = join(root, 'archived')
+		let first = true
+		const sink = createFileSink(root, {
+			hooks: {
+				afterWrite: async (f) => {
+					if (!first) return
+					first = false
+					await mkdir(arch, { recursive: true })
+					await rename(f, join(arch, f.split('/').pop()!)) // 消化する側が見つけてすぐ archive した
+				},
+			},
+		})
+		const e = await sink.putEntry({ text: 'a', now: day })
+		expect(e.id).toBe('261029-01')
+		expect(e.state).toBe('archived')
+		expect(await ids(sink, 'all')).toEqual(['261029-01'])
+	})
+
+	it('シンボリックリンクで外を指す archived/・attachments/・記録は使わない（外を読まない・外へ移さない・外へ書かない）', async () => {
+		const base = await tmp()
+		const outside = join(base, 'outside')
+		const root = join(base, 'feedback')
+		await mkdir(outside)
+		await mkdir(root)
+		await writeFile(join(outside, 'secret.txt'), 'secret')
+		// 記録の名前をしたリンク: read で外のファイルを読ませない・list に出さない
+		await symlink(join(outside, 'secret.txt'), join(root, '261028-01.md'))
+		const sink = createFileSink(root)
+		await expect(sink.read('261028-01')).rejects.toThrow()
+		expect(await ids(sink, 'all')).toEqual([])
+		// archived/ が外へのリンク: archive で外へ移さない・list に外のファイルを出さない
+		await writeFile(join(outside, '261028-02.md'), 'outside record')
+		await symlink(outside, join(root, 'archived'))
+		const e = await sink.putEntry({ text: 'a', now: day })
+		await expect(sink.archive(e.id)).rejects.toThrow('外')
+		expect(await readFile(join(root, `${e.id}.md`), 'utf8')).toBe('a')
+		expect((await readdir(outside)).sort()).toEqual(['261028-02.md', 'secret.txt'])
+		await expect(sink.list({ state: 'archived' })).rejects.toThrow('外')
+		await expect(sink.read('261028-02')).rejects.toThrow()
+		// attachments/ が外へのリンク: 外へ書かない（投げずに error）
+		await symlink(outside, join(root, 'attachments'))
+		const at = await sink.putAttachments([{ name: 'window.png', data: new Uint8Array([1]) }], { now: day })
+		expect(at.error).toMatch('外')
+		expect((await readdir(outside)).sort()).toEqual(['261028-02.md', 'secret.txt'])
 	})
 
 	it('writeDoc は rename で書く: 上書きで inode が変わり、tmp が残らない', async () => {

@@ -7,6 +7,10 @@ const TAP_SLOP_PX = 10
 const TAP_MAX_MS = 600
 const TIMEOUT_MS = 10_000
 const isNarrow = () => matchMedia('(max-width: 600px)').matches
+/** Astro の Dev Toolbar の要素名。 */
+const TOOLBAR_TAG = 'astro-dev-toolbar'
+/** ページの上でも既定の動作を止めないキー（読み返すためのスクロールと、自前の UI へ移る Tab）。 */
+const PASS_KEYS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'PageUp', 'PageDown', 'Home', 'End', 'Tab'])
 
 const STYLE = `
 :host { all: initial; }
@@ -38,7 +42,8 @@ type Picked = { kind: 'element'; el: Element } | { kind: 'page' }
 function xpathOf(el: Element): string | null {
 	const steps: string[] = []
 	for (let cur: Element | null = el; cur; cur = cur.parentElement) {
-		if (cur.id && !cur.id.includes('"') && document.querySelectorAll(`[id="${cur.id}"]`).length === 1) {
+		// id はセレクタに入れる前に CSS.escape する（`a\` のような id でセレクタが壊れて投げないように）。
+		if (cur.id && !cur.id.includes('"') && document.querySelectorAll(`#${CSS.escape(cur.id)}`).length === 1) {
 			steps.unshift(`//*[@id="${cur.id}"]`)
 			break
 		}
@@ -114,7 +119,9 @@ export default defineToolbarApp({
 			let lastPointer = 'mouse'
 			let undoViewport = () => {}
 
-			const isOwn = (e: Event) => e.composedPath().includes(host)
+			// Astro の toolbar も別の host。自前の UI と同じく選ぶ対象にせず、操作（アプリの切り替えなど）を止めない。
+			const inToolbar = (e: Event) => e.composedPath().some((n) => n instanceof Element && n.localName === TOOLBAR_TAG)
+			const isOwn = (e: Event) => e.composedPath().includes(host) || inToolbar(e)
 			const place = (frame: HTMLElement, el: Element | null) => {
 				frame.hidden = !el
 				if (!el) return
@@ -132,7 +139,8 @@ export default defineToolbarApp({
 			}
 
 			function open(pick: Picked) {
-				// 書きかけの文は、別の要素を選んでも捨てない（選び直しに持っていく）。
+				// 書きかけの文は、帯の「このページについて」で選び直しても捨てない（選び直しに持っていく）。
+				// ページの上を押しての選び直しはしない（pickAt）。
 				const kept = panel?.textarea.value ?? ''
 				closePanel()
 				const el = document.createElement('div')
@@ -169,8 +177,16 @@ export default defineToolbarApp({
 				cancel.onclick = closePanel
 				send.onclick = async () => {
 					send.disabled = true
-					const r = await save(pick, textarea.value)
-					send.disabled = false
+					error.textContent = ''
+					let r: SaveResult
+					try {
+						r = await save(pick, textarea.value)
+					} catch (e) {
+						// 場所の情報を集める途中で投げても、ボタンを戻して理由を出す（送れないまま固まらない）。
+						r = { requestId: '', ok: false, error: e instanceof Error ? e.message : String(e) }
+					} finally {
+						send.disabled = false
+					}
 					if (r.ok) exit()
 					else error.textContent = `保存できませんでした: ${r.error}`
 				}
@@ -199,7 +215,19 @@ export default defineToolbarApp({
 				})
 			}
 
-			const targetAt = (x: number, y: number) => document.elementsFromPoint(x, y).find((el) => el !== host && !host.contains(el)) ?? null
+			const targetAt = (x: number, y: number) => document.elementsFromPoint(x, y).find((el) => el !== host && !host.contains(el) && el.localName !== TOOLBAR_TAG) ?? null
+			/**
+			 * ページの上を押した（クリック・タップ）。入力欄を開いているときは選び直さない（書いた文の対象が変わるため。interaction.md §1）:
+			 * コメントが空なら閉じ、書いてあれば何もしない。閉じるのは「やめる」と Esc。
+			 */
+			const pickAt = (x: number, y: number) => {
+				if (panel) {
+					if (panel.textarea.value.trim() === '') closePanel()
+					return
+				}
+				const t = targetAt(x, y)
+				if (t) open({ kind: 'element', el: t })
+			}
 			pageBtn.onclick = () => open({ kind: 'page' })
 			document.addEventListener('pointermove', (e) => { if (e.pointerType === 'mouse' && !isOwn(e)) place(hover, targetAt(e.clientX, e.clientY)) }, opts)
 			// リンクやボタンを動かさない（タップも最後に click になるので、これでスマホでも動かない）。
@@ -208,8 +236,7 @@ export default defineToolbarApp({
 				e.preventDefault()
 				e.stopPropagation()
 				if (lastPointer === 'touch') return // タッチは pointerup で選び済み
-				const t = targetAt(e.clientX, e.clientY)
-				if (t) open({ kind: 'element', el: t })
+				pickAt(e.clientX, e.clientY)
 			}, opts)
 			// iOS Safari は、click ハンドラを持たない要素（段落など）のタップでは click を出さない。
 			// document の capture リスナーは数えられないので、タッチのタップは pointerup で自分で判定する。
@@ -222,10 +249,26 @@ export default defineToolbarApp({
 				down = null
 				if (e.pointerType !== 'touch' || !d || isOwn(e)) return
 				if (Math.hypot(e.clientX - d.x, e.clientY - d.y) >= TAP_SLOP_PX || e.timeStamp - d.t >= TAP_MAX_MS) return // スクロール・長押し
-				const t = targetAt(e.clientX, e.clientY)
-				if (t) open({ kind: 'element', el: t })
+				pickAt(e.clientX, e.clientY)
 			}, opts)
-			document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.preventDefault(); exit() } }, opts)
+			// キーはページに渡さない（サイトのショートカットやキーボードで動く部品を止める。architecture.md §1.2）。
+			// window の capture で止めるので、ページのどのリスナーより先に来る。shadow DOM の中の入力欄で打ったキーも、
+			// ページからは host で打ったように見える（入力欄だと気づけずにショートカットが動く）ので、ここで止める。
+			// 自前の UI の中は伝わるのを止めるだけで、既定の動作（文字の入力・Tab・ボタンの Enter / Space）は残る。
+			for (const type of ['keydown', 'keyup', 'keypress'] as const) {
+				window.addEventListener(type, (e) => {
+					if (inToolbar(e)) return // toolbar 自身のキー操作
+					e.stopPropagation()
+					// IME の変換中の Esc は変換の取り消しなので、モードを終えない（書きかけの文を失わない）。
+					if (e.key === 'Escape' && !e.isComposing) {
+						e.preventDefault()
+						if (type === 'keydown') exit()
+						return
+					}
+					// ページの上のキーは既定の動作も止める（フォーカスしたリンクやボタンを Enter / Space で動かさない）。読み返すためのスクロールは残す。
+					if (!e.composedPath().includes(host) && !PASS_KEYS.has(e.key)) e.preventDefault()
+				}, opts)
+			}
 			// 枠と popover をスクロールに追従させる代わりに、ここでは枠だけ付け直す（popover の追従は interaction.md）。
 			window.addEventListener('scroll', () => { if (panel?.pick.kind === 'element') place(picked, panel.pick.el) }, opts)
 			// ページ遷移（View Transitions を含む）に UI を持ち越さない。

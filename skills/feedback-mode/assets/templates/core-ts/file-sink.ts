@@ -25,7 +25,12 @@ async function namesIn(dir: string): Promise<string[]> {
 	}
 }
 
-const exists = (p: string) => stat(p).then(() => true, () => false)
+/** 名前があるか（シンボリックリンクはたどらない。壊れたリンクもあるとみなす）。 */
+const exists = (p: string) => lstat(p).then(() => true, () => false)
+/** 実体のファイルか（シンボリックリンクは false。記録の名前をしたリンクで外のファイルを読ませない）。 */
+const isPlainFile = (p: string) => lstat(p).then((s) => s.isFile(), () => false)
+/** inode。同じファイルか（rename しても変わらない）を見分ける。無ければ null。 */
+const inodeOf = (p: string) => lstat(p, { bigint: true }).then((s) => s.ino, () => null)
 
 /** `root` の中に収まる絶対パス。文字列の検査に加え、既にある一番近い親の実体（シンボリックリンクの先）が root の外なら投げる。 */
 async function resolveInside(root: string, relPath: string): Promise<string> {
@@ -43,8 +48,9 @@ async function resolveInside(root: string, relPath: string): Promise<string> {
 		}
 	}
 	const realRoot = await realpath(root).catch(() => root)
-	const realProbe = await realpath(probe).catch(() => probe)
-	const back = relative(realRoot, realProbe)
+	// 名前はあるのに実体をたどれない（壊れたシンボリックリンク）なら、行き先を確かめられないので使わない。
+	const realProbe = await realpath(probe).catch(() => (probe === root ? root : null))
+	const back = realProbe === null ? '..' : relative(realRoot, realProbe)
 	if (back.startsWith('..') || isAbsolute(back)) throw new Error(`置き場の外を指しています: ${relPath}`)
 	return abs
 }
@@ -61,7 +67,8 @@ export function createFileSink(root: string, o: FileSinkOptions = {}): Sink {
 	const base = resolve(root)
 	const refBase = o.repoRoot ? resolve(o.repoRoot) : base
 	const ref = (abs: string) => relative(refBase, abs).split(sep).join('/')
-	const dirOf = (state: EntryState) => (state === 'open' ? base : join(base, ARCHIVE_DIR))
+	/** 記録の置き場。archived/ は置き場の中に収まるかを確かめる（シンボリックリンクで外を指していたら投げる）。 */
+	const dirOf = async (state: EntryState) => (state === 'open' ? base : resolveInside(base, ARCHIVE_DIR))
 
 	const info = async (id: string, state: EntryState, file: string): Promise<EntryInfo> => {
 		const st = await stat(file)
@@ -70,23 +77,19 @@ export function createFileSink(root: string, o: FileSinkOptions = {}): Sink {
 	const locate = async (id: string): Promise<{ state: EntryState; file: string }> => {
 		if (!isEntryId(id)) throw new Error(`id が不正です: ${JSON.stringify(id)}`)
 		for (const state of ['open', 'archived'] as const) {
-			const file = join(dirOf(state), `${id}.md`)
-			try {
-				if ((await stat(file)).isFile()) return { state, file }
-			} catch {
-				// 次の置き場へ
-			}
+			const file = join(await dirOf(state), `${id}.md`)
+			if (await isPlainFile(file)) return { state, file }
 		}
 		throw new Error(`見つかりません: ${id}`)
 	}
 	const scan = async (state: EntryState): Promise<EntryInfo[]> => {
-		const dir = dirOf(state)
+		const dir = await dirOf(state)
 		const out: EntryInfo[] = []
 		for (const name of await namesIn(dir)) {
 			const id = idOfFileName(name)
 			if (!id) continue
 			const file = join(dir, name)
-			if ((await stat(file)).isFile()) out.push(await info(id, state, file))
+			if (await isPlainFile(file)) out.push(await info(id, state, file))
 		}
 		return out
 	}
@@ -98,6 +101,8 @@ export function createFileSink(root: string, o: FileSinkOptions = {}): Sink {
 		/**
 		 * `<root>/yymmdd-xx.md` に排他的（wx）に書く。番号は一覧から決めるが、同時の保存と取り合うので、作れた番号を採用する。
 		 * 数えてから書くまでに、別のプロセスが同じ番号を保存して archived/ へ移すと wx は通ってしまうので、書く前と書いた後に archived/ を確かめる。
+		 * 書いた後の archived/ の同じ名前が自分の書いたファイル（inode が同じ）なら、消化する側がもう対応済みにしただけなので、保存できたとして返す。
+		 * 文（text の関数）はファイルを作る前に組み立てる。書けなかったら作ったファイルを消す（空の記録を残さない）。
 		 */
 		async putEntry({ text, now = new Date() }) {
 			await mkdir(base, { recursive: true })
@@ -111,6 +116,7 @@ export function createFileSink(root: string, o: FileSinkOptions = {}): Sink {
 					attempts++
 					const id = formatId(prefix, n)
 					const file = join(base, `${id}.md`)
+					const body = typeof text === 'function' ? text(id) : text
 					await o.hooks?.beforeWrite?.(file, attempts)
 					if (await archivedHas(id)) continue
 					let handle
@@ -120,15 +126,25 @@ export function createFileSink(root: string, o: FileSinkOptions = {}): Sink {
 						if ((e as NodeJS.ErrnoException).code === 'EEXIST') continue
 						throw e
 					}
+					let mine: bigint
 					try {
-						await handle.writeFile(typeof text === 'function' ? text(id) : text, 'utf8')
-					} finally {
+						await handle.writeFile(body, 'utf8')
+						mine = (await handle.stat({ bigint: true })).ino
+					} catch (e) {
 						await handle.close()
-					}
-					await o.hooks?.afterWrite?.(file, attempts)
-					// Inbox の同じ名前はもう自分のもの。ここを通れば以後この番号は重ならない。重なったら自分の分を消して数え直す。
-					if (await archivedHas(id)) {
 						await rm(file, { force: true })
+						throw e
+					}
+					await handle.close()
+					await o.hooks?.afterWrite?.(file, attempts)
+					// Inbox の同じ名前はもう自分のもの。ここを通れば以後この番号は重ならない。
+					const archivedFile = join(base, ARCHIVE_DIR, `${id}.md`)
+					const archivedIno = await inodeOf(archivedFile)
+					// 自分の記録が、もう対応済みへ移された（消化する側が見つけてすぐ archive した）。二重に保存しない。
+					if (archivedIno === mine) return { ...(await info(id, 'archived', archivedFile)), attempts }
+					// 別の記録が同じ番号で archived にある。自分の分を消して数え直す。
+					if (archivedIno !== null) {
+						if ((await inodeOf(file)) === mine) await rm(file, { force: true })
 						break
 					}
 					return { ...(await info(id, 'open', file)), attempts }
@@ -150,7 +166,7 @@ export function createFileSink(root: string, o: FileSinkOptions = {}): Sink {
 		async archive(id, { note, now = new Date() } = {}) {
 			const { state, file } = await locate(id)
 			if (state === 'archived') return info(id, state, file)
-			const dest = join(base, ARCHIVE_DIR, `${id}.md`)
+			const dest = await resolveInside(base, `${ARCHIVE_DIR}/${id}.md`)
 			await mkdir(dirname(dest), { recursive: true })
 			if (await exists(dest)) throw new Error(`既にあります: ${ref(dest)}`)
 			await rename(file, dest)
@@ -163,7 +179,7 @@ export function createFileSink(root: string, o: FileSinkOptions = {}): Sink {
 			try {
 				if (files.length === 0) return { refs: {}, dir: null, error: '添付がありません' }
 				for (const f of files) if (!ATTACH_NAME.test(f.name)) throw new Error(`添付の名前が使えません: ${f.name}`)
-				const root0 = join(base, ATTACHMENTS_DIR)
+				const root0 = await resolveInside(base, ATTACHMENTS_DIR)
 				await mkdir(root0, { recursive: true })
 				let dir = ''
 				// mkdir を再帰なしで試し、取り合いに強くする。

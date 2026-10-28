@@ -186,7 +186,9 @@ export function kindOf(payload) {
  *   どちらも受け口（ソースと git が見える側）が決める。分からなければ書かない（false と書かない）。
  */
 export function recordFrontmatter(payload, omittedIds, meta = {}) {
-  const rows = [['schema', RECORD_SCHEMA], ['id', meta.id], ['kind', kindOf(payload)], ['screen', payload?.target?.screen], ['target', payload?.target?.path], ['source', payload?.target?.source],
+  // 選んだ位置（target）をオフにしたら、本文と同じく frontmatter にも場所（画面・道筋・ソース）を書かない
+  const t = omittedIds.includes('target') ? undefined : payload?.target;
+  const rows = [['schema', RECORD_SCHEMA], ['id', meta.id], ['kind', kindOf(payload)], ['screen', t?.screen], ['target', t?.path], ['source', t?.source],
     ['created', (meta.created ?? new Date()).toISOString()], ['dirty', meta.dirty], ['stale', meta.stale], ['omitted', omittedIds], ['attachments', meta.attachments?.length ? meta.attachments : undefined]];
   return ['---', ...rows.filter(([, v]) => v !== undefined && v !== null && v !== '').map(([k, v]) => `${k}: ${JSON.stringify(v)}`), '---'].join('\n');
 }
