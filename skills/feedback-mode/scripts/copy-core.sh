@@ -35,7 +35,8 @@ fi
 mkdir -p "${DEST}/core" "${DEST}/web"
 for rel in "${files[@]}"; do cp "${SRC}/${rel}" "${DEST}/${rel}"; done
 
-if ! out=$(cd "${DEST}" && node --test core/ 2>&1); then
+# ディレクトリを渡す形（node --test core/）は新しい Node（v25 で確認）で「Cannot find module」になるので、ファイルを並べて渡す
+if ! out=$(cd "${DEST}" && node --test core/*.test.mjs 2>&1); then
   printf '%s\n' "$out" >&2
   echo "error: node --test が失敗しました（コピー先: ${DEST}）。上の出力で失敗したテストを確認してください" >&2
   exit 1

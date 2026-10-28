@@ -53,7 +53,7 @@ Only one side is read, so unrelated instructions never enter the context.
 | `references/concepts.md` | Terms, record format, state transitions, the Sink contract (shared) |
 | `references/build/` | Build guide (steps, checklist), architecture, per-platform guidance |
 | `references/loop/` | Triage loop (rules, classification, history, report), subagent prompts, full check, lessons learned |
-| `assets/templates/` | Code to copy into your app: core (Sinks, numbering, redact, Markdown builder, node:test tests), Electron main wiring, web UI, mobile (React Native / Flutter), existing-debug-menu examples, JSON schema |
+| `assets/templates/` | Code to copy into your app: core (Sinks, numbering, redact, Markdown builder, node:test tests), a TypeScript core with a vitest Sink contract (`core-ts/`), Electron main wiring, web UI, an Astro Dev Toolbar integration (`web/astro/`), mobile (React Native / Flutter), existing-debug-menu examples, JSON schema, record and memo examples |
 | `scripts/detect.sh` | Read-only environment check that prints `VERDICT=loop` / `partial` / `build` |
 | `scripts/copy-core.sh` | Copies the core templates into your app and runs the `node:test` suite |
 | `scripts/check-no-feedback-in-prod.sh` | Greps a production build artifact for leftovers of the feedback mode |
@@ -61,7 +61,8 @@ Only one side is read, so unrelated instructions never enter the context.
 ## Maturity and known limitations
 
 Status: **Experimental**. The reference implementation is an internal Electron tool that has run this loop for weeks.
-Verified here: the core templates (17 `node:test` tests across memory / file / HTTP Sinks), the web UI with the dev server in headless Electron,
+A second reference implementation (a web docs site built with Astro 7 + Starlight) added the Astro Dev Toolbar integration, the schema 1 record, location hints, the memo feature and the TypeScript core.
+Verified here: the core templates (36 `node:test` tests across memory / file / HTTP Sinks), the TypeScript core (32 vitest tests), the Astro integration in a minimal Astro 7 project, the web UI with the dev server in headless Electron,
 and the production-artifact check against fake artifacts. **Not verified**: the Electron main wiring, Tauri, React Native, Flutter,
 native iOS / Android snippets, html2canvas screenshots, HTTP over a LAN / on real devices, the per-platform "strip from production" build settings,
 and Issue-tracker / cloud-storage Sinks. Always inspect your release artifact before shipping.

@@ -2,11 +2,13 @@
  * memory-sink.mjs — メモリの Sink（テスト・契約の確認・モックアップ用）。【追加】
  * 採番・競合・archived の数え方は file-sink と同じ規則（feedback-core.mjs の nextSeqFromIds）。
  */
-import { feedbackDay, entryId, nextSeqFromIds, ID_PATTERN } from './feedback-core.mjs';
+import { feedbackDay, entryId, nextSeqFromIds, ID_PATTERN, safeDocPath } from './feedback-core.mjs';
 
+/** @returns {import('./feedback-core.mjs').Sink & { entries: Map<string, {text: string, state: 'open'|'archived', createdAt: string}>, attachments: Map<string, Uint8Array>, docs: Map<string, string> }} */
 export function createMemorySink() {
   const entries = new Map(); // id → { text, state, createdAt }
   const attachments = new Map(); // ref → Uint8Array
+  const docs = new Map(); // 正規形の相対パス → 文書（writeDoc / readDoc）
   let attachSeq = 0;
   const info = (id) => {
     const e = entries.get(id);
@@ -14,9 +16,10 @@ export function createMemorySink() {
   };
   return {
     kind: 'memory',
-    capabilities: { put: true, list: true, read: true, archive: true },
+    capabilities: { put: true, list: true, read: true, archive: true, doc: true },
     entries,
     attachments,
+    docs,
     async putAttachments(files, { now = new Date() } = {}) {
       const dir = `memory:attach/${++attachSeq}`;
       const refs = {};
@@ -42,9 +45,16 @@ export function createMemorySink() {
     async archive(id, { note } = {}) {
       if (!ID_PATTERN.test(id) || !entries.has(id)) throw new Error(`見つかりません: ${id}`);
       const e = entries.get(id);
+      if (e.state === 'archived') return info(id); // file-sink と同じく、2 回目は何もしない（対応メモを二重にしない）
       e.state = 'archived';
       if (note) e.text += `\n---\n対応メモ: ${note}\n`;
       return info(id);
+    },
+    async writeDoc(relPath, text) {
+      docs.set(safeDocPath(relPath), text);
+    },
+    async readDoc(relPath) {
+      return docs.get(safeDocPath(relPath)) ?? null;
     },
   };
 }

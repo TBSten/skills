@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildFeedbackMarkdown, cropRect, feedbackDay, nextSeqFromIds, normalizeOptions, redact, submitFeedback, assertSink } from './feedback-core.mjs';
+import { buildFeedbackMarkdown, cropRect, feedbackDay, nextSeqFromIds, normalizeOptions, redact, submitFeedback, assertSink, kindOf, parseRecordFrontmatter, safeDocPath } from './feedback-core.mjs';
 import { createMemorySink } from './memory-sink.mjs';
 
 test('feedbackDay: ローカル日付の yymmdd', () => assert.equal(feedbackDay(new Date(2026, 9, 23)), '261023'));
@@ -58,4 +58,77 @@ test('submitFeedback: 添付 → 参照が文に入る → 置き場に保存。
 test('assertSink: 足りないメソッドは投げる', () => {
   assert.throws(() => assertSink({ kind: 'x' }), /putAttachments/);
   assert.doesNotThrow(() => assertSink(createMemorySink()));
+});
+
+test('schema 1: meta を渡したときだけ frontmatter。渡さなければ旧形と同じ文（後方互換）', () => {
+  const old = buildFeedbackMarkdown(payload);
+  assert.ok(old.startsWith('# Demo: 画面へのフィードバック'));
+  const md = buildFeedbackMarkdown(payload, {}, { meta: { created: new Date(Date.UTC(2026, 9, 23)), dirty: true, stale: true } });
+  const fm = parseRecordFrontmatter(md);
+  assert.equal(fm.schema, 1);
+  assert.equal(fm.kind, 'element');
+  assert.equal(fm.screen, 'home');
+  assert.equal(fm.target, 'ヘッダ/保存');
+  assert.equal(fm.dirty, true);
+  assert.equal(fm.stale, true);
+  assert.deepEqual(fm.omitted, ['env', 'screen', 'view']); // 載せなかった節は frontmatter と本文の 1 行の両方
+  assert.match(md, /（オプションでオフ: 環境・今の画面・画面に出ている情報）/);
+  assert.match(md, /注意: 画面を開いた後にソースが変わっています/);
+  // frontmatter を外せば、本文は旧形と同じ並び（注意の 1 行を除く）
+  const body = md.replace(/^---\n[\s\S]*?\n---\n\n/, '').replace(/注意: [^\n]*\n\n/, '');
+  assert.equal(body, old);
+});
+
+test('schema 1: 選んだ位置（target）をオフにしたら、frontmatter にも画面・道筋・ソースを書かない', () => {
+  const withSource = { ...payload, target: { ...payload.target, source: 'src/Header.tsx:12' } };
+  const md = buildFeedbackMarkdown(withSource, { target: false }, { meta: {} });
+  const fm = parseRecordFrontmatter(md);
+  assert.ok(fm.omitted.includes('target'));
+  for (const key of ['screen', 'target', 'source']) assert.ok(!(key in fm), `${key} が frontmatter に残っている`);
+  assert.doesNotMatch(md, /home|ヘッダ\/保存|src\/Header\.tsx/);
+  // オンなら書く
+  const on = parseRecordFrontmatter(buildFeedbackMarkdown(withSource, {}, { meta: {} }));
+  assert.equal(on.source, 'src/Header.tsx:12');
+});
+
+test('schema 1: dirty / stale は分からなければ書かない（false と書かない）', () => {
+  const fm = parseRecordFrontmatter(buildFeedbackMarkdown(payload, {}, { meta: {} }));
+  assert.ok(!('dirty' in fm) && !('stale' in fm));
+});
+
+test('parseRecordFrontmatter: frontmatter の無い旧形・手書きのメモは schema 0', () => {
+  assert.deepEqual(parseRecordFrontmatter('# MyApp: 画面へのフィードバック\n\n本文'), { schema: 0 });
+  assert.deepEqual(parseRecordFrontmatter('ボタンが押せない（手書き）'), { schema: 0 });
+  assert.equal(parseRecordFrontmatter('---\npage: /x\n---\n').schema, 0); // schema の無い frontmatter も旧形
+});
+
+test('kindOf: kind が無ければ target の有無から推す', () => {
+  assert.equal(kindOf({ target: {} }), 'element');
+  assert.equal(kindOf({}), 'page');
+  assert.equal(kindOf({ kind: 'text' }), 'text');
+  assert.equal(kindOf({ kind: 'bogus', target: {} }), 'element');
+});
+
+test('submitFeedback: meta を渡すと created と添付の参照が frontmatter に入る', async () => {
+  const sink = createMemorySink();
+  const r = await submitFeedback({ sink, payload, windowPng: new Uint8Array([1]), now: new Date(2026, 9, 23, 10), meta: { stale: false } });
+  const fm = parseRecordFrontmatter((await sink.read(r.id)).text);
+  assert.equal(fm.schema, 1);
+  assert.equal(fm.stale, false);
+  assert.deepEqual(fm.attachments, ['memory:attach/1/window.png']);
+});
+
+test('safeDocPath: 正規形にし、外に出るものは投げる', () => {
+  assert.equal(safeDocPath('./memo//ja/a.md'), 'memo/ja/a.md');
+  for (const bad of ['', '.', '../x', 'a/../../x', '/etc/passwd', 'C:/x', 'a\\b', 'x\0y', 1]) assert.throws(() => safeDocPath(bad));
+});
+
+test('選んだ位置: XPath・テキストフラグメント・ソースの行があれば書く。ソースの行は frontmatter にも', () => {
+  const p2 = { ...payload, target: { ...payload.target, xpath: '//*[@id="save"]', fragment: 'http://localhost/x#:~:text=%E4%BF%9D%E5%AD%98', source: 'src/pages/x.md:12-14' } };
+  const md = buildFeedbackMarkdown(p2, {}, { meta: {} });
+  assert.match(md, /- XPath: `\/\/\*\[@id="save"\]`/);
+  assert.match(md, /- テキストフラグメント URL: http:\/\/localhost\/x#:~:text=/);
+  assert.match(md, /- ソースの行: `src\/pages\/x\.md:12-14`/);
+  assert.equal(parseRecordFrontmatter(md).source, 'src/pages/x.md:12-14');
+  assert.ok(!buildFeedbackMarkdown(payload).includes('XPath')); // 無ければ書かない（旧形の文は変わらない）
 });
