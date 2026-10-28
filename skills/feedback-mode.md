@@ -64,5 +64,5 @@ Status: **Experimental**. The reference implementation is an internal Electron t
 A second reference implementation (a web docs site built with Astro 7 + Starlight) added the Astro Dev Toolbar integration, the schema 1 record, location hints, the memo feature and the TypeScript core.
 Verified here: the core templates (36 `node:test` tests across memory / file / HTTP Sinks), the TypeScript core (32 vitest tests), the Astro integration in a minimal Astro 7 project, the web UI with the dev server in headless Electron,
 and the production-artifact check against fake artifacts. **Not verified**: the Electron main wiring, Tauri, React Native, Flutter,
-native iOS / Android snippets, html2canvas screenshots, HTTP over a LAN / on real devices, the per-platform "strip from production" build settings,
+native iOS / Android snippets, html2canvas screenshots (the web reference implementation's `modern-screenshot` is verified), HTTP over a LAN / on real devices, the per-platform "strip from production" build settings,
 and Issue-tracker / cloud-storage Sinks. Always inspect your release artifact before shipping.
