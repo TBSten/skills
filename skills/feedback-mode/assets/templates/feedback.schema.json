@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "feedback-mode/feedback.schema.json",
+  "title": "FeedbackSubmission（画面 → 受け口 の送信 body）",
+  "description": "【汎用化で追加】参照実装（Electron アプリ）の FeedbackRequest 型に相当。参照実装は view（アプリ固有の画面の状態）を型で固定しているが、汎用版は自由な key-value にした。body 自体は汎用版の独自定義。参照実装と一致するのは、生成される Markdown の構成・節の順・オプション名と初期値。置き場への保存は Sink（references/concepts.md）が行う。",
+  "type": "object",
+  "required": ["payload"],
+  "properties": {
+    "payload": {
+      "type": "object",
+      "required": ["comment"],
+      "properties": {
+        "appName": { "type": "string" },
+        "pointer": { "type": "string", "description": "Agent への案内（ソースの場所・ログの形）。参照実装の intro 行に相当" },
+        "comment": { "type": "string", "maxLength": 20000, "description": "参照実装の上限は 20,000 字。空でも保存する（『（書いていません）』と入る）" },
+        "target": {
+          "type": "object",
+          "description": "選んだ部品。メニューから全体のコピーをするだけのとき（部品を選ばない）は無し",
+          "properties": {
+            "screen": { "type": "string", "description": "画面の ID（参照実装: top / detail / dialog:<名前>）" },
+            "path": { "type": "string", "description": "名前の道筋（data-fb / testID / Semantics label を外側からつないだもの）。無い要素は「祖先の道筋 › 要素の説明」" },
+            "element": { "type": "string", "description": "要素の種類とラベル（button.punch-btn「退勤」）" },
+            "selector": { "type": "string", "description": "CSS セレクタの道筋（Web のみ）" },
+            "rect": { "$ref": "#/$defs/rect" },
+            "click": { "type": "object", "properties": { "x": { "type": "number" }, "y": { "type": "number" } } },
+            "state": { "type": "object", "description": "その要素に関わる状態（押せるか・押せない理由・値など。アプリ固有の stateOf で足す）", "additionalProperties": { "type": ["string", "number", "boolean", "null"] } }
+          }
+        },
+        "viewport": { "type": "object", "properties": { "width": { "type": "number" }, "height": { "type": "number" }, "dpr": { "type": "number" } } },
+        "env": { "type": "object", "description": "環境（版・OS・パス…）" },
+        "screen": { "type": "object", "description": "今の画面（画面 ID・ウィンドウの大きさ・スクロール…）" },
+        "view": { "type": "object", "description": "画面に出ている情報（状態から作る。DOM の文字は拾わない）" },
+        "logs": { "type": "array", "items": { "type": "object", "properties": { "ts": { "type": "string" }, "level": { "enum": ["debug", "info", "warn", "error"] }, "text": { "type": "string" } } } }
+      }
+    },
+    "options": {
+      "type": "object",
+      "description": "含める節。参照実装の既定: target / log / shots = true、env / screen / view = false。フィードバックの文は常に入る",
+      "properties": { "target": { "type": "boolean" }, "log": { "type": "boolean" }, "shots": { "type": "boolean" }, "env": { "type": "boolean" }, "screen": { "type": "boolean" }, "view": { "type": "boolean" } }
+    },
+    "windowPng": { "type": ["string", "null"], "description": "ウィンドウ全体の PNG（base64。選んだ要素を枠で囲み、吹き出し・帯は隠す）" },
+    "elementPng": { "type": ["string", "null"], "description": "要素の周りの切り抜き PNG（base64）" },
+    "shotError": { "type": ["string", "null"] }
+  },
+  "$defs": { "rect": { "type": "object", "required": ["x", "y", "width", "height"], "properties": { "x": { "type": "number" }, "y": { "type": "number" }, "width": { "type": "number" }, "height": { "type": "number" } }, "description": "CSS px / dp。ウィンドウの左上から" } }
+}
