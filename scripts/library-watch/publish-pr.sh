@@ -5,6 +5,7 @@
 # usage: publish-pr.sh --patch FILE --body FILE [--branch NAME] [--base NAME] [--title TEXT] [--dry-run]
 #   --patch   : `git diff --binary` 形式の patch (update job の成果物)
 #   --body    : PR 本文 (Markdown。AI が書いたもの)
+#   --title   : PR タイトル (既定: "library-watch(<UTC 日付>): Kotlin ライブラリの差分を skill に反映")
 #   --dry-run : commit まではするが push / PR 操作をしない (ローカル確認用)
 # 前提: prepare-branch.sh の直後で作業ツリーがきれいなこと。GH_TOKEN に contents / pull-requests の write 権限。
 set -euo pipefail
@@ -20,7 +21,7 @@ while [ $# -gt 0 ]; do
     --base) base="${2:?}"; shift 2 ;;
     --title) title="${2:?}"; shift 2 ;;
     --dry-run) dry_run=true; shift ;;
-    -h | --help) sed -n '2,9p' "$0"; exit 0 ;;
+    -h | --help) sed -n '2,10p' "$0"; exit 0 ;;
     *) die "未知の引数 '$1'" "" "--help で usage を確認する" ;;
   esac
 done
@@ -28,7 +29,8 @@ require_cmd git gh
 [ -n "$patch" ] && [ -n "$body" ] || die "--patch と --body は必須" "" "例: publish-pr.sh --patch changes.patch --body pr-body.md"
 require_file "$patch" "update job の成果物"
 require_file "$body" "AI が書いた PR 本文"
-[ -n "$title" ] || title="library-watch: Kotlin ライブラリの差分を skill に反映"
+today="$(date -u +%F)"
+[ -n "$title" ] || title="library-watch($today): Kotlin ライブラリの差分を skill に反映"
 
 if [ ! -s "$patch" ]; then
   echo "OK publish: patch が空なので何もしない"
@@ -38,7 +40,7 @@ fi
 git apply --index --whitespace=nowarn "$patch" ||
   die "patch を適用できない" "update job と pr job で出発点 (prepare-branch.sh の結果) がずれた" "workflow を再実行する (その間に main か PR ブランチが動いた可能性)"
 git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
-  commit --quiet -m "chore(library-watch): $(date -u +%F) の差分を skill と一覧に反映"
+  commit --quiet -m "chore(library-watch): $today の差分を skill と一覧に反映"
 echo "publish: committed $(git rev-parse --short HEAD)" >&2
 
 if [ "$dry_run" = true ]; then
