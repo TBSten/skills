@@ -250,6 +250,19 @@ gh skill install tbsten/skills check-method-level
 <td>🧪 Experimental</td>
 <td>テスト・動作確認の方法の強さを 9 軸で採点し、script で検証レベルを算出</td>
 </tr>
+<tr>
+<td></td>
+<td><a href="./skills/feedback-mode.ja.md">feedback-mode</a></td>
+<td>
+
+```sh
+gh skill install tbsten/skills feedback-mode
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>debug ビルド専用のアプリ内フィードバックモードを構築し、溜まった記録を Claude Code が消化する</td>
+</tr>
 </table>
 
 ## 📝 利用可能なルール

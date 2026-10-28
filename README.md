@@ -250,6 +250,19 @@ gh skill install tbsten/skills check-method-level
 <td>🧪 Experimental</td>
 <td>Score how strong a test / verification method is on 9 axes via a script</td>
 </tr>
+<tr>
+<td></td>
+<td><a href="./skills/feedback-mode.md">feedback-mode</a></td>
+<td>
+
+```sh
+gh skill install tbsten/skills feedback-mode
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>Debug-only in-app feedback mode plus a Claude Code loop to triage the feedback</td>
+</tr>
 </table>
 
 ## 📝 Available Rules
