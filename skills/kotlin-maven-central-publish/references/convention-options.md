@@ -117,3 +117,23 @@ kotlin {
 
 代償としてライブラリ自身がその版の言語機能しか使えなくなる (preview 扱いに戻った機能は `-X...` フラグが要る)。
 下限を上げる時は README の対応表も一緒に更新する。
+
+## 7. Gradle plugin モジュールを同じ convention で公開する
+
+`java-gradle-plugin` を適用したモジュールは、plugin 自身が `pluginMaven` publication と plugin id ごとの marker publication を作る。
+ここで `KotlinJvm(...)` を選ぶと同じ座標の `maven` publication が **2 つ目** として生え、両方が Central へ上がる。
+`GradlePlugin(...)` なら plugin が作った publication を装飾するだけで、marker は除外される (katachi の実設定):
+
+```kotlin
+if (project.plugins.hasPlugin("java-gradle-plugin")) {
+    // Java だけのモジュールなので javadoc は Dokka ではなく素の javadoc
+    configure(GradlePlugin(javadocJar = JavadocJar.Javadoc(), sourcesJar = SourcesJar.Sources()))
+} else {
+    configure(KotlinJvm(javadocJar = JavadocJar.Dokka("dokkaGeneratePublicationJavadoc"), sourcesJar = SourcesJar.Sources()))
+}
+```
+
+- 判定は convention の適用時に走るので、モジュール側の `plugins { }` では `java-gradle-plugin` を **convention より先に** 書く。逆順だと静かに `KotlinJvm` 側へ落ちる
+- 書き間違いは `afterEvaluate` で `publishing.publications.findByName("maven") != null` を `check(...)` して落とす (`configure()` 自体を遅らせるのは不可。vanniktech の `afterEvaluate` が先に platform を finalize するため)
+- Kotlin plugin を付けると `kotlin-stdlib` が POM に載る。Java だけの plugin モジュールには Kotlin 固有設定 (languageVersion 床・Dokka) を持つ convention を適用しない
+- `pom { }` は marker publication にも配られる。publish.yml の `check` には plugin モジュールの `check` も足す
