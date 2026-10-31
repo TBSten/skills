@@ -76,12 +76,13 @@
 - サイトのショートカット（検索の `/`・Ctrl+K など）を動かさないため、**window の capture で `keydown` / `keyup` / `keypress` に `stopImmediatePropagation` だけをする**（ページのどのリスナーより先に来る）。
 - **`preventDefault` はしない**。ブラウザの既定の動作（コピー・ページ内検索・Space や矢印のスクロール・Tab の移動）を残すため。
 - リンクやボタンが動くのを止めるのは、キーではなく **click の横取り**（`preventDefault` + `stopPropagation`）でやる。Enter / Space は click になるので、そこで止まる。
-- 自前の UI の中のキーは、window の capture では止めない（入力・改行・ボタン操作を生かす）。ページへ伝わるのは、host 要素の bubble で `stopPropagation` して止める。Astro の toolbar の上のキーは通す。
+- **自前の UI の中のキーも window の capture で止める**。host 要素の bubble で止めるのでは、document の capture にあるサイトのショートカットが先に動く（フィードバックを書いている途中で検索が開く）。文字の入力・改行・Tab・ボタンの Enter / Space は既定の動作なので残る。自前の UI にキーの処理（Ctrl+Enter で送る など）を足すときは、host の中のリスナーには届かないので、この window の capture のリスナーで扱う。Astro の toolbar の上のキーは通す。
+- **背景の編集欄にフォーカスを入れない**。伝播を止めても既定の編集（文字の入力・貼り付け）は止まらず、Tab やクリックの mousedown（click の横取りより前）でページの input・textarea・select・contenteditable にフォーカスが入ると中身を変えられる。window の capture の `focusin` で外し、モードに入る前から入っていた分も外す。外すだけだと Firefox は次の Tab がまた同じ欄に入って先へ進めないので、外した欄に `tabindex=-1` を付け、モードを終えるときに元に戻す。
 - **Esc の keyup**: Astro の Dev Toolbar は Esc の `keyup` でアプリを閉じ、toolbar を隠す。こちらで扱った Esc の keyup は、次の 1 回を capture で止める（閉じたあとに届く分も。1 秒で外す）。IME の変換中の Esc はモードを終えない。
 
 ## 10. ダークテーマへの追従【実績: Web 参照実装】
 
-shadow host に `all: initial` を当てると `color-scheme` が既定に戻り、ページが暗くても UI だけ明るくなる（入力欄の既定の色も明るいまま）。**ページの computed な `color-scheme` を host に写し**（`normal` なら `light dark` で OS に従う）、色は CSS の `light-dark(明, 暗)` で持つ。テーマの切り替え（`html` の `data-theme`・`class`・`style` の変更）を `MutationObserver` で見て付け直し、host が外れたら監視をやめる。最小の実装: `assets/templates/web/astro/feedback-app.ts` の `syncColorScheme`。
+shadow host に `all: initial` を当てると `color-scheme` が既定に戻り、ページが暗くても UI だけ明るくなる（入力欄の既定の色も明るいまま）。**ページの computed な `color-scheme` を host に写し**（`normal` なら `light dark` で OS に従う）、色は CSS の `light-dark(明, 暗)` で持つ。テーマの切り替え（`html` の `data-theme`・`class`・`style` の変更）を `MutationObserver` で見て付け直し、host が外れたら監視をやめる（host を置いた `<html>` の `childList` も見る。属性だけを見ると host を外しても呼ばれず、開け閉めのたびに observer が残る）。最小の実装: `assets/templates/web/astro/feedback-app.ts` の `syncColorScheme`。
 
 ## 11. popover の置き場所と field の並び【実績: Web 参照実装】
 

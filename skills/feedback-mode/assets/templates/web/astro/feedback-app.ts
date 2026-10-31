@@ -24,6 +24,8 @@ function swallowEscKeyup() {
 /**
  * host の color-scheme をページのテーマに合わせる。host は `all: initial` で color-scheme が既定に戻るので、
  * ページの computed を写す。色は STYLE の `light-dark()` で持つ（interaction.md §10）。テーマの切り替えにも追従する。
+ * host は `<html>` の直下に置くので、`<html>` の子の増減も見る（host を外したときに監視をやめるため。属性だけを見ると、
+ * テーマが変わるまで observer と外した host が残り、開け閉めのたびに溜まる）。
  */
 function syncColorScheme(host: HTMLElement) {
 	const apply = () => {
@@ -32,7 +34,18 @@ function syncColorScheme(host: HTMLElement) {
 	}
 	apply()
 	const observer = new MutationObserver(() => (host.isConnected ? apply() : observer.disconnect()))
-	observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class', 'style'] })
+	observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class', 'style'], childList: true })
+}
+
+/** ページの編集欄（input・textarea・select・contenteditable）。 */
+const isEditor = (n: unknown): n is HTMLElement =>
+	n instanceof HTMLElement && (n.matches('input, textarea, select') || n.isContentEditable)
+
+/** フォーカスのある要素を shadow root の中までたどる（Astro の toolbar の中は除く）。 */
+function deepActiveElement(): Element | null {
+	let a = document.activeElement
+	while (a?.shadowRoot?.activeElement && a.localName !== TOOLBAR_TAG) a = a.shadowRoot.activeElement
+	return a
 }
 
 const STYLE = `
@@ -278,6 +291,9 @@ export default defineToolbarApp({
 			// キーはページに渡さない（サイトのショートカットやキーボードで動く部品を止める。architecture.md §1.2、interaction.md §9）。
 			// window の capture で stopImmediatePropagation だけをする。preventDefault はしないので、コピー・ページ内検索・スクロール・Tab は残る。
 			// Enter / Space でリンクやボタンが動くのは、それが click になり、上の click の横取りで止まるため。
+			// 自前の UI（textarea・ボタン）のキーもここで止める。host の bubble で止めるのでは、document の capture にある
+			// サイトのショートカット（検索を開くなど）が先に動く。文字の入力・改行・Tab・ボタンの Enter / Space は既定の動作なので残る。
+			// 自前の UI にキーの処理（Ctrl+Enter で送る など）を足すときは、host の中のリスナーには届かないので、ここで扱う。
 			for (const type of ['keydown', 'keyup', 'keypress'] as const) {
 				window.addEventListener(type, (e) => {
 					if (inToolbar(e)) return // toolbar 自身のキー操作
@@ -291,12 +307,27 @@ export default defineToolbarApp({
 						}
 						return
 					}
-					// 自前の UI の中は止めない（入力・Tab・ボタン操作を生かす）。ページへ伝わるのは、下の host の bubble で止める。
-					if (e.composedPath().includes(host)) return
 					e.stopImmediatePropagation()
 				}, opts)
-				host.addEventListener(type, (e) => e.stopPropagation(), { signal: abort.signal })
 			}
+			// 背景の編集欄にフォーカスを入れない（interaction.md §9）。キーの伝播を止めても既定の編集（文字の入力・貼り付け・
+			// select の矢印）は止まらず、Tab やクリックの mousedown（click の横取りより前）でフォーカスが入ると中身を変えられる。
+			// 入ったら外す。モードに入る前から入っていた分も外す。外すだけだと Firefox は次の Tab がまた同じ欄に入って先へ進めないので、
+			// 外した欄は Tab の順から抜き（tabindex=-1）、モードを終えるときに元の tabindex に戻す。
+			const untabbed = new Map<HTMLElement, string | null>()
+			const keepOut = (el: HTMLElement) => {
+				if (!untabbed.has(el)) {
+					untabbed.set(el, el.getAttribute('tabindex'))
+					el.tabIndex = -1
+				}
+				el.blur()
+			}
+			window.addEventListener('focusin', (e) => {
+				const t = e.composedPath()[0]
+				if (!isOwn(e) && isEditor(t)) keepOut(t)
+			}, opts)
+			const active = deepActiveElement()
+			if (isEditor(active)) keepOut(active)
 			// 枠と popover をスクロールに追従させる代わりに、ここでは枠だけ付け直す（popover の追従は interaction.md）。
 			window.addEventListener('scroll', () => { if (panel?.pick.kind === 'element') place(picked, panel.pick.el) }, opts)
 			// ページ遷移（View Transitions を含む）に UI を持ち越さない。
@@ -304,6 +335,7 @@ export default defineToolbarApp({
 
 			return () => {
 				abort.abort()
+				for (const [el, tabindex] of untabbed) tabindex === null ? el.removeAttribute('tabindex') : el.setAttribute('tabindex', tabindex)
 				closePanel()
 				host.remove()
 			}
