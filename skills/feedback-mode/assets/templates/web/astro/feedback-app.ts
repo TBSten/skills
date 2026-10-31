@@ -1,5 +1,5 @@
 // Dev Toolbar のアプリ（ひな形）: モードに入る → 要素を選ぶ（マウスはクリック、タッチはタップ）→ そばの popover（幅 600px 以下はシート）に書く → 送る。
-// 【実績: Astro 7 + Starlight の docs サイトを縮めたもの】。テキスト選択・右クリックの入口・複数選択・スクショは references/build/interaction.md。
+// 【実績: Astro 7 + Starlight の docs サイトを縮めたもの】。テキスト選択・右クリックの入口・複数選択・スクショ・ドラッグ・下書きは references/build/interaction.md。
 import { defineToolbarApp } from 'astro/toolbar'
 import { EVENT_RESULT, EVENT_SAVE, LOG_GLOBAL, type SaveRequest, type SaveResult } from './protocol'
 
@@ -9,8 +9,44 @@ const TIMEOUT_MS = 10_000
 const isNarrow = () => matchMedia('(max-width: 600px)').matches
 /** Astro の Dev Toolbar の要素名。 */
 const TOOLBAR_TAG = 'astro-dev-toolbar'
-/** ページの上でも既定の動作を止めないキー（読み返すためのスクロールと、自前の UI へ移る Tab）。 */
-const PASS_KEYS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'PageUp', 'PageDown', 'Home', 'End', 'Tab'])
+
+/** 次の Esc の keyup を toolbar に渡さない（Esc で閉じたあとに届く keyup が toolbar を隠さないように）。 */
+function swallowEscKeyup() {
+	const swallow = (e: KeyboardEvent) => {
+		if (e.key !== 'Escape') return
+		e.stopPropagation()
+		window.removeEventListener('keyup', swallow, true)
+	}
+	window.addEventListener('keyup', swallow, true)
+	setTimeout(() => window.removeEventListener('keyup', swallow, true), 1000)
+}
+
+/**
+ * host の color-scheme をページのテーマに合わせる。host は `all: initial` で color-scheme が既定に戻るので、
+ * ページの computed を写す。色は STYLE の `light-dark()` で持つ（interaction.md §10）。テーマの切り替えにも追従する。
+ * host は `<html>` の直下に置くので、`<html>` の子の増減も見る（host を外したときに監視をやめるため。属性だけを見ると、
+ * テーマが変わるまで observer と外した host が残り、開け閉めのたびに溜まる）。
+ */
+function syncColorScheme(host: HTMLElement) {
+	const apply = () => {
+		const page = getComputedStyle(document.documentElement).colorScheme
+		host.style.colorScheme = page && page !== 'normal' ? page : 'light dark'
+	}
+	apply()
+	const observer = new MutationObserver(() => (host.isConnected ? apply() : observer.disconnect()))
+	observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class', 'style'], childList: true })
+}
+
+/** ページの編集欄（input・textarea・select・contenteditable）。 */
+const isEditor = (n: unknown): n is HTMLElement =>
+	n instanceof HTMLElement && (n.matches('input, textarea, select') || n.isContentEditable)
+
+/** フォーカスのある要素を shadow root の中までたどる（Astro の toolbar の中は除く）。 */
+function deepActiveElement(): Element | null {
+	let a = document.activeElement
+	while (a?.shadowRoot?.activeElement && a.localName !== TOOLBAR_TAG) a = a.shadowRoot.activeElement
+	return a
+}
 
 const STYLE = `
 :host { all: initial; }
@@ -18,11 +54,11 @@ const STYLE = `
 .frame.picked { outline-color: #dc2626; background: rgba(220,38,38,.08); }
 .banner { position: fixed; left: 12px; bottom: 56px; display: flex; gap: 8px; align-items: center; padding: 8px 12px; background: #1c1c1c; color: #fff; border-radius: 8px; font: 14px system-ui, sans-serif; z-index: 2147483647; }
 .banner button, .panel button { min-height: 32px; padding: 0 12px; font: inherit; border-radius: 6px; border: 1px solid #71717a; background: #3f3f46; color: #fff; cursor: pointer; }
-.panel { position: fixed; width: 340px; max-width: calc(100vw - 16px); padding: 10px; display: flex; flex-direction: column; gap: 8px; background: #fff; color: #111; border: 1px solid #d4d4d4; border-radius: 10px; box-shadow: 0 8px 28px rgba(0,0,0,.3); font: 14px system-ui, sans-serif; z-index: 2147483647; }
+.panel { position: fixed; width: 340px; max-width: calc(100vw - 16px); padding: 10px; display: flex; flex-direction: column; gap: 8px; background: light-dark(#fff, #1f1f23); color: light-dark(#111, #f4f4f5); border: 1px solid light-dark(#d4d4d4, #3f3f46); border-radius: 10px; box-shadow: 0 8px 28px rgba(0,0,0,.3); font: 14px system-ui, sans-serif; z-index: 2147483647; }
 .panel textarea { min-height: 96px; font: inherit; }
 .panel .actions { display: flex; gap: 8px; justify-content: flex-end; }
 .panel .send { background: #2563eb; border-color: #2563eb; }
-.panel .error { color: #b91c1c; }
+.panel .error { color: light-dark(#b91c1c, #fca5a5); }
 /* 幅 600px 以下とタッチ端末: 入力は 16px（iOS が拡大しない）、押せる高さは 44px。 */
 @media (max-width: 600px), (pointer: coarse) {
   .panel textarea { font-size: 16px; }
@@ -114,6 +150,7 @@ export default defineToolbarApp({
 			banner.append(pageBtn)
 			root.append(style, hover, picked, banner)
 			document.documentElement.append(host)
+			syncColorScheme(host)
 			let panel: { el: HTMLElement; pick: Picked; textarea: HTMLTextAreaElement } | null = null
 			let down: { x: number; y: number; t: number } | null = null
 			let lastPointer = 'mouse'
@@ -251,24 +288,46 @@ export default defineToolbarApp({
 				if (Math.hypot(e.clientX - d.x, e.clientY - d.y) >= TAP_SLOP_PX || e.timeStamp - d.t >= TAP_MAX_MS) return // スクロール・長押し
 				pickAt(e.clientX, e.clientY)
 			}, opts)
-			// キーはページに渡さない（サイトのショートカットやキーボードで動く部品を止める。architecture.md §1.2）。
-			// window の capture で止めるので、ページのどのリスナーより先に来る。shadow DOM の中の入力欄で打ったキーも、
-			// ページからは host で打ったように見える（入力欄だと気づけずにショートカットが動く）ので、ここで止める。
-			// 自前の UI の中は伝わるのを止めるだけで、既定の動作（文字の入力・Tab・ボタンの Enter / Space）は残る。
+			// キーはページに渡さない（サイトのショートカットやキーボードで動く部品を止める。architecture.md §1.2、interaction.md §9）。
+			// window の capture で stopImmediatePropagation だけをする。preventDefault はしないので、コピー・ページ内検索・スクロール・Tab は残る。
+			// Enter / Space でリンクやボタンが動くのは、それが click になり、上の click の横取りで止まるため。
+			// 自前の UI（textarea・ボタン）のキーもここで止める。host の bubble で止めるのでは、document の capture にある
+			// サイトのショートカット（検索を開くなど）が先に動く。文字の入力・改行・Tab・ボタンの Enter / Space は既定の動作なので残る。
+			// 自前の UI にキーの処理（Ctrl+Enter で送る など）を足すときは、host の中のリスナーには届かないので、ここで扱う。
 			for (const type of ['keydown', 'keyup', 'keypress'] as const) {
 				window.addEventListener(type, (e) => {
 					if (inToolbar(e)) return // toolbar 自身のキー操作
-					e.stopPropagation()
 					// IME の変換中の Esc は変換の取り消しなので、モードを終えない（書きかけの文を失わない）。
 					if (e.key === 'Escape' && !e.isComposing) {
 						e.preventDefault()
-						if (type === 'keydown') exit()
+						e.stopPropagation()
+						if (type === 'keydown') {
+							swallowEscKeyup() // 届くと toolbar が隠れる
+							exit()
+						}
 						return
 					}
-					// ページの上のキーは既定の動作も止める（フォーカスしたリンクやボタンを Enter / Space で動かさない）。読み返すためのスクロールは残す。
-					if (!e.composedPath().includes(host) && !PASS_KEYS.has(e.key)) e.preventDefault()
+					e.stopImmediatePropagation()
 				}, opts)
 			}
+			// 背景の編集欄にフォーカスを入れない（interaction.md §9）。キーの伝播を止めても既定の編集（文字の入力・貼り付け・
+			// select の矢印）は止まらず、Tab やクリックの mousedown（click の横取りより前）でフォーカスが入ると中身を変えられる。
+			// 入ったら外す。モードに入る前から入っていた分も外す。外すだけだと Firefox は次の Tab がまた同じ欄に入って先へ進めないので、
+			// 外した欄は Tab の順から抜き（tabindex=-1）、モードを終えるときに元の tabindex に戻す。
+			const untabbed = new Map<HTMLElement, string | null>()
+			const keepOut = (el: HTMLElement) => {
+				if (!untabbed.has(el)) {
+					untabbed.set(el, el.getAttribute('tabindex'))
+					el.tabIndex = -1
+				}
+				el.blur()
+			}
+			window.addEventListener('focusin', (e) => {
+				const t = e.composedPath()[0]
+				if (!isOwn(e) && isEditor(t)) keepOut(t)
+			}, opts)
+			const active = deepActiveElement()
+			if (isEditor(active)) keepOut(active)
 			// 枠と popover をスクロールに追従させる代わりに、ここでは枠だけ付け直す（popover の追従は interaction.md）。
 			window.addEventListener('scroll', () => { if (panel?.pick.kind === 'element') place(picked, panel.pick.el) }, opts)
 			// ページ遷移（View Transitions を含む）に UI を持ち越さない。
@@ -276,6 +335,7 @@ export default defineToolbarApp({
 
 			return () => {
 				abort.abort()
+				for (const [el, tabindex] of untabbed) tabindex === null ? el.removeAttribute('tabindex') : el.setAttribute('tabindex', tabindex)
 				closePanel()
 				host.remove()
 			}
