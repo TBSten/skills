@@ -10,6 +10,8 @@ plugins {
     alias(libs.plugins.compose.multiplatform)
     // No version here: it is set in settings.gradle.kts, and setting it twice collides.
     id("org.jetbrains.intellij.platform")
+    // Marks the copy that syncPreviewSources writes (below) as generated in the IDE.
+    idea
 }
 
 group = "com.example.intellijplugindev"   // CUSTOMIZE
@@ -21,10 +23,21 @@ kotlin { jvmToolchain(21) }
 
 // The UI Composables in src/shared/kotlin are compiled twice: into the plugin against the IDE's
 // bundled Jewel, and into `preview` against standalone Jewel, so the headless PNGs show what ships.
+// Only `main` reads the directory as it is. IntelliJ puts a directory in one module only: listing
+// src/shared/kotlin under `preview` too leaves the preview module without it, and the preview's
+// references to the shared code unresolved in the IDE (the build still passes). So `preview`
+// compiles a copy that a sync task writes under build/generated, shown as generated sources.
+val syncPreviewSources = tasks.register<Sync>("syncPreviewSources") {
+    description = "Copies src/shared/kotlin for the `preview` source set to compile."
+    from("src/shared/kotlin")
+    into(layout.buildDirectory.dir("generated/sources/preview/kotlin"))
+}
 sourceSets {
     main { kotlin.srcDir("src/shared/kotlin") }
-    create("preview") { kotlin.srcDir("src/shared/kotlin") }
+    // srcDir(task) also makes the preview's compilation depend on the copy.
+    create("preview") { kotlin.srcDir(syncPreviewSources) }
 }
+idea.module.generatedSourceDirs.add(layout.buildDirectory.dir("generated/sources/preview/kotlin").get().asFile)
 val previewImplementation: Configuration = configurations.getByName("previewImplementation")
 
 dependencies {

@@ -153,4 +153,4 @@ bash "${CLAUDE_SKILL_DIR}/scripts/verify.sh" --project-dir <plugin-module-dir> \
 | `references/headless-preview.md` | UI (Jewel/Compose) の見た目を IDE 起動なしで確認したい / preview harness と VRT golden ゲートを組む |
 | `references/ide-integration.md` | tool window / `addComposeTab` / gutter line marker / エディタ追従 / ノード→ソースのナビ / PSI 挿入 (コード生成) を組む / lifecycle (stale race・dumb mode・invalidation)・性能 (background 化・cancellation・`runCatching` の罠) で詰まった |
 | `references/driver-smoke.md` | 実 IDE を駆動する E2E スモークを足す / 実 IDE の UI ツリー (locator) を覗く / 内部デバッグ AnAction を作る |
-| `references/gotchas.md` | Compose Desktop / IntelliJ 固有のハマりどころ (ピンチが来ない・AS vs IDEA build スキュー・headless の日本語表示・CI での golden と OS・shared の二重 classpath・サンドボックスに残る旧クラス等) |
+| `references/gotchas.md` | Compose Desktop / IntelliJ 固有のハマりどころ (ピンチが来ない・AS vs IDEA build スキュー・headless の日本語表示・CI での golden と OS・同じディレクトリを 2 つの source set に srcDir すると IDE で参照が消える・shared の二重 classpath・サンドボックスに残る旧クラス等) |

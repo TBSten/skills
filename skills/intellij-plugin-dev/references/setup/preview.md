@@ -9,10 +9,18 @@
 ## source set 共有 (plugin 本体 ⇄ preview で Composable を共通化)
 
 図/UI の Composable は plugin 本体 (bundled Jewel) と preview (standalone Jewel) で **同じ Jewel/Compose
-API**。`src/shared/kotlin` を両 source set の srcDir に足し、それぞれの Compose 依存で二重コンパイルする
-(共有 Composable の例: `example/src/shared/kotlin/com/example/intellijplugindev/ui/ExampleToolWindowContent.kt`)。
+API**。`src/shared/kotlin` を main と preview の両方でコンパイルする (それぞれの Compose 依存で二重コンパイル。
+共有 Composable の例: `example/src/shared/kotlin/com/example/intellijplugindev/ui/ExampleToolWindowContent.kt`)。
 
-- `sourceSets`: main と `create("preview")` の両方に `kotlin.srcDir("src/shared/kotlin")`。
+- `sourceSets`: **直接 `kotlin.srcDir("src/shared/kotlin")` するのは main だけ**。preview は `Sync` タスク
+  (`syncPreviewSources`) が `build/generated/sources/preview/kotlin` に書く写しを `kotlin.srcDir(syncPreviewSources)`
+  で読む (タスク依存も付く)。`idea` plugin の `generatedSourceDirs` で IDE に生成物と見せる。
+  **同じディレクトリを 2 つの source set に srcDir しない**: Gradle は通るが、IntelliJ は 1 ディレクトリを
+  1 モジュールにしか置けないので、sync で preview のモジュールから `src/shared` が消え、preview からの参照が
+  IDE だけ未解決になる。別の source set の root の **内側** (`src/main/kotlin/<pkg>/data` など) を借りるのは
+  もっと悪く、借りた側の content root が内側で勝って、周りのディレクトリがどのモジュールにも属さなくなる
+  (`gotchas.md`「同じディレクトリを 2 つの source set に srcDir すると IDE では片方から消える」)。
+  IDE の sync 直後は写しが無いので、一度 `./gradlew syncPreviewSources` (compile で自動) を回すと IDE に乗る。
 - `previewImplementation` 依存: `compose.desktop.currentOs` (renderComposeScene はここ・Skiko 同梱。
   `uiTestJUnit4` は不要) + `org.jetbrains.jewel:jewel-int-ui-standalone:<jewel>-<jewelForIde>` +
   `com.jetbrains.intellij.platform:icons:<jewelForIde>` (AllIconsKeys 用。無いとマゼンタの

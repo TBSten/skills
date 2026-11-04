@@ -64,6 +64,24 @@ macOS で作った golden は Linux の CI ではほぼ確実にバイト一致�
 どれにするかは最初の golden を commit する前に決める。決めずに macOS の golden を commit して CI で
 `verifyPreview` を回すと、毎回落ちる門番になる。
 
+## IDE のプロジェクトモデル
+
+- **同じディレクトリを 2 つの source set に srcDir すると IDE では片方から消える**: Gradle は同じディレクトリを
+  何度でもコンパイルできるが、IntelliJ は 1 つのディレクトリを 1 つのモジュールにしか置けない。Gradle sync で
+  重複した content root は最初の 1 つ (main) だけ残り、preview などほかの source set のモジュールからは消えて、
+  そこからの参照が IDE だけ未解決になる (ビルドと CI は通るので気づきにくい)。さらに
+  `kotlin.srcDir("src/main/kotlin/<pkg>/data")` のように **別の source set の root の内側** を借りると、内側の
+  content root が勝ってその配下を丸ごと取り、借りた側がソースフォルダにしていないサブディレクトリ (main の
+  `ide/` や test の大半) がどのモジュールにも属さず、索引もコードジャンプもされなくなる。
+  直し方: ディレクトリを直接読む source set は 1 つにし、ほかは `Sync` タスクで
+  `build/generated/sources/<sourceSet>/kotlin` に写してそこを `kotlin.srcDir(syncTask)` にする
+  (`example/build.gradle.kts` の `syncPreviewSources`、`setup/preview.md`)。共有したいコードが別の source set の
+  root の内側にあるなら、`src/shared/kotlin` のような **隣のトップレベルのディレクトリ** に移してから写す。
+  確かめ方: IDE が持つモジュールの実物は
+  `~/Library/Caches/JetBrains/<IDE>/projects/<name>.<hash>/external_build_system/modules/<module>.xml` の
+  `<content url>` / `<sourceFolder>` (Gradle sync の結果そのもの)。jetbrains MCP の `get_file_problems` が
+  "File is outside project content roots" を返すファイルは、どのモジュールのソースでもない。
+
 ## build / test classpath
 
 - **shared のクラスが test の classpath で二重になる**: `testImplementation(sourceSets["preview"].output)`
