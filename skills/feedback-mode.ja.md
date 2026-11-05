@@ -58,6 +58,6 @@ Claude Code は置き場を読み、記録を実装・調査・設計に振り�
 status は **Experimental**。参照実装は、このループを数週間運用した社内向けの Electron ツール。
 2 つ目の参照実装（Astro 7 + Starlight の Web の docs サイト）で、Astro の Dev Toolbar 統合・schema 1 の記録・場所の手がかり・メモ機能・TypeScript 版のコアを足した。TypeScript 版のコア（vitest 32 件）と、最小の Astro 7 のプロジェクトでの統合も確認済み。
 確認済み: コアのテンプレート（メモリ・ファイル・HTTP の Sink に対する `node:test` 36 件）、Web の UI と開発用サーバ（ヘッドレス Electron）、
-偽の成果物に対する本番検査。**未検証**: Electron main の配線・Tauri・React Native・Flutter・iOS / Android のネイティブ断片・html2canvas のスクリーンショット・
+偽の成果物に対する本番検査。**未検証**: Electron main の配線・Tauri・React Native・Flutter・iOS / Android のネイティブ断片・html2canvas のスクリーンショット（Web の `modern-screenshot` は確認済み）・
 LAN 越しや実機からの HTTP・各環境の「本番から外す」ビルド設定・Issue トラッカー / クラウドストレージの Sink。
 リリース前には必ず成果物を検査すること。

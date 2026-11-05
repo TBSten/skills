@@ -49,7 +49,7 @@ bash "${CLAUDE_SKILL_DIR}/scripts/detect.sh" <対象リポジトリのルート>
 | 入口 | いつ読む | 中身 |
 |---|---|---|
 | `references/loop/loop.md` | 実践（消化ループ） | 自環境への置き換え表・運用ルール・手順 0〜7・Sink ごとの読み方/閉じ方・分類・履歴・報告の形。補助: `references/loop/subagent-prompt.md`・`references/loop/full-check.md`・`references/loop/lessons.md` |
-| `references/build/build.md` | 構築 | 前提（**debug ビルドだけに配線し本番に入れない**）・手順 1〜13（1b 既存のデバッグ基盤に乗る、1c ログ基盤は別タスク、を含む）・チェックリスト・既知の制約。詳細: `references/build/architecture.md`・`references/build/platforms.md`（Astro の Dev Toolbar は §2.1）・`references/build/locate.md`（場所を一意に指す）・`references/build/interaction.md`（popover・右クリックの入口・スマホ）・`references/build/memo.md`（ページと箇所ごとの継続メモ）。コード: `assets/templates/`、コアのコピーとテスト: `scripts/copy-core.sh`、本番検査: `scripts/check-no-feedback-in-prod.sh` |
+| `references/build/build.md` | 構築 | 前提（**debug ビルドだけに配線し本番に入れない**）・手順 1〜13（1b 既存のデバッグ基盤に乗る、1c ログ基盤は別タスク、を含む）・チェックリスト・既知の制約。詳細: `references/build/architecture.md`・`references/build/platforms.md`（Astro の Dev Toolbar は §2.1）・`references/build/locate.md`（場所を一意に指す）・`references/build/interaction.md`（popover・右クリックの入口・スマホ・スクショ・複数選択・ドラッグ・下書き・モード中のキー・ダークテーマ・E2E）・`references/build/memo.md`（ページと箇所ごとの継続メモ）。コード: `assets/templates/`、コアのコピーとテスト: `scripts/copy-core.sh`、本番検査: `scripts/check-no-feedback-in-prod.sh` |
 | `references/concepts.md` | 用語・記録の形・Sink の契約が必要になったとき（両側が参照） | 凡例・用語表（Inbox / Archive / Sink / 履歴）・記録の名前と構成（schema 1 の frontmatter）・状態遷移・Sink の契約・フィードバックとメモの違い |
 
 ```

@@ -30,7 +30,7 @@ feedback mode は開発・検証用の道具で、スクショ・ログ・画面
 4. **コアを置く**: `bash "${CLAUDE_SKILL_DIR}/scripts/copy-core.sh" <導入先の dev 専用ディレクトリ>`（`assets/templates/core/` の `feedback-core.mjs`・`file-sink.mjs`・`memory-sink.mjs`・`http-sink.mjs` と `*.test.mjs` を `<導入先>/core/` に、契約テストが使う `web/feedback-dev-server.mjs` を `<導入先>/web/` にコピーし、`node --test` が通ることを確認する（32 件。1 件は HTTP の Sink が文書を持たないので skip）。script はそのまま実行する。入力は導入先のパスだけ。既存ファイルがあれば中断するので、上書きは `--force`）。Node が無い環境（Tauri/Rust 等）は規則（`references/concepts.md`）を移植して同等のテストを書く。TypeScript の導入先は `assets/templates/core-ts/`（型付きの Sink とメモリ版・vitest の契約テスト）を手でコピーしてもよい（`architecture.md` §2.2）。**導入先は dev 専用のディレクトリにする**（本番ビルドから除外しやすいように）。
 5. **受け口を置く**: Electron は `assets/templates/electron/main-feedback.mjs`（`isDev` が true のときだけ登録）、それ以外は `assets/templates/web/feedback-dev-server.mjs`（`FEEDBACK_REPO_ROOT` を導入先に。裏の Sink を `createHandler({ sink })` で差し替え可）。LAN に出すなら `FEEDBACK_TOKEN` 必須。本番では起動・登録しない。
 6. **画面側を置く**: Astro は `assets/templates/web/astro/`（統合 + toolbar アプリ。`platforms.md` §2.1）。ほかの Web 系は `assets/templates/web/feedback-entry.dev.js`（開発ビルドの入口。動的 import）→ `feedback-mode.js`、RN/Flutter は `assets/templates/mobile/*`（別 entrypoint / `__DEV__` require）。`appName`・`pointer`（Agent への案内: ソースの場所・ログの形・正本 docs）・`transport`・`getScreen`・`getView`（画面の状態をモデルから作る。DOM の文字は拾わない。個人的な入力は字数だけ）・`stateOf`（押せるか・押せない理由などアプリ固有の状態）を埋める。送信先の URL・鍵は開発用のビルド変数から（既定値は持たない）。
-6b. **場所の手がかり（Web）**: XPath・CSS セレクタは保存の前に引き直して同じ要素に戻ったものだけを書く。テキストはテキストフラグメントの URL。Markdown 由来のページならソースの行も（`locate.md`）。操作（popover・右クリックの入口・ページ全体・スマホ）は `interaction.md`。
+6b. **場所の手がかり（Web）**: XPath・CSS セレクタは保存の前に引き直して同じ要素に戻ったものだけを書く。テキストはテキストフラグメントの URL。Markdown 由来のページならソースの行も（`locate.md`）。操作（popover・右クリックの入口・ページ全体・スマホ・スクショ・複数選択・ドラッグ・下書き・キー・ダークテーマ・E2E）は `interaction.md`。
 7. **部品に名前を付ける**: 主要な 20〜30 箇所から `data-fb`（等）を付け、以後フィードバックが来た部品から増やす。道筋は「画面/領域/部品」の日本語でよい。**行・項目は番号でなく内容で名付ける**（例: 表の行は「3 行目」でなく「行 <時刻 種類>」と内容で名付ける）。部品を移動したら名前の道筋も追従する（`data-fb` の一覧 docs を作った場合はそれも）。
 8. **ログを繋ぐ**（作るのは別タスク。手順 1c）: `getRecentLogs` を既存のログ基盤に繋ぐ。画面操作（click の道筋）・API/IPC 呼び出しと結果・状態変化・エラーが入っていないと、フィードバックから原因をたどれない【実績】ので、足りなければログ基盤の別タスクで補う。秘密を出さない一次の防御もそちら（feedback の `redact` は文の最後の保険）。
 9. **スクショを確認**: 吹き出し・帯を隠し、選んだ要素を枠で囲んで撮れているか。dpr と切り抜き（`cropRect`）が合っているか。撮れない環境では理由が文に出るか。
@@ -62,7 +62,7 @@ feedback mode は開発・検証用の道具で、スクショ・ログ・画面
 
 ## 3. 検証状況（このテンプレートで実際に確かめたこと）
 
-確認済み: `assets/templates/core/`（node:test 32 件。Sink の契約をメモリ・ファイル・HTTP に掛けた。schema 1・writeDoc・採番の競合を含む）、`core-ts/`（vitest 28 件）、`web/astro/`（Astro 7 の最小プロジェクトの dev と build。`platforms.md` の冒頭）、`web/feedback-mode.js` + `feedback-dev-server.mjs`（ヘッドレス Electron）、`scripts/check-no-feedback-in-prod.sh`（偽の成果物）。**未検証【未検証】**: `existing-debug/`（RN Dev Menu・Electron 開発用メニューの 1 項目の例）・Electron の配線（`main-feedback.mjs`）・Tauri・RN・Flutter・iOS/Android の断片・html2canvas でのスクショ・LAN 越しの HTTP・スマホ実機・各環境の「本番から外す」ビルド設定（`platforms.md` §0.1）。
+確認済み: `assets/templates/core/`（node:test 32 件。Sink の契約をメモリ・ファイル・HTTP に掛けた。schema 1・writeDoc・採番の競合を含む）、`core-ts/`（vitest 28 件）、`web/astro/`（Astro 7 の最小プロジェクトの dev と build。`platforms.md` の冒頭）、`web/feedback-mode.js` + `feedback-dev-server.mjs`（ヘッドレス Electron）、`scripts/check-no-feedback-in-prod.sh`（偽の成果物）。**未検証【未検証】**: `existing-debug/`（RN Dev Menu・Electron 開発用メニューの 1 項目の例）・Electron の配線（`main-feedback.mjs`）・Tauri・RN・Flutter・iOS/Android の断片・html2canvas でのスクショ（Web の `modern-screenshot` は実績あり。`interaction.md` §5）・LAN 越しの HTTP・スマホ実機・各環境の「本番から外す」ビルド設定（`platforms.md` §0.1）。
 
 ## 4. 構築側の既知の制約・未検証事項
 

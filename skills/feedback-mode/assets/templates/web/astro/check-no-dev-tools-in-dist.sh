@@ -8,11 +8,13 @@
 # （ずれを防ぐなら、定数とこの一覧を突き合わせるテストを 1 つ置く。Web 参照実装はそうしている）。
 #   feedback-mode   APP_ID（toolbar アプリの id・イベント名の接頭辞・UI の要素名）
 #   __feedbackLog   LOG_GLOBAL（head-inline のログのバッファ）
+#   modern-screenshot  スクリーンショットのライブラリ（使う場合。dev の toolbar アプリの中でだけ動的 import する）
 #   data-fb-src     Markdown の要素に dev のときだけ付ける行番号の属性（使う場合。references/build/locate.md）
 set -eu
 
 PATTERNS='feedback-mode
 __feedbackLog
+modern-screenshot
 data-fb-src'
 
 if [ "$#" -lt 1 ]; then
