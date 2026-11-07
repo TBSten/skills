@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>visual-explanation</title>
+<style>
+  /* プロジェクトにデザインシステムがあれば、このトークンの値だけ差し替える */
+  :root {
+    --bg: #ffffff;
+    --surface: #f5f6f8;
+    --border: #d9dde3;
+    --text: #1d2129;
+    --muted: #5c6370;
+    --accent: #2f6fde;
+    --ok: #13703c;
+    --ng: #b42318;
+    --warn: #c98a00;
+    --radius: 12px;
+    --font: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", "Segoe UI", sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #15171c;
+      --surface: #1f232a;
+      --border: #343a44;
+      --text: #e8eaee;
+      --muted: #a0a7b4;
+      --accent: #6ea0ff;
+      --ok: #4cc38a;
+      --ng: #ff7b7b;
+      --warn: #e8b64c;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 var(--font); }
+
+  /* 1 section = 1 枚の画像になる (capture.mjs が section[id] ごとに撮る) */
+  section { padding: 24px 20px; background: var(--bg); }
+  h2 { margin: 0 0 4px; font-size: 19px; line-height: 1.35; }
+  .lead { margin: 0 0 16px; color: var(--muted); font-size: 13px; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
+  .label { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .04em; padding: 2px 8px; border-radius: 999px; margin-bottom: 8px; }
+  .label.before { background: color-mix(in srgb, var(--ng) 16%, transparent); color: var(--ng); }
+  .label.after  { background: color-mix(in srgb, var(--ok) 16%, transparent); color: var(--ok); }
+
+  /* Before / After: スマホ幅では縦に並ぶ */
+  .compare { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  @media (min-width: 640px) { .compare { grid-template-columns: 1fr 1fr; } }
+
+  /* タイムライン (原因・競合の順番) */
+  .timeline { list-style: none; margin: 0; padding: 0 0 0 18px; border-left: 2px solid var(--border); }
+  .timeline li { position: relative; margin: 0 0 14px; }
+  .timeline li::before { content: ""; position: absolute; left: -25px; top: 6px; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); }
+  .timeline li.bad::before { background: var(--ng); }
+  .timeline .t { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+
+  pre { margin: 0; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); font: 12.5px/1.55 var(--mono); overflow-x: auto; white-space: pre-wrap; }
+  .del { color: var(--ng); }
+  .add { color: var(--ok); }
+  .note { margin-top: 12px; font-size: 12px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- 例: Before / After。不要な section は消し、1 section 1 メッセージで足していく -->
+<section id="01-before-after">
+  <h2>保存ボタンが 2 度押しで二重登録されなくなる</h2>
+  <p class="lead">同じ操作を main とこのブランチで実行した結果</p>
+  <div class="compare">
+    <div class="card">
+      <span class="label before">BEFORE (main)</span>
+      <pre>POST /items  201
+POST /items  201  <span class="del">← 重複</span></pre>
+    </div>
+    <div class="card">
+      <span class="label after">AFTER (このブランチ)</span>
+      <pre>POST /items  201
+<span class="add">2 回目はボタンが無効</span></pre>
+    </div>
+  </div>
+  <p class="note">撮り方: 実ログから描いた再現 (コマンド: <code>npm run e2e -- save.spec.ts</code>)</p>
+</section>
+
+<!-- 例: 原因の説明 -->
+<section id="02-cause">
+  <h2>原因はレスポンス前の再送信</h2>
+  <p class="lead">クリックから登録完了までの順番</p>
+  <ol class="timeline">
+    <li><span class="t">0ms</span><br>1 回目のクリックで POST を送る</li>
+    <li class="bad"><span class="t">120ms</span><br>レスポンス前に 2 回目のクリックが通る</li>
+    <li><span class="t">300ms</span><br>両方の POST が成功し、2 件できる</li>
+  </ol>
+</section>
+
+</body>
+</html>

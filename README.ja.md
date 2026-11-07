@@ -238,6 +238,19 @@ gh skill install tbsten/skills pr-fix-loop
 <td>複数 PR を並行して green に。CI 失敗の分類・修正委譲、コメント対応、stacked PR の rebase 連鎖</td>
 </tr>
 <tr>
+<td></td>
+<td><a href="./skills/visual-explanation.ja.md">visual-explanation</a></td>
+<td>
+
+```sh
+gh skill install tbsten/skills visual-explanation
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>PR・チケットの説明に最初の 1 枚の図を付ける (撮影・SHA 固定で添付・本文検証)</td>
+</tr>
+<tr>
 <td>🟡 テスト・検証</td>
 <td><a href="./skills/check-method-level.ja.md">check-method-level</a></td>
 <td>
@@ -316,6 +329,20 @@ curl -fsSL https://rules.tbsten.me/i | \
 </td>
 <td>🧪 Experimental</td>
 <td>Kotlin Multiplatform + Compose プロジェクト向け 4 層アーキテクチャ</td>
+</tr>
+<tr>
+<td>⚫️ Git / GitHub</td>
+<td><a href="./rules/visual-explanation.ja.md">visual-explanation</a></td>
+<td>
+
+```sh
+curl -fsSL https://rules.tbsten.me/i | \
+  bash -s -- visual-explanation
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>PR・チケットの説明の頭に図・スクショ・実際の出力を付けさせる</td>
 </tr>
 </table>
 
