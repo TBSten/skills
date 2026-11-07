@@ -36,14 +36,14 @@ PR やチケットの説明に、見た目で分かる 1 枚目を付ける。�
    bash "${CLAUDE_SKILL_DIR}/scripts/setup-pr-template.sh"
    ```
    - `CREATED` / `ALREADY` ならそのまま次へ。
-   - `NEEDS_MERGE <path>` なら、既存テンプレートの「何をしたか」に当たる節の直下に、出力された snippet を足す (既存の節の名前・順番は変えない)。
+   - `NEEDS_MERGE <path>` (テンプレートごとに 1 行) なら、それぞれの「何をしたか」に当たる節の直下に、出力された snippet を足す (既存の節の名前・順番は変えない)。
 3. 最初の 1 本の PR を、型の見本になるように丁寧に作る。画像が PR 上で表示されるか (特に非公開リポジトリ) を確かめ、合わなかった点は rule ファイルに戻す。
 
 ## 手順
 
 ### Step 1: 見せ方を決める
 
-[references/formats.md](references/formats.md) の表から、変更・内容に合う見せ方を選ぶ。画像が要らない種類なら、diff のコードブロックか `<details>` の実際の出力を本文に書いて Step 5 へ進む。
+[references/formats.md](references/formats.md) の表から、変更・内容に合う見せ方を選ぶ。画像が要らない種類なら、diff のコードブロックか `<details>` の実際の出力を本文に書いて Step 5 へ進む。表で「画像なしでよい」(CI だけ・設定だけ) を選んだときは、Step 5 の検証に `--no-visual` を付ける。
 
 ### Step 2: HTML に描く
 
@@ -67,6 +67,7 @@ node "${CLAUDE_SKILL_DIR}/scripts/capture.mjs" <html> <out-dir> [--width=420] [-
 bash "${CLAUDE_SKILL_DIR}/scripts/attach-pr-assets.sh" --push <out-dir>/01-xxx-light.png <out-dir>/01-xxx-dark.png
 ```
 
+- ファイル名は英数字と `. _ -` だけにする (URL にそのまま入るため)。`.github/pr-assets/` に同名ファイルがあると中断するので、そのときはリネームする。
 - 出力された Markdown の画像行をそのまま本文に使う。alt は「何が分かる図か」の 1 文に書き換える。
 - `gh` が無い・公開 / 非公開が判定できない環境では `--visibility=public` / `--visibility=private` を付ける。
 
@@ -78,7 +79,7 @@ bash "${CLAUDE_SKILL_DIR}/scripts/attach-pr-assets.sh" --push <out-dir>/01-xxx-l
 - 撮り方 (画面収録 / 実ログから描いた再現 / headless 描画) と、どの PR・コミット範囲・コマンドから作ったかを書く。
 - 本文をファイルに書き出して検証する:
   ```sh
-  node "${CLAUDE_SKILL_DIR}/scripts/check-body.mjs" <body.md>
+  node "${CLAUDE_SKILL_DIR}/scripts/check-body.mjs" [--no-visual] <body.md>
   ```
   `NG:` が出たら、その行の内容に従って本文を直し、`OK` になるまで繰り返す。
 

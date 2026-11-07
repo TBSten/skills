@@ -49,11 +49,13 @@ that memory was missing the practice stopped, so this version writes it into the
 |---|---|---|
 | `capture.mjs <html> <out-dir> [--width] [--scale] [--schemes]` | HTML with `<section id>` | `OK` + JSON list of PNGs |
 | `attach-pr-assets.sh [--visibility] [--push] <file>...` | PNG files, run on a PR branch | `OK`, the SHA, Markdown image lines |
-| `setup-pr-template.sh [<repo-root>]` | repository | `CREATED` / `ALREADY` / `NEEDS_MERGE` + snippet |
-| `check-body.mjs <body.md \| ->` | PR / ticket body | `OK` or `NG:` lines (exit 1) |
+| `setup-pr-template.sh [<repo-root>]` | repository | `CREATED` / `ALREADY` / `NEEDS_MERGE` per template (incl. `PULL_REQUEST_TEMPLATE/` dirs) + snippet |
+| `check-body.mjs [--no-visual] <body.md \| ->` | PR / ticket body | `OK` or `NG:` lines (exit 1) |
 
-`attach-pr-assets.sh` refuses to run on `main` / `master` / `develop`, on a detached HEAD, or with
-other staged changes. `capture.mjs` needs Playwright (pre-installed in Claude Code cloud sessions;
+`attach-pr-assets.sh` refuses to run on `main` / `master` / `develop`, on a detached HEAD, with
+other staged changes, with file names outside `[A-Za-z0-9._-]`, or when a name collides with an input
+or an existing file in `.github/pr-assets/`. Pass `--no-visual` to `check-body.mjs` for CI-only or
+config-only changes, where the format table allows no image. `capture.mjs` needs Playwright (pre-installed in Claude Code cloud sessions;
 locally run `npm i -D playwright && npx playwright install chromium`).
 
 ## Files

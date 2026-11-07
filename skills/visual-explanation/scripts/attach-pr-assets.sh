@@ -41,9 +41,19 @@ if ! git diff --cached --quiet; then
   fail "ステージ済みの変更がある。画像のコミットに混ざるので、先にコミットするか git restore --staged で外す"
 fi
 
+seen=" "
+abs_files=()
 for f in "${files[@]}"; do
   [ -f "$f" ] || fail "ファイルが見つからない: $f"
+  name="$(basename "$f")"
+  # URL にそのまま入れるので、エンコードが要らない名前だけを受け付ける
+  printf '%s' "$name" | grep -Eq '^[A-Za-z0-9._-]+$' \
+    || fail "ファイル名に使えない文字がある: $name (英数字と . _ - だけにリネームしてから渡す)"
+  case "$seen" in *" $name "*) fail "同じファイル名が 2 回渡された: $name (別ディレクトリの同名ファイルは上書きされるので、どちらかをリネームする)" ;; esac
+  seen="$seen$name "
+  abs_files+=("$(cd "$(dirname "$f")" && pwd)/$name")
 done
+files=("${abs_files[@]}")
 
 remote_url="$(git remote get-url origin 2>/dev/null)" || fail "origin リモートが無い。URL の owner/repo を決められない"
 slug="$(printf '%s' "$remote_url" | sed -E 's#^(git@[^:]+:|ssh://git@[^/]+/|https?://([^@/]+@)?[^/]+/)##; s#\.git$##')"
@@ -57,15 +67,23 @@ if [ "$visibility" = auto ]; then
 fi
 
 dir=".github/pr-assets"
-mkdir -p "$root/$dir"
-rels=()
+cd "$root"
+# 既存ファイルを上書き・削除しないよう、コピー前に衝突を調べる (追跡済みで作業ツリーから消えたものも含む)
 for f in "${files[@]}"; do
-  name="$(basename "$f")"
-  cp "$f" "$root/$dir/$name"
-  rels+=("$dir/$name")
+  rel="$dir/$(basename "$f")"
+  if [ -e "$rel" ] || [ -n "$(git ls-files -- "$rel")" ]; then
+    fail "$rel が既にある。既存ファイルを消さないよう中断した。別のファイル名にリネームしてから渡す"
+  fi
 done
 
-cd "$root"
+mkdir -p "$dir"
+rels=()
+for f in "${files[@]}"; do
+  rel="$dir/$(basename "$f")"
+  cp "$f" "$rel"
+  rels+=("$rel")
+done
+
 git add -f -- "${rels[@]}"
 if git diff --cached --quiet; then
   fail "コミットする差分が無い (同じ画像が既に .github/pr-assets/ にある)。ファイル名を変えて再実行する"
