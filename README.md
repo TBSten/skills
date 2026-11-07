@@ -238,6 +238,19 @@ gh skill install tbsten/skills pr-fix-loop
 <td>Drive many PRs to green: classify CI failures, handle comments, chain rebases</td>
 </tr>
 <tr>
+<td></td>
+<td><a href="./skills/visual-explanation.md">visual-explanation</a></td>
+<td>
+
+```sh
+gh skill install tbsten/skills visual-explanation
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>Add a first diagram/screenshot to PRs & tickets: capture, attach by SHA, check</td>
+</tr>
+<tr>
 <td>🟡 Testing / Verification</td>
 <td><a href="./skills/check-method-level.md">check-method-level</a></td>
 <td>
@@ -316,6 +329,20 @@ curl -fsSL https://rules.tbsten.me/i | \
 </td>
 <td>🧪 Experimental</td>
 <td>4-layer architecture for KMP + Compose projects</td>
+</tr>
+<tr>
+<td>⚫️ Git / GitHub</td>
+<td><a href="./rules/visual-explanation.md">visual-explanation</a></td>
+<td>
+
+```sh
+curl -fsSL https://rules.tbsten.me/i | \
+  bash -s -- visual-explanation
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>Make PR / ticket explanations start with a diagram, screenshot or real output</td>
 </tr>
 </table>
 
