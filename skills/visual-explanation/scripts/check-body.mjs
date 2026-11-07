@@ -8,7 +8,8 @@
 //                「見た目で分かるものが無い」の検査だけを外し、画像があればその検査は行う
 //
 // 調べること:
-//   - 見た目で分かるもの (画像 / <img> / <details> / コードブロック) が 1 つ以上ある (--no-visual で外せる)
+//   - 見た目で分かるもの (画像 / <img> / <details> / ```diff / 動画) が 1 つ以上ある (--no-visual で外せる)
+//   - 「何をしたか」/「背景」の節があれば、1 つ目の見た目がその節の中にある
 //   - コードブロック・インラインコードの中の画像記法は検査しない
 //   - 画像に alt がある
 //   - GitHub の画像 URL がブランチ名でなく 40 桁の SHA で固定されている
@@ -40,10 +41,13 @@ try {
 
 // コメントは本文に表示されないので除く
 const text = body.replace(/<!--[\s\S]*?-->/g, '');
-const hasCode = /^ {0,3}(```|~~~)/m.test(text);
-// コードブロック・インラインコードの中の記法は表示される画像ではないので、画像の検査からは除く
+// コードブロック・インラインコードの中の記法は表示される画像ではないので、画像の検査からは除く。
+// 見た目として数えるコードブロックは ```diff だけ (コマンドを書いただけのブロックは数えない)。
+// <details> の中のコードブロックは <details> として数える。
+const DIFF_MARK = '@@VISUAL_DIFF_BLOCK@@';
 const prose = text
-  .replace(/^ {0,3}(`{3,}|~{3,})[^\n]*\n[\s\S]*?^ {0,3}\1[^\n]*$/gm, '')
+  .replace(/^ {0,3}(`{3,}|~{3,})([^\n]*)\n[\s\S]*?^ {0,3}\1[^\n]*$/gm, (_, _f, info) =>
+    /^\s*diff\b/i.test(info) ? DIFF_MARK : '')
   .replace(/(`+)[^`\n][^\n]*?\1/g, '');
 const problems = [];
 
@@ -68,11 +72,26 @@ const attr = (tag, name) => {
 };
 const htmlImages = [...prose.matchAll(/<img\b[^>]*>/gi)].map((m) => ({ alt: attr(m[0], 'alt'), url: attr(m[0], 'src') }));
 const images = [...mdImages, ...refImages.filter((r) => r.url), ...htmlImages];
-const hasDetails = /<details\b/i.test(prose);
-const hasVideo = /\.(mp4|mov|webm|gif)(\?|\)|"|'|\s|$)/i.test(prose) || /github\.com\/user-attachments\/assets\//.test(prose);
+// 1 つ目の見た目の位置 (画像 / <img> / <details> / ```diff / 動画)
+const visualRe = new RegExp(
+  String.raw`!\[[^\]]*\][(\[]|<img\b|<details\b|${DIFF_MARK}|github\.com/user-attachments/assets/|https?://\S+\.(?:mp4|mov|webm|gif)\b`,
+  'i',
+);
+const firstVisual = prose.search(visualRe);
 
-if (!noVisual && images.length === 0 && !hasDetails && !hasCode && !hasVideo) {
-  problems.push('見た目で分かるもの (画像 / 動画 / <details> の実際の出力 / diff のコードブロック) が 1 つも無い');
+if (!noVisual && firstVisual < 0) {
+  problems.push('見た目で分かるもの (画像 / 動画 / <details> の実際の出力 / ```diff のコードブロック) が 1 つも無い。コマンドを書いただけのコードブロックは数えない');
+}
+
+// 「何をしたか」(チケットなら「背景」) の節があれば、1 つ目の見た目がその節の中にあるかを見る
+const headings = [...prose.matchAll(/^(#{1,6})\s+(.+?)\s*#*\s*$/gm)].map((m) => ({ level: m[1].length, title: m[2], index: m.index }));
+const target = headings.find((h) => /何をしたか|やったこと|背景|what (i|we) did|what changed|background/i.test(h.title));
+if (!noVisual && firstVisual >= 0 && target) {
+  const next = headings.find((h) => h.index > target.index && h.level <= target.level);
+  const end = next ? next.index : prose.length;
+  if (firstVisual < target.index || firstVisual >= end) {
+    problems.push(`1 つ目の見た目が「${target.title}」の節の中に無い。節の頭に 1 枚目を置く`);
+  }
 }
 
 for (const { alt, url } of images) {

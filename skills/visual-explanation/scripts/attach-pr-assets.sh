@@ -52,6 +52,10 @@ for f in "${files[@]}"; do
   case "$seen" in *" $name "*) fail "同じファイル名が 2 回渡された: $name (別ディレクトリの同名ファイルは上書きされるので、どちらかをリネームする)" ;; esac
   seen="$seen$name "
   abs_files+=("$(cd "$(dirname "$f")" && pwd)/$name")
+  size="$(wc -c < "$f" | tr -d ' ')"
+  if [ "$size" -gt 512000 ]; then
+    echo "WARN: $name は $((size / 1024)) KB ある。merge commit なら main の履歴に残るので、500 KB 以下に縮める (幅を減らす・PNG を圧縮する) のがよい" >&2
+  fi
 done
 files=("${abs_files[@]}")
 

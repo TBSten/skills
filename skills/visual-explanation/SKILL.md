@@ -43,7 +43,7 @@ PR やチケットの説明に、見た目で分かる 1 枚目を付ける。�
 
 ### Step 1: 見せ方を決める
 
-[references/formats.md](references/formats.md) の表から、変更・内容に合う見せ方を選ぶ。画像が要らない種類なら、diff のコードブロックか `<details>` の実際の出力を本文に書いて Step 5 へ進む。表で「画像なしでよい」(CI だけ・設定だけ) を選んだときは、Step 5 の検証に `--no-visual` を付ける。
+rule `visual-explanation` の「見せ方は変更の種類で選ぶ」の表から、変更・内容に合う見せ方を選ぶ (rule が入っていなければ先に「セットアップ」の 1 を行う)。選んだ見せ方を描く部品は [references/formats.md](references/formats.md) にある。画像が要らない種類なら、diff のコードブロックか `<details>` の実際の出力を本文に書いて Step 5 へ進む。表で「画像なしでよい」(CI だけ・設定だけ) を選んだときは、Step 5 の検証に `--no-visual` を付ける。
 
 ### Step 2: HTML に描く
 
@@ -58,6 +58,12 @@ node "${CLAUDE_SKILL_DIR}/scripts/capture.mjs" <html> <out-dir> [--width=420] [-
 ```
 
 `OK` の後に撮った PNG の一覧が出る。Read で 1 枚ずつ見て、はみ出し・文字の重なりがあれば HTML を直して撮り直す。
+
+画面収録できない環境で動きを見せるときは、[references/formats.md](references/formats.md) の「実ログから GIF を作る」に従ってコマを撮り、GIF にする:
+
+```sh
+bash "${CLAUDE_SKILL_DIR}/scripts/make-gif.sh" [--delay=800] [--width=840] <out.gif> <out-dir>/frame-*-light.png
+```
 
 ### Step 4: 添付する
 
@@ -87,10 +93,11 @@ bash "${CLAUDE_SKILL_DIR}/scripts/attach-pr-assets.sh" --push <out-dir>/01-xxx-l
 
 | パス | 用途 |
 |---|---|
-| `references/formats.md` | 見せ方の表と template.html の部品の対応 |
+| `references/formats.md` | 見せ方と template.html の部品の対応、実ログから GIF を作る手順 |
 | `assets/template.html` | ライト / ダーク対応トークン付きの HTML 雛形 |
 | `assets/pull_request_template.md` | PR テンプレートの雛形 (setup-pr-template.sh が使う) |
 | `scripts/capture.mjs` | section[id] ごとに PNG を撮る (playwright が必要) |
+| `scripts/make-gif.sh` | 連番の PNG を GIF にする (ffmpeg が必要) |
 | `scripts/attach-pr-assets.sh` | 画像を一度コミットして消し、SHA 固定 URL を出す |
 | `scripts/setup-pr-template.sh` | PR テンプレートに枠を入れる |
 | `scripts/check-body.mjs` | 本文の検証 (見た目の有無・alt・SHA 固定・URL の形) |

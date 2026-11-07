@@ -29,24 +29,25 @@ curl -fsSL https://rules.tbsten.me/i | bash -s -- visual-explanation
 | PR テンプレートへの枠の追加 | skill のセットアップ | 既存テンプレートとのマージは判断が要る。rule のインストーラだと上書きしてしまう |
 
 元のキットは、この運用が Claude のプロジェクトメモリにしか無かったプロジェクトから持ち出したもの。
-メモリが無いと止まってしまったので、リポジトリに書く形にしている。
+メモリが消えたり別の環境で動いたりすると止まるおそれがあるので、リポジトリに書く形にしている。
 
 ## 流れ
 
 | ステップ | やること |
 |---|---|
 | セットアップ (1 回) | rule を入れ、`scripts/setup-pr-template.sh` で PR テンプレートを作る (既存があれば足す snippet を出す) |
-| 1. 選ぶ | `references/formats.md` から見せ方を選ぶ (Before / After・タイムライン・1 枚まとめ・GIF・diff・`<details>` の出力・なし) |
+| 1. 選ぶ | rule の表から見せ方を選ぶ (Before / After・タイムライン・1 枚まとめ・GIF・diff・`<details>` の出力・なし)。描く部品は `references/formats.md` |
 | 2. 描く | `assets/template.html` をリポジトリの外にコピーし、1 枚ごとに `<section id>` を書く。中身は実際の実行・実データから |
-| 3. 撮る | `scripts/capture.mjs` が section ごとにライト / ダークを幅 420px・scale 3 で撮る |
+| 3. 撮る | `scripts/capture.mjs` が section ごとにライト / ダークを幅 420px・scale 3 で撮る。画面収録できない環境 (クラウドなど) では実ログを 1 コマずつ描いて `scripts/make-gif.sh` で GIF にする |
 | 4. 添付する | `scripts/attach-pr-assets.sh` が画像を `.github/pr-assets/` にコミットし、次のコミットで消し、SHA 固定 URL を出す (公開: `raw.githubusercontent.com`、非公開: `blob/<sha>/...?raw=true`) |
-| 5. 検証する | `scripts/check-body.mjs` が、見た目が無い・alt が無い (ファイル名のまま)・URL がブランチ名・URL の形が混在、を NG にする |
+| 5. 検証する | `scripts/check-body.mjs` が、見た目が無い (コードブロックは ```` ```diff ```` だけ数える)・1 つ目の見た目が「何をしたか」/「背景」の節に無い・alt が無い (ファイル名のまま)・URL がブランチ名・URL の形が混在、を NG にする |
 
 ## Scripts
 
 | script | 入力 | 出力 |
 |---|---|---|
 | `capture.mjs <html> <out-dir> [--width] [--scale] [--schemes]` | `<section id>` を持つ HTML | `OK` + PNG の JSON 一覧 |
+| `make-gif.sh [--delay] [--width] <out.gif> <frame.png>...` | `capture.mjs` で撮った連番のコマ (ffmpeg が必要) | `OK`・GIF のパスとサイズ (500 KB 超で警告) |
 | `attach-pr-assets.sh [--visibility] [--push] <file>...` | PNG (PR ブランチで実行) | `OK`・SHA・Markdown の画像行 |
 | `setup-pr-template.sh [<repo-root>]` | リポジトリ | テンプレートごとに `CREATED` / `ALREADY` / `NEEDS_MERGE` (`PULL_REQUEST_TEMPLATE/` ディレクトリも対象) + snippet |
 | `check-body.mjs [--no-visual] <body.md \| ->` | PR / チケットの本文 | `OK` か `NG:` 行 (終了コード 1) |
@@ -61,12 +62,13 @@ CI だけ・設定だけの変更 (見せ方の表で画像なしでよいもの
 ```
 visual-explanation/
 ├── SKILL.md
-├── references/formats.md            # 見せ方の表と雛形の部品の対応
+├── references/formats.md            # 見せ方ごとの雛形の部品・実ログから GIF を作る手順
 ├── assets/
 │   ├── template.html                # ライト / ダークのトークン・比較・タイムライン・コード
 │   └── pull_request_template.md     # setup-pr-template.sh が使う
 └── scripts/
     ├── capture.mjs
+    ├── make-gif.sh
     ├── attach-pr-assets.sh
     ├── setup-pr-template.sh
     └── check-body.mjs
