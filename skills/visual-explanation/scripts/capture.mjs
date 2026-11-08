@@ -87,45 +87,62 @@ function runChrome(args) {
 
 // --- 計測用のスクリプトを差し込んだ一時コピーを作る -----------------------
 // 元の HTML と同じ場所に置くので、相対パスの画像・CSS もそのまま読める。
-// URL の #<id> で撮る section 以外を隠す。#measure-<幅> なら全 section を計測して <meta> に書く。
+// URL の hash は section id に使えない `@` で始めて、id と衝突しないようにする:
+//   #@shot-<id>     撮る section 以外を隠す (id へのアンカースクロールも起きない)
+//   #@measure-<幅>  --dump-dom 用。窓は最小幅 (500px 前後) に丸められるので、
+//                   撮る幅の iframe に #@inner を開いて測らせ、結果を <meta> に書く
+//   #@inner         iframe の中。load と Web フォントを待ってから全 section を計測する
 const probe = `
 <script>
 (() => {
   const secs = [...document.querySelectorAll('section')];
-  const target = decodeURIComponent(location.hash.slice(1));
+  const hash = decodeURIComponent(location.hash.slice(1));
   const showOnly = (id) => secs.forEach((s) => { s.style.display = s.id === id ? '' : 'none'; });
-  const mm = target.match(/^measure-(\\d+)$/);
-  if (!mm) { showOnly(target); return; }
-  // --dump-dom では窓の幅が最小幅 (500px 前後) に丸められることがあるので、撮る幅を html に直接当てて測る
-  const W = Number(mm[1]);
-  document.documentElement.style.width = W + 'px';
-  const left = document.documentElement.getBoundingClientRect().left;
-  const info = { sections: [], warn: [] };
-  for (const s of secs) {
-    const id = s.id || '';
-    showOnly(id);
-    const height = Math.ceil(s.getBoundingClientRect().bottom + window.scrollY);
-    const h2 = s.querySelectorAll('h2');
-    if (h2.length !== 1) info.warn.push(id + ': <h2> が ' + h2.length + ' 個ある。1 枚 1 メッセージの見出しを 1 つだけ書く');
-    else {
-      const t = h2[0].textContent.trim().replace(/\\s+/g, ' ');
-      const n = [...t].length;
-      if (n > 40) info.warn.push(id + ': 見出しが ' + n + ' 文字ある (最大 40 文字)。「' + t + '」を短くする');
-    }
-    let over = false;
-    for (const el of s.querySelectorAll('*')) {
-      const r = el.getBoundingClientRect();
-      if (r.right - left > W + 1) { over = true; break; }
-      const cs = getComputedStyle(el);
-      if (cs.overflowX !== 'visible' && el.scrollWidth > el.clientWidth + 1) { over = true; break; }
-    }
-    if (over) info.warn.push(id + ': 幅 ' + W + 'px から中身がはみ出している。折り返すか短くする');
-    info.sections.push({ id, height });
+  const writeMeta = (info) => {
+    const m = document.createElement('meta');
+    m.name = 'capture-info';
+    m.content = btoa(unescape(encodeURIComponent(JSON.stringify(info))));
+    document.head.appendChild(m);
+  };
+  if (hash.startsWith('@shot-')) { showOnly(hash.slice(6)); return; }
+  const mm = hash.match(/^@measure-(\\d+)$/);
+  if (mm) {
+    const f = document.createElement('iframe');
+    f.style.cssText = 'position:absolute;left:0;top:0;border:0;width:' + mm[1] + 'px;height:800px';
+    window.addEventListener('message', (e) => { if (e.data && e.data.captureInfo) writeMeta(e.data.captureInfo); });
+    f.src = location.href.replace(/#.*$/, '') + '#@inner';
+    document.body.appendChild(f);
+    return;
   }
-  const m = document.createElement('meta');
-  m.name = 'capture-info';
-  m.content = btoa(unescape(encodeURIComponent(JSON.stringify(info))));
-  document.head.appendChild(m);
+  if (hash !== '@inner') return;
+  const measure = async () => {
+    if (document.fonts) await document.fonts.ready;
+    const W = document.documentElement.clientWidth;
+    const info = { sections: [], warn: [] };
+    for (const s of secs) {
+      const id = s.id || '';
+      showOnly(id);
+      if (document.fonts) await document.fonts.ready;
+      const height = Math.ceil(s.getBoundingClientRect().bottom + window.scrollY);
+      const h2 = s.querySelectorAll('h2');
+      if (h2.length !== 1) info.warn.push(id + ': <h2> が ' + h2.length + ' 個ある。1 枚 1 メッセージの見出しを 1 つだけ書く');
+      else {
+        const t = h2[0].textContent.trim().replace(/\\s+/g, ' ');
+        const n = [...t].length;
+        if (n > 40) info.warn.push(id + ': 見出しが ' + n + ' 文字ある (最大 40 文字)。「' + t + '」を短くする');
+      }
+      let over = false;
+      for (const el of s.querySelectorAll('*')) {
+        if (el.getBoundingClientRect().right > W + 1) { over = true; break; }
+        if (getComputedStyle(el).overflowX !== 'visible' && el.scrollWidth > el.clientWidth + 1) { over = true; break; }
+      }
+      if (over) info.warn.push(id + ': 幅 ' + W + 'px から中身がはみ出している。折り返すか短くする');
+      info.sections.push({ id, height });
+    }
+    parent.postMessage({ captureInfo: info }, '*');
+  };
+  if (document.readyState === 'complete') measure();
+  else window.addEventListener('load', measure);
 })();
 </script>
 `;
@@ -141,9 +158,9 @@ mkdirSync(outDir, { recursive: true });
 const written = [];
 let warn = [];
 try {
-  const dom = runChrome([`--window-size=${opts.width},800`, '--dump-dom', `${tmpUrl}#measure-${opts.width}`]);
+  const dom = runChrome([`--window-size=${opts.width},800`, `--force-device-scale-factor=${opts.scale}`, '--dump-dom', `${tmpUrl}#@measure-${opts.width}`]);
   const m = dom.match(/<meta name="capture-info" content="([^"]+)">/);
-  if (!m) fail('HTML を計測できなかった。JavaScript のエラーで止まっていないか確かめる');
+  if (!m) fail('HTML を計測できなかった。JavaScript のエラーで止まっていないか、読み込みに 3 秒以上かかっていないか確かめる');
   const info = JSON.parse(Buffer.from(m[1], 'base64').toString('utf8'));
   warn = info.warn;
   if (info.sections.length === 0) fail('HTML に <section> が無い。1 枚にしたい単位を <section id="..."> で囲む');
@@ -159,7 +176,7 @@ try {
         `--force-device-scale-factor=${opts.scale}`,
         ...(scheme === 'dark' ? ['--force-dark-mode'] : []),
         `--screenshot=${path}`,
-        `${tmpUrl}#${encodeURIComponent(s.id)}`,
+        `${tmpUrl}#@shot-${s.id}`,
       ]);
       if (!existsSync(path)) fail(`PNG が書き出されなかった: ${path}`);
       written.push(path);
