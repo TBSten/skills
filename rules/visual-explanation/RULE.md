@@ -18,10 +18,12 @@ PR の本文・チケット (issue / Notion / Linear など) の説明・人間�
 
 ## 作り方
 
+- 描く前に「この 1 枚で何を伝えるか」を 1 文で決め、それを見出しにする。1 文が書けないなら図にせず文章で書く。
 - 1 枚 1 メッセージ。alt に「何が分かる図か」を 1 文で書く。
+- 図の中は見出しと短いラベルだけにし、説明の文章は本文に書く。色は意味のあるものだけ 2〜3 色。
 - 実際の実行・実データから作る。どの PR・コミット範囲・コマンドで撮ったかを書く。モックは作らない。
 - 作り方を正直に書く (画面収録 / 実ログから描いた再現 / headless 描画)。
-- HTML で描いて Playwright でスクショする (deviceScaleFactor 2〜3)。ダークモード版は `<details>` に入れる。
+- HTML で描いてヘッドレスの Chrome でスクショする (deviceScaleFactor 2〜3)。ダークモード版は `<details>` に入れる。
 - 色はプロジェクトのデザインシステムのトークンを使う。スマホ幅 (420px 前後) でも読めること。
 - 原本の HTML と PNG はリポジトリの外 (共有フォルダ・`.local/` など) に残す。
 - `visual-explanation` skill (`gh skill install tbsten/skills visual-explanation`) が入っていれば、HTML 雛形・撮影・PR への添付・本文チェックはその skill の script で行う。

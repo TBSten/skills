@@ -3,7 +3,7 @@ name: visual-explanation
 description: >
   PR の本文・チケット (issue / Notion / Linear など) の説明・人間向けレポートに、
   読む人が最初の 1 枚で要点をつかめる図・スクショを付ける。
-  HTML 雛形 (ライト / ダーク対応トークン付き) で描き、Playwright で section ごとに PNG を撮り、
+  HTML 雛形 (ライト / ダーク対応トークン付き) で描き、ヘッドレスの Chrome で section ごとに PNG を撮り、
   PR ブランチに一度だけコミットして SHA 固定 URL を作り (最終ツリーには残さない)、本文が決まりに沿っているかを検証する。
   PR テンプレートに「1 枚目に図を置く」枠を入れるセットアップも含む。
   方針 (いつ・何を見せるか) は rule `visual-explanation` と組み合わせて使う。
@@ -47,9 +47,10 @@ rule `visual-explanation` の「見せ方は変更の種類で選ぶ」の表か
 
 ### Step 2: HTML に描く
 
-1. `${CLAUDE_SKILL_DIR}/assets/template.html` をリポジトリの外 (`.local/visuals/<topic>/` や共有フォルダ) にコピーする。
-2. 例の section を消し、1 枚にしたい単位ごとに `<section id="01-...">` を書く。id はそのままファイル名になる。
-3. 中身は実際の実行・実データから書く。Before / After は同じ入力で main とこのブランチを実行した結果を使う。
+1. [references/formats.md](references/formats.md) の「1 枚の作り方」に従い、1 枚ごとに伝えたい 1 文と型を決める。1 文が書けないものは図にせず本文に書く。
+2. `${CLAUDE_SKILL_DIR}/assets/template.html` をリポジトリの外 (`.local/visuals/<topic>/` や共有フォルダ) にコピーする。
+3. 例の section を消し、1 枚にしたい単位ごとに `<section id="01-...">` を書く。id はそのままファイル名になる。
+4. 中身は実際の実行・実データから書く。文字量・色・コードの ⭐️・推奨度は formats.md の「3. 書く」に従う。Before / After は同じ入力で main とこのブランチを実行した結果を使う。
 
 ### Step 3: 撮る
 
@@ -57,7 +58,9 @@ rule `visual-explanation` の「見せ方は変更の種類で選ぶ」の表か
 node "${CLAUDE_SKILL_DIR}/scripts/capture.mjs" <html> <out-dir> [--width=420] [--scale=3] [--schemes=light,dark]
 ```
 
-`OK` の後に撮った PNG の一覧が出る。Read で 1 枚ずつ見て、はみ出し・文字の重なりがあれば HTML を直して撮り直す。
+Chrome / Chromium の headless コマンドで撮る (npm パッケージは要らない)。見つからないときは `CHROME_PATH` に実行ファイルのパスを入れる。
+
+`OK` の後に撮った PNG の一覧が出る。`WARN:` (見出しの数・40 文字超え・横のはみ出し) が出たら、その行に従って HTML を直して撮り直す。最後に Read で 1 枚ずつ見て、formats.md の「4. 撮る前のセルフチェック」を確かめる。
 
 画面収録できない環境で動きを見せるときは、[references/formats.md](references/formats.md) の「実ログから GIF を作る」に従ってコマを撮り、GIF にする:
 
@@ -93,10 +96,10 @@ bash "${CLAUDE_SKILL_DIR}/scripts/attach-pr-assets.sh" --push <out-dir>/01-xxx-l
 
 | パス | 用途 |
 |---|---|
-| `references/formats.md` | 見せ方と template.html の部品の対応、実ログから GIF を作る手順 |
+| `references/formats.md` | 見せ方と template.html の部品の対応、1 枚の作り方 (1 文・型・文字量・色・⭐️・推奨度)、実ログから GIF を作る手順 |
 | `assets/template.html` | ライト / ダーク対応トークン付きの HTML 雛形 |
 | `assets/pull_request_template.md` | PR テンプレートの雛形 (setup-pr-template.sh が使う) |
-| `scripts/capture.mjs` | section[id] ごとに PNG を撮る (playwright が必要) |
+| `scripts/capture.mjs` | section[id] ごとに PNG を撮り、見出し・はみ出しを `WARN:` で知らせる (Chrome / Chromium が必要) |
 | `scripts/make-gif.sh` | 連番の PNG を GIF にする (ffmpeg が必要) |
 | `scripts/attach-pr-assets.sh` | 画像を一度コミットして消し、SHA 固定 URL を出す |
 | `scripts/setup-pr-template.sh` | PR テンプレートに枠を入れる |

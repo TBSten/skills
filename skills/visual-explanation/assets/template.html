@@ -61,6 +61,27 @@
   .del { color: var(--ng); }
   .add { color: var(--ok); }
   .note { margin-top: 12px; font-size: 12px; color: var(--muted); }
+
+  /* 手順: 要の 1 つに .key */
+  .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; counter-reset: step; }
+  .steps li { counter-increment: step; display: flex; gap: 10px; align-items: baseline; border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; }
+  .steps li::before { content: counter(step); font: 12px var(--mono); color: var(--muted); }
+  .steps li.key { border: 2px solid var(--accent); }
+
+  /* 推奨度付きの選択肢: 勧める案を先頭に */
+  .option { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 16px; margin-bottom: 10px; }
+  .option .head { display: flex; justify-content: space-between; gap: 8px; font-weight: 700; }
+  .score { flex: none; font: 700 12px var(--mono); color: var(--accent); }
+  .option p { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
+
+  /* 横棒 (実測の数値): --v に 0〜100 の割合を入れる */
+  .bars { display: grid; gap: 8px; }
+  .bars .row { display: grid; grid-template-columns: 5.5em 1fr 4em; gap: 8px; align-items: center; font-size: 13px; }
+  .bars .bar { height: 12px; border-radius: 6px; background: var(--accent); width: calc(var(--v) * 1%); }
+  .bars .val { font-family: var(--mono); text-align: right; }
+
+  /* キーメッセージ (長い議論の結論) */
+  .conclusion { border: 2px solid var(--accent); border-radius: var(--radius); padding: 16px; text-align: center; font-size: 17px; font-weight: 700; }
 </style>
 </head>
 <body>
@@ -93,6 +114,23 @@ POST /items  201  <span class="del">← 重複</span></pre>
     <li class="bad"><span class="t">120ms</span><br>レスポンス前に 2 回目のクリックが通る</li>
     <li><span class="t">300ms</span><br>両方の POST が成功し、2 件できる</li>
   </ol>
+</section>
+
+<!-- 例: 選択肢を勧める (推奨度) + 注目の行に ⭐️ -->
+<section id="03-options">
+  <h2>二重送信はボタンを止めて防ぐ</h2>
+  <p class="lead">試した 2 つの直し方</p>
+  <div class="option">
+    <div class="head"><span>送信中はボタンを無効にする</span><span class="score">推奨度 8 / 10</span></div>
+    <p>画面だけで閉じる。API は変えない</p>
+  </div>
+  <div class="option">
+    <div class="head"><span>API で重複を弾く</span><span class="score">推奨度 6 / 10</span></div>
+    <p>確実だが、キーの設計が要る</p>
+  </div>
+  <pre>// ⭐️ レスポンスまで 2 回目を受け付けない
+button.disabled = true
+await save(item)</pre>
 </section>
 
 </body>
