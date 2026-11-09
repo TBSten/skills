@@ -78,7 +78,7 @@ version = libs.versions.<versionRef>.get()   // gradle.properties の GROUP / VE
 ```
 
 - モジュール固有の説明は `mavenPublishing { pom { description.set("...") } }` で上書きする。**`coordinates(...)` は呼ばない** (artifactId は convention が `project.path` から導出する)
-- Dokka による javadoc・古い Kotlin 向けの `languageVersion` 床・署名方式の変更などの任意設定は `references/convention-options.md`
+- Dokka による javadoc・古い Kotlin 向けの `languageVersion` 床・Gradle plugin モジュールの公開・署名方式の変更などの任意設定は `references/convention-options.md`
 
 ## Step 4: ローカル動作確認
 
