@@ -22,6 +22,8 @@
 | **受け口** | Sink を持ち、文を組み立てて保存する側（置き場に書ける側）【追加】 | Electron の main（`buildFeedback`） |
 | **履歴**（History） | 受けたフィードバックと対応結果の一覧（番号・要旨・位置・種類・結果） | 事後にまとめた表（自動では作られない） |
 | **オーケストレータ** | ユーザの窓口の会話。受付・分類・起動・クローズ・報告だけ | メインの Claude Code の会話（`CLAUDE.md` の方針） |
+| **Review**（指摘） | agent → 人 の向き。agent が書いた指摘を人が画面で読み、ボタンで答える | Web 参照実装の `<Inbox>/review/<まとまり>.md`（`references/review/review.md`）【実績: Web 参照実装】 |
+| **判断の記録**（Decisions） | 人が下した「直さない・このまま・後で・方針」。次の回に同じことを聞かないために git に溜める | Web 参照実装のリリース前チェックの `decisions/*.md`（`references/review/decisions.md`）【実績: Web 参照実装】 |
 
 「フィードバック置き場」より良い語があれば差し替えてよい（候補: 受信箱 / feedback inbox）。この skill では **置き場 = Inbox** で統一。
 
@@ -116,10 +118,23 @@ Sink { kind, capabilities{put,list,read,archive}
 - loop はメモを記録の意図の手がかりに使い、記録とメモが食い違ったら新しいほうを優先して両方を報告する。記録の無いメモだけの指摘は直さず報告に並べる（`references/loop/loop.md` §2.4）。
 - 作り方は `references/build/memo.md`。
 
+## フィードバックの向きと道具【実績: Web 参照実装】
+
+| 向き | 道具 | 置き場 | 読む資料 |
+|---|---|---|---|
+| 人 → agent（アプリ・サイト） | フィードバックモード | Inbox の `yymmdd-xx.md` | `references/build/` / `references/loop/` |
+| 人 → agent（考えの途中） | メモ | Inbox の `memo/` | `references/build/memo.md` |
+| 人 → agent（agent が作った HTML） | 静的な HTML のフィードバック | 無い（クリップボードで会話に貼る） | `references/build/static-html.md` |
+| agent → 人 | Review（指摘と popup） | Inbox の `review/` | `references/review/review.md` |
+| 人の答え → 次の回の agent | 判断の記録 | git の `.claude/feedback-decisions/` | `references/review/decisions.md` |
+
+- Review の「直してもらう」は、指摘を Feedback の記録に変える（向きが人 → agent に戻る）。記録を archive すると、元の指摘も消える（`review.mjs archived`）。
+- Review の「直さない」と人が足した選択肢の一部は、判断の記録に写る（`decisions.py record-review`）。
+
 ## 参照実装の状況と、この skill が足したもの
 
 - 参照実装での運用: ユーザーがアプリのフィードバックモードで書く → オーケストレータが運用 skill（`/feedback-loop`）で読み取って消化する。数週間・数十件の運用で、運用ルール・分類・落とし穴（`references/loop/lessons.md`）が固まった。
 - この skill が足したもの【追加】: Sink / Transport / 受け口の抽象化、debug ビルド限定の前提と本番検査、送信 body のスキーマ、HTTP の受け口・ブラウザ/モバイル/Tauri のテンプレート、履歴を「クローズのたびに 1 行足す」運用、環境の判定（`scripts/detect.sh`）。
-- Web 参照実装（Astro 7 + Starlight の docs サイト）で足したもの【実績: Web 参照実装】: Dev Toolbar に載せる形（`references/build/platforms.md` §2.1）、記録の schema 1、TypeScript の Sink と vitest の契約テスト、場所を一意に指す手がかり（`references/build/locate.md`）、popover・モードの外の入口・スマホ（`references/build/interaction.md`）、メモ（`references/build/memo.md`）、loop がメモを読む手順。
+- Web 参照実装（Astro 7 + Starlight の docs サイト）で足したもの【実績: Web 参照実装】: Dev Toolbar に載せる形（`references/build/platforms.md` §2.1）、記録の schema 1、TypeScript の Sink と vitest の契約テスト、場所を一意に指す手がかり（`references/build/locate.md`）、popover・モードの外の入口・スマホ（`references/build/interaction.md`）、メモ（`references/build/memo.md`）、loop がメモを読む手順。その後に足したもの: Review（指摘を印と popup で見せ、人はボタンで答える。人が選択肢を足す `_actions.md`、ユーザ影響の札と推奨度）、判断の記録、agent が作る静的な HTML のフィードバック（引用・いまの内容・書きかけ・1 つの渡すメニュー）、loop の「抜ける直前にもう一度一覧」「対応メモ必須の archive」。
 - 参照実装が扱っていない: 取り込みの自動トリガ（人の指示のみ）、ステータス欄、多言語。
 - 参照実装の未決・実機未確認は `references/build/build.md` §4。

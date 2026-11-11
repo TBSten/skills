@@ -274,7 +274,7 @@ gh skill install tbsten/skills feedback-mode
 
 </td>
 <td>🧪 Experimental</td>
-<td>Debug-only in-app feedback mode plus a Claude Code loop to triage the feedback</td>
+<td>Debug-only in-app feedback mode plus a Claude Code loop to triage the feedback, a Review flow where a human answers agent findings with buttons, and recorded decisions</td>
 </tr>
 </table>
 

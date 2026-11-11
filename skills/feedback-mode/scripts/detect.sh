@@ -53,11 +53,27 @@ echo "== 6. 既存のログ基盤（情報。判定は変えない。build 手�
 lg=$(grep -rIlE -e 'electron-log|winston|pino|loglevel|Timber|CocoaLumberjack|OSLog|os_log|Sentry\.|addBreadcrumb|LogBuffer|ring ?buffer|Logger\.root|createLogger|new Logger|logger\.(info|warn|error|debug)\(|\blog\.(info|warn|error|debug)\(' "${EXCL[@]}" --include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' --include='*.mjs' --include='*.dart' --include='*.swift' --include='*.kt' --include='*.java' --include='*.rs' . 2>/dev/null | head -8)
 [ -n "$lg" ] && echo "$lg" | sed 's/^/  /' || echo "  （見つからない）"
 
+echo "== 7. Review（agent → 人の指摘）と判断の記録（情報。判定は変えない。references/review/）"
+review_resolved=0; review_found=0
+for d in feedback feedbacks .feedback docs/feedback .local/feedback "${FEEDBACK_DIR:-}"; do
+  [ -n "$d" ] && [ -d "$d/review" ] || continue
+  sets=$(ls "$d/review" 2>/dev/null | grep -Ec '^[A-Za-z0-9][A-Za-z0-9._-]*\.md$')
+  open_n=$(cat "$d/review"/*.md 2>/dev/null | grep -Ec '^## ')
+  res_n=$(cat "$d/review"/*.md 2>/dev/null | grep -Ec '^- status: resolved')
+  echo "  $d/review: まとまり $sets 件 / 見出し $open_n 件 / 解決済み $res_n 件"
+  review_resolved=$((review_resolved + res_n)); review_found=1
+done
+for d in .claude/feedback-decisions "${FEEDBACK_DECISIONS_DIR:-}"; do
+  [ -n "$d" ] && [ -d "$d" ] && echo "  判断の記録: $d（$(cat "$d"/*.md 2>/dev/null | grep -Ec '^- decision:') 件）"
+done
+
 echo "== 判定"
 if [ $inbox_found -eq 1 ] && [ $wiring -gt 0 ]; then v=loop; r="置き場も配線もある"
 elif [ $inbox_found -eq 1 ]; then v=loop; r="置き場はあるが配線は見つからない（別アプリ・手書きメモ・他の取り込み元）。構築は頼まれたときだけ"
 elif [ $wiring -gt 0 ]; then v=partial; r="配線はあるが置き場・記録が無い（部分的）。動作確認を build の手順 10〜12 で行ってから loop"
+elif [ $review_found -eq 1 ]; then v=review; r="Review の置き場（review/）だけがある。references/review/review.md を読む"
 else v=build; r="置き場も配線も見つからない"; fi
 echo "VERDICT=$v  ($r)"
 [ $loopskill -eq 1 ] && [ "$v" != build ] && echo "NOTE: 既存の feedback-loop skill があるなら、それを正として使い、loop/ は差分の確認に使う"
+[ $review_resolved -gt 0 ] && echo "NOTE: review/ に人が答えた指摘が $review_resolved 件ある。references/review/review.md §8 で処理する"
 echo "NOTE: ユーザーの明示（「作って」= build / 「対応して」= loop / 両方）が判定より優先"
