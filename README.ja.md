@@ -274,7 +274,7 @@ gh skill install tbsten/skills feedback-mode
 
 </td>
 <td>🧪 Experimental</td>
-<td>debug ビルド専用のアプリ内フィードバックモードを構築し、溜まった記録を Claude Code が消化する</td>
+<td>debug ビルド専用のアプリ内フィードバックモードを構築し、溜まった記録を Claude Code が消化する。agent の指摘を人がボタンで答える Review と、判断の記録も扱う</td>
 </tr>
 </table>
 
