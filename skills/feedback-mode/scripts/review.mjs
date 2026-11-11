@@ -58,7 +58,27 @@ export const SET_NAME = /^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$/
 export const NOTE_CHARS = 500
 /** 推奨度の上限（0〜10）。 */
 export const RECOMMEND_MAX = 10
-const FENCE = /^\s*(```|~~~)/
+const FENCE = /^ {0,3}(`{3,}|~{3,})(.*)$/
+
+/**
+ * コードフェンスの中かを 1 行ずつ追う（CommonMark と同じ規則）。開いた記号と本数を覚え、同じ記号で同じ本数以上・後ろが空白だけの行で閉じる。
+ * 4 本の ```` で囲んだ例の中の ``` では閉じない。返す関数は「この行がフェンスの中（開き・閉じの行を含む）か」。
+ */
+export function fenceTracker() {
+	let open = null
+	return (line) => {
+		const m = FENCE.exec(line)
+		if (open) {
+			if (m && m[1][0] === open[0] && m[1].length >= open.length && m[2].trim() === '') open = null
+			return true
+		}
+		if (m && !(m[1][0] === '`' && m[2].includes('`'))) {
+			open = m[1]
+			return true
+		}
+		return false
+	}
+}
 
 // ---- 指摘のファイルを読む ----
 
@@ -147,10 +167,9 @@ export function parseReview(name, text) {
 	const errors = []
 	const items = []
 	const heads = []
-	let inFence = false
+	const inFence = fenceTracker()
 	for (let i = next; i < lines.length; i++) {
-		if (FENCE.test(lines[i])) inFence = !inFence
-		else if (!inFence && /^## \S/.test(lines[i])) heads.push(i)
+		if (!inFence(lines[i]) && /^## \S/.test(lines[i])) heads.push(i)
 	}
 	const pending = []
 	heads.forEach((h, k) => {
@@ -319,14 +338,15 @@ export function quoteMatches(text, quote) {
 
 /**
  * 指摘の行を今のソースに合わせる。place は ok（書かれた行のまま）/ moved（quote で探し直して動かした）/
- * lost（quote が見つからない。もう直っているかも）/ page（行が無い = ファイル全体への指摘）。
+ * lost（quote が見つからない。もう直っているかも）/ page（行も quote も無い = ファイル全体への指摘）。
  */
 export function relocate(line, quote, source) {
 	const q = quote?.split('\n').find((l) => norm(l) !== '') ?? ''
 	if (!line) {
 		if (!norm(q)) return { line: null, place: 'page' }
 		const i = source.findIndex((l) => quoteMatches(l, q))
-		return i < 0 ? { line: null, place: 'page' } : { line: { start: i + 1, end: i + 1 }, place: 'ok' }
+		// quote を書いたのに見つからないなら、行が無くても lost（もう直っているかも）。quote が無いときだけ page
+		return i < 0 ? { line: null, place: 'lost' } : { line: { start: i + 1, end: i + 1 }, place: 'ok' }
 	}
 	if (!norm(q)) return { line, place: line.start <= source.length ? 'ok' : 'lost' }
 	if (quoteMatches(source.slice(line.start - 1, line.end).join(' '), q)) return { line, place: 'ok' }
@@ -372,7 +392,7 @@ export function parseActions(text) {
 	const errors = []
 	let cur = null
 	let inMeta = false
-	let inFence = false
+	const inFence = fenceTracker()
 	const flush = () => {
 		if (!cur) return
 		const { line, ...a } = cur
@@ -384,8 +404,7 @@ export function parseActions(text) {
 		cur = null
 	}
 	lines.forEach((l, i) => {
-		if (FENCE.test(l)) inFence = !inFence
-		if (inFence) return
+		if (inFence(l)) return
 		if (/^## /.test(l)) {
 			flush()
 			cur = { label: l.slice(3).trim(), line: i + 1 }
@@ -414,10 +433,9 @@ function actionBlock(label, a) {
 function findAction(lines, label) {
 	let start = -1
 	let end = lines.length
-	let inFence = false
+	const inFence = fenceTracker()
 	for (let i = 0; i < lines.length; i++) {
-		if (FENCE.test(lines[i])) inFence = !inFence
-		if (inFence || !/^## /.test(lines[i])) continue
+		if (inFence(lines[i]) || !/^## /.test(lines[i])) continue
 		if (start >= 0) {
 			end = i
 			break
@@ -652,7 +670,11 @@ export function createReviewStore({ inbox, root, filePrefix = '' }) {
 		if (!SET_NAME.test(name)) throw new Error(`id の形が違います: ${JSON.stringify(id)}（<まとまり>/<7 文字>）`)
 		return name
 	}
-	function rewrite(id, edit) {
+	/**
+	 * lock を取って読み → 書き換え → 書く。then があれば、edit の戻り値を渡して lock の中で非同期の処理をし、
+	 * then が返す関数で書き換える（send が記録を作ってから指摘を書き換えるため）。
+	 */
+	function rewrite(id, edit, then) {
 		return serial(async () => {
 			const name = setOf(id)
 			const abs = setPath(name)
@@ -661,7 +683,9 @@ export function createReviewStore({ inbox, root, filePrefix = '' }) {
 			try {
 				const text = await readText(abs)
 				if (text === null) throw new Error(`指摘のファイルがありません: ${abs}`)
-				await writeAtomic(dir, abs, edit(name, text))
+				const first = edit(name, text)
+				const finalEdit = then ? await then(first) : null
+				await writeAtomic(dir, abs, finalEdit ? finalEdit(name, text) : first)
 			} finally {
 				await release()
 			}
@@ -696,14 +720,24 @@ export function createReviewStore({ inbox, root, filePrefix = '' }) {
 			if (text === null) throw new Error(`選択肢がありません: ${label}`)
 			return removeAction(text, label)
 		}),
-		/** 「直してもらう」: 記録を Inbox に採番して書き（上書きしない）、指摘を `Feedback に送った: <id>` で解決済みにする。記録の id を返す。 */
-		async send(id, note = '', now = new Date()) {
-			const v = (await load()).items.find((x) => x.id === id)
-			if (!v) throw new Error(`指摘が見つかりません: ${id}（list で id を確かめてください）`)
-			const recId = await writeRecord(inbox, (rid) => reviewToRecord(v, note, { id: rid, now }), now)
-			const head = `${SENT_NOTE}: ${recId}`
-			await this.resolve(id, String(note).trim() ? `${head} — ${String(note).trim()}` : head, now)
-			return recId
+		/**
+		 * 「直してもらう」: 記録を Inbox に採番して書き（上書きしない）、指摘を `Feedback に送った: <id>` で解決済みにする。記録の id を返す。
+		 * UI と cli から同時に送っても記録が 2 つにならないよう、指摘のファイルの lock の中で最新の状態を確かめ直してから書く。
+		 */
+		send(id, note = '', now = new Date()) {
+			let recId = null
+			return rewrite(id, (name, text) => {
+				const item = parseReview(name, text).items.find((x) => x.id === id)
+				if (!item) throw new Error(`指摘が見つかりません: ${id}（list で id を確かめてください）`)
+				if (item.status === 'resolved') throw new Error(`もう解決済みです: ${id}（${item.note ?? ''}。送り直すなら先に reopen）`)
+				return { item, text }
+			}, async ({ item }) => {
+				const { path, source } = await resolveFile(item.file, new Map())
+				const v = view(item, path, source)
+				recId = await writeRecord(inbox, (rid) => reviewToRecord(v, note, { id: rid, now }), now)
+				const head = `${SENT_NOTE}: ${recId}`
+				return (name, text) => applyStatus(name, text, id, { status: 'resolved', note: String(note).trim() ? `${head} — ${String(note).trim()}` : head, at: now.toISOString() })
+			}).then(() => recId)
 		},
 	}
 }
@@ -724,12 +758,21 @@ async function writeRecord(inbox, textOf, now) {
 			if (m[1] === prefix) max = Math.max(max, Number(m[2]))
 		}
 		const id = `${prefix}-${String(max + 1).padStart(digits, '0')}`
+		const archived = join(inbox, 'archived', `${id}.md`)
+		const exists = (abs) => stat(abs).then(() => true, () => false)
+		// 数えてから書くまでに、ほかのプロセスが同じ番号を書いて archive することがある。書く前と後に archived/ を見て、あれば数え直す
+		if (await exists(archived)) continue
 		try {
 			await writeFile(join(inbox, `${id}.md`), textOf(id), { encoding: 'utf8', flag: 'wx' })
-			return id
 		} catch (e) {
 			if (e?.code !== 'EEXIST') throw e
+			continue
 		}
+		if (await exists(archived)) {
+			await rm(join(inbox, `${id}.md`), { force: true })
+			continue
+		}
+		return id
 	}
 	throw new Error(`記録の番号が 10 回続けてぶつかりました: ${inbox}`)
 }
@@ -860,7 +903,7 @@ export async function main(argv = process.argv.slice(2), env = process.env, log 
 		let problems = 0
 		for (const s of data.sets) for (const e of s.errors) { problems++; log(`${s.file}: ${e}`) }
 		for (const e of data.actionErrors) { problems++; log(e) }
-		for (const v of data.items) if (v.place === 'lost') { problems++; log(`${v.id}: quote が ${v.file}${lineText(v)} の近くに見つかりません（${clip(v.title, 50)}）`) }
+		for (const v of data.items) if (v.place === 'lost') { problems++; log(`${v.id}: quote が ${v.file}${v.line ? `${lineText(v)} の近く` : ''}に見つかりません（${clip(v.title, 50)}）`) }
 		const noImpact = data.items.filter((v) => v.status === 'open' && !v.impact)
 		const noRec = data.items.filter((v) => v.status === 'open' && !v.recommend)
 		const ids = (xs) => `${xs.slice(0, 5).map((v) => v.id).join(', ')}${xs.length > 5 ? ' …' : ''}`

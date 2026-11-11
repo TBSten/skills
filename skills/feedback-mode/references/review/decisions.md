@@ -68,13 +68,16 @@ D="python3 ${CLAUDE_SKILL_DIR}/scripts/decisions.py"
 $D check [--root .]                                # 回の初めに。ERROR・GONE・LOST があれば NG と終了コード 1。REVISIT は見直す条件
 $D match <review.md> [--drop] [--out <path>]       # 登録の前に。SAME（同じ）は --drop で外す。NEAR（quote だけ重なる）は外さず中身を読む
 $D record-review <review.md> --decided "<日付 回>" [--to decisions.md] [--by "人（チャット）"]
-                                                   # 「直さない」・decision の付いた選択肢を写し、REMOVE <id> を消す順に出す
+                                                   # 「直さない」・decision の付いた選択肢を写す。直さないは REMOVE <id>（消す順）、人が足した選択肢は AGENT <id> <名前>
 $D list [--decision 直さない]
 # 共通: --dir <置き場>（$FEEDBACK_DECISIONS_DIR か .claude/feedback-decisions）/ --file-prefix <dir>（$FEEDBACK_FILE_PREFIX）
 ```
 
 - `record-review` は何度回してもよい（同じ見出し・同じ file の判断があれば写さない。`match` の付いた `方針` に合う指摘も写さず id だけ出す）。「後で」は人の一言を `revisit` にする（無ければ「次の回で人に聞く」）。
 - `REMOVE <id>` は**出た順に** `review.mjs remove <id>`（同じ見出しの `x`・`x-2` を前から消すと id がずれる）。
+- `AGENT <id>	<名前>` は判断だけ写した指摘。その選択肢の `- agent:` の作業（チケットに積むなど）を済ませてから消す（`review.md` §8 の 3）。
+- note の頭は、表示される全部のボタンの名前から**最長一致**で決めてから decision を見る（`PR`（decision あり）と `PR #65 待ち`（decision なし）があっても、後者の答えを `PR` と読まない）。
+- 形の誤りがある判断（`check` の `ERROR`）は照合に使わない。直してから回す。
 
 ## 4. 照らし方（agent の判断が要るところ）
 

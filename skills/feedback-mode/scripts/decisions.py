@@ -15,8 +15,8 @@
   python3 decisions.py record-review <review.md> --decided "<日付 回>" [--to decisions.md] [--by "<誰・どこで>"]
       Review で「直さない」になった指摘（status: resolved、note の頭が「直さない」）を判断として写す。
       人が足した選択肢のうち `- decision:` の付いたもの（review/_actions.md）で解決済みにした指摘も、その decision で写す。
-      写した（または既に写してあった・方針の match に合った）指摘の id を `REMOVE <id>` で消す順に出す。
-      そのあと出た順に review.mjs remove <id> で消す
+      「直さない」の指摘の id は `REMOVE <id>` で消す順に出す（出た順に review.mjs remove <id>）。
+      人が足した選択肢の指摘は `AGENT <id>\t<名前>` で出す（判断は写した。その選択肢の agent: の作業をしてから remove）
 
 共通: --dir <判断の置き場>（既定: $FEEDBACK_DECISIONS_DIR か <カレント>/.claude/feedback-decisions）
       --file-prefix <dir>（file がそのままで見つからないときに前に付けて探す。既定: $FEEDBACK_FILE_PREFIX。review.mjs と同じ）
@@ -40,7 +40,26 @@ REVIEW_KEYS = ("file", "line", "priority", "quote", "impact", "recommend", "stat
 PINNED_ID = re.compile(r"^[0-9a-z]{1,13}(?:-\d{1,4})?$")
 # 人が足した選択肢の置き場（指摘のファイルと同じフォルダ）。review.mjs の ACTIONS_FILE
 ACTIONS_FILE = "_actions.md"
-FENCE = re.compile(r"^\s*(```|~~~)")
+FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
+
+
+def fence_tracker():
+    """コードフェンスの中かを 1 行ずつ追う（review.mjs の fenceTracker と同じ。開いた記号と本数を覚え、同じ記号で同じ本数以上の行で閉じる）。"""
+    state = {"open": None}
+
+    def inside(line):
+        m = FENCE.match(line)
+        if state["open"]:
+            o = state["open"]
+            if m and m.group(1)[0] == o[0] and len(m.group(1)) >= len(o) and not m.group(2).strip():
+                state["open"] = None
+            return True
+        if m and not (m.group(1)[0] == "`" and "`" in m.group(2)):
+            state["open"] = m.group(1)
+            return True
+        return False
+
+    return inside
 HEAD = re.compile(r"^## \S")
 PRIORITY = re.compile(r"^\[p(\d{1,3})\]\s*(.*)$", re.I)
 # 見出しの先頭の `<decision>: `。判断のファイルの見出しはこの形。
@@ -96,11 +115,9 @@ def parse(text, source, keys):
             if lines[i].strip() == "---":
                 start = i + 1
                 break
-    heads, in_fence = [], False
+    heads, inside = [], fence_tracker()
     for i in range(start, len(lines)):
-        if FENCE.match(lines[i]):
-            in_fence = not in_fence
-        elif not in_fence and HEAD.match(lines[i]):
+        if not inside(lines[i]) and HEAD.match(lines[i]):
             heads.append(i)
     meta_line = re.compile(r"^- (%s):(?:\s+(.*))?$" % "|".join(re.escape(k) for k in keys))
     out = []
@@ -206,7 +223,11 @@ def action_label_ok(label):
 
 
 def load_actions(review_path):
-    """指摘のファイルの隣の `_actions.md` から、`- decision:` の付いた選択肢を {名前: decision} で返す（review.mjs の parseActions と同じ読み方）。"""
+    """指摘のファイルの隣の `_actions.md` から、表示される選択肢を {名前: decision か None} で返す（review.mjs の parseActions と同じ読み方）。
+
+    decision の無い選択肢も返す。note の頭は表示される全部の名前から最長一致で選んでから decision を見る
+    （`PR`（decision あり）と `PR #65 待ち`（decision なし）があるとき、後者の答えを `PR` と読まないため）。
+    """
     path = Path(review_path).parent / ACTIONS_FILE
     if not path.exists():
         return {}
@@ -217,8 +238,7 @@ def load_actions(review_path):
         # parse は `[pN]` を優先度として外すので、付いていたものは名前として読めないものに数える
         if e.priority is None and action_label_ok(e.title) and e.title not in shown and len(shown) < MAX_ACTIONS:
             shown.append(e.title)
-            if e.meta.get("decision") in DECISIONS:
-                out[e.title] = e.meta["decision"]
+            out[e.title] = e.meta.get("decision") if e.meta.get("decision") in DECISIONS else None
     return out
 
 
@@ -439,10 +459,11 @@ def cmd_record_review(args):
     ids = review_ids(findings, path.stem)
     args.dir.mkdir(parents=True, exist_ok=True)
     target = args.dir / args.to
-    existing = load_decisions(args.dir)
-    # 「直さない」と、人が popup に足した選択肢のうち decision の付いたもの（{名前: decision}）
-    choices = {"直さない": "直さない", **load_actions(path)}
-    added, already, to_remove = [], 0, []
+    # 形の誤りがある判断は match と同じく照合に使わない（写してあった扱いにして消すと、次の回に同じ指摘がまた出る）
+    existing = [d for d in load_decisions(args.dir) if not d.errors]
+    # 表示される全部のボタン（{名前: decision か None}）。最長一致で名前を決めてから、decision の有無で写すかを決める
+    choices = {"直さない": "直さない", "Feedback に送った": None, **load_actions(path)}
+    added, already, to_remove, to_agent = [], 0, [], []
     for f, rid in zip(findings, ids):
         label, _ = note_choice(f.meta.get("note", ""), choices)
         decision = choices.get(label)
@@ -454,16 +475,23 @@ def cmd_record_review(args):
             already += 1  # 方針がまとめて扱っている（1 件ずつ写さない）
         else:
             added.append(render_decision(f, args.decided, args.by, decision, label))
-        to_remove.append(rid)
+        # 「直さない」はすぐ消してよい。人が足した選択肢は `- agent:` の作業（チケットに積むなど）が先なので、消さずに AGENT で知らせる
+        if label == "直さない":
+            to_remove.append(rid)
+        else:
+            to_agent.append((rid, label))
     if added:
         text = target.read_text(encoding="utf-8") if target.exists() else f"# {target.stem}\n"
         target.write_text(text.rstrip("\n") + "\n\n" + "\n\n".join(added) + "\n", encoding="utf-8")
-    names = "・".join(f"「{k}」" for k in choices)
-    print(f"{names} {len(to_remove)} 件: 写した {len(added)} 件 / 写してあった {already} 件 → {target}")
+    names = "・".join(f"「{k}」" for k, v in choices.items() if v)
+    print(f"{names} {len(to_remove) + len(to_agent)} 件: 写した {len(added)} 件 / 写してあった {already} 件 → {target}")
     # 後ろから消す順に出す。同じ file と見出しの指摘は `x`・`x-2` と並び順で id が振られ、`x` を先に消すと `x-2` が `x` にずれるため
     # （review.mjs で解決済みにした同じ見出しの指摘は `- id:` で固定されているのでずれないが、手で書いた解決済みは固定されていない）
     for rid in reversed(to_remove):
         print(f"REMOVE {rid}")
+    # 人が足した選択肢で解決済みにした指摘は、判断だけ写した。review.mjs actions の agent: の作業をしてから remove する
+    for rid, label in to_agent:
+        print(f"AGENT {rid}\t{label}")
     return 0
 
 

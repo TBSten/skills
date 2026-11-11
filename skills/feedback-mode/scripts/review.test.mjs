@@ -223,3 +223,39 @@ test('--file-prefix: file がそのままで無ければ前に付けて探す', 
 	process.exitCode = 0
 	assert.match(await run('check', '--file-prefix', 'docs'), /^OK /m)
 })
+
+test('quote だけの指摘で quote が消えたら lost（line が無くても）', () => {
+	assert.deepEqual(relocate(null, '消えた文', ['a', 'b']), { line: null, place: 'lost' })
+})
+
+test('4 本のフェンスの中の ``` と ## では切らない（指摘・選択肢とも）', () => {
+	const text = '## a\n- file: x.md\n\n````md\n```\n## 中の見出し\n```\n````\n\n## b\n- file: x.md\n'
+	const s = parseReview('r', text)
+	assert.deepEqual(s.items.map((i) => i.title), ['a', 'b'])
+	assert.match(s.items[0].body, /## 中の見出し/)
+	assert.deepEqual(parseActions('## 後で\n\n````\n```\n## 中\n```\n````\n\n## 次\n').actions.map((a) => a.label), ['後で', '次'])
+})
+
+test('send を同時に 2 回呼んでも記録は 1 つ（2 回目は解決済みとして断る）', async () => {
+	const { root } = await sandbox()
+	const store = createReviewStore({ inbox: join(root, '.local/feedback'), root })
+	const id = parseReview('r1', SET).items[0].id
+	const results = await Promise.allSettled([store.send(id, 'A'), store.send(id, 'B')])
+	assert.equal(results.filter((r) => r.status === 'fulfilled').length, 1)
+	assert.match(String(results.find((r) => r.status === 'rejected').reason), /もう解決済みです/)
+	const recs = (await readdir(join(root, '.local/feedback'))).filter((n) => /^\d{6}-\d+\.md$/.test(n))
+	assert.equal(recs.length, 1)
+})
+
+test('send は archived/ にある番号を使わない（数えたあとに archive されても重ならない）', async () => {
+	const { root } = await sandbox()
+	const inbox = join(root, '.local/feedback')
+	await mkdir(join(inbox, 'archived'), { recursive: true })
+	const now = new Date()
+	const two = (n) => String(n).padStart(2, '0')
+	const prefix = `${two(now.getFullYear() % 100)}${two(now.getMonth() + 1)}${two(now.getDate())}`
+	await writeFile(join(inbox, 'archived', `${prefix}-01.md`), 'x')
+	const store = createReviewStore({ inbox, root })
+	const rec = await store.send(parseReview('r1', SET).items[0].id, '', now)
+	assert.equal(rec, `${prefix}-02`)
+})

@@ -93,7 +93,7 @@
 置き場に `review/` がある（agent が指摘を登録して人に見せている）なら、ループのついでに人の答えを処理する。手順は `references/review/review.md` §8「答えを処理する」。
 
 - 「直してもらう」で来た記録は、普通の記録として分類・対応し、archive のあとに `review.mjs archived` を回す（手順 4 の (ii)）。Review の側（`list --status=resolved`）では扱わない。
-- 「直さない」と、`decision` の付いた選択肢は `decisions.py record-review` で判断に写してから `remove`。
+- 「直さない」と、`decision` の付いた選択肢は `decisions.py record-review` で判断に写す。`REMOVE`（直さない）はすぐ `remove`、`AGENT`（人が足した選択肢）は `agent:` の作業を済ませてから `remove`。
 - 設計型の判断待ちを、表ではなく Review の指摘として登録して人に見せてもよい（場所があるものに限る。`impact`・`recommend` を付けて `review.mjs check` を通す）。
 
 ## 3. 報告の形

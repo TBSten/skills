@@ -59,7 +59,7 @@ base: 1a7a072
 |---|---|---|
 | `file` | 必須。リポジトリ直下からのパス（`--file-prefix` を決めれば、その下からの省略形でもよい） | agent |
 | `line` | `168` / `160-186` / `L160〜L186`。無ければファイル全体への指摘 | agent |
-| `quote` | その行に含まれる文字列。**行がずれても quote で探し直す**（いちばん近い行へ動かす）。`…`・`...` は省略。範囲なら先頭の行の文字列 | agent |
+| `quote` | その行に含まれる文字列。**行がずれても quote で探し直す**（いちばん近い行へ動かす）。`…`・`...` は省略。範囲なら先頭の行の文字列。line が無ければ quote を含む最初の行に出す。quote が見つからなければ（line の有無によらず）「もう直っているかも」（`lost`）として `check` に出る | agent |
 | `impact` | ユーザ影響の有無。`あり` / `なし`（`yes` / `no` も読む）。後ろに `: 理由`・`（理由）`。プロダクトの利用者に見える・挙動が変わるなら `あり` | agent |
 | `recommend` | ボタンごとの推奨度。`直してもらう 8, 直さない 2`（`名前: 8`・`名前 8/10` も読む）。書ける名前は `解決済みにする`・`直さない`・`直してもらう` と人が足した選択肢 | agent |
 | `status` / `resolved-at` / `note` | 解決済みの印・時刻・人の一言（頭がボタンの名前） | UI か `review.mjs resolve` |
@@ -81,7 +81,7 @@ base: 1a7a072
 | 解決済みにする | `status: resolved`・`note: <一言>` | ソースを見て直っていれば `remove`、直っていなければ `reopen --note "<何が残っているか>"` |
 | 直さない | `note: 直さない[: <一言>]` | **確かめずに** `decisions.py record-review` で判断として写し、出た `REMOVE <id>` の順に `remove` |
 | 直してもらう | Feedback の記録（`<Inbox>/yymmdd-xx.md`）を作り、`note: Feedback に送った: <記録の id>[ — <一言>]` | Review の流れでは扱わない。記録をいつもの loop で直し、**archive したあとに `review.mjs archived <記録>`** で指摘も消す |
-| 人が足した選択肢 | `note: <名前>[: <一言>]` | `review.mjs actions` の `agent:` どおり。`agent:` が無ければ人に聞く。`decision:` があれば `record-review` が写す |
+| 人が足した選択肢 | `note: <名前>[: <一言>]` | `review.mjs actions` の `agent:` どおり。`agent:` が無ければ人に聞く。`decision:` があれば `record-review` が判断を写す（消さずに `AGENT <id>` で知らせる）。`agent:` の作業が済んでから `remove` |
 
 - 「直してもらう」の記録は schema 1 の普通の記録（`kind: element`・`source: <file>:<行>`・本文に「直してほしい: <見出し>」と人の一言と指摘の本文、「選んだ位置」に `- Review の指摘: <id>`）。UI が無いときは `review.mjs send <id> --note "<一言>"` で同じものを作れる。
 - note の頭は、手で書いた `名前（理由）`・`名前 理由` も同じ名前として読む（参照実装で、手書きの「直さない（理由）」10 件が判断に写らなかった）。
@@ -139,8 +139,8 @@ UI の受け口（dev サーバー）は、この script を **import** して�
 **答えを処理する**（人が「見た」と言ったとき、または loop のついで）
 
 1. `review.mjs actions` で選択肢の扱いを読む。
-2. `decisions.py record-review <ファイル> --decided "<日付 回>"` → 出た `REMOVE <id>` を出た順に `remove`（直さない・decision の付いた選択肢）。
-3. `list --status=resolved --action=<名前>` で選択肢ごとに拾い、`agent:` どおりに扱う。
+2. `decisions.py record-review <ファイル> --decided "<日付 回>"` → 「直さない」と、decision の付いた選択肢の判断が写る。出た `REMOVE <id>`（直さない）を出た順に `remove`。`AGENT <id>`（人が足した選択肢）はまだ消さない。
+3. `list --status=resolved --action=<名前>` で選択肢ごとに拾い、`agent:` どおりに扱う（チケットに積む・PR を待つなど）。その作業が済んでから `remove`（`agent:` が「見直して残っていれば reopen」なら `reopen`）。
 4. 残りの解決済み（ボタンの名前で始まらない一言）は、ソースを見て直っていれば `remove`、残っていれば `reopen --note`。
 5. 「Feedback に送った」は触らない（loop の側で archive → `archived`）。
 

@@ -307,6 +307,39 @@ class DecisionsTest(unittest.TestCase):
         self.assertEqual(before, after)
         self.assertIn("計 2 件（直さない 2）", after)
 
+    def test_added_choice_is_read_by_the_longest_name_and_waits_for_agent(self):
+        # `PR`（decision あり）と `PR #65 待ち`（decision なし）。後者の答えを `PR` と読んで判断にしない
+        (self.root / "_actions.md").write_text("## PR\n- decision: 後で\n\n## PR #65 待ち\n- agent: マージ後に見直す\n", encoding="utf-8")
+        self.review.write_text(
+            "## a\n- file: x.md\n- status: resolved\n- note: PR #65 待ち\n\n"
+            "## b\n- file: x.md\n- status: resolved\n- note: PR: v2 で\n\n"
+            "## c\n- file: x.md\n- status: resolved\n- note: 直さない\n",
+            encoding="utf-8",
+        )
+        code, out = run("--dir", str(self.dir), "record-review", str(self.review), "--decided", "d")
+        self.assertEqual(code, 0)
+        self.assertIn("写した 2 件", out)
+        text = (self.dir / "decisions.md").read_text(encoding="utf-8")
+        self.assertNotIn("## 後で: a", text)
+        self.assertIn("## 後で: b", text)
+        # 直さない はすぐ消す。人が足した選択肢は agent: の作業が先なので REMOVE にしない
+        ids = D.review_ids(D.parse(self.review.read_text(encoding="utf-8"), self.review.stem, D.REVIEW_KEYS)[0], self.review.stem)
+        self.assertIn(f"REMOVE {ids[2]}", out)
+        self.assertNotIn(f"REMOVE {ids[1]}", out)
+        self.assertIn(f"AGENT {ids[1]}\tPR", out)
+
+    def test_broken_existing_decision_does_not_count_as_already_recorded(self):
+        # decided の無い判断は match が使わないので、写してあった扱いにして消すと次の回にまた出る
+        (self.dir / "decisions.md").write_text("## 直さない: 指示語「これらは」\n- decision: 直さない\n- file: ja/get-started/comparison-with-other-tools.mdx\n", encoding="utf-8")
+        code, out = run("--dir", str(self.dir), "record-review", str(self.review), "--decided", "d")
+        self.assertIn("写した 2 件 / 写してあった 0 件", out)
+
+    def test_four_backtick_fence_keeps_inner_three_backticks(self):
+        text = "## a\n- file: x.md\n\n````md\n```\n## 中の見出し\n```\n````\n\n## b\n- file: x.md\n"
+        entries, _ = D.parse(text, "s", D.REVIEW_KEYS)
+        self.assertEqual([e.title for e in entries], ["a", "b"])
+        self.assertIn("## 中の見出し", entries[0].body)
+
     def test_check_finds_files_under_the_prefix(self):
         (self.root / "docs").mkdir()
         (self.root / "docs" / "a.md").write_text("残っている文\n", encoding="utf-8")
