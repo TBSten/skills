@@ -1,0 +1,20 @@
+[
+  {"query": "今の状況をまとめて。PR とブランチと、まだ決めてないことがいくつかあるので、何が止まってるか一目で分かるようにしたい", "should_trigger": true},
+  {"query": "status board 作って。stacked PR が 5 本あって、どれがどれ待ちか分からなくなってきた", "should_trigger": true},
+  {"query": "作業状況を 1 枚にして。人間待ちのタスクと次にやることが分かる HTML がほしい", "should_trigger": true},
+  {"query": "PR の詰まりを可視化したい。レビュー待ち・CI 落ち・マージ待ちが依存関係付きで見えるやつ", "should_trigger": true},
+  {"query": "昨日作ったステータスボードを最新にして。デザインレビューは片付いたけど、決済プロバイダはまだ未決", "should_trigger": true},
+  {"query": "進捗を図にして。feat/login の上に feat/login-ui を積んでて、feat/payment は僕の判断待ちで止まってる", "should_trigger": true},
+  {"query": "Make me a one-page board of everything in flight in this repo: open PRs, local branches and pending decisions, as a dependency graph plus kanban", "should_trigger": true},
+  {"query": "何が止まってるか見たい。自分が答えないと進まないものを洗い出して、ブラウザで回答を書き込める形にして", "should_trigger": true},
+  {"query": "今の状況を可視化してほしい。今週のうちに片付けるべき次の一手を 3 つくらい NEXT として出して", "should_trigger": true},
+  {"query": "TBSten/skills に出してる PR 4 本の CI 失敗とレビューコメントを全部直して、グリーンになるまで回して", "should_trigger": false},
+  {"query": "このリポジトリにローカルのチケット管理を入れて、task と bug を Markdown で管理できるようにして", "should_trigger": false},
+  {"query": "この PR の本文に、変更前後のアーキテクチャ図を PNG で付けて", "should_trigger": false},
+  {"query": "GitHub Actions の CI のステータスバッジを README に追加して", "should_trigger": false},
+  {"query": "React で社内向けのカンバンボードアプリを作りたい。ドラッグ&ドロップで列を移動できるやつ", "should_trigger": false},
+  {"query": "git log から今週マージされた PR を拾って、週報用の箇条書きにまとめて", "should_trigger": false},
+  {"query": "Grafana にサービスの稼働状況ダッシュボードを作りたい。Prometheus のメトリクスから", "should_trigger": false},
+  {"query": "この issue の依存関係を mermaid のフローチャートで書いて、issue 本文に貼れるようにして", "should_trigger": false},
+  {"query": "git status が汚れてるので、未コミットの変更をブランチごとに整理して", "should_trigger": false}
+]

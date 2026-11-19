@@ -1,0 +1,86 @@
+[
+  {
+    "query": "社内の Electron ツールに、debug ビルドのときだけ画面の部品をクリックしてコメント残せるモードを入れたい。スクショとログも一緒に保存されて、あとで Claude Code に直してもらえる感じで",
+    "should_trigger": true
+  },
+  {
+    "query": "feedback/ に昨日から 12 件くらい溜まってるので一通り対応して。終わったら archived に移しといて",
+    "should_trigger": true
+  },
+  {
+    "query": "React Native アプリの開発ビルドにフィードバック機能を入れたい。シェイクで部品を選んでコメント → 開発機に記録が飛ぶようにしたい",
+    "should_trigger": true
+  },
+  {
+    "query": "フィードバックの保存先、今はローカルの feedback/ ディレクトリだけど、QA チームが別マシンから送れるように HTTP の受け口に変えたい",
+    "should_trigger": true
+  },
+  {
+    "query": "溜まったフィードバックを処理して。実装・調査・設計に振り分けて、サブエージェントに投げる感じで",
+    "should_trigger": true
+  },
+  {
+    "query": "agent が見つけたレビューの指摘を、画面の該当箇所に印を付けて popup で見せて、人が「直す / 直さない」ボタンで答えられるようにしたい",
+    "should_trigger": true
+  },
+  {
+    "query": "この前「直さない」って答えた文言の指摘、また次のループで聞かれた。判断を記録して二度と聞かないようにして",
+    "should_trigger": true
+  },
+  {
+    "query": "Claude が毎回作る調査レポートの HTML に、私が項目ごとにコメントを書いてまとめてコピーで返せるようにしたい",
+    "should_trigger": true
+  },
+  {
+    "query": "add feedback mode to my Astro docs site so reviewers can select a paragraph and leave a note while running the dev server",
+    "should_trigger": true
+  },
+  {
+    "query": "feedback ループを回したい。終わったと思ったらまた新しいのが入ってくるので、空になるまで見てて",
+    "should_trigger": true
+  },
+  {
+    "query": "アプリの設定画面に、ユーザーが運営に意見を送れる「ご意見・ご要望」フォームを本番機能として作りたい。Firestore に保存する",
+    "should_trigger": false
+  },
+  {
+    "query": "PR #88 についたレビューコメントを全部対応して resolve まで済ませて。CI も落ちてるので直して",
+    "should_trigger": false
+  },
+  {
+    "query": "この Kotlin のコードレビューして、フィードバックをちょうだい。特にエラーハンドリング",
+    "should_trigger": false
+  },
+  {
+    "query": "Sentry に溜まってるクラッシュレポートを上から見て、件数の多い順に原因を調べて",
+    "should_trigger": false
+  },
+  {
+    "query": "今抱えてる PR と issue と未決事項を集めて、何が人間待ちで止まってるかが一目で分かる HTML ボードを作って",
+    "should_trigger": false
+  },
+  {
+    "query": "PR の説明に、修正前後の画面の Before / After を図にして 1 枚目に貼りたい",
+    "should_trigger": false
+  },
+  {
+    "query": ".local/ticket/ に Markdown のチケット置き場を作って、バグとタスクをチェックリストで管理できるようにして",
+    "should_trigger": false
+  },
+  {
+    "query": "debug ビルドだけに LeakCanary と Chucker を入れて、release には入らないように Gradle の設定を書いて",
+    "should_trigger": false
+  },
+  {
+    "query": "ユーザーインタビューのメモ (notes/interview-*.md) を読んで、要望をカテゴリごとにまとめて",
+    "should_trigger": false
+  },
+  {
+    "query": "このスキルのレビューをして、SKILL.md の説明文の改善点をフィードバックして",
+    "should_trigger": false
+  },
+  {
+    "query": "Jira に溜まってる QA の不具合チケット 30 件を優先度順に並べて、担当を割り振る案を出して",
+    "should_trigger": false
+  }
+]

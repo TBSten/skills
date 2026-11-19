@@ -1,0 +1,19 @@
+[
+  {"query": "CLAUDE.md の「Repository 層は例外を投げず Outcome を返す」規約、他プロジェクトでも常に効かせたいから TBSten/skills に rule として登録して PR 作って", "should_trigger": true},
+  {"query": "contribute rule: Compose の modifier 引数の位置と命名の規約を rules/ に追加する PR を tbsten/skills に出したい", "should_trigger": true},
+  {"query": ".claude/rules/error-handling.md をプロジェクト固有の部分を抜いて汎用化して、TBSten/skills のルールとして共有したい", "should_trigger": true},
+  {"query": "コードレビューで毎回指摘してる「runCatching で CancellationException を握りつぶさない」を、ルール化して公開リポジトリに登録してほしい", "should_trigger": true},
+  {"query": "このコミットメッセージ規約、テンプレートファイルごと rule にして TBSten/skills に PR 出して。インストールしたら docs/commit-message.md で参照できるように", "should_trigger": true},
+  {"query": "Turn our KMP module layering conventions (domain must not depend on data) into a Claude Code rule and open a PR to TBSten/skills", "should_trigger": true},
+  {"query": "ベストプラクティスをルールに: テストは Given/When/Then のコメントで区切る・1 テスト 1 assert。これを rules として TBSten/skills に登録したい", "should_trigger": true},
+  {"query": "このルールを共有したい。.claude/rules/naming.md を TBSten/skills に rule として出す PR まで作って、status は Experimental で", "should_trigger": true},
+  {"query": "スクリーンショットテストの更新フロー (record → 差分確認 → verify) を毎回 AI にやらせたいので、TBSten/skills に skill として登録する PR を作って", "should_trigger": false},
+  {"query": "新規 Android プロジェクトで 1 回だけやる ktlint 導入手順を、raw URL で実行できるプロンプトとして TBSten/skills に登録したい", "should_trigger": false},
+  {"query": "CLAUDE.md の規約・手順・ワークフローを全部見て、rule と skill と prompt に仕分けてまとめて 1 PR で contribute して", "should_trigger": false},
+  {"query": "curl -fsSL https://rules.tbsten.me/i | bash -s -- kmp-error-handling で rule を入れたけど .claude/rules に何も置かれない。原因を調べて", "should_trigger": false},
+  {"query": "このプロジェクトの .claude/rules/ に、API クライアントは必ず Ktor を使うというルールを追加して。TBSten/skills には出さない、ローカルだけでいい", "should_trigger": false},
+  {"query": "TBSten/skills の rules/kmp-error-handling/RULE.md の内容が古いので、Kotlin 2.2 の context parameters 前提に書き直したい。どこを変えるべきか洗い出して", "should_trigger": false},
+  {"query": "rules/kmp-snapshot-testing の status を Archived にして README の Archived 一覧に移して", "should_trigger": false},
+  {"query": "rules.tbsten.me/i の Cloudflare Worker が 404 を返すようになった。rules/install/ の実装を見て直して", "should_trigger": false},
+  {"query": "この Kotlin ファイル、うちのエラーハンドリング規約 (Outcome を返す) に沿っているかレビューして", "should_trigger": false}
+]

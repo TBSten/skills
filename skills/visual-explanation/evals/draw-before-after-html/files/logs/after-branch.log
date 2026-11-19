@@ -1,0 +1,6 @@
+$ node scripts/sync-orders.mjs --against=flaky-stub   # feat/retry-503 (d4e5f6a)
+12:00:00.010 GET /api/orders -> 503
+12:00:00.212 GET /api/orders -> 503   (retry 1, wait 200ms)
+12:00:00.615 GET /api/orders -> 200   (retry 2, wait 400ms)
+12:00:00.620 synced 42 orders
+exit 0

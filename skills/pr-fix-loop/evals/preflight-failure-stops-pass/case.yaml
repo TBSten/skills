@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: preflight-failure-stops-pass
+expected_outcome: |
+  skill の script (rebase-pass.sh / fetch-pr-state.sh) をそのまま実行し、手で gh / git コマンドを組み立てて代わりにしない。
+  この環境では gh が未認証 (かつ作業ツリーに未コミットの変更がある) ので script が preflight で失敗する。
+  その what / why / fix のメッセージ (gh auth login を実行する、など) をユーザに伝えてパスを中止する。
+  ユーザの未コミットの変更を stash / commit / 破棄しない。
+context:
+  scaffold_script: place-files.sh

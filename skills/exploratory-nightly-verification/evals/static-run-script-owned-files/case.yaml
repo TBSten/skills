@@ -1,0 +1,10 @@
+schema_version: "1.1"
+name: static-run-script-owned-files
+expected_outcome: |
+  最初に init-run.sh を実行し、出力の date を以後の new-issue.sh / summary.sh に --date で渡す。
+  見つけたもの (README は missing で null を返すと言うが load は例外を投げる / parse が例外を握りつぶす silent failure /
+  ConfigParseException が使われていない / TODO) を、それぞれ new-issue.sh で
+  .local/tmp/exploratory-nightly-<date>/issues/<NN>-<slug>.md として作ってから本文を埋める (手書きで issue ファイルを作らない)。
+  SUMMARY.md は summary.sh で作り、lint が ok になるまで直す。最後のメッセージは「wrote N issues, wrote SUMMARY.md」程度。
+context:
+  scaffold_script: place-files.sh

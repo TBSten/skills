@@ -1,0 +1,13 @@
+schema_version: "1.1"
+name: new-tabs-recipe-app
+expected_outcome: |
+  skill 同梱の scripts/install.sh を --package com.hoge.recipe.nav
+  --dest composeApp/src/commonMain/kotlin/com/hoge/recipe/nav で実行し、maintab/ と navigation/ を配置させる。
+  その後 // CUSTOMIZE: 箇所を全て適合させる: MainTab enum を Feed / Search / MyPage 相当の 3 エントリに、
+  MainTabScaffold のアイコンとラベルを指定どおりに、Screen.kt に 3 タブ + RecipeDetail(recipeId) を定義し
+  mainTabOrNull / MainTab.screen の双方向マッピングを更新 (RecipeDetail は null)、
+  AppNavigation の entryProvider でタブ画面に metadata = MainTabSceneStrategy.mainTab(...) を付け、
+  RecipeDetail は metadata なしのエントリにする。sceneStrategy は MainTabSceneStrategy を先頭にしたチェーン。
+  サンプルの Home / ChatList / MyPage / Settings の残骸を残さない。App.kt から AppNavigation を呼ぶ。
+context:
+  scaffold_script: place-files.sh

@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: carry-over-previous-overlay
+expected_outcome: |
+  collect.mjs を実行すると前回 snapshot の overlay が overlay.prev.json として出てくるので、そこから始めて
+  片付いた human-design-review (item とその block エッジ) だけを消し、未決の decision-payment-provider は
+  同じ id のまま残した overlay.json で build-board.mjs を実行する (board.json は書き直さない)。
+  新しい .local/status-board/<yyyy-MM-dd-HH-mm>.html (前回とは別のファイル) と snapshot が出力され、絶対パスが報告される。
+context:
+  scaffold_script: place-files.sh

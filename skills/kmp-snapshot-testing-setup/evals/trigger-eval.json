@@ -1,0 +1,20 @@
+[
+  {"query": "KMP + Compose Multiplatform のアプリにスナップショットテストを導入したい。build-logic に convention plugin があるので、そこに snapshot 用の convention を追加する形で基盤を作って", "should_trigger": true},
+  {"query": "ViewModel (StateHolder) に対してランダムな操作列を流して、UI state をスナップショットとして保存・比較する PBT の仕組みをプロジェクトに入れたい。Kotest 使ってる", "should_trigger": true},
+  {"query": "setup snapshot testing for our compose multiplatform project — kotest property testing, record/verify gradle tasks, and an html report of diffs", "should_trigger": true},
+  {"query": "PR ごとに main とのスナップショット差分を出したい。snapshot-diff.sh を使えるようにして、worktree で before を record → after で verify する流れを用意して", "should_trigger": true},
+  {"query": "テスト基盤モジュールを作りたい。core/testing/snapshot に shouldMatchSnapshot とか PBT の基底クラスをまとめて、各 feature モジュールからは convention plugin 1 行で使えるようにしたい", "should_trigger": true},
+  {"query": "Compose の画面を Density / 画面サイズ / ダークテーマの組み合わせでランダムに描画して、画像スナップショットで回帰検出したい。KMP の jvm ターゲットで回す想定", "should_trigger": true},
+  {"query": "UI の無い KMP ライブラリだけど、計算ロジックの出力を Kotlin コード形式のスナップショットで固定したい。Compose 抜きでスナップショットテスト基盤をセットアップして", "should_trigger": true},
+  {"query": "PBT でスナップショットテストをやりたい。StateHolderSnapshotPbtSpec みたいな基底クラスを用意して、jvmSnapshotTestRecord / jvmSnapshotTestVerify タスクで回せるようにして", "should_trigger": true},
+  {"query": "スナップショットテストが 3 件落ちてる。意図した UI 変更なので golden を更新したいんだけど、record タスクを再実行すればいい？それとも snapshot ファイルを手で消す？", "should_trigger": false},
+  {"query": "Android 専用 (View ベース) の既存アプリに Paparazzi を入れて、Activity のレイアウトのスクショテストを書きたい。KMP ではない", "should_trigger": false},
+  {"query": "React コンポーネントのテストで Jest の toMatchSnapshot を使ってるけど、snapshot が巨大で差分レビューがつらい。inline snapshot に移行すべき？", "should_trigger": false},
+  {"query": "DiscountCalculator の total() に対する Kotest のユニットテストを 5 ケースくらい書いて。境界値 (クーポン 0% / 100%) も含めて", "should_trigger": false},
+  {"query": "新しく KMP ライブラリプロジェクトを立ち上げたい。build-logic、version catalog、kotest、ktlint、binary-compatibility-validator まで入った雛形を作って", "should_trigger": false},
+  {"query": "今のテストの検証方法がどれくらい信頼できるか、スナップショットテスト・手動確認・E2E を比べて採点してほしい", "should_trigger": false},
+  {"query": "build-logic の convention plugin で libs.findLibrary(\"kotest-runner\") が解決できずに Unresolved reference: libs になる。VersionCatalogsExtension の取り方を教えて", "should_trigger": false},
+  {"query": "Kotest の property testing で Arb.string() が絵文字やサロゲートペアを生成しないので、多言語 Unicode を含むカスタム Arb を 1 つ書いて", "should_trigger": false},
+  {"query": "Compose Preview を Roborazzi でスクリーンショットテスト化して、GitHub Actions で差分画像を PR にコメントする workflow を作って (Android アプリ単体)", "should_trigger": false},
+  {"query": "Kotlin の data class を toString した結果を毎回テストに貼るのが面倒。kotlinx.serialization で JSON に変換して比較するヘルパー関数を 1 つ書いて", "should_trigger": false}
+]

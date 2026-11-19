@@ -1,0 +1,21 @@
+[
+  {"query": "メンテナさんが出した PR #186 (stacked で #187 もある) を、OSS コントリビュータとして横で深く audit したい。5 並列の subagent で cat 別に探索検証して ticket に溜めていって", "should_trigger": true},
+  {"query": "PR 探索検証の iter 4 を kick して。前回の FINAL-SUMMARY と ticket を見て重複しないように、各 cat の angle は任せる", "should_trigger": true},
+  {"query": "complex PR を 5 並列で深掘りしたい。cat3 と cat4 は Gradle のビルドがぶつからないように project-cache-dir を分けて", "should_trigger": true},
+  {"query": "PR loop 回してて、メンテナが force-push してきた。チケットの commit hash どう扱えばいい？reset してから次の iteration 行って", "should_trigger": true},
+  {"query": "ticket 駆動で PR review したい。見つけた問題は .local/tmp に番号付きで溜めて、P0/P1 だけ PR にまとめてコメントする感じで", "should_trigger": true},
+  {"query": "Exploratory verification on PR #52 of the Compose Multiplatform library: keep looping with parallel subagents until midnight, don't stop to ask me between iterations.", "should_trigger": true},
+  {"query": "PR #203 の探索、締め切りを 23 時から 17 時に前倒しにする。残り時間に合わせて回し方を変えて", "should_trigger": true},
+  {"query": "並列 subagent kick して、ktor のプラグイン PR を cat1〜cat5 で多角的に検証して。cat5 は同じジャンルのライブラリと比較で", "should_trigger": true},
+  {"query": "PR 探索検証が終わったので、FINAL-SUMMARY に closing snapshot を書いて KPT の振り返りもして", "should_trigger": true},
+  {"query": "この PR #77 のコードレビューして。気になるところをインラインでコメントしておいて", "should_trigger": false},
+  {"query": "自分の PR 179 180 181 の CI が落ちてるのと review コメントを順番に片付けて、stack を順に green にして", "should_trigger": false},
+  {"query": "毎晩 main を 60 分だけ探索して、問題を issue Markdown に書き出す nightly 探索を回して。PR には何も書かない", "should_trigger": false},
+  {"query": "PR #186 の説明文に、範囲選択 API の Before / After を図にして貼って", "should_trigger": false},
+  {"query": "PR #186 の CI ログを見て、deprecated 警告がどこから出てるか調べて直して", "should_trigger": false},
+  {"query": "このリポジトリで得た知見を TBSten/skills に skill として PR 出して", "should_trigger": false},
+  {"query": "Kotlin compiler plugin の PR をレビューしたい。FIR と IR の extension point の使い方が正しいか見て", "should_trigger": false},
+  {"query": "今の PR と issue の状況を一枚の HTML にまとめて、何がメンテナ待ちか見えるようにして", "should_trigger": false},
+  {"query": "この PR で追加したテスト、e2e じゃなくて unit だけど検証としてどのくらい強い？レベル出して", "should_trigger": false},
+  {"query": "PR #90 を GitHub 上で approve して merge して。squash で", "should_trigger": false}
+]

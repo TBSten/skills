@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: setup-merge-existing-template
+expected_outcome: |
+  skill の setup-pr-template.sh を実行し、NEEDS_MERGE .github/pull_request_template.md と snippet を得る。
+  snippet (<!-- visual-explanation: 1 枚目に図・スクショ・動画を置く ... -->) を「何をしたか」に当たる ## What changed の直下に足し、
+  既存の節 (Summary / What changed / How to test / Checklist) の名前・順番は変えず、別のテンプレートファイルも作らない。
+context:
+  scaffold_script: place-files.sh

@@ -1,0 +1,20 @@
+[
+  {"query": "このプロジェクトで作った Compose のスナップショット更新ワークフロー、TBSten/skills に skill として登録する PR を作ってほしい。CLAUDE.md の「スクショ更新」セクションが元ネタ", "should_trigger": true},
+  {"query": "core/network/RetryPolicy.kt のリトライパターン、他のリポジトリでも使い回したいからスキル化して tbsten/skills に出したい", "should_trigger": true},
+  {"query": ".claude/skills/release-flow.md にある社内向けリリース手順を汎用化して、TBSten/skills リポジトリに新しい skill として contribute して", "should_trigger": true},
+  {"query": "contribute skill お願い。今日 KMP の expect/actual で DI する方法を確立したので、その知見を skill にして PR まで作って", "should_trigger": true},
+  {"query": "この知見を共有したい。Gradle の build-logic で convention plugin を作る手順、example コード付きでスキルとして登録してくれる？", "should_trigger": true},
+  {"query": "Package this Room migration testing workflow from our repo as a reusable skill and open a PR against TBSten/skills", "should_trigger": true},
+  {"query": "feature/settings で使ってる SimpleLoader のラッパーパターン、スキルとして登録して TBSten/skills に PR 出しといて。status は Experimental でいい", "should_trigger": true},
+  {"query": "ここ数日で固まった Ktor のモックサーバーを使ったテストの書き方、毎回 AI にやってほしいのでスキル化して公開リポジトリに登録したい", "should_trigger": true},
+  {"query": "このパターンをスキル化したい: ViewModel で SavedStateHandle を使って画面状態を復元するやり方。TBSten/skills に出す PR まで頼む", "should_trigger": true},
+  {"query": "CLAUDE.md の「ViewModel の命名規約」を、コード書くとき常に効く rule として TBSten/skills に登録する PR を作って", "should_trigger": false},
+  {"query": "新しいリポジトリ作るたびに 1 回だけやる detekt 導入手順を、TBSten/skills にワンショットプロンプトとして登録したい", "should_trigger": false},
+  {"query": "CLAUDE.md に溜まった知見 5 つくらいを skill / rule / prompt に仕分けて、まとめて 1 つの PR で TBSten/skills に出したい", "should_trigger": false},
+  {"query": "TBSten/skills の skills/kotlin-tuple/SKILL.md の description、発火しにくいみたいだからトリガー精度を上げるように書き直して評価も回して", "should_trigger": false},
+  {"query": "skills/status-board の status を Experimental から Active に上げて、README の Status 列も合わせて更新して", "should_trigger": false},
+  {"query": "gh skill install tbsten/skills local-ticket-system でインストールした skill を最新版に更新したい。どうやればいい？", "should_trigger": false},
+  {"query": "このリポジトリ用に .claude/skills/deploy.md を新しく作って、うちのステージング環境へのデプロイ手順を Claude が実行できるようにして。外部には公開しない", "should_trigger": false},
+  {"query": "TBSten/skills の PR #142 (Add skill: flow-retry-backoff) にレビューコメントが 3 件ついてるので、指摘を直して push して resolve まで回して", "should_trigger": false},
+  {"query": "skills/contribute-skill/SKILL.md 自体をレビューして、手順の抜けや改善点を指摘してほしい", "should_trigger": false}
+]

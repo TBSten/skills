@@ -1,0 +1,11 @@
+schema_version: "1.1"
+name: release-workflow-to-skill
+expected_outcome: |
+  ./skills-repo に skills/android-release-flow/SKILL.md (frontmatter に name / description / metadata.status: Experimental / metadata.group)、
+  詳細ドキュメント skills/android-release-flow.md (英語) と skills/android-release-flow.ja.md (日本語) が作られ、
+  README.md / README.ja.md の Available Skills テーブルの Kotlin / Android グループに 🧪 Experimental の行が追加される。
+  社内 Wiki URL・Slack チャンネル・個人名・AcmePay などのプロジェクト固有情報は含まれずプレースホルダー化される。
+  ./pr-draft.md のタイトルは "Add skill: android-release-flow" で、本文は ## Summary / ## 実行イメージ / ## 備考 の 3 セクションだけ。
+  push / PR 作成は行わない。
+context:
+  scaffold_script: place-files.sh

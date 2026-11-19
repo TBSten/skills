@@ -1,0 +1,20 @@
+[
+  {"query": "Compose Multiplatform のアプリに Navigation 3 で下タブを実装して。ホーム・検索・設定の 3 タブで、タブ切り替えで各タブの状態が消えないようにしたい", "should_trigger": true},
+  {"query": "Navigation 3 の NavDisplay を使ってるんだけど、タブを切り替えるたびに Scaffold と NavigationBar ごと再生成されてアニメーションがチラつく。SceneStrategy で何とかできない？", "should_trigger": true},
+  {"query": "implement bottom tabs with Navigation 3 in our KMP app (androidx.navigation3 + lifecycle-viewmodel-navigation3 already added). tabs: Feed, Inbox, Profile", "should_trigger": true},
+  {"query": "BottomNavigation を実装して。navigation3 を入れたばかりで、NavEntry の metadata でタブ画面かどうかを判定する方式にしたい", "should_trigger": true},
+  {"query": "下タブを追加して。今 entryProvider に Home / Ranking / MyPage / Settings があって、Settings 以外の 3 つをタブにしたい。同じタブを連打してもバックスタックが積まれないように", "should_trigger": true},
+  {"query": "Navigation 3 の MainTab パターンを導入したい。MainTab enum と MainTabSceneStrategy / MainTabScene を app/src/commonMain の nav パッケージに作って", "should_trigger": true},
+  {"query": "タブ切り替え時に状態を保持したい。Nav3 で詳細画面はタブの上にフルスクリーンで積んで、戻ったら元のタブに戻るようにしたい", "should_trigger": true},
+  {"query": "SceneStrategy でタブを管理したい。既存の DialogSceneStrategy と SinglePaneSceneStrategy のチェーンにタブ用の Strategy を足す形で", "should_trigger": true},
+  {"query": "Jetpack Navigation (navigation-compose 2.8) の NavHost で BottomNavigation を作ってる。saveState / restoreState の設定が正しいか見てほしい。Navigation 3 には移行しない", "should_trigger": false},
+  {"query": "Navigation 3 で一覧と詳細をタブレットでは 2 ペイン表示、スマホでは 1 ペインにしたい。ListDetailSceneStrategy の書き方を教えて", "should_trigger": false},
+  {"query": "React Router で下部固定のタブバーを作りたい。/home /search /profile の 3 ルートで、アクティブなタブをハイライトして", "should_trigger": false},
+  {"query": "Navigation 3 で画面遷移時のアニメーション (スライドイン) を NavDisplay の transitionSpec でカスタマイズしたい", "should_trigger": false},
+  {"query": "Compose の TabRow と HorizontalPager でスワイプできる上タブを作って。画面内のタブで、ナビゲーションとは関係ない", "should_trigger": false},
+  {"query": "Navigation 3 のバックスタックをプロセス死後も復元したい。rememberNavBackStack と @Serializable な NavKey の使い方を説明して", "should_trigger": false},
+  {"query": "SwiftUI の TabView で 4 タブのアプリを作ってて、タブを再タップしたらそのタブのルートまで popToRoot したい", "should_trigger": false},
+  {"query": "NavigationBar のアイコンに未読バッジを出したい。BadgedBox の使い方だけサクッと教えて。ナビゲーションの構成は既にできてる", "should_trigger": false},
+  {"query": "ViewModel を Navigation 3 の NavEntry ごとにスコープさせたい。rememberViewModelStoreNavEntryDecorator を入れたのに画面を戻っても ViewModel が破棄されない", "should_trigger": false},
+  {"query": "Navigation 2 から Navigation 3 への移行手順をまとめて。NavController を使っている箇所が 40 ファイルくらいある", "should_trigger": false}
+]

@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: ksp-cross-module-design
+expected_outcome: |
+  KSP は各モジュールのソースしか処理できず、依存モジュールのコンパイル済みクラスからアノテーション付きクラスを
+  探せないことを説明した上で、Kotlin Compiler Plugin の hint 関数パターン (上流モジュールで固定パッケージに
+  収集対象クラスを引数型に持つ hint 関数を生成し metadata visible にする → 下流で referenceFunctions で検索し
+  パラメータ型から復元して集約コードを生成) を提案する。前例 (metro / koin-compiler-plugin) と K2 専用である点にも触れる。

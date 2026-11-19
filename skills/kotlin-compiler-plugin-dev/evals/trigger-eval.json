@@ -1,0 +1,21 @@
+[
+  {"query": "自作の compiler plugin の FIR/IR の設計をチェックしてほしい。compiler-plugin/src/main/kotlin 以下に Registrar と IrGenerationExtension があって、宣言の追加も IR でやっちゃってるんだけどこれ大丈夫？", "should_trigger": true},
+  {"query": "suspend 関数の呼び出し前後に計測コードを挿入したいんだけど、これって FIR と IR どっちでやるべき？既存プラグインで似たことやってるのある？", "should_trigger": true},
+  {"query": "Kotlin 2.4.0 が出たので、うちの compiler plugin (compat-k230 まである compat module 構成) でサポートしたい。CI matrix と kctfork も含めて対応して", "should_trigger": true},
+  {"query": "新しい Kotlin パッチ 2.3.21 に上げたら compiler plugin のテストで NoSuchMethodError: IrDeclarationOrigin... が出るようになった。どう吸収するのがいい？reflection でいける？", "should_trigger": true},
+  {"query": "Please review our Kotlin compiler plugin's multi-version support. We ship one jar for Kotlin 2.1–2.3 with compat modules bundled via ShadowJar and a ServiceLoader-based factory. Is the architecture sound?", "should_trigger": true},
+  {"query": "サポート対象から Kotlin 2.0.x を外したい。scripts/supported-kotlin-versions.txt と README を直せばいい？compat module は消していいの？", "should_trigger": true},
+  {"query": "compiler plugin のリリース方針で迷ってる。kotlinx.serialization みたいに Kotlin とタンデムでバージョンを上げるのと、metro みたいに独立リリースで 1 jar 多バージョン対応するの、どっちがいい？", "should_trigger": true},
+  {"query": "data class にコンパニオンの factory 関数を自動生成する compiler plugin を開発したい。どの Extension Point を使えばいいか、前例のソースコードを教えて", "should_trigger": true},
+  {"query": "FirNamedFunction が 2.3.20 から入ったせいで古い Kotlin でクラスロードに失敗する。capability flag で FIR checker を gating したい", "should_trigger": true},
+  {"query": "Kotlin compiler plugin のプロジェクトを新規作成したい。buildSrc の convention plugin、AutoService で登録、KotlinCompilerPluginSupportPlugin の gradle-plugin、kctfork テストまで一式 scaffold して", "should_trigger": false},
+  {"query": "モジュールをまたいで @Route 付きクラスをコンパイル時に集める compiler plugin の雛形を作って。hint 関数パターンで", "should_trigger": false},
+  {"query": "Android アプリを Kotlin 2.3.0 に上げたら 'This version of the Compose Compiler requires Kotlin version ...' ってビルドエラーが出る。build.gradle.kts のどこを直せばいい？", "should_trigger": false},
+  {"query": "KSP の SymbolProcessor で @Entity 付きクラスから DAO を生成する processor を書きたい。KSP プロジェクトのセットアップからお願い", "should_trigger": false},
+  {"query": "kotlinx.serialization で sealed class を polymorphic にシリアライズしたい。@SerialName と classDiscriminator の設定方法を教えて", "should_trigger": false},
+  {"query": "アプリの build.gradle.kts で kotlin(\"plugin.allopen\") を使って @Open アノテーション付きクラスを open にしたい。設定の書き方を教えて", "should_trigger": false},
+  {"query": "IntelliJ プラグインで Kotlin Analysis API を使って関数の戻り値の型を解決したいけど、BasePlatformTestCase のテストで analyze が動かない", "should_trigger": false},
+  {"query": "KMP ライブラリを新しく立ち上げたい。BCV と ktlint、Dokka の docs サイトまで含めた構成で Maven Central に出せるようにして", "should_trigger": false},
+  {"query": "Gradle の version catalog で Kotlin のバージョンを 2.3.20 に上げたい。libs.versions.toml の kotlin と ksp の対応する版を教えて", "should_trigger": false},
+  {"query": "Kotlin の inline function と reified 型パラメータの仕組みをコンパイル後のバイトコードレベルで説明してほしい", "should_trigger": false}
+]

@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: design-masked-tostring
+expected_outcome: |
+  新しい宣言は追加せず既存の toString を書き換えるだけなので「FIR チェッカー + IR 変換」パターン
+  (FirAdditionalCheckersExtension で誤用をエラー報告し、IrGenerationExtension で data class の toString 本体を変換) を推奨し、
+  FirDeclarationGenerationExtension は不要と説明する。最も近い前例として Redacted (ZacSweers/redacted-compiler-plugin) を挙げる。

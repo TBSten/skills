@@ -1,0 +1,21 @@
+[
+  {"query": "KMP の shared モジュールに Tuple4〜Tuple10 くらいの data class と tupleOf() ファクトリを追加したい。Triple だと要素が足りなくなってきた", "should_trigger": true},
+  {"query": "async で 4 つの API を並列に叩いて awaitAll すると List<Any> になって毎回キャストしてるのがつらい。型を保ったまま await できるユーティリティを作って", "should_trigger": true},
+  {"query": "add Tuple utilities to my kotlin multiplatform project (package com.example.common.tuple), with kotlinx.serialization support so I can put them in @Serializable classes", "should_trigger": true},
+  {"query": "user?.name, user?.email, settings?.locale の 3 つが全部 non-null の時だけ処理したい。if のネストが深いので、まとめて null チェックできる allNotNullOrNull みたいなのを生成して", "should_trigger": true},
+  {"query": "並列で走らせた 3 つの suspend 関数のうち 1 つが例外を投げても他がキャンセルされないようにして、それぞれ Result で受け取れる awaitAll が欲しい。Android の data モジュール (src/main/kotlin) に置いて", "should_trigger": true},
+  {"query": "tupleOf(a, b, c, d) みたいに書ける型安全な Tuple を core/common モジュールにデフォルト設定で全部入りで生成して", "should_trigger": true},
+  {"query": "Pair と Triple の入れ子 (Pair<Pair<A,B>,Triple<C,D,E>>) がコード中に増えて読めなくなってる。汎用の Tuple 型を用意して置き換えたい", "should_trigger": true},
+  {"query": "awaitAll returning Result for each deferred, type-safe, in commonMain. max 6 elements is enough", "should_trigger": true},
+  {"query": "Tuple を toList() で List<Any?> に変換する拡張関数も含めて、Tuple 一式を feature/search モジュールに生成してください。最大 12", "should_trigger": true},
+  {"query": "Kotlin の data class で destructuring declaration (val (a, b) = pair) が component1/component2 でどう動いてるのか説明して", "should_trigger": false},
+  {"query": "coroutineScope と supervisorScope の違いがよく分からない。子コルーチンの 1 つが失敗した時にどうなるのか、例を使って解説して", "should_trigger": false},
+  {"query": "ViewModel で一覧データの初回読み込みとリフレッシュを区別して、Loading / Error / Loaded の状態遷移を管理するクラスを作りたい", "should_trigger": false},
+  {"query": "kotlinx.serialization で Pair<String, Int> をシリアライズしたら {\"first\":..,\"second\":..} になった。[\"a\", 1] みたいな配列形式で出したいのでカスタム KSerializer を書いて", "should_trigger": false},
+  {"query": "Python の NamedTuple を使ってる処理を Kotlin に移植したい。フィールド名付きなので data class に置き換える方針で変換して", "should_trigger": false},
+  {"query": "Flow を 3 つ combine して UI state を作ってるけど、combine の引数が 5 個を超えるとオーバーロードが無くてコンパイルできない。どう書けばいい？", "should_trigger": false},
+  {"query": "awaitAll を使ったテストが runTest の中でタイムアウトする。StandardTestDispatcher と advanceUntilIdle の使い方がおかしい気がするので見て", "should_trigger": false},
+  {"query": "Kotlin の Result 型を返す関数がチェーンしていて getOrThrow だらけ。kotlin-result ライブラリの導入を検討したいので Arrow の Either と比較して", "should_trigger": false},
+  {"query": "Room の @Query で 3 カラムだけ SELECT した結果を受け取りたい。専用の data class を作るべきか Triple で受けられるか教えて", "should_trigger": false},
+  {"query": "Kotlin で Python の zip(a, b, c) みたいに 3 つのリストを同時にイテレートしたい。標準ライブラリだけでどう書くのが綺麗？", "should_trigger": false}
+]

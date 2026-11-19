@@ -1,0 +1,10 @@
+schema_version: "1.1"
+name: generalize-example-code
+expected_outcome: |
+  skills-repo/skills/flow-retry-backoff/ に SKILL.md と example/ (実装とテスト) が作られる。
+  example のコードは package が com.example.flowretrybackoff (skill 名からハイフンを除いたもの) に統一され、
+  com.acmepay.* の import (AcmeLogger / AcmeInternal / AcmeTestRule) とプロジェクト固有アノテーション @AcmeInternal は
+  削除または標準的な代替に置き換えられている。kotlinx.coroutines などの標準ライブラリはそのまま。
+  最後に「何を何に置き換えたか」の一覧が報告される。push / PR 作成は行わない。
+context:
+  scaffold_script: place-files.sh

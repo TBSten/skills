@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: classify-delegate-and-report
+expected_outcome: |
+  - 9001/12 (binary) は fix-ci-binary skill に任せる
+  - 9001/11 (lint) は fix-ci-lint skill が無いので手で直さず、evidence と logTail を要約してユーザに報告する
+  - 9002/21 (transient) はコードに触らず `gh run rerun 9002 --failed` (in-progress なら次のパスに回す)
+  - 180 の未解決スレッドは修正 → commit → push → resolve-thread.sh <threadId> <commit>
+  - 親の 179 に push したら rebase-pass.sh を再実行して 180 → 181 の順に stack を繋ぐ
+  - 最後に PR / failures / in-progress / unresolved / action の表と、push したので changed として streak.sh changed、`(no-change streak: 0/5)` 相当の行

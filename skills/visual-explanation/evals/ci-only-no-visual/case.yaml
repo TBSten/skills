@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: ci-only-no-visual
+expected_outcome: |
+  CI だけの変更なので画像は作らない (HTML も撮影もしない)。「何をしたか」の節に diff のコードブロック (または実際の出力の <details>) を置き、
+  body.md を書いて skill の check-body.mjs を --no-visual 付きで実行し、OK になるまで直す。
+context:
+  scaffold_script: place-files.sh

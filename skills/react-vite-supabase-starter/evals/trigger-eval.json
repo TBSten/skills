@@ -1,0 +1,20 @@
+[
+  {"query": "React + Supabase で新しく社内向けの備品管理アプリを始めたい。ログイン付きの SPA で、Vite と TypeScript、UI は shadcn にしたい。雛形を一式作って", "should_trigger": true},
+  {"query": "Vite + React の新規プロジェクトを pnpm workspace のモノレポ構成 (apps/web) で立ち上げて。Tailwind v4 と TanStack Router / TanStack Query、テストは vitest と playwright", "should_trigger": true},
+  {"query": "start a new web app: react, vite, tailwind v4, shadcn/ui, tanstack router + query, supabase auth. project name habit-tracker, primary color #3B82F6", "should_trigger": true},
+  {"query": "Supabase 認証付き SPA テンプレートが欲しい。未ログインなら /login にリダイレクトして、データ取得は TanStack Query の hook 経由にする構成で、ゼロから作ってほしい", "should_trigger": true},
+  {"query": "react-vite-supabase-starter で my-portfolio-admin を作って。アプリ名は「ポートフォリオ管理」", "should_trigger": true},
+  {"query": "個人開発で読書記録サービスを作ろうと思ってる。フロントは React + Vite、バックエンドは Supabase にしたい。認証・ルーティング・レイアウト・テスト環境まで最初に全部セットアップしておいて", "should_trigger": true},
+  {"query": "shadcn + Tailwind v4 のセットアップから始まる新しい React プロジェクトを作りたい。TanStack Router で型安全ルーティング、Supabase は今回は使わないので外して", "should_trigger": true},
+  {"query": "TanStack Router + Query の初期構成で React アプリを新規作成して。Supabase のクライアントと AuthProvider も最初から入れておいてほしい", "should_trigger": true},
+  {"query": "Next.js (App Router) + Supabase で新規プロジェクトを作りたい。SSR でセッションを扱う @supabase/ssr の構成で", "should_trigger": false},
+  {"query": "既存の Vite + React アプリ (react-router v6 使用) に Supabase のメール認証だけ追加したい。ログイン画面とセッション管理を足して", "should_trigger": false},
+  {"query": "shadcn/ui の DataTable を今のプロジェクトに追加して、ソートとページネーション付きの一覧を作って。components.json はもうある", "should_trigger": false},
+  {"query": "Supabase の expenses テーブルに RLS ポリシーを書いて。自分の user_id の行だけ select / insert / delete できるようにしたい", "should_trigger": false},
+  {"query": "Tailwind CSS v3 で作ってる既存の React アプリを v4 に移行したい。tailwind.config.js を @theme の CSS 変数に書き換える手順を教えて", "should_trigger": false},
+  {"query": "Expo (React Native) + Supabase でモバイルアプリを新規作成したい。AsyncStorage にセッションを保存する構成で", "should_trigger": false},
+  {"query": "vite build すると 'Could not resolve \"@/lib/utils\"' で失敗する。tsconfig の paths は設定してあるのに vite.config.ts 側で alias を設定してないせい？", "should_trigger": false},
+  {"query": "react-router から TanStack Router に移行したい。既存のルート定義が 30 個くらいあって、ファイルベースルーティングにするかコードベースにするか相談したい", "should_trigger": false},
+  {"query": "TanStack Query の useMutation で成功後に invalidateQueries してるのに一覧が更新されない。queryKey の設計がおかしいのかレビューして", "should_trigger": false},
+  {"query": "Supabase Edge Function で Stripe の webhook を受けて、subscriptions テーブルを更新する関数を書いて", "should_trigger": false}
+]

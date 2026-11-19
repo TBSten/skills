@@ -1,0 +1,4 @@
+$ node scripts/sync-orders.mjs --against=flaky-stub   # main (a1b2c3d)
+12:00:00.010 GET /api/orders -> 503
+12:00:00.011 ERROR sync failed: 503 Service Unavailable
+exit 1

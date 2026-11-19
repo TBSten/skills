@@ -1,0 +1,22 @@
+[
+  {"query": "LoginViewModel のテスト、Turbine で StateFlow を collect して assert してるだけなんだけど、これって検証としてどれくらい強いの？検証レベルで評価してみて", "should_trigger": true},
+  {"query": "さっき Playwright で checkout フローの e2e を手元で 1 回だけ流して screenshot 撮って目視で OK にしたんだけど、この確認方法はどれくらい信用していい?", "should_trigger": true},
+  {"query": "本番で日付が 1 日ずれるバグが出た。テストは JST 固定の unit test しかなかった。なんでテストで見逃したのか、検証方法の弱さとして整理してほしい", "should_trigger": true},
+  {"query": "画像アップロードの不具合修正、確認方法の候補が (1) MockWebServer で integration test (2) staging で手動確認 (3) Firebase Test Lab で実機 の 3 つある。構築コストと実行時間も含めて比較して決めたい", "should_trigger": true},
+  {"query": "check method level でこの PR の動作確認 (curl で API 叩いてレスポンスの JSON を目で見た) を採点して", "should_trigger": true},
+  {"query": "今回の修正は Claude にエミュレータのスクショ見てもらって「崩れてない」って判断してもらっただけなんだけど、仕様書も渡してないし弱い？どの軸が弱いか教えて", "should_trigger": true},
+  {"query": "Before we merge the retry logic, rate how strong our verification is: a kotest property test with 1000 random inputs running in CI against an in-memory fake of the HTTP client.", "should_trigger": true},
+  {"query": "テスト方針を決めたい。決済 SDK のアップデートで、snapshot test を足すか、QA に実機で回してもらうか、両方か。それぞれ検証方法レベルとコストを出して", "should_trigger": true},
+  {"query": "動作確認の強さを評価して。main() に一時的なコード書いて println で値を見て確認しただけです", "should_trigger": true},
+  {"query": "QA から『リグレッションテストで見つからなかったのはなぜ？』って聞かれた。手順書ベースの手動テストで、該当画面はチェック項目に無かった。検証の観点で説明したい", "should_trigger": true},
+  {"query": "CartViewModel の unit test を書いて。CartRepository は MockK で mock して、正常系・クーポン適用・在庫切れの 3 ケースで", "should_trigger": false},
+  {"query": "このプロジェクトの JaCoCo のカバレッジレポートを出して、カバレッジ 80% を切ってるモジュールを一覧にして", "should_trigger": false},
+  {"query": "KMP + Compose のプロジェクトに Roborazzi で snapshot test の仕組みを一式セットアップしたい。convention plugin も作って", "should_trigger": false},
+  {"query": "flaky になってる SettingsScreenTest の原因を調べて直して。CI で 5 回に 1 回落ちる", "should_trigger": false},
+  {"query": "この PR のコードレビューをして。テストが足りてないところがあれば指摘して", "should_trigger": false},
+  {"query": "PR #212 を探索的に検証したい。5 並列で subagent を回して ticket 駆動で audit して", "should_trigger": false},
+  {"query": "夜間の GitHub Actions で main を 60 分探索して、見つけた問題を issue Markdown に書き出す nightly 探索を回して", "should_trigger": false},
+  {"query": "debug ビルドにフィードバックモードを入れて、QA が画面の部品を選んでコメントできるようにしたい", "should_trigger": false},
+  {"query": "GitHub Actions のテストジョブが 25 分かかってるので、Gradle のキャッシュと並列化で速くしたい", "should_trigger": false},
+  {"query": "PR の本文に、修正前後のレイアウトの Before / After スクショを図にして貼りたい", "should_trigger": false}
+]

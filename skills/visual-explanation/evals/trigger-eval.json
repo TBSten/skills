@@ -1,0 +1,82 @@
+[
+  {
+    "query": "この PR (#58、503 のときリトライするようにした) の本文に、main とこのブランチの挙動の違いが 1 枚で分かる図を入れたい。ライトとダーク両方で",
+    "should_trigger": true
+  },
+  {
+    "query": "PR にスクショを貼って。設定画面の余白を直したので Before / After を撮って本文の頭に置きたい",
+    "should_trigger": true
+  },
+  {
+    "query": "Linear のチケットに、今の認証フローと目指す姿を図解で付けて起票したい",
+    "should_trigger": true
+  },
+  {
+    "query": "説明を図にして。この PR で導入したキャッシュの仕組み、タイムラインで競合の順番を見せたい。画像は PR ブランチに残らないようにして",
+    "should_trigger": true
+  },
+  {
+    "query": "PR テンプレートに「何をしたか」の頭に図を置く枠を入れて。既存の .github/pull_request_template.md の節は変えずに",
+    "should_trigger": true
+  },
+  {
+    "query": "クラウドのセッションなので画面収録できないけど、CLI の進捗表示が変わったのを GIF で PR に見せたい。実行ログから作って",
+    "should_trigger": true
+  },
+  {
+    "query": "add a visual explanation to my PR description — a before/after card of the error message change, captured as PNG and pinned by commit SHA",
+    "should_trigger": true
+  },
+  {
+    "query": "週次の調査レポート (人間向け) に、3 つのライブラリ案の比較を推奨度付きのカードで 1 枚目に入れたい",
+    "should_trigger": true
+  },
+  {
+    "query": "PR 本文の画像 URL がブランチ名になってて、マージ後に壊れそう。決まりに沿ってるか本文をチェックして直して",
+    "should_trigger": true
+  },
+  {
+    "query": "今抱えてる PR と issue を全部集めて、依存関係の図とカンバンのペラいち HTML を作って",
+    "should_trigger": false
+  },
+  {
+    "query": "このローカルの画像を GitHub にアップして user-attachments の URL だけ取得して",
+    "should_trigger": false
+  },
+  {
+    "query": "Compose の画面に Roborazzi で screenshot test を入れて、golden 画像と比較できるようにして",
+    "should_trigger": false
+  },
+  {
+    "query": "このアーキテクチャを mermaid のシーケンス図にして README に書いて",
+    "should_trigger": false
+  },
+  {
+    "query": "PR #212 の CI が落ちてるのとレビューコメントを片付けて green にして",
+    "should_trigger": false
+  },
+  {
+    "query": "React で売上ダッシュボードを作って。月別の棒グラフと前年比の折れ線",
+    "should_trigger": false
+  },
+  {
+    "query": "PR #64 のタイトルが「fix」だけなので、conventional commits 形式の分かりやすいタイトルに gh で変えておいて",
+    "should_trigger": false
+  },
+  {
+    "query": "この PR のコードレビューをして、問題点をインラインコメントで",
+    "should_trigger": false
+  },
+  {
+    "query": "Figma のこのフレームを元に、ログイン画面を実装して",
+    "should_trigger": false
+  },
+  {
+    "query": "debug ビルドにフィードバックモードを入れて、スクショ付きで画面への指摘を溜められるようにして",
+    "should_trigger": false
+  },
+  {
+    "query": "このテスト方針、スクショを AI に見せて判定してるだけなんだけど検証としてどれくらい強い？",
+    "should_trigger": false
+  }
+]

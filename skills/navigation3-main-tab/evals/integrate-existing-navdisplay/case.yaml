@@ -1,0 +1,13 @@
+schema_version: "1.1"
+name: integrate-existing-navdisplay
+expected_outcome: |
+  scripts/install.sh で maintab/ (と navigation/) を配置したうえで、生成された AppNavigation.kt / AppNavigator.kt を丸ごと使わず
+  既存の AppNavHost.kt / Navigator.kt に統合する。AppNavHost の NavDisplay に
+  sceneStrategy = MainTabSceneStrategy<Route>().then(DialogSceneStrategy()).then(SinglePaneSceneStrategy()) のように
+  MainTabSceneStrategy をチェーン先頭に置き、Home / Search / Notifications の entry に
+  metadata = MainTabSceneStrategy.mainTab(MainTab.X) を付ける (Settings / ArticleDetail は metadata なし)。
+  既存 Navigator に MainTabNavigator を実装させ、currentTab と switchTab を追加する。switchTab はバックスタック内の
+  最後のタブ画面を in-place で置き換える (push しない)。Route ↔ MainTab の双方向マッピングを 1 か所にまとめる。
+  未使用の生成 AppNavigation.kt / AppNavigator.kt / Screen.kt は削除するか、使わない旨を説明する。
+context:
+  scaffold_script: place-files.sh

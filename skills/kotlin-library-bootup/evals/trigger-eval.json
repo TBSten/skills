@@ -1,0 +1,20 @@
+[
+  {"query": "Kotlin Multiplatform ライブラリを新しく作りたい。Android / iOS / JVM / JS 対応で、Maven Central に出す前提の構成で雛形を作って", "should_trigger": true},
+  {"query": "新しい OSS ライブラリのプロジェクトを作って。名前は result-kt、パッケージは io.github.me.result。explicitApi と BCV、kotest、ktlint は最初から入れたい", "should_trigger": true},
+  {"query": "kotlin library bootup お願い。JVM only で、docs サイト (Dokka + Starlight) と GitHub Pages デプロイまで込みで", "should_trigger": true},
+  {"query": "社内で使ってる日付ユーティリティを OSS 化したい。KMP ライブラリとして build-logic の convention plugin と version catalog で整った構成にしたいので、一式立ち上げてほしい", "should_trigger": true},
+  {"query": "I'd like to start a new Kotlin Multiplatform library with the full target set (including linux, mingw, watchOS, wasmWasi), vanniktech publishing and GitHub Actions CI. Can you bootstrap it in ~/dev/bytes-kt?", "should_trigger": true},
+  {"query": "Maven Central に出す Kotlin ライブラリを始めたい。integrationTest を独立ビルドで持って、利用者と同じ Maven 座標経由で試せる構成がいい", "should_trigger": true},
+  {"query": "ライブラリの雛形がほしい。README / CLAUDE.md / .claude/rules も含めて、AI と一緒に開発しやすい形の Kotlin ライブラリプロジェクトを作って", "should_trigger": true},
+  {"query": "KMP で小さな parser ライブラリを作る予定。とりあえず空の repo に standard ターゲットでプロジェクトを生成して、ビルドと publishToMavenLocal が通るところまで確認して", "should_trigger": true},
+  {"query": "既存の KMP ライブラリに Maven Central 公開設定を追加したい。GPG 署名と GitHub Actions の publish workflow、Sonatype Central Portal 連携をセットアップして", "should_trigger": false},
+  {"query": "KSP プラグインを新しく作りたい。@Serializable っぽいアノテーションからコードを生成する processor で、runtime / ksp / test の 3 モジュール構成で", "should_trigger": false},
+  {"query": "Kotlin compiler plugin のプロジェクトを作りたい。compiler-plugin / gradle-plugin / runtime の構成で kctfork テスト付き", "should_trigger": false},
+  {"query": "Compose Multiplatform のアプリ (Android / iOS / Desktop) を新規作成したい。画面遷移と DI まで入った雛形を作って", "should_trigger": false},
+  {"query": "既存ライブラリのバージョンを 1.3.0 から 1.4.0 に上げてリリースノートを書きたい。CHANGELOG と README のバージョン表記も直して", "should_trigger": false},
+  {"query": "KMP ライブラリの binary-compatibility-validator で apiCheck が落ちる。klib の api dump の差分の読み方と直し方を教えて", "should_trigger": false},
+  {"query": "KMP + Compose のプロジェクトにスナップショットテストの基盤 (Kotest PBT + snapshot diff スクリプト) を入れたい", "should_trigger": false},
+  {"query": "Kotlin で Tuple と型安全な awaitAll のユーティリティをプロジェクトに追加して。kotlinx.serialization の KSerializer も欲しい", "should_trigger": false},
+  {"query": "React + Vite + Supabase で新規 Web アプリをスキャフォールドしたい。pnpm workspace のモノレポ構成で", "should_trigger": false},
+  {"query": "Gradle の Kotlin DSL で、既存の Android アプリのマルチモジュールに build-logic の convention plugin を導入して build.gradle.kts の重複を減らしたい", "should_trigger": false}
+]

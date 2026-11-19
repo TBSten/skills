@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: iter1-tickets-and-comment-policy
+expected_outcome: |
+  初回なので init-exploration.sh 186 で .local/tmp/exploratory-pr-186/ を作る。
+  5 件それぞれを new-ticket.sh (--id 186 --cat N --severity Px --slug ... --iter 1) で作り、本文 (Location / Detail / Fix proposal) を埋める。
+  ticket ファイルを手書きしたり番号を自分で決めたりしない。
+  PR コメント案は P0/P1 の 2 件だけを 1 つのクラスタコメントにまとめ、P2/P3 は ticket に留める。
+  修正案を含むコメントは投稿前に動的 PoC が必要であることに触れるとなお良い。

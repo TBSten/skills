@@ -1,0 +1,10 @@
+schema_version: "1.1"
+name: setup-and-file-bug
+expected_outcome: |
+  skill の setup.sh を実行して .local/ticket/ (about.md・テンプレート・done/ closed/ archived/ deferred/) を作り、
+  .gitignore に .local/ を追記する (既存の node_modules/ dist/ は残る)。
+  new-ticket.sh で .local/ticket/bug-001-<slug>.md を作り、タイトルは内容を表す絵文字 prefix 付き (例: 🐛)、
+  再現手順・期待される動作・実際の動作・推測される原因・対応方針の候補が埋まり、TODO: プレースホルダは残らない。
+  チェックリスト末尾に「不要ファイルの削除 / 検証 / セルフレビュー / commit / このチケットを done/ に移動」がある。
+context:
+  scaffold_script: place-files.sh

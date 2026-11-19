@@ -1,0 +1,12 @@
+schema_version: "1.1"
+name: setup-jvm-build-logic
+expected_outcome: |
+  scripts/setup-publish.sh を --convention-dir build-logic と --description 付きで実行する
+  (バージョンの SSoT は gradle.properties の VERSION_NAME なので --version-ref は不要)。
+  script が既存 build-logic/build.gradle.kts へのマージを action_required で求めるので、
+  example/buildSrc-build.gradle.kts を参考に vanniktech (libs.plugins.mavenPublish) と KGP の plugin marker を
+  dependencies に追加する。included build なのでモジュール側の alias(...) はそのままでよい。
+  :core にだけ id("publish-convention") を適用し、gradle.properties の GROUP / VERSION_NAME を使うので
+  group / version 行は追加しない。:sample には適用しない。Apple ターゲットが無いので workflow は ubuntu-latest。
+context:
+  scaffold_script: place-files.sh

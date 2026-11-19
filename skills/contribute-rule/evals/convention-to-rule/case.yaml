@@ -1,0 +1,11 @@
+schema_version: "1.1"
+name: convention-to-rule
+expected_outcome: |
+  skills-repo/rules/kmp-repository-outcome/RULE.md が YAML frontmatter なし・命令形で作られる。
+  status / group は RULE.md ではなく英語詳細ドキュメント rules/kmp-repository-outcome.md の frontmatter に書かれ
+  (status: Experimental、group: Kotlin / Android アプリ開発)、日本語版 rules/kmp-repository-outcome.ja.md もある。
+  README.md / README.ja.md の Available Rules テーブルに行が追加される。社内ポータル URL・個人名・HogeBaseRepository などの
+  固有名はプレースホルダー化される。./pr-draft.md のタイトルは "Add rule: kmp-repository-outcome" で、
+  本文は ## Summary / ## 実行イメージ / ## 備考 の 3 セクションだけ。
+context:
+  scaffold_script: place-files.sh

@@ -1,0 +1,20 @@
+[
+  {"query": "KSP プラグインを作りたい。@Builder を付けた class から Builder クラスを生成する processor で、runtime / ksp / test の構成で一式セットアップして", "should_trigger": true},
+  {"query": "cream と同じ構成で新しい symbol processor のプロジェクトを作って。名前は copy-gen、パッケージは io.github.me.copygen", "should_trigger": true},
+  {"query": "setup a ksp plugin project: annotation @Lens generates optics for data classes. I want kctfork e2e tests, golden files and Konsist layer checks from day one", "should_trigger": true},
+  {"query": "アノテーションプロセッサを新規作成したい。昔 kapt で書いてたやつを KSP2 で作り直すので、KMP 対応のテスト基盤込みのプロジェクトを用意してほしい", "should_trigger": true},
+  {"query": "KSP processor のプロジェクト構成で迷ってる。feature ごとにディレクトリ切って、ProcessContext と context parameters で依存を絞る設計にしたいので、その形で雛形を生成して", "should_trigger": true},
+  {"query": "KSP×KMP で commonMain に生成コードが見えない問題を最初から回避した構成で、KSP プラグインのリポジトリを ~/dev/route-gen に作りたい", "should_trigger": true},
+  {"query": "KSP プラグインのテスト基盤を整えた状態で新しく始めたい。facet 形式の Markdown golden と snapshot matrix、GitHub Actions の matrix CI まで入れて", "should_trigger": true},
+  {"query": "社内用の symbol processor を作る。@Event 付き sealed class から analytics 送信コードを生成したい。.claude/rules で規約も置いてほしい", "should_trigger": true},
+  {"query": "アプリの build.gradle.kts に Room の KSP を入れたい。ksp(\"androidx.room:room-compiler\") の書き方と KSP プラグインのバージョンの合わせ方を教えて", "should_trigger": false},
+  {"query": "KSP だと他モジュールの @Feature クラスが見えないので、モジュール横断でクラスを集める仕組みを compiler plugin で作りたい", "should_trigger": false},
+  {"query": "Kotlin compiler plugin のプロジェクトを新規作成したい。AutoService + KSP で Registrar を登録、gradle-plugin と kctfork テストも込みで", "should_trigger": false},
+  {"query": "既存の KSP processor で、生成したファイルが incremental build のときに消える。Dependencies(aggregating=...) の指定が怪しい気がするので見てほしい", "should_trigger": false},
+  {"query": "Kotlin Multiplatform ライブラリを新しく作りたい。explicitApi、kotest、BCV、Dokka + Astro Starlight の docs まで含めて", "should_trigger": false},
+  {"query": "作った KSP ライブラリを Maven Central に公開したい。vanniktech の設定と GPG 鍵、GitHub Actions の publish workflow をセットアップして", "should_trigger": false},
+  {"query": "KMP + Compose のプロジェクトにスナップショットテストを導入したい。Kotest の PBT と組み合わせた構成で", "should_trigger": false},
+  {"query": "KSP と kapt の違い、それぞれのビルド速度への影響を、Hilt と Room を使っている Android アプリの観点で説明して", "should_trigger": false},
+  {"query": "KotlinPoet で sealed interface とその実装クラスを生成するコードの書き方を教えて。TypeSpec.interfaceBuilder の使い方が分からない", "should_trigger": false},
+  {"query": "compiler plugin のレビューをお願い。FIR で宣言を作って IR で本体を作る構成だけど、KSP で代替できないかも含めて意見がほしい", "should_trigger": false}
+]

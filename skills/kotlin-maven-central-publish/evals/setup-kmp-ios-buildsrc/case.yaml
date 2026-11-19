@@ -1,0 +1,12 @@
+schema_version: "1.1"
+name: setup-kmp-ios-buildsrc
+expected_outcome: |
+  skill 同梱の scripts/setup-publish.sh を --description / --group-id / --version-ref kvstore --version 0.1.0 付きで実行し、
+  catalog への vanniktech 追記・buildSrc の convention ビルドと publish-convention.gradle.kts・
+  .github/workflows/publish.yml / publish-check.yml を script に生成させる (iOS ターゲットがあるので runner は macos-latest)。
+  script の action_required に従い、ルートと kvstore-core の alias(libs.plugins.kotlin.multiplatform) を
+  id(libs.plugins.kotlin.multiplatform.get().pluginId) に置き換える (ルートの apply false 行は削除でもよい)。
+  kvstore-core/build.gradle.kts に id("publish-convention") と group = "dev.hoge.kvstore"、
+  version = libs.versions.kvstore.get() を追加し、モジュール側で coordinates(...) は呼ばない。
+context:
+  scaffold_script: place-files.sh

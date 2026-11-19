@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: scaffold-route-viewer
+expected_outcome: |
+  skill 同梱の scripts/scaffold.sh を --dest ./route-viewer --package io.github.hoge.routeviewer --plugin-id io.github.hoge.routeviewer --plugin-name "Route Viewer" --vendor hoge で実行し
+  (snippet を転記して手で組まない)、plugin.xml・RouteViewerToolWindowFactory・src/shared の UI・src/preview の PreviewMain/PreviewChecks・snapshots/preview・
+  AA スモークテスト等が生成される。次の手順として CUSTOMIZE マーカーの置き換え、Gradle wrapper のコピー、verify.sh --fresh で preview golden を作って PNG を目視してから commit することを案内する。

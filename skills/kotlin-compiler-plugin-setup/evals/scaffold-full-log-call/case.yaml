@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: scaffold-full-log-call
+expected_outcome: |
+  skill 同梱の scripts/scaffold.sh を --dest . --name log-call --group-id io.github.hoge.logcall --kotlin-version 2.3.20 で実行し
+  (手でファイルを書き起こさない)、buildSrc / compiler-plugin / gradle-plugin / runtime / integration-test が生成される。
+  gradle.properties の COMPILER_PLUGIN_ID と SUPPORTED_KOTLIN_MIN=2.3.0 / SUPPORTED_KOTLIN_MAX_TESTED_EXCLUSIVE=2.4.0、
+  LogCall prefix のクラス (@AutoService 登録) を確認し、置換漏れが無いこと、公開前に POM_* (TODO-owner) を埋める必要があることを伝える。

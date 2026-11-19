@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: compare-plans-with-cost
+expected_outcome: |
+  3 つの検証方法それぞれについて 9 軸の値を選び、calc-check-method-level.py を方法ごとに実行する。
+  計画・比較なので build-cost と run-cost も方法ごとに指定する (A は new-harness 前後、C は external / days 前後)。
+  B は AI が screenshot を判定するので observer=ai-* と ai-context を指定する。
+  結果は 1 方法 1 行の表 (方法 / Level / Score / Cost / 主な弱点) にまとめ、スコアとコストを合算・割り算して 1 つの指標にしない。

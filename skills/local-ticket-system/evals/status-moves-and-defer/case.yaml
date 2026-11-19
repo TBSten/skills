@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: status-moves-and-defer
+expected_outcome: |
+  move-ticket.sh を使って task-009 を done/ へ、bug-004 を deferred/ へ、chapter-onboarding を archived/ へ移す
+  (chapter は done/ closed/ には移さない)。deferred/bug-004-safari-date-picker.md の末尾には
+  Deferred 理由 / 再起票 trigger / Deferred 日付 が入り、理由 (再現率が低い・今のフェーズではやらない) と
+  trigger (Safari 18 で再現報告が来たら) に書き換えられて TODO: が残らない。
+context:
+  scaffold_script: place-files.sh
