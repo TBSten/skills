@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # skill の eval (テストケースと発火テスト) が skill-eval で使える形式かを検証する。AI が eval を書いた後に実行する。
 #   - evals/<case>/ : prompt.md (frontmatter + 本文) / case.yaml (schema_version "1.1"・name = フォルダ名・expected_outcome) /
-#                     graders/*.md (frontmatter に type) を持つ。形式は skill-creator の references/schemas.md「Test cases」
+#                     graders/*.md (frontmatter に type) を持つ。形式の説明は .github/skill-eval/case-format.md
 #   - evals/trigger-eval.json : [{"query": string, "should_trigger": bool}] で true / false が各 --min-each 件以上
 #
 # usage: check-evals.sh --skill NAME [--min-each N (既定 8)]
@@ -22,7 +22,7 @@ done
 [ -n "$skill" ] || die "--skill は必須" "" "例: check-evals.sh --skill pr-fix-loop"
 require_cmd yq jq
 dir="$(skill_dir "$skill")"
-schemas="skill-creator の references/schemas.md「Test cases」の形式に直す"
+schemas=".github/skill-eval/case-format.md の形式に直す"
 
 errors=()
 err() { errors+=("$1"); }

@@ -5,7 +5,7 @@
 # 実際にモデルを呼ぶ (課金・使用量がかかる)。発火テストは skill-creator の流儀どおり、空のプロジェクトで行う。
 #
 # usage: run-improve.sh --skill NAME --skill-creator DIR --out DIR --model M
-#                       [--max-iterations N (既定 3)] [--runs-per-query N (既定 3)] [--workers N (既定 6)] [--apply]
+#                       [--max-iterations N (既定 3)] [--runs-per-query N (既定 2)] [--apply]
 #   --skill-creator : anthropics/skills の skills/skill-creator を置いたディレクトリ (scripts/run_loop.py がある所)
 # 出力: DIR/improve.json (run_loop.py の生結果) / DIR/improve-summary.json (下の形式) / DIR/improve.log
 #   {"before": {"train","test"}, "after": {"train","test"}, "improved", "applied", "original_description", "best_description"}
@@ -15,7 +15,7 @@ set -euo pipefail
 # shellcheck source=scripts/skill-eval/lib.sh
 source "$(dirname "$0")/lib.sh"
 
-skill="" sc="" out="" model="" max_iter=3 runs=3 workers=6 apply=false
+skill="" sc="" out="" model="" max_iter=3 runs=2 apply=false
 while [ $# -gt 0 ]; do
   case "$1" in
     --skill) skill="${2:?}"; shift 2 ;;
@@ -24,9 +24,8 @@ while [ $# -gt 0 ]; do
     --model) model="${2:?}"; shift 2 ;;
     --max-iterations) max_iter="${2:?}"; shift 2 ;;
     --runs-per-query) runs="${2:?}"; shift 2 ;;
-    --workers) workers="${2:?}"; shift 2 ;;
     --apply) apply=true; shift ;;
-    -h | --help) sed -n '2,14p' "$0"; exit 0 ;;
+    -h | --help) sed -n '2,13p' "$0"; exit 0 ;;
     *) die "未知の引数 '$1'" "" "--help で usage を確認する" ;;
   esac
 done
@@ -41,14 +40,16 @@ eval_set="$dir/evals/trigger-eval.json"
 mkdir -p "$out"
 out="$(cd "$out" && pwd)"
 
-# 空のプロジェクト (.claude/ だけ) で発火テストを行う。リポジトリの CLAUDE.md や他の skill に結果を左右させない
+# 空のプロジェクト (.claude/ だけ) で発火テストを行う。リポジトリの CLAUDE.md や他の skill に結果を左右させない。
+# run_eval.py は問い合わせごとに同じ description の一時 command を同じ .claude/commands/ に置くので、並列にすると
+# 他の worker の command が選ばれて「発火しなかった」と数えられる。worker は 1 に固定する
 project="$(mktemp -d)"
 trap 'rm -rf "$project"' EXIT
 mkdir -p "$project/.claude"
 
 if ! (cd "$project" && env -u CLAUDECODE PYTHONPATH="$sc" python3 -m scripts.run_loop \
   --eval-set "$eval_set" --skill-path "$dir" --model "$model" \
-  --max-iterations "$max_iter" --runs-per-query "$runs" --num-workers "$workers" \
+  --max-iterations "$max_iter" --runs-per-query "$runs" --num-workers 1 \
   --report none --verbose >"$out/improve.json" 2>"$out/improve.log"); then
   tail -n 20 "$out/improve.log" >&2
   die "run_loop.py が失敗した" "認証切れ・モデル名の誤り・eval セットの形式のどれか" "$out/improve.log を見る"

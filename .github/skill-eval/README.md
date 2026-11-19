@@ -28,9 +28,10 @@ pr                  prepare-branch → publish-pr: 固定ブランチ skill-eval
 |---|---|
 | `history/<skill>.jsonl` | SSoT。1 行 = 1 回の評価結果 (日付・モデル・Benchmark の要約・Improve の前後・エラー) |
 | `prompt.md` | eval を作る AI への指示 (何をテストするかの判断基準) |
+| `case-format.md` | eval の形式 (テストケースと発火テスト)。check-evals.sh が検証する内容の説明 |
 | `../workflows/skill-eval.yml` | workflow |
 | `../../scripts/skill-eval/*.sh` | 決定的な処理 (下表)。AI は eval の中身を決めるだけ |
-| `../../skills/<skill>/evals/` | 各 skill の eval。`<case>/` (prompt.md・case.yaml・graders/) と `trigger-eval.json`。形式は skill-creator の `references/schemas.md`「Test cases」 |
+| `../../skills/<skill>/evals/` | 各 skill の eval。`<case>/` (prompt.md・case.yaml・graders/) と `trigger-eval.json`。形式は `case-format.md` |
 
 | script | 役割 |
 |---|---|
@@ -81,5 +82,5 @@ scripts/skill-eval/run-improve.sh --skill kotlin-tuple --skill-creator <skills �
 
 - 対象は 1 回 3 skill (`max`)。eval がある skill には AI の作成ステップは走らない
 - Benchmark: case ごとに 2 run × 2 本立て (`--runs 2`)。各 run は case の `max_turns` / `timeout_seconds` で止まる
-- Improve: 発火テスト 20 件 × 3 回 × 最大 3 iteration。各問い合わせは 30 秒で打ち切られる
-- evaluate job は `timeout-minutes: 180`、eval 作成の claude は `--max-turns 120`
+- Improve: 発火テスト 20 件 × 2 回 × (元の description + 最大 3 案)。1 skill 30 分前後。各問い合わせは 30 秒で打ち切られる。並列にすると worker 同士の一時 command が混ざって判定が壊れるので、直列 (1 worker) で回す
+- evaluate job は `timeout-minutes: 300`、eval 作成の claude は `--max-turns 120`

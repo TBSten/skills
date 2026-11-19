@@ -26,7 +26,7 @@ skills/<skill-name>/
 ```
 
 `evals/` は無くてよい。無い skill は定期実行の skill-eval (`.github/skill-eval/README.md`) が最初に AI で作り、PR でレビューする。
-手で作る・直す時の形式は skill-creator の `references/schemas.md`「Test cases」で、`scripts/skill-eval/check-evals.sh --skill <name>` を通す。
+手で作る・直す時の形式は `.github/skill-eval/case-format.md` で、`scripts/skill-eval/check-evals.sh --skill <name>` を通す。
 
 詳細ドキュメントは `skills/` ディレクトリ直下に配置:
 - `skills/<skill-name>.md` — スキル詳細ドキュメント (英語)
