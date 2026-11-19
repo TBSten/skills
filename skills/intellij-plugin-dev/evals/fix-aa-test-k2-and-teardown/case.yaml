@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: fix-aa-test-k2-and-teardown
+expected_outcome: |
+  build.gradle.kts の test タスクに systemProperty("idea.kotlin.plugin.use.k2", "true") を足し、plugin.xml に
+  <supportsKotlinPluginMode supportsK2="true"/> (org.jetbrains.kotlin の extensions) を足して AA を K2 で動かす。テストは EDT なので
+  runReadActionBlocking { allowAnalysisOnEdt { analyze(...) } } (+ @OptIn(KaAllowAnalysisOnEdt::class)) で囲む。tearDown は
+  LoggedErrorProcessor で包み、既知の無害な logged error (Vue / Lsp 等) だけを握り潰して他は失敗のままにする。
+context:
+  scaffold_script: place-files.sh

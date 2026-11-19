@@ -1,0 +1,10 @@
+schema_version: "1.1"
+name: expenses-data-layer
+expected_outcome: |
+  skill のデータアクセス層パターンに従う: ページコンポーネント (src/pages/expenses.tsx など) は supabase を直接 import せず、
+  apps/web/src/data/expenses/ に hook を作る。一覧は useQuery で queryKey を ["expenses", user?.id] のような
+  ["<domain>", ...] 階層キーにし enabled: !!user。追加・削除は src/lib/use-mutate.ts の useMutate を使い、
+  mutationFn 内で handleSupabaseResult を通し、invalidateKeys: [["expenses"]] と successMessage を指定する。
+  router.tsx では認証ガード付きの authedLayoutRoute の子として /expenses ルートを追加し routeTree に登録する。
+context:
+  scaffold_script: place-files.sh

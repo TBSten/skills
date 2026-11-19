@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: loop-triage-inbox
+expected_outcome: |
+  loop 側だけを読み、feedback/ 直下の yymmdd-xx.md を未対応として数える (archived/ と HISTORY.md は数えない)。
+  中身のある 3 件を 実装型 (261118-01 文言変更) / 調査型 (261118-02 件数が古い) / 設計型 (261118-03 通知設定の統合) に分類し、
+  設計型は実装させず影響範囲・選択肢・推奨を書かせてユーザの判断を待つ方針、調査型はまず古い開発プロセスが動いていないかを疑う方針にする。
+  0 バイトの 261119-01 は処理せず、保存されていない可能性をユーザに聞く。記録の移動・コード変更はしない。
+context:
+  scaffold_script: place-files.sh

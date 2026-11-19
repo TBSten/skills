@@ -1,0 +1,11 @@
+schema_version: "1.1"
+name: generate-max8-kmp-shared
+expected_outcome: |
+  skill 同梱の scripts/generate.py を --package com.acme.app.util.tuple --max 8
+  --out shared/src/commonMain/kotlin/com/acme/app/util/tuple で実行し (全部入りなので --parts は省略か全指定)、
+  Tuple コードを手書きしない。生成物は Tuple8 までで Tuple9 以降は無い。
+  Serializer と awaitAll が含まれるので、shared/build.gradle.kts に kotlinx-serialization plugin と
+  kotlinx-serialization-json 依存を追加する (coroutines は既にある)。追加した依存をユーザーに報告し、
+  完了メッセージで既存 Tuple パッケージ (なし) とビルド確認をスキップしたことを伝える。
+context:
+  scaffold_script: place-files.sh

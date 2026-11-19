@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: scaffold-scoped-no-gradle-plugin
+expected_outcome: |
+  scripts/scaffold.sh を --skip-gradle-plugin --skip-integration-test --plugin-id io.github.hoge.nullguard.compiler 付きで実行し、
+  compiler-plugin (kctfork + Kotest の unit test 付き) / runtime / buildSrc だけが生成される。settings.gradle.kts に gradle-plugin が含まれず、
+  CommandLineProcessor / Registrar の pluginId と gradle.properties の COMPILER_PLUGIN_ID が io.github.hoge.nullguard.compiler になっている。

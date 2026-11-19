@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: score-done-unit-test
+expected_outcome: |
+  実施済みの 1 つの検証方法 (ViewModel の unit test) について 9 軸の値を事実から選び
+  (scope=unit, env=mock, execution=ci, evidence=text か structured 程度, oracle=assertion, observer=machine,
+  coverage=multiple 前後, repeatability=full)、同梱の calc-check-method-level.py を実行してスコアと Level を得る。
+  自分でスコアを計算せず、報告は「検証レベル: <Level> (<score> / <max> 点満点) — <方法名>」と弱点・次の一手の短い形で、
+  script の出力を全部貼らない。

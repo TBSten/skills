@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: bootup-jvm-no-docs
+expected_outcome: |
+  skill 同梱の scripts/scaffold.sh を、まず --dry-run で、続いて同じ引数 (--dest ./money-kt --name money-kt --package io.github.hoge.money --targets jvm --skip-docs-site --owner hoge --repo money-kt) で実行する
+  (手書きしない)。build-logic に money-kt.jvm / lint / publish / test の convention plugin が生成され、Targets.kt や docs/ は生成されない。
+  money-kt-core に explicitApi 用の ExperimentalMoneyKtApi / InternalMoneyKtApi opt-in マーカーがある。次の一手として api/ (BCV dump) のコミット・
+  サンプル API の置き換えと apiDump・Maven Central 公開時は kotlin-maven-central-publish の setup-secrets.sh を案内する。

@@ -1,0 +1,9 @@
+# SSOT for the Kotlin versions this compiler plugin supports.
+# CI workflows and scripts/compiler-plugin-test.sh read this file.
+2.1.20
+2.1.21
+2.2.0
+2.2.20
+2.3.0
+2.3.20
+2.4.0-Beta2

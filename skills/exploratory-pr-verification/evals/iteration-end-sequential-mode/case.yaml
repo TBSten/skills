@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: iteration-end-sequential-mode
+expected_outcome: |
+  §17 の終了チェックリストを機械的に確認する: 締め切り未到達 / ticket 14 件 < 20 件 / 明示の終了指示なし /
+  新規 P0/P1 ゼロは 2 iteration 連続で 5 回に届かない → どれも満たさないので、ユーザに次を聞かずにすぐ次の iteration (iter 4) に進む。
+  残りが 1 時間 15 分で 1.5 時間を切っているので、並列 5 cat をやめて 1〜2 cat の sequential mode にする。
+  メンテナの反応が遅い (3〜9h 帯) ので、ticket の整理・FINAL-SUMMARY 更新で時間を埋める判断も添えられるとよい。

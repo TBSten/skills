@@ -1,0 +1,10 @@
+schema_version: "1.1"
+name: draw-before-after-html
+expected_outcome: |
+  skill の assets/template.html (ライト / ダークのトークン付き) を .local/visuals/<topic>/ などにコピーし、
+  例の section を消して <section id="01-..."> を書く。h2 は 1 文のメッセージ。
+  Before / After の .compare (ラベル before / after) で、logs/ の実ログ (main は 503 で即失敗、ブランチはリトライ 2 回で成功) を元に描く。
+  body.md は「何をしたか」の節の頭に 1 枚目 (ライト版) を置き、ダーク版を <details><summary>ダークモード</summary> に入れ、
+  撮り方 (実ログから描いた / headless 描画) と元にしたコマンド・コミットを書く。
+context:
+  scaffold_script: place-files.sh

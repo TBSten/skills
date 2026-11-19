@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: redirect-ongoing-convention
+expected_outcome: |
+  ViewModel の規約は「コードを書くたびに常時適用される規約」で、1 回で完結するセットアップ・scaffold ではないため
+  prompt には向かないと指摘し、rule (contribute-rule) として登録すること (または skill) を提案してユーザーに確認する。
+  確認を得る前に skills-repo/prompts/ 以下に PROMPT.md を作らない。
+context:
+  scaffold_script: place-files.sh

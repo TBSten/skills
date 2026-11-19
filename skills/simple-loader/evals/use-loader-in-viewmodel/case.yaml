@@ -1,0 +1,12 @@
+schema_version: "1.1"
+name: use-loader-in-viewmodel
+expected_outcome: |
+  skill の利用パターンに従って実装する:
+  typealias ArticleListLoader = SimpleLoader<List<Article>> を定義し、実装は
+  ArticleListLoaderImpl(...) : ArticleListLoader by simpleLoaderFactory.create(coroutineScope = ..., load = { repository.fetchLatest() })
+  のように SimpleLoaderFactory への委譲で作る。ArticleListViewModel は loader を ViewModel(articleListLoader) に
+  AutoCloseable として渡し、state を by articleListLoader::state 等で公開、init で initialLoad()、更新操作で refresh() を呼ぶ。
+  ArticleListScreen は state.AnimatedView(onInitialErrorRefresh = ...) { ... } を使い、ViewWithDataScope の
+  isRefreshLoading でリストを半透明にする。テストは FakeSimpleLoader に Loaded 状態を渡して ViewModel を検証する。
+context:
+  scaffold_script: place-files.sh

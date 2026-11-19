@@ -1,0 +1,11 @@
+schema_version: "1.1"
+name: generate-no-partial-ui-core
+expected_outcome: |
+  skill 同梱の scripts/install.sh を --package com.acme.shop.ui.core.loader
+  --dest ui/core/src/commonMain/kotlin/com/acme/shop/ui/core/loader --parts で partial を除いて (core,logger,handler,ext,ui) 実行し、
+  SimpleLoader を手書きしない。生成物は <dest>/IllegalStateTransitionHandler.kt と <dest>/simple/ 以下
+  (SimpleLoader.kt, SimpleLoaderFactory.kt, SimpleLoaderLogger.kt, SimpleLoaderExt.kt, ui/View.kt, ui/AnimatedView.kt ...)
+  で、SimpleLoaderWithPartialData.kt は無い。ui/core/build.gradle.kts に不足している kotlinx-coroutines-core を
+  (catalog の libs.kotlinx.coroutines.core で) 追加し、State の @Serializable 用に kotlinx-serialization も追加または提案する。
+context:
+  scaffold_script: place-files.sh

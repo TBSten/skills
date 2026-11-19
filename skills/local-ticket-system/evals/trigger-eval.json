@@ -1,0 +1,20 @@
+[
+  {"query": "このリポジトリにローカルのチケット管理を入れたい。Markdown で task とか bug を管理して、git には入れない形で", "should_trigger": true},
+  {"query": "ログイン画面でパスワードに絵文字入れると 500 になるやつ、バグチケット切っておいて (.local/ticket で管理してる)", "should_trigger": true},
+  {"query": "マルチテナント対応をやりたいけど、DB・API・管理画面に跨るし要件もまだふわっとしてる。chapter として起票して", "should_trigger": true},
+  {"query": "task-009 は commit まで終わったので done に移して、bug-004 は今のフェーズではやらないので理由付きで deferred にしておいて", "should_trigger": true},
+  {"query": "set up a markdown-based local ticket system in this project so I can track tasks and bugs with checklists", "should_trigger": true},
+  {"query": "注文一覧の CSV ボタンに aria-label を付ける作業、チケット作って。番号は既存の続きで", "should_trigger": true},
+  {"query": "epic を作成したい: 決済まわりのリニューアル。やらないことと検討事項も整理しておきたい", "should_trigger": true},
+  {"query": "chapter-onboarding の子チケットが全部 closed になったので、chapter も片付けて", "should_trigger": true},
+  {"query": "タスク管理を Markdown でやりたい。Notion とか Jira は大げさなので、プロジェクト内のファイルでチェックリスト形式で", "should_trigger": true},
+  {"query": "今抱えてる PR とブランチと未決事項を、依存グラフとカンバンの HTML 1 枚にまとめて見せて", "should_trigger": false},
+  {"query": "このバグを GitHub の issue として起票して。ラベルは bug、assignee は自分で", "should_trigger": false},
+  {"query": "TODO コメントがコード中に散らばってるので、grep で全部拾って一覧にして", "should_trigger": false},
+  {"query": "Linear のチケット ENG-421 の内容を読んで、その実装を進めて", "should_trigger": false},
+  {"query": "このプロジェクトの .gitignore に .local/ と .idea/ を追加しておいて", "should_trigger": false},
+  {"query": "ログインで 500 になるバグ、原因を調べて直して。サーバーの auth.ts あたりが怪しい", "should_trigger": false},
+  {"query": "スプリントのバーンダウンチャートを、GitHub Projects のデータから作って", "should_trigger": false},
+  {"query": "local-ticket-system skill の SKILL.md をレビューして、チケット種別の判断基準が分かりにくくないか見てほしい", "should_trigger": false},
+  {"query": "この PR の動作確認を探索的にやって、見つかった問題を issue ファイルに書き出して", "should_trigger": false}
+]

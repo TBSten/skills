@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: scaffold-auto-mapper-full
+expected_outcome: |
+  skill 同梱の scripts/scaffold.sh を --name mapper-gen --package io.github.hoge.mappergen --annotation AutoMapper --owner hoge --repo mapper-gen で実行し
+  (手書きしない)、mapper-gen-runtime (KMP・アノテーションのみ) / mapper-gen-ksp (feature / core / options / util の層構成) / test の 3 モジュール、
+  META-INF/services の SymbolProcessorProvider 登録、.claude/rules/ の ksp-*.md 5 ファイルが生成されたことをレビューし、ビルド確認は環境不足でスキップした旨を伝える。

@@ -1,0 +1,12 @@
+schema_version: "1.1"
+name: setup-steps-to-prompt
+expected_outcome: |
+  skills-repo/prompts/detekt-setup/PROMPT.md が frontmatter なし・命令形・self-contained で作られる
+  (リポジトリ内ファイルへの相対パス参照は無い)。status / group は英語詳細ドキュメント prompts/detekt-setup.md の
+  frontmatter (status: Experimental、group: Kotlin / Android アプリ開発) にあり、日本語版 prompts/detekt-setup.ja.md もある。
+  README.md / README.ja.md の Available Prompts テーブルに、raw URL
+  https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/prompts/detekt-setup/PROMPT.md を参照する実行プロンプト付きの行が追加される。
+  社内ランナー名や Slack チャンネルは含まれない。./pr-draft.md のタイトルは "Add prompt: detekt-setup"、
+  本文は ## Summary / ## 実行イメージ / ## 備考 の 3 セクションだけ。
+context:
+  scaffold_script: place-files.sh

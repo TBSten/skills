@@ -1,0 +1,10 @@
+schema_version: "1.1"
+name: review-redact-plugin-multiversion
+expected_outcome: |
+  skill のレビューモードの観点 (review-checklist の K2 / コード品質 / 複数 Kotlin バージョン対応) で、
+  少なくとも次を指摘する: (1) ShadowJar に mergeServiceFiles() が無く compat module の META-INF/services が衝突する、
+  (2) ServiceLoader の選択が「minVersion <= current の最初」になっており「最大の minVersion」を選ぶべき、
+  (3) ユーザーの誤用エラーを IR フェーズの messageCollector で出しており FIR checker (FirAdditionalCheckersExtension) に移すべき、
+  (4) CI matrix に fail-fast: false が無く、バージョン一覧が SSOT (scripts/supported-kotlin-versions.txt) 駆動でない。
+context:
+  scaffold_script: place-files.sh

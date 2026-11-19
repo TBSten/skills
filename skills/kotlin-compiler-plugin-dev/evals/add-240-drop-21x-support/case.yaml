@@ -1,0 +1,10 @@
+schema_version: "1.1"
+name: add-240-drop-21x-support
+expected_outcome: |
+  SSOT の scripts/supported-kotlin-versions.txt に 2.4.0 を追加し 2.1.20 / 2.1.21 を削除する。
+  2.4.0 は既存 compat module で GREEN なので新しい compat module は作らない。2.1.x を外しても compat-k210 は
+  (他 module の委譲元でもあり、skill の方針どおり) 削除しない。README.md / README.ja.md の両方の表を更新し、
+  gradle.properties の Gradle plugin 側 Kotlin 版ガード (SUPPORTED_KOTLIN_MIN / MAX_TESTED_EXCLUSIVE) も更新する。
+  サポート版の削除を含むので次のリリースは MAJOR (2.0.0) と案内する。
+context:
+  scaffold_script: place-files.sh

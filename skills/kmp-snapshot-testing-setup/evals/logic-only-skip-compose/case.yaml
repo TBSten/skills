@@ -1,0 +1,11 @@
+schema_version: "1.1"
+name: logic-only-skip-compose
+expected_outcome: |
+  Compose を使わないので scripts/install.sh を --skip-compose 付きで、
+  --module-path testing/snapshot --package io.github.shop.testing と一緒に実行する (buildSrc は script が自動検出する)。
+  Compose 用の ui/core/testing モジュールは作られず、settings.gradle.kts には :testing:snapshot だけが include される。
+  フォローアップとして buildSrc/build.gradle.kts に kotlin serialization plugin の依存
+  (org.jetbrains.kotlin:kotlin-serialization:2.2.20、既存の直書き流儀に合わせる) を追加し、
+  pricing/build.gradle.kts に id("convention-kmp-snapshot-testing") を適用する。
+context:
+  scaffold_script: place-files.sh

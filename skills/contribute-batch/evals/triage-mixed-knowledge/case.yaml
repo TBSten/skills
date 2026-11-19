@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: triage-mixed-knowledge
+expected_outcome: |
+  4 つの知見を仕分けた表を提示し、承認を求めて止まる。表は # / 知見 / 種別 / 名前 (kebab-case) / status / group / 判断根拠 の列を持つ。
+  A (モジュール作成時に 1 回の scaffold) → prompt、B (常時適用される命名規約) → rule、
+  C (UI 変更のたびに繰り返すワークフロー) → skill、D (社内 VPN・社内ドメイン・Vault 名などプロジェクト固有) → 見送り (理由付き)。
+  status は既定の Experimental。batch slug (作業 branch feat/contribute-batch-<slug>) を提案する。
+  承認前にファイル作成・clone・setup-workspace.sh の実行はしない。

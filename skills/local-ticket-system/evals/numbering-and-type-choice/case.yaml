@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: numbering-and-type-choice
+expected_outcome: |
+  1 は 1 回の作業で終わる task。連番は .local/ticket/ 直下だけでなく done/ closed/ などを含めた task の最大番号
+  (closed/task-011) + 1 なので .local/ticket/task-012-<slug>.md になる (new-ticket.sh が算出)。
+  2 は複数レイヤーにまたがり要件も曖昧なので chapter とし、連番なしの .local/ticket/chapter-<slug>.md を作る。
+  どちらもタイトルに絵文字 prefix (例: ♿ / 🏗️) が付き、TODO: プレースホルダが残らない。chapter はスコープ・検討事項などが埋まる。
+context:
+  scaffold_script: place-files.sh

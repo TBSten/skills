@@ -1,0 +1,10 @@
+schema_version: "1.1"
+name: scaffold-kakeibo-skip-install
+expected_outcome: |
+  skill 同梱の scripts/scaffold.sh を --name kakeibo-web --app-name "かんたん家計簿" --primary "#2F6F5E" --skip-install で
+  実行し、ファイルを手書きしない。生成物は kakeibo-web/ 直下に package.json / pnpm-workspace.yaml、
+  アプリ本体は kakeibo-web/apps/web/ (src/index.css の --primary と --ring が #2F6F5E、header.tsx の APP_NAME が
+  かんたん家計簿、apps/web/.env.local)。最後に script の ACTION_REQUIRED どおり、後で
+  pnpm install と apps/web での pnpm dlx shadcn@latest add ... を実行すること、
+  .env.local の VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY を実値にすることを伝える。
+  node / pnpm が無く script が止まった場合は、その ERROR / fix をそのまま伝え、手で雛形を書き起こさない。

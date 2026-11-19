@@ -1,0 +1,22 @@
+[
+  {"query": "毎晩 GitHub Actions の schedule で claude-code-action を走らせて、うちの KMP ライブラリの main を 60 分だけ探索的に検証させたい。そのときに読ませる手順で回して", "should_trigger": true},
+  {"query": "nightly 探索を回して。main の最新コミットを cat1 から cat5 まで順番に見て、見つけたのは issue Markdown に書き出して SUMMARY.md まで", "should_trigger": true},
+  {"query": "夜間探索的検証の時間。今日は 60 分 budget で compose-calendar の main を見て、Kotlin 2.3 や AGP の新しいリリースに追従できてるかもチェックして", "should_trigger": true},
+  {"query": "exploratory-nightly で main の quality scan をやって。PR とか issue には何も書き込まないで、.local/tmp に結果だけ残して", "should_trigger": true},
+  {"query": "Run the nightly exploration on our Ktor server repo's main branch: static checks, docs consistency, run the tests, check upstream Kotlin/Gradle drift, all within an hour, findings as markdown files.", "should_trigger": true},
+  {"query": "夜間の CI ジョブで main を探索させてるけど、今回は時間ないので 60 分で切って、50 分で探索をやめて SUMMARY をまとめる流れでやって", "should_trigger": true},
+  {"query": "特定の PR じゃなくて、今の main 全体を夜のうちにざっと探索して問題を洗い出したい。並列は要らない、1 エージェントで順番に", "should_trigger": true},
+  {"query": "60 分 budget で main を探索して。対象は Android アプリの app モジュール。Gradle の test タスクも回して、落ちたら P1 で issue に", "should_trigger": true},
+  {"query": "夜間 main quality scan を cron から呼ぶので、その中身として Kotlin / Compose / Gradle / AGP の最新版との差分と、KDoc の不整合を見る探索をやって", "should_trigger": true},
+  {"query": "PR #186 を 5 並列の subagent で探索検証して。見つけた P1 は PR にコメントで返して", "should_trigger": false},
+  {"query": "GitHub Actions に毎晩 2 時に ./gradlew test を回すワークフローを追加して。失敗したら Slack に通知", "should_trigger": false},
+  {"query": "nightly ビルドの配布設定を作りたい。main に push されたら SNAPSHOT 版を Maven Central の snapshot リポジトリに publish する workflow を書いて", "should_trigger": false},
+  {"query": "昨日の nightly で CI が落ちた。ログを見て原因を調べて直して", "should_trigger": false},
+  {"query": "うちの 3 つの PR、CI と review コメントを 10 分ごとに見て順番に green にしていって", "should_trigger": false},
+  {"query": "libs.versions.toml の Kotlin と Compose Multiplatform と AGP を最新に上げて、ビルドが通るように直して PR にして", "should_trigger": false},
+  {"query": "この Kotlin ライブラリのコードを読んで、silent failure になってる catch を全部リストアップして直して", "should_trigger": false},
+  {"query": "local-ticket-system でバグチケットを 5 件切って、main の既知の問題を整理して", "should_trigger": false},
+  {"query": "TBSten の Kotlin ライブラリの最新リリースとの差分を調べて、関連する skill を更新する PR を作って (library-watch の手動実行)", "should_trigger": false},
+  {"query": "この unit test での確認ってどれくらい強い？検証方法レベルを出して", "should_trigger": false},
+  {"query": "今抱えてる PR と issue を全部集めて、何が止まってるか分かるステータスボードの HTML を作って", "should_trigger": false}
+]

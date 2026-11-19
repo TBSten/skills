@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: explain-missed-bug
+expected_outcome: |
+  見逃した検証方法 (Robolectric の unit test、isDisplayed の assertion 1 ケース、CI) の 9 軸を選んで
+  calc-check-method-level.py でスコアを出し、見逃しの原因になった軸を指摘する。
+  主な原因は env (mock / Robolectric で実端末のナビゲーションバー設定やインセットを再現していない)、
+  evidence (structured 程度で実際の描画を見ていない)、coverage=single (3 ボタンナビの設定を含まない)。

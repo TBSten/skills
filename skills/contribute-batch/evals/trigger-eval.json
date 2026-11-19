@@ -1,0 +1,19 @@
+[
+  {"query": "このプロジェクトの CLAUDE.md に溜まった知見 (モジュール作成手順・命名規約・スクショ更新フロー・VPN 接続) を skill / rule / prompt に仕分けて、まとめて TBSten/skills に PR 出したい", "should_trigger": true},
+  {"query": "知見をまとめて contribute したい。.claude/rules/ と .claude/skills/ にあるもの全部見て、どれを何にするか仕分けてから一括で登録して", "should_trigger": true},
+  {"query": "batch contribute お願い。今回のプロジェクトで得たノウハウを並列でスキル化・ルール化して、1 本の PR にまとめて", "should_trigger": true},
+  {"query": "複数の知見をまとめて PR にしたい: Gradle の convention plugin の作り方、テストの命名規約、初回 CI セットアップ手順。種別の判断から任せる", "should_trigger": true},
+  {"query": "Triage everything useful in this repo's CLAUDE.md into skills, rules and prompts and contribute them to TBSten/skills as a single PR", "should_trigger": true},
+  {"query": "一括で contribute して。docs/knowledge/ 以下の 4 ファイルそれぞれ、skill にするか rule にするか見送るか判断して、必要なものだけ作って PR", "should_trigger": true},
+  {"query": "まとめてスキル化・ルール化したい知見が 6 個ある。subagent で並列に作って README もまとめて更新し、TBSten/skills への PR を 1 つにして", "should_trigger": true},
+  {"query": "知見を仕分けして登録したい。CLAUDE.md の「アーキテクチャ」「リリース」「環境構築」セクションが対象。仕分け表を先に見せて", "should_trigger": true},
+  {"query": "CLAUDE.md の「リリース手順」1 つだけを TBSten/skills に skill として登録する PR を作って", "should_trigger": false},
+  {"query": "Compose の命名規約を rule として TBSten/skills に登録して。他の知見は対象外", "should_trigger": false},
+  {"query": "detekt 導入手順だけをワンショットプロンプトとして TBSten/skills に出したい", "should_trigger": false},
+  {"query": "TBSten/skills に今出てる自分の PR 4 本、CI とレビューコメントをまとめて見て、全部グリーンになるまで直して", "should_trigger": false},
+  {"query": "今抱えている PR・ブランチ・未決事項を 1 枚にまとめて、何が止まってるか見たい", "should_trigger": false},
+  {"query": "このプロジェクトの CLAUDE.md が長くなりすぎたので、セクションを .claude/rules/ の複数ファイルに分割して整理して (外部には出さない)", "should_trigger": false},
+  {"query": "TBSten/skills の README に載っている skill を全部、group ごとに数えて一覧にして", "should_trigger": false},
+  {"query": "複数の skill の eval を一括で作って。skills/kotlin-tuple と skills/simple-loader にテストケースと trigger-eval.json を足して", "should_trigger": false},
+  {"query": "TBSten/skills の skills/ 以下を一括で見直して、description が 1024 文字を超えているものを洗い出して", "should_trigger": false}
+]

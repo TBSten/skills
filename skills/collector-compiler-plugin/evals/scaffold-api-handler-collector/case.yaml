@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: scaffold-api-handler-collector
+expected_outcome: |
+  annotations (KMP commonMain) / compiler-plugin (JVM) / gradle-plugin の 3 モジュールが生成され、
+  compiler-plugin は FIR の FirDeclarationGenerationExtension で io.github.hoge.collector.hints パッケージに
+  collect_<tag>(collected: <対象クラス>) 形式の hint 関数スタブを生成し、IR で body を付けて
+  registerFunctionAsMetadataVisible() で downstream に公開、消費側は referenceFunctions(CallableId) で
+  hint 関数を探してパラメータ型から収集対象を復元し @CollectHandlers 関数の body (listOf(A::class, ...)) を生成する。
+  CompilerPluginRegistrar の META-INF/services ファイルと Gradle plugin の properties も置かれる。

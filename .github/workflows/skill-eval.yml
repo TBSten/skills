@@ -1,0 +1,225 @@
+# skill の Benchmark と Improve を約 2 週に 1 回回し、結果 (eval の新規作成・description の改善・推移) を PR にする。
+# 仕組み・必要な設定・手動実行の方法: .github/skill-eval/README.md
+name: skill-eval
+
+on:
+  schedule:
+    # 毎週木曜 00:23 UTC (09:23 JST)。ISO 週番号が偶数の週は select job の week-gate で止める (= 約 2 週に 1 回)。
+    # library-watch (偶数週の月曜) と週をずらし、AI の使用量が重ならないようにしている
+    - cron: "23 0 * * 4"
+  workflow_dispatch:
+    inputs:
+      only:
+        description: "対象の skill (カンマ区切り。例: pr-fix-loop,kotlin-tuple)。空なら評価日が古い順に max 件"
+        type: string
+        default: ""
+      max:
+        description: "1 回で評価する skill 数 (only が空の時)"
+        type: string
+        default: "3"
+      skip_improve:
+        description: "Improve (description の最適化) を飛ばし、Benchmark だけ回す"
+        type: boolean
+        default: false
+
+permissions: {}
+
+concurrency:
+  group: skill-eval
+  cancel-in-progress: false
+
+env:
+  SE_BRANCH: skill-eval/auto
+  SE_BASE: main
+  SE_DIR: .local/skill-eval
+  # 評価に使うモデル。repository variable SKILL_EVAL_MODEL で上書きできる
+  SE_MODEL: ${{ vars.SKILL_EVAL_MODEL || 'claude-opus-5-5' }}
+  # Benchmark の LLM grader のモデル (CLI の既定 haiku は判定がぶれやすいので上げている)。SKILL_EVAL_JUDGE_MODEL で上書きできる
+  SE_JUDGE_MODEL: ${{ vars.SKILL_EVAL_JUDGE_MODEL || 'claude-sonnet-5-5' }}
+  # skill-creator (anthropics/skills) の固定 commit。上げる時は run_loop.py の引数・出力が変わっていないか確認する
+  SE_SKILL_CREATOR_REF: e4bb5d960d87126ff3b3a8af1a104b7db67560ba
+
+jobs:
+  select:
+    # AI を呼ばない。今回評価する skill を決める
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      run: ${{ steps.gate.outputs.run }}
+      selected: ${{ steps.select.outputs.selected }}
+      needs_evals: ${{ steps.select.outputs.needs_evals }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - id: gate
+        run: scripts/library-watch/week-gate.sh --parity odd "${{ github.event_name }}" >> "$GITHUB_OUTPUT"
+      - name: 作業ブランチを用意 (open な PR があれば続きから)
+        if: steps.gate.outputs.run == 'true'
+        run: scripts/library-watch/prepare-branch.sh --branch "$SE_BRANCH" --base "$SE_BASE"
+      - id: select
+        if: steps.gate.outputs.run == 'true'
+        env:
+          ONLY: ${{ inputs.only }}
+          MAX: ${{ inputs.max || '3' }}
+        run: |
+          args=(--max "$MAX")
+          [ -n "$ONLY" ] && args=(--only "$ONLY")
+          selected="$(scripts/skill-eval/select-skills.sh "${args[@]}" | jq -c '.')"
+          needs="$(jq -c '[.[] | select(.cases == 0 or (.has_trigger_set | not)) | {name, cases: (.cases == 0), trigger: (.has_trigger_set | not)}]' <<<"$selected")"
+          {
+            echo "selected=$selected"
+            echo "needs_evals=$needs"
+          } >> "$GITHUB_OUTPUT"
+          {
+            echo "### skill-eval select"
+            jq -r '.[] | "- \(.name) (last_run: \(if .last_run == "" then "なし" else .last_run end), cases: \(.cases), trigger: \(.has_trigger_set))"' <<<"$selected"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  evaluate:
+    # AI が eval を作り (無い skill だけ)、script が Benchmark と Improve を回す。結果は patch にして渡す。push 権限は持たない
+    needs: select
+    if: needs.select.outputs.run == 'true' && needs.select.outputs.selected != '[]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    permissions:
+      contents: read
+      pull-requests: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SELECTED: ${{ needs.select.outputs.selected }}
+      NEEDS_EVALS: ${{ needs.select.outputs.needs_evals }}
+      SE_SKILL_CREATOR_DIR: ${{ github.workspace }}/.local/skill-creator/skills/skill-creator
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: 作業ブランチを用意 (select と同じ出発点)
+        run: scripts/library-watch/prepare-branch.sh --branch "$SE_BRANCH" --base "$SE_BASE"
+      - name: skill-creator を取得
+        uses: actions/checkout@v6
+        with:
+          repository: anthropics/skills
+          ref: ${{ env.SE_SKILL_CREATOR_REF }}
+          path: .local/skill-creator
+          sparse-checkout: skills/skill-creator
+          persist-credentials: false
+      - name: Claude Code CLI と sandbox を入れる (Benchmark / Improve 用)
+        run: |
+          # Bash を使う case は sandbox (bubblewrap + socat) が無いと起動を拒否される。
+          # ubuntu 24.04 は AppArmor が非特権 user namespace を止めているので、bubblewrap が動くよう緩める
+          sudo apt-get update -qq && sudo apt-get install -y -qq bubblewrap socat
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0 || true
+          npm install -g @anthropic-ai/claude-code@latest
+          claude --version
+          mkdir -p "$SE_DIR/results"
+          echo "$SELECTED" > "$SE_DIR/selected.json"
+      - name: eval を作る (AI)
+        id: claude
+        if: needs.select.outputs.needs_evals != '[]'
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ github.token }}
+          prompt: |
+            .github/skill-eval/prompt.md を読み、その手順に従って作業する。
+            - 対象 (cases / trigger が true のものが足りない): ${{ needs.select.outputs.needs_evals }}
+            - skill-creator: ${{ env.SE_SKILL_CREATOR_DIR }}
+          claude_args: |
+            --max-turns 120
+            --allowedTools "Read,Write,Edit,Glob,Grep,Bash(scripts/skill-eval/check-evals.sh:*),Bash(ls:*),Bash(find:*),Bash(mkdir:*),Bash(jq:*),Bash(cat:*)"
+      - name: AI の権限拒否を表示 (allowedTools 調整用)
+        if: always() && steps.claude.outputs.execution_file != ''
+        env:
+          EXECUTION_FILE: ${{ steps.claude.outputs.execution_file }}
+        run: |
+          jq -r '.[] | select(.type == "result") | .permission_denials[]?
+            | "\(.tool_name)\t\(.tool_input | tostring | .[0:200])"' "$EXECUTION_FILE" || true
+      - name: Benchmark と Improve を回す
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          SKIP_IMPROVE: ${{ inputs.skip_improve || false }}
+        run: |
+          for name in $(jq -r '.[].name' "$SE_DIR/selected.json"); do
+            out="$SE_DIR/results/$name"
+            mkdir -p "$out"
+            error=""
+            echo "::group::$name"
+            if ! scripts/skill-eval/check-evals.sh --skill "$name" 2> "$out/check-evals.log"; then
+              cat "$out/check-evals.log"
+              error="eval の形式が不正 (check-evals.sh)"
+            else
+              scripts/skill-eval/run-benchmark.sh --skill "$name" --out "$out" --model "$SE_MODEL" --judge-model "$SE_JUDGE_MODEL" ||
+                error="Benchmark が失敗 (benchmark.log)"
+              if [ "$SKIP_IMPROVE" != true ]; then
+                scripts/skill-eval/run-improve.sh --skill "$name" --skill-creator "$SE_SKILL_CREATOR_DIR" \
+                  --out "$out" --model "$SE_MODEL" --apply ||
+                  error="${error:+$error / }Improve が失敗 (improve.log)"
+              fi
+            fi
+            args=(--skill "$name" --out "$out" --model "$SE_MODEL" --skill-creator-ref "$SE_SKILL_CREATOR_REF")
+            [ -n "$error" ] && args+=(--error "$error")
+            scripts/skill-eval/record-history.sh "${args[@]}"
+            echo "::endgroup::"
+          done
+      - name: PR 本文を用意
+        if: always()
+        run: |
+          scripts/skill-eval/build-pr-body.sh --results "$SE_DIR/results" --selected "$SE_DIR/selected.json" \
+            --model "$SE_MODEL" --skill-creator-ref "${SE_SKILL_CREATOR_REF:0:7}" --notes "$SE_DIR/ai-notes.md" \
+            > "$RUNNER_TEMP/pr-body.md"
+          cat "$RUNNER_TEMP/pr-body.md" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: skill-eval-reports
+          path: ${{ env.SE_DIR }}/
+          include-hidden-files: true
+          retention-days: 30
+      - name: 変更を patch にする
+        run: |
+          # .local と skills/*/evals/results は .gitignore 済み。exclude pathspec に ignored なパスを書くと
+          # git add が "paths are ignored" で exit 1 になるので書かない
+          git add -A -- . ':(exclude).github/workflows' ':(exclude)scripts' ':(exclude).github/skill-eval/*.md'
+          git diff --cached --binary > "$RUNNER_TEMP/changes.patch"
+          git diff --cached --stat
+      - uses: actions/upload-artifact@v7
+        with:
+          name: skill-eval-result
+          path: |
+            ${{ runner.temp }}/changes.patch
+            ${{ runner.temp }}/pr-body.md
+          retention-days: 14
+
+  pr:
+    # patch を固定ブランチに commit して force-push し、PR を作る / 更新する (1 回の実行で PR 1 本)
+    needs: [select, evaluate]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: 作業ブランチを用意 (evaluate と同じ出発点)
+        run: scripts/library-watch/prepare-branch.sh --branch "$SE_BRANCH" --base "$SE_BASE"
+      - uses: actions/download-artifact@v8
+        with:
+          name: skill-eval-result
+          path: ${{ runner.temp }}/result
+      - name: commit・push・PR
+        run: |
+          today="$(date -u +%F)"
+          scripts/library-watch/publish-pr.sh --branch "$SE_BRANCH" --base "$SE_BASE" \
+            --patch "$RUNNER_TEMP/result/changes.patch" --body "$RUNNER_TEMP/result/pr-body.md" \
+            --title "skill-eval($today): skill の Benchmark と Improve の結果" \
+            --message "chore(skill-eval): $today の Benchmark / Improve の結果を反映"

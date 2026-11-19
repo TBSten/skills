@@ -29,13 +29,13 @@ pr                  prepare-branch → publish-pr: 固定ブランチ library-wa
 
 | script | 役割 |
 |---|---|
-| `week-gate.sh <event> [date]` | schedule の時だけ ISO 週番号で間引く |
+| `week-gate.sh [--parity even\|odd] <event> [date]` | schedule の時だけ ISO 週番号で間引く (library-watch は偶数週、skill-eval は奇数週) |
 | `prepare-branch.sh [--branch] [--base]` | 作業ブランチを用意 (open な PR があれば続きから) |
 | `detect-changes.sh [--only a,b] [--force]` | `git ls-remote` で HEAD を比べ、changed / unchanged / archived / missing / renamed を JSON で出す |
 | `collect-diff.sh --changes F --out D [--max-bytes N]` | `last_commit..HEAD` の log と `paths` に絞った diff を Markdown にまとめる (上限を超えたら切って明記) |
 | `discover-candidates.sh [--max N]` | 一覧に無い TBSten の Kotlin repo を候補として出す |
 | `update-state.sh record / set-commit / add / ignore / remove` | `libraries.yml` をコメントを保ったまま書き換える |
-| `publish-pr.sh --patch F --body F [--dry-run]` | patch を commit して force-push し、PR を作成 / 更新する |
+| `publish-pr.sh --patch F --body F [--title T] [--message M] [--dry-run]` | patch を commit して force-push し、PR を作成 / 更新する |
 
 各 script は `--help` で usage を表示する。依存: `bash` / `git` / `gh` / `jq` / `yq` (mikefarah/yq v4。GitHub の ubuntu runner には入っている)。
 

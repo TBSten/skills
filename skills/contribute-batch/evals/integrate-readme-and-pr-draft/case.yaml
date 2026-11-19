@@ -1,0 +1,12 @@
+schema_version: "1.1"
+name: integrate-readme-and-pr-draft
+expected_outcome: |
+  README.md / README.ja.md の Available Skills に compose-screenshot-update (テスト・検証 グループ、SSoT の status と一致する 🧪 Experimental)、
+  Available Rules に compose-naming (Kotlin / Android グループのまとまりの中、継続行のグループセルは空) の行が追加される。
+  pr-draft.md には成果物ごとに 1 commit (add compose-screenshot-update skill / add compose-naming rule) と
+  README 更新の 1 commit (docs(readme): add contribute-batch artifacts) の commit 計画、
+  PR タイトル "Add skill: compose-screenshot-update, rule: compose-naming"、
+  本文は ## Summary / ## 実行イメージ / ## 備考 の 3 セクションだけで、備考に見送った社内 VPN 手順とその理由が書かれる。
+  commit / push / PR 作成は行わない。
+context:
+  scaffold_script: place-files.sh

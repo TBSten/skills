@@ -1,0 +1,9 @@
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -10,5 +10,5 @@ jobs:
+       - uses: actions/cache@v4
+         with:
+           path: ~/.gradle/caches
+-          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle.kts') }}
++          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle.kts', 'gradle/libs.versions.toml') }}
+       - run: ./gradlew check

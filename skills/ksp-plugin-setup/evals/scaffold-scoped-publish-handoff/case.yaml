@@ -1,0 +1,5 @@
+schema_version: "1.1"
+name: scaffold-scoped-publish-handoff
+expected_outcome: |
+  scripts/scaffold.sh を --skip-test-module と --skip-ci 付き (--skip-rules は付けない) で実行し、env-config-runtime / env-config-ksp と .claude/rules/ が生成され、
+  test/ モジュールと .github/workflows が無い構成になる。Maven Central 公開の GPG 鍵・Secrets・Sonatype 登録は kotlin-maven-central-publish skill に委譲すると案内する。

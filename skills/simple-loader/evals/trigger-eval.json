@@ -1,0 +1,20 @@
+[
+  {"query": "KMP + Compose のアプリで、API から一覧を取る画面ごとに isLoading / error / data のフラグを ViewModel に生やしてて辛い。初回読み込みとリフレッシュを区別できる共通のローダーを作って", "should_trigger": true},
+  {"query": "SimpleLoader を作って。shared モジュールの com.example.core.loader パッケージに、デフォルトで全部生成して", "should_trigger": true},
+  {"query": "Loading / Error / Loaded の状態遷移を sealed interface で表現したステートマシンを用意したい。リフレッシュ失敗時は前のデータを表示したまま RefreshError にしたい", "should_trigger": true},
+  {"query": "generate a loader state machine for async data loading in our compose multiplatform project — Initial, InitialLoading, InitialError, Loaded, RefreshLoading, RefreshError — plus a fake for viewmodel tests", "should_trigger": true},
+  {"query": "Compose でローディング → 表示 → エラーの切り替えをフェードのアニメーション付きで共通化したい。状態管理のクラスとセットで UI ヘルパーも欲しい", "should_trigger": true},
+  {"query": "ファイルのアップロード画面で、読み込み中に 3/10 件みたいな途中経過を出しつつ最終的なデータを Loaded にしたい。PartialData でプログレス表示できるローダーを ui/core に生成して", "should_trigger": true},
+  {"query": "非同期データ取得のステートマシンを ui/common モジュールに入れたい。ローディング中にもう一度 load() が呼ばれたら不正遷移として検知できるようにして", "should_trigger": true},
+  {"query": "データ読み込みの状態管理を実装して。Android (Compose) の feature/profile で、プロフィールを初回取得・引っ張って更新する", "should_trigger": true},
+  {"query": "Paging 3 で無限スクロールの記事一覧を作りたい。LazyColumn で次のページを自動で読み込んで、末尾にローディングを出して", "should_trigger": false},
+  {"query": "React で useQuery の isLoading / isError を使って、スケルトン表示とエラー表示を切り替えるコンポーネントを書いて", "should_trigger": false},
+  {"query": "画像を Coil で読み込む時のプレースホルダーとエラー画像の設定方法を教えて。AsyncImage を使ってる", "should_trigger": false},
+  {"query": "ViewModel の StateFlow を collectAsStateWithLifecycle で受け取ってるけど、画面回転のたびに API が再実行される。stateIn の SharingStarted をどうすべき？", "should_trigger": false},
+  {"query": "type-safe な awaitAll が欲しい。3 つの Deferred を並列に await して、型を保ったまま結果を受け取りたい", "should_trigger": false},
+  {"query": "スプラッシュ画面で初期データを読み込み終わるまで表示を保持したい。Android 12 の SplashScreen API の setKeepOnScreenCondition の使い方を教えて", "should_trigger": false},
+  {"query": "Kotlin のコルーチンで、ユーザーが連打しても API リクエストが 1 本しか飛ばないようにしたい。Mutex か Job のキャンセル、どっちがいい？", "should_trigger": false},
+  {"query": "PullToRefreshBox (Material3) を LazyColumn に付けたら、リフレッシュインジケータが消えないまま残る。isRefreshing の扱いがおかしいみたいなので直して", "should_trigger": false},
+  {"query": "MVI アーキテクチャで、画面全体の UiState / Intent / SideEffect を扱う Store の基底クラスを設計したい。Orbit を使うかどうかも相談したい", "should_trigger": false},
+  {"query": "Kotlin で Result<T> を返すリポジトリ関数を、Either 風の sealed class (Success / Failure) に置き換えるリファクタリングをして", "should_trigger": false}
+]

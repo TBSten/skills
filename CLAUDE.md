@@ -66,6 +66,11 @@ TBSten の Claude Code skills・rules コレクションリポジトリ。
 - `.github/workflows/library-watch.yml` が約 2 週に 1 回 TBSten の Kotlin ライブラリの差分を調べ、関連 skill を更新する PR (ブランチ `library-watch/auto`) を作る
 - 調べるライブラリの SSoT は `.github/library-watch/libraries.yml`。書き換えは `scripts/library-watch/update-state.sh` を使う。仕組み・必要な設定は `.github/library-watch/README.md`
 
+## skill-eval (Improve / Benchmark の定期実行)
+
+- `.github/workflows/skill-eval.yml` が約 2 週に 1 回 (library-watch と逆の週) skill を 3 件ずつ選び、Benchmark (`claude plugin eval` で skill あり / なしを比較) と Improve (skill-creator の `run_loop.py` で description を最適化) を回して PR (ブランチ `skill-eval/auto`) を作る
+- eval は `skills/<name>/evals/` (`<case>/` と `trigger-eval.json`)。無い skill は初回に AI が作る。評価結果の推移の SSoT は `.github/skill-eval/history/<name>.jsonl`。仕組み・必要な設定は `.github/skill-eval/README.md`
+
 ## Status
 
 各 skill / rule / prompt には成熟度を表す status を持たせる。

@@ -1,0 +1,11 @@
+schema_version: "1.1"
+name: rule-with-reference-file
+expected_outcome: |
+  skills-repo/rules/git-commit-convention/RULE.md (frontmatter なし) と、参照ファイル
+  skills-repo/rules/git-commit-convention/docs/commit-message.md が作られる (RULE.md 以外のファイルはインストール時に
+  ユーザーのカレントディレクトリへ同じ相対パスで置かれるため)。RULE.md はテンプレートを docs/commit-message.md として参照する。
+  rules/git-commit-convention.md の frontmatter に status: Experimental と group: Git / GitHub があり、.ja.md もある。
+  README.md / README.ja.md の Available Rules テーブルでは ⚫️ Git / GitHub グループの既存行 (visual-explanation) の隣に
+  挿入され、グループセルは空 (<td></td>)、ステータスは 🧪 Experimental。
+context:
+  scaffold_script: place-files.sh

@@ -1,0 +1,11 @@
+schema_version: "1.1"
+name: setup-compose-build-logic
+expected_outcome: |
+  skill 同梱の scripts/install.sh を --project <プロジェクトルート> --package com.acme.todo.testing で実行し
+  (Compose を使うので --skip-compose は付けない)、出力 JSON の manual_followups を AI フォローアップとして解消する:
+  build-logic/build.gradle.kts の dependencies に kotlin serialization plugin (org.jetbrains.kotlin:kotlin-serialization、
+  catalog 流儀なら catalog に追加して参照) を足す。ComposeSnapshot.kt の AppTheme.Provider / WithTestGraph を
+  AcmeTheme に置き換え (DI が無いので WithTestGraph は外す)、ui/core/testing の build.gradle.kts の TODO を
+  :core:designsystem への依存で解消する。feature/todo/build.gradle.kts に id("convention-kmp-snapshot-testing") を適用する。
+context:
+  scaffold_script: place-files.sh

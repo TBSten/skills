@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: bootup-full-targets-ksp-handoff
+expected_outcome: |
+  ライブラリ本体は scripts/scaffold.sh を --targets full (+ --name schema-kt --package io.github.hoge.schema --owner hoge --repo schema-kt) で実行して生成し、
+  build-logic に Targets.kt / schema-kt.kmp.gradle.kts と docs サイトが含まれる。KSP processor 部分はこの skill の対象外として手書きせず、
+  ksp-plugin-setup skill に委譲する (土台を作った後に併用する) と案内する。

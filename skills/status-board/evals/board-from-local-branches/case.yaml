@@ -1,0 +1,12 @@
+schema_version: "1.1"
+name: board-from-local-branches
+expected_outcome: |
+  skill の collect.mjs で git ローカルから board.json の下書きを作り (gh が無いので git のみ)、
+  会話由来の情報だけを小さい overlay.json に書いて build-board.mjs でビルドする。
+  overlay ではブランチに col を振って feat/login → feat/login-ui の flow エッジを引き、
+  決済プロバイダの未決を kind:"human" (human:true, status:"blocked", ask に選択肢) の item として足し、
+  feat/payment への kind:"block" エッジを引く。block の起点には col / epic / anchorY を書かない。
+  出力は .local/status-board/<yyyy-MM-dd-HH-mm>.html 1 ファイルと隣の同名 .json snapshot で、絶対パスを報告する。
+  .gitignore に .local が無いことは提案に留め、勝手に追記しない。HTML を手書きしない。
+context:
+  scaffold_script: place-files.sh

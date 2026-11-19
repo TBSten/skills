@@ -1,0 +1,11 @@
+schema_version: "1.1"
+name: existing-tuple-partial-jvm
+expected_outcome: |
+  JVM 単一モジュールなので出力先は src/main/kotlin/jp/fuga/batch/tuple。scripts/generate.py を
+  --parts で awaitcatching と allnotnull に絞って実行する (serializer / tolist は含めない。tuple / factory は自動で付く)。
+  generate.py の preflight が既存の jp.fuga.batch.legacy の Tuple4 / Tuple5 を検出して exit 3 (ACTION_REQUIRED) を返すので、
+  勝手に --ignore-existing で再実行したり既存ファイルを消したりせず、
+  (a) 両方残して --ignore-existing で続行 / (b) 別パッケージ・出力先 / (c) 中止 のどれにするかをユーザーに確認する。
+  kotlinx-serialization の依存は追加しない。
+context:
+  scaffold_script: place-files.sh

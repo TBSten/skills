@@ -1,0 +1,264 @@
+{
+ "html": "2026-11-18-10-00.html",
+ "board": {
+  "meta": {
+   "title": "kaimono-app — 作業状況",
+   "repoUrl": "",
+   "repoLabel": "",
+   "updatedAt": "2026-11-18 10:00"
+  },
+  "props": {
+   "showChildren": false,
+   "dimUnrelated": true,
+   "nodeWidth": 198
+  },
+  "statuses": [
+   {
+    "id": "discussing",
+    "label": "調査中 / 議論中",
+    "short": "議論中",
+    "stroke": "#C69A08",
+    "fill": "#FBF2D8",
+    "pane": "#FBF6E6"
+   },
+   {
+    "id": "implementing",
+    "label": "実装中",
+    "short": "実装中",
+    "stroke": "#3F4B7F",
+    "fill": "#DBEFF1",
+    "pane": "#EAF6F7"
+   },
+   {
+    "id": "review",
+    "label": "PR レビュー中",
+    "short": "レビュー中",
+    "stroke": "#E0A32E",
+    "fill": "#FCF3E4",
+    "pane": "#FBF5EA"
+   },
+   {
+    "id": "nits",
+    "label": "nits 対応中",
+    "short": "nits",
+    "stroke": "#9EB7C9",
+    "fill": "#EAF6F7",
+    "pane": "#F5FBFC"
+   },
+   {
+    "id": "merge-wait",
+    "label": "マージ待ち",
+    "short": "マージ待ち",
+    "stroke": "#3E9E7A",
+    "fill": "#E7F3EE",
+    "pane": "#EDF6F2"
+   },
+   {
+    "id": "blocked",
+    "label": "ブロック中",
+    "short": "ブロック",
+    "stroke": "#E2596B",
+    "fill": "#FCEBEE",
+    "pane": "#FCF0F2"
+   },
+   {
+    "id": "backlog",
+    "label": "未着手",
+    "short": "未着手",
+    "stroke": "#849AB5",
+    "fill": "#F7FAFB",
+    "pane": "#F7FAFB"
+   },
+   {
+    "id": "closed",
+    "label": "完了 / クローズ",
+    "short": "完了",
+    "stroke": "#C4D0D3",
+    "fill": "#EDF2F3",
+    "pane": "#F7FAFB",
+    "collapsedByDefault": true
+   }
+  ],
+  "epics": [],
+  "urgency": [
+   "blocked",
+   "discussing",
+   "review",
+   "nits",
+   "implementing",
+   "merge-wait",
+   "backlog",
+   "closed"
+  ],
+  "items": [
+   {
+    "id": "main",
+    "key": "branch",
+    "title": "main",
+    "kind": "anchor",
+    "status": "closed",
+    "col": 0,
+    "kanban": false,
+    "desc": [
+     "取り込み先。"
+    ],
+    "updated": "2026-11-19"
+   },
+   {
+    "id": "branch-feat-login",
+    "key": "branch",
+    "title": "feat/login",
+    "kind": "task",
+    "status": "backlog",
+    "meta": [
+     "upstream 無し"
+    ],
+    "desc": [
+     "PR になっていないローカルブランチ。最終コミット 2026-11-19。"
+    ],
+    "updated": "2026-11-19",
+    "col": 1
+   },
+   {
+    "id": "branch-feat-login-ui",
+    "key": "branch",
+    "title": "feat/login-ui",
+    "kind": "task",
+    "status": "backlog",
+    "meta": [
+     "upstream 無し"
+    ],
+    "desc": [
+     "PR になっていないローカルブランチ。最終コミット 2026-11-19。"
+    ],
+    "updated": "2026-11-19",
+    "col": 2
+   },
+   {
+    "id": "branch-feat-payment",
+    "key": "branch",
+    "title": "feat/payment",
+    "kind": "task",
+    "status": "backlog",
+    "meta": [
+     "upstream 無し"
+    ],
+    "desc": [
+     "PR になっていないローカルブランチ。最終コミット 2026-11-19。"
+    ],
+    "updated": "2026-11-19",
+    "col": 1,
+    "anchorY": 160
+   },
+   {
+    "id": "decision-payment-provider",
+    "key": "decision",
+    "title": "未決 — 決済プロバイダ (Stripe / PAY.JP)",
+    "kind": "human",
+    "status": "blocked",
+    "human": true,
+    "meta": [
+     "A Stripe / B PAY.JP"
+    ],
+    "ask": [
+     "決済プロバイダは A / B のどちらにしますか。",
+     "A: Stripe",
+     "B: PAY.JP"
+    ],
+    "updated": "2026-11-18",
+    "col": 1
+   },
+   {
+    "id": "human-design-review",
+    "key": "human",
+    "title": "ログイン画面のデザインレビュー (デザイナー確認待ち)",
+    "kind": "human",
+    "status": "blocked",
+    "human": true,
+    "ask": [
+     "デザイナーのレビューが終わったら教えてください。"
+    ],
+    "updated": "2026-11-18",
+    "col": 2
+   }
+  ],
+  "edges": [
+   {
+    "from": "branch-feat-login",
+    "to": "branch-feat-login-ui"
+   },
+   {
+    "from": "decision-payment-provider",
+    "to": "branch-feat-payment",
+    "kind": "block"
+   },
+   {
+    "from": "human-design-review",
+    "to": "branch-feat-login-ui",
+    "kind": "block"
+   }
+  ]
+ },
+ "overlay": {
+  "items": [
+   {
+    "id": "branch-feat-login",
+    "col": 1
+   },
+   {
+    "id": "branch-feat-login-ui",
+    "col": 2
+   },
+   {
+    "id": "branch-feat-payment",
+    "col": 1,
+    "anchorY": 160
+   },
+   {
+    "id": "decision-payment-provider",
+    "key": "decision",
+    "title": "未決 — 決済プロバイダ (Stripe / PAY.JP)",
+    "kind": "human",
+    "status": "blocked",
+    "human": true,
+    "meta": [
+     "A Stripe / B PAY.JP"
+    ],
+    "ask": [
+     "決済プロバイダは A / B のどちらにしますか。",
+     "A: Stripe",
+     "B: PAY.JP"
+    ],
+    "updated": "2026-11-18"
+   },
+   {
+    "id": "human-design-review",
+    "key": "human",
+    "title": "ログイン画面のデザインレビュー (デザイナー確認待ち)",
+    "kind": "human",
+    "status": "blocked",
+    "human": true,
+    "ask": [
+     "デザイナーのレビューが終わったら教えてください。"
+    ],
+    "updated": "2026-11-18"
+   }
+  ],
+  "edges": [
+   {
+    "from": "branch-feat-login",
+    "to": "branch-feat-login-ui"
+   },
+   {
+    "from": "decision-payment-provider",
+    "to": "branch-feat-payment",
+    "kind": "block"
+   },
+   {
+    "from": "human-design-review",
+    "to": "branch-feat-login-ui",
+    "kind": "block"
+   }
+  ]
+ }
+}

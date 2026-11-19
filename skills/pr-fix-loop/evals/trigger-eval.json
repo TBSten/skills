@@ -1,0 +1,21 @@
+[
+  {"query": "PR 179 180 181 の CI と review コメント、まとめて面倒見て。180 は 179 の上に stack してるから順番に green にしたい", "should_trigger": true},
+  {"query": "/loop 10m で回す前提で、自分の open な PR 4 本 (212 213 214 220) の失敗チェックを分類して直して、レビュー指摘も対応して resolve まで", "should_trigger": true},
+  {"query": "複数 PR を見ながら修正していきたい。ktlint で落ちてるのと apiCheck で落ちてるのがあるはず", "should_trigger": true},
+  {"query": "stacked PR を順番に green にして。親の #301 に修正 push したら子の #302 #303 も rebase して追従させて", "should_trigger": true},
+  {"query": "fix CI while my PRs sit — PRs 45 and 46 keep failing on jvmTest and one of them has 3 unresolved review threads", "should_trigger": true},
+  {"query": "PR ループ回して。何回か変化なしが続いたら止まっていいよ", "should_trigger": true},
+  {"query": "この PR (今のブランチのやつ) の CI 落ちてるのとレビューコメント 2 件、1 パスで片付けて表で報告して", "should_trigger": true},
+  {"query": "dependabot がマージされて base が進んだから、自分の PR 3 本を最新の main に rebase して、CI の失敗もあれば直して", "should_trigger": true},
+  {"query": "auto-handle CI and review comments across PRs 88 89 90, the Gradle toolchain download 503 errors should just be rerun", "should_trigger": true},
+  {"query": "PR #186 は他の人の PR だけど、5 並列の subagent で探索検証して問題を ticket に溜めて、P1 だけコメントしたい", "should_trigger": false},
+  {"query": "ktlintCheck が CI で落ちてる。このブランチの ktlint 違反だけ直して", "should_trigger": false},
+  {"query": "GitHub Actions の workflow に、PR ごとに ktlint と apiCheck と jvmTest を回す job を追加して", "should_trigger": false},
+  {"query": "PR #212 の本文に、変更点を図にした Before / After を 1 枚目に貼って", "should_trigger": false},
+  {"query": "今抱えてる PR と issue を集めて、どれがレビュー待ちでどれが CI 待ちか一目で分かるボードを作って", "should_trigger": false},
+  {"query": "この PR #77 をレビューして、気になる点をインラインでコメントして", "should_trigger": false},
+  {"query": "feature/login ブランチの 15 コミットを squash して 1 つにまとめて force push して", "should_trigger": false},
+  {"query": "毎晩 main を 60 分探索して、問題を issue Markdown に書き出す nightly 探索を回して", "should_trigger": false},
+  {"query": "新しく PR を作って。今のブランチの変更で、タイトルは conventional commit 形式で", "should_trigger": false},
+  {"query": "feedback/ に溜まってる QA のフィードバックを一通り対応して", "should_trigger": false}
+]

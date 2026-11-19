@@ -1,0 +1,19 @@
+[
+  {"query": "新しいリポジトリを作るたびに 1 回だけやる detekt 導入手順を、TBSten/skills にワンショットプロンプトとして登録する PR を作って", "should_trigger": true},
+  {"query": "この手順をプロンプト化したい: Next.js プロジェクトに Biome と lefthook を入れる初期セットアップ。raw URL で実行できる形で tbsten/skills に出して", "should_trigger": true},
+  {"query": "contribute prompt: CLAUDE.md の「GitHub Actions の CI 雛形を置く手順」を prompts/ に追加する PR をお願い", "should_trigger": true},
+  {"query": "Renovate の初期設定を入れる手順、毎回コピペしてるのでプロンプトとして TBSten/skills に登録して README の実行プロンプトから使えるようにしたい", "should_trigger": true},
+  {"query": "ワンショットプロンプトにして: Android アプリに Firebase Crashlytics を組み込む一連の手順。skill にするほどじゃないので prompt で TBSten/skills に", "should_trigger": true},
+  {"query": "Register our one-time Supabase local dev bootstrap steps as a prompt in TBSten/skills (PROMPT.md, no install needed) and open the PR", "should_trigger": true},
+  {"query": "このプロンプトを共有したい。KMP プロジェクトに iOS の XCFramework 配布設定を入れるセットアップ手順を、プロンプトとして登録する PR を TBSten/skills に", "should_trigger": true},
+  {"query": "既存の skill の kotlin-maven-central-publish みたいに、Dokka の docs サイトを立ち上げる scaffold 手順を prompt 版として TBSten/skills に追加したい", "should_trigger": true},
+  {"query": "CLAUDE.md の「ViewModel は UiState を sealed interface で公開する」規約を、TBSten/skills に rule として登録する PR を作って", "should_trigger": false},
+  {"query": "PR ごとに毎回やる CHANGELOG 更新とバージョン bump のワークフローを、TBSten/skills の skill として登録して", "should_trigger": false},
+  {"query": "CLAUDE.md の A〜E の知見を skill / rule / prompt に仕分けて、1 つの PR にまとめて TBSten/skills に出したい", "should_trigger": false},
+  {"query": "https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/prompts/ksp-plugin-setup/PROMPT.md を取得して、その指示どおりにこのリポジトリに KSP プラグインをセットアップして", "should_trigger": false},
+  {"query": "このプロジェクトの CLAUDE.md の書き方を見直して、Claude への指示が伝わりやすいプロンプトに改善して", "should_trigger": false},
+  {"query": "prompts/react-vite-supabase-starter/PROMPT.md の手順で pnpm のバージョン指定が古いので、10 系に上げる修正をして", "should_trigger": false},
+  {"query": "Claude API で使うシステムプロンプトを書いてほしい。カスタマーサポート用で、返金ポリシーを守らせたい", "should_trigger": false},
+  {"query": "prompts/kotlin-compiler-plugin-setup の status を Active に変えて README も揃えて", "should_trigger": false},
+  {"query": "TBSten/skills の README の Available Prompts テーブルで、グループの並び順が崩れてる行を直して", "should_trigger": false}
+]

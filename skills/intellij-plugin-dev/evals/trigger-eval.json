@@ -1,0 +1,21 @@
+[
+  {"query": "IntelliJ プラグインを作りたい。Android Studio でも動く前提で、Jewel (Compose) の tool window を出すところまでの土台をお願い", "should_trigger": true},
+  {"query": "プラグインの tool window に addComposeTab で Compose UI を出してるんだけど、見た目の確認のために毎回 runIde するのがしんどい。headless で PNG に焼いて確認する方法ない？", "should_trigger": true},
+  {"query": "BasePlatformTestCase のテストで Analysis API の analyze {} が動かない。K2 を有効にする方法とか、EDT で analyze するときの作法を教えて", "should_trigger": true},
+  {"query": "@Destination<HomeRoute> みたいなジェネリック注釈の型引数を、IDE プラグイン側で Analysis API から取りたいけど KaAnnotation から取れない", "should_trigger": true},
+  {"query": "my IntelliJ plugin's gutter line marker never shows up on Kotlin functions. I registered a LineMarkerProvider in plugin.xml for language=kotlin. what am I missing?", "should_trigger": true},
+  {"query": "tool window のノードをクリックしたら対応するソースの宣言にジャンプさせたい。あとキャレット位置に追従してハイライトも変えたい", "should_trigger": true},
+  {"query": "自作プラグインを Android Studio に入れたら 'incompatible with this version' で入らない。IDEA では動くのに。sinceBuild / untilBuild どう設定すればいい？", "should_trigger": true},
+  {"query": "IDE プラグインの UI を VRT したい。renderComposeScene で焼いた PNG を golden にして CI で verify するタスクを組みたい", "should_trigger": true},
+  {"query": "IntelliJ プラグインで、ボタン押したらエディタのクラスに @Preview 関数を PSI で挿入するコード生成機能を作りたい", "should_trigger": true},
+  {"query": "IntelliJ IDEA で Kotlin の補完が遅い。どの設定をいじれば軽くなる？ 2026.1 を使っています", "should_trigger": false},
+  {"query": "Compose Multiplatform のデスクトップアプリで、ウィンドウにグラフを描画する Canvas のコードを書いて。ズームとパンもしたい", "should_trigger": false},
+  {"query": "Kotlin compiler plugin を作りたい。FIR で宣言生成、IR で本体生成するプロジェクトを buildSrc 付きで scaffold して", "should_trigger": false},
+  {"query": "Android アプリの Compose UI をスクリーンショットテストしたい。Roborazzi か Paparazzi のどっちがいいか、セットアップも含めて教えて", "should_trigger": false},
+  {"query": "IntelliJ の Live Template で、Kotlin の data class を一発で書けるテンプレートを作りたい。設定画面での登録方法を教えて", "should_trigger": false},
+  {"query": "KSP processor のプロジェクトを作りたい。@Screen 注釈から Navigation のルートを生成するやつで、kctfork テスト込み", "should_trigger": false},
+  {"query": "Kotlin Multiplatform ライブラリの雛形を作って。jvm だけでいいので BCV と ktlint、Maven Central publish まで", "should_trigger": false},
+  {"query": "VS Code 拡張を TypeScript で作りたい。サイドバーに Webview でツリーを表示するところまでの雛形を作って", "should_trigger": false},
+  {"query": "Gradle の version catalog と build-logic の convention plugin を使って、Android アプリのマルチモジュールの build 設定を整理したい", "should_trigger": false},
+  {"query": "Jetpack Compose の Preview アノテーションで、ダークモードと複数フォントサイズの組み合わせを一度に表示する MultiPreview の書き方を教えて", "should_trigger": false}
+]

@@ -1,0 +1,21 @@
+[
+  {"query": "自作の KMP ライブラリ (android/ios/jvm ターゲット) を Maven Central に公開したい。vanniktech のプラグインで convention plugin 化して、GitHub Release を作ったら自動で publish される workflow まで用意してほしい", "should_trigger": true},
+  {"query": "社内で使ってた Kotlin/JVM の日付ユーティリティを OSS 化することにした。GitHub (github.com/yamada-k/kdate) には上げてあるので、Maven Central に publish できるように Gradle の設定を足して", "should_trigger": true},
+  {"query": "set up maven central publishing for my kotlin multiplatform lib. it uses a version catalog and buildSrc already. sonatype central portal, not the old OSSRH", "should_trigger": true},
+  {"query": "まずは ./gradlew publishToMavenLocal で pom と sources jar が出るところまで確認したい。将来的には Central に出す前提で、署名はローカルではスキップされるようにしておいて", "should_trigger": true},
+  {"query": "build-logic に publish 用の convention plugin を作って、:core と :compose の 2 モジュールを Maven Central に出せるようにしたい。artifactId は core / compose みたいにモジュール名から決めたい", "should_trigger": true},
+  {"query": "ライブラリを publish したいんだけど、GPG 署名とか GitHub Secrets (MAVEN_CENTRAL_USERNAME とか) の登録まで含めて一通りセットアップ手伝ってほしい", "should_trigger": true},
+  {"query": "Kotlin ライブラリを公開する設定を追加して。groupId は io.github.taro.result、バージョンは gradle.properties の VERSION_NAME で管理してる", "should_trigger": true},
+  {"query": "OSSRH が終了したらしいので、Sonatype Central Portal 経由で Maven Central に出す構成に作り直したい。今の build.gradle.kts は maven-publish と signing を素で書いてる古いやつ", "should_trigger": true},
+  {"query": "Gradle で Maven Central 公開の設定をお願い。KMP で iosArm64 もあるので CI の runner も気をつけて", "should_trigger": true},
+  {"query": "これから新しく Kotlin Multiplatform のライブラリプロジェクトを作りたい。build-logic、explicitApi、kotest、binary-compatibility-validator、ktlint、publish まで全部入りの雛形を一から立ち上げて", "should_trigger": false},
+  {"query": "Kotlin Compiler Plugin のプロジェクトを新規に作りたい。compiler-plugin モジュールと gradle-plugin ラッパーのマルチモジュール構成で scaffold して", "should_trigger": false},
+  {"query": "Android アプリの release ビルドを Google Play に自動アップロードする GitHub Actions を作りたい。署名鍵は Secrets に入れてある", "should_trigger": false},
+  {"query": "依存してる io.ktor:ktor-client-core が Maven Central で 3.2 が出てるか確認して、libs.versions.toml を最新に上げて", "should_trigger": false},
+  {"query": "GitHub Packages に社内向けの Kotlin ライブラリを publish したい。Maven Central には出さない、組織メンバーだけが使える private なやつ", "should_trigger": false},
+  {"query": "PR の CI で binary-compatibility-validator の apiCheck が落ちてる。:core:apiDump して直してほしい", "should_trigger": false},
+  {"query": "npm に TypeScript のライブラリを publish する GitHub Actions を書いて。tag push で npm publish が走るようにしたい", "should_trigger": false},
+  {"query": "Maven Central から落としてきた okio の jar の中身を見て、どの Kotlin バージョンでコンパイルされてるか調べて", "should_trigger": false},
+  {"query": "KSP の Symbol Processor プロジェクトを runtime / ksp / test の 3 モジュール構成でセットアップしたい", "should_trigger": false},
+  {"query": "ローカルの ~/.m2 に古い SNAPSHOT が溜まってビルドがおかしい。mavenLocal() を repositories から外すべきか、キャッシュを消す手順を教えて", "should_trigger": false}
+]

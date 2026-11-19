@@ -1,0 +1,12 @@
+<idea-plugin>
+    <id>io.github.hoge.specviewer</id>
+    <name>Spec Viewer</name>
+    <vendor>hoge</vendor>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>org.jetbrains.kotlin</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="Spec Viewer" anchor="right" factoryClass="io.github.hoge.specviewer.SpecViewerToolWindowFactory"/>
+    </extensions>
+</idea-plugin>

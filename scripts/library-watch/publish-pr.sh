@@ -2,17 +2,18 @@
 # update job が作った patch を prepare-branch.sh 済みの作業ブランチに commit し、固定ブランチへ force-push して
 # PR を作る / 更新する (1 回の実行で PR 1 本)。patch が空なら何もしない。
 #
-# usage: publish-pr.sh --patch FILE --body FILE [--branch NAME] [--base NAME] [--title TEXT] [--dry-run]
+# usage: publish-pr.sh --patch FILE --body FILE [--branch NAME] [--base NAME] [--title TEXT] [--message TEXT] [--dry-run]
 #   --patch   : `git diff --binary` 形式の patch (update job の成果物)
 #   --body    : PR 本文 (Markdown。AI が書いたもの)
 #   --title   : PR タイトル (既定: "library-watch(<UTC 日付>): Kotlin ライブラリの差分を skill に反映")
+#   --message : commit message (既定: "chore(library-watch): <UTC 日付> の差分を skill と一覧に反映")
 #   --dry-run : commit まではするが push / PR 操作をしない (ローカル確認用)
 # 前提: prepare-branch.sh の直後で作業ツリーがきれいなこと。GH_TOKEN に contents / pull-requests の write 権限。
 set -euo pipefail
 # shellcheck source=scripts/library-watch/lib.sh
 source "$(dirname "$0")/lib.sh"
 
-patch="" body="" branch="library-watch/auto" base="main" title="" dry_run=false
+patch="" body="" branch="library-watch/auto" base="main" title="" message="" dry_run=false
 while [ $# -gt 0 ]; do
   case "$1" in
     --patch) patch="${2:?}"; shift 2 ;;
@@ -20,8 +21,9 @@ while [ $# -gt 0 ]; do
     --branch) branch="${2:?}"; shift 2 ;;
     --base) base="${2:?}"; shift 2 ;;
     --title) title="${2:?}"; shift 2 ;;
+    --message) message="${2:?}"; shift 2 ;;
     --dry-run) dry_run=true; shift ;;
-    -h | --help) sed -n '2,10p' "$0"; exit 0 ;;
+    -h | --help) sed -n '2,11p' "$0"; exit 0 ;;
     *) die "未知の引数 '$1'" "" "--help で usage を確認する" ;;
   esac
 done
@@ -31,6 +33,7 @@ require_file "$patch" "update job の成果物"
 require_file "$body" "AI が書いた PR 本文"
 today="$(date -u +%F)"
 [ -n "$title" ] || title="library-watch($today): Kotlin ライブラリの差分を skill に反映"
+[ -n "$message" ] || message="chore(library-watch): $today の差分を skill と一覧に反映"
 
 if [ ! -s "$patch" ]; then
   echo "OK publish: patch が空なので何もしない"
@@ -40,7 +43,7 @@ fi
 git apply --index --whitespace=nowarn "$patch" ||
   die "patch を適用できない" "update job と pr job で出発点 (prepare-branch.sh の結果) がずれた" "workflow を再実行する (その間に main か PR ブランチが動いた可能性)"
 git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
-  commit --quiet -m "chore(library-watch): $today の差分を skill と一覧に反映"
+  commit --quiet -m "$message"
 echo "publish: committed $(git rev-parse --short HEAD)" >&2
 
 if [ "$dry_run" = true ]; then
