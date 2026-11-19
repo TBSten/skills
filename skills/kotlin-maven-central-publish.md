@@ -44,7 +44,7 @@ The skill collects project information, runs `scripts/setup-publish.sh` to gener
 
 Further references:
 
-- `references/convention-options.md` — buildSrc vs build-logic, signing strategies, artifactId / coordinates, version SSoT (catalog vs `VERSION_NAME`, no-SNAPSHOT policy), Dokka javadoc, `languageVersion` / `apiVersion` floor for older Kotlin consumers
+- `references/convention-options.md` — buildSrc vs build-logic, signing strategies, artifactId / coordinates, version SSoT (catalog vs `VERSION_NAME`, no-SNAPSHOT policy), Dokka javadoc, `languageVersion` / `apiVersion` floor for older Kotlin consumers, publishing Gradle plugin modules (`GradlePlugin`)
 - `references/release-flow.md` — why the workflow looks the way it does, and the tag-push + auto GitHub Release alternative
 - `references/troubleshooting.md` — common errors (classpath conflicts, `SonatypeHost` removal, `is final`, 401, `BAD_PASSPHRASE`, ...)
 

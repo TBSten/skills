@@ -44,7 +44,7 @@ gh skill install tbsten/skills kotlin-maven-central-publish
 
 その他の参照ドキュメント:
 
-- `references/convention-options.md` — buildSrc と build-logic の違い、署名方式、artifactId / coordinates、バージョンの SSoT (catalog か `VERSION_NAME` か、SNAPSHOT を使わない運用)、Dokka による javadoc、古い Kotlin 利用者向けの `languageVersion` / `apiVersion` 床
+- `references/convention-options.md` — buildSrc と build-logic の違い、署名方式、artifactId / coordinates、バージョンの SSoT (catalog か `VERSION_NAME` か、SNAPSHOT を使わない運用)、Dokka による javadoc、古い Kotlin 利用者向けの `languageVersion` / `apiVersion` 床、Gradle plugin モジュールの公開 (`GradlePlugin`)
 - `references/release-flow.md` — ワークフローの設計理由と、tag push 駆動 + GitHub Release 自動生成の代替フロー
 - `references/troubleshooting.md` — よくあるエラー (classpath 競合、`SonatypeHost` 削除、`is final`、401、`BAD_PASSPHRASE` など)
 
