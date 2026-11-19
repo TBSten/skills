@@ -21,8 +21,12 @@ skills/<skill-name>/
 ├── references/            # Claude がコンテキストに読み込む参照ドキュメント (任意)
 ├── example/               # サンプルコード。コピー元として利用される場合がある (任意)
 ├── assets/                # 出力に使用されるファイル (テンプレート等、任意)
-└── scripts/               # AI が判断せずそのまま実行する決定的な script (任意)
+├── scripts/               # AI が判断せずそのまま実行する決定的な script (任意)
+└── evals/                 # テストケース (<case>/) と発火テスト (trigger-eval.json)。skill-eval が使う (任意)
 ```
+
+`evals/` は無くてよい。無い skill は定期実行の skill-eval (`.github/skill-eval/README.md`) が最初に AI で作り、PR でレビューする。
+手で作る・直す時の形式は skill-creator の `references/schemas.md`「Test cases」で、`scripts/skill-eval/check-evals.sh --skill <name>` を通す。
 
 詳細ドキュメントは `skills/` ディレクトリ直下に配置:
 - `skills/<skill-name>.md` — スキル詳細ドキュメント (英語)
@@ -236,6 +240,7 @@ gh skill install tbsten/skills <skill-name>
 2. SKILL.md の `description` を変更した場合は `skills/<skill-name>.md` / `<skill-name>.ja.md` の説明も同期する
 3. 詳細ドキュメント (`skills/<skill-name>.md`, `<skill-name>.ja.md`) も必要に応じて更新する
 4. リソースの追加・削除も同ディレクトリ内で行う
+5. skill の振る舞いを変えたら、`evals/` があれば合わせて直す (古い期待値のままだと次の skill-eval で失敗扱いになる)。直したら `scripts/skill-eval/check-evals.sh --skill <name>` を通す
 
 ## 注意点
 
