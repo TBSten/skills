@@ -1,0 +1,5 @@
+<!-- Info.plist の <dict> の中に足す。INFOPLIST_PREPROCESS = YES のとき、Debug（FEEDBACK_MODE=1）だけに残る -->
+#ifdef FEEDBACK_MODE
+	<key>FeedbackEndpoint</key>
+	<string>$(FEEDBACK_ENDPOINT)</string>
+#endif

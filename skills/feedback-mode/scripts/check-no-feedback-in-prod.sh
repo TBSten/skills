@@ -21,7 +21,7 @@ PATTERNS=(
   'app:feedback-save'        # Electron の IPC チャネル
   'feedbackApi'              # preload が公開する名前
   'html2canvas'              # スクショの依存
-  'FeedbackRoot' 'FbTarget' 'FeedbackProvider'  # RN / Flutter のウィジェット名（難読化されると見逃す）
+  'FeedbackRoot' 'FbTarget' 'FeedbackProvider'  # Compose の FeedbackRoot・SwiftUI の FbTarget など（難読化されると見逃す）
   'installFeedbackMode' 'getRecentLogs'
   '10\.0\.2\.2:7373'         # Android エミュレータから開発機への URL
   ':7373'                    # 受け口の既定のポート
@@ -40,6 +40,14 @@ for target in "$@"; do
     hits=$(grep -r -a -l -E -- "$p" "$dir" 2>/dev/null | head -5)
     if [ -n "$hits" ]; then status=1; echo "FOUND /$p/ in $target"; echo "$hits" | sed 's/^/    /'; fi
   done
+  # UTF-16LE でも探す: Kotlin/Native（KMP の iOS framework）は文字列リテラルを UTF-16LE で持つので、上の grep では URL などが見えない
+  if command -v perl >/dev/null 2>&1; then
+    hits16=$(find "$dir" -type f -size +0 -print0 | xargs -0 perl -e '
+      my @lits = ("__feedback", "x-feedback-token", "FEEDBACK_ENDPOINT", "FEEDBACK_TOKEN", "10.0.2.2:7373", ":7373", "feedback-mode");
+      for my $f (@ARGV) { open(my $h, "<:raw", $f) or next; local $/; my $d = <$h>; close $h;
+        for my $l (@lits) { my $e = join("", map { $_ . "\0" } split //, $l); print "$l\t$f\n" if index($d, $e) >= 0; } }' 2>/dev/null | head -10)
+    if [ -n "$hits16" ]; then status=1; echo "FOUND (UTF-16LE) in $target"; echo "$hits16" | sed 's/^/    /'; fi
+  fi
 done
 [ $status -eq 0 ] && echo "OK: feedback-mode の痕跡は見つかりませんでした（文字列の grep のみ。権限・依存の宣言は別に確認）"
 # 権限・依存の確認（手で）:

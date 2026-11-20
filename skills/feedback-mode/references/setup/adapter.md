@@ -17,7 +17,7 @@
 | `exclude` 本番から外す | ビルド時に消す方法・実行時の保険・成果物の検査パターン（R1） | 動的 import + `import.meta.env.DEV`・`app.isPackaged`・`__DEV__`・別 entrypoint・debug source set・`#if DEBUG` |
 | `pointer` Agent への案内 | 記録の冒頭に書く 1 行（ソースの場所・ログの形・正本 docs） | 「ソースは `src/`、ログの形は README の『ログ』」 |
 
-Web 系の DOM 版（`assets/templates/adapters/web/dom/feedback-mode.js`）は、この表がそのまま `installFeedbackMode(opts)` の引数になっている（`hotkey`・`getScreen`・`getView`・`stateOf`・`getEnv`・`getRecentLogs`・`logEvent`・`capture`・`transport`・`pointer`・`enabled`）。DOM が無い環境の adapter を作るときも、差し込み口は同じ名前で props / 引数にする。
+Web 系の DOM 版（`assets/templates/adapters/web/dom/feedback-mode.js`）は、この表がそのまま `installFeedbackMode(opts)` の引数になっている（`hotkey`・`getScreen`・`getView`・`stateOf`・`getEnv`・`getRecentLogs`・`logEvent`・`capture`・`transport`・`pointer`・`enabled`）。DOM が無い環境のひな形（Compose の `FeedbackConfig`・SwiftUI の `FeedbackMode.shared.config`）も、同じ名前（`appName`・`pointer`・`getScreen`・`getView`・`getEnv`・`getRecentLogs`・`transport`）で受ける。足りない差し込み口は、同じ名前で props / 引数を足す。
 
 ## 2. adapter の一覧
 
@@ -29,12 +29,15 @@ Web 系の DOM 版（`assets/templates/adapters/web/dom/feedback-mode.js`）は�
 | web | single-html（agent が作る 1 枚の HTML） | `web/single-html.md` | `single-html/`（+ `scripts/single-html.mjs`） | PC・スマホ幅・保存できない状態で e2e を確認 |
 | desktop | electron | `desktop/electron.md` | `adapters/desktop/electron/` | Electron 38 で通し・capturePage・asar の検査を確認 |
 | desktop | tauri | `desktop/tauri.md` | dom を使う | Tauri 2 + Vite 7（Linux）で通し・release の検査を確認 |
+| mobile | android（Jetpack Compose） | `mobile/android.md` | `adapters/mobile/compose/` + `adapters/mobile/android/` | エミュレータ（API 36.1）で通しと release の APK の検査を確認。View（XML）の画面は未確認 |
+| mobile | kmp（Compose Multiplatform: Android・iOS・Desktop・Web） | `mobile/kmp.md` | `adapters/mobile/compose/` + `adapters/mobile/kmp/` | Android エミュレータ・iOS シミュレータ・wasmJs（Chrome）で通しを、Desktop は UI テストで 1 件送るまでを確認。4 つとも本番の成果物の検査を確認 |
+| mobile | ios（SwiftUI） | `mobile/ios.md` | `adapters/mobile/ios/` | iOS 26.2 シミュレータで通しと Release の `.app` の検査を確認。実機は未確認 |
 
-Web 共通の操作の作り方は `web/interaction.md`、場所の手がかりは `web/locate.md`、メモは `web/memo.md`。
+モバイル共通の前提（DOM が無い・ホバーが無い・端末から開発機へ届かせる）は `mobile/common.md`。Web 共通の操作の作り方は `web/interaction.md`、場所の手がかりは `web/locate.md`、メモは `web/memo.md`。
 
 ## 3. 一覧に無い環境の adapter を作る
 
-1. いちばん近い adapter を土台にする（DOM がある → dom、WebView + 別言語の本体 → tauri（受け口は HTTP の別プロセス））。
+1. いちばん近い adapter を土台にする（DOM がある → dom、WebView + 別言語の本体 → tauri（受け口は HTTP の別プロセス）、DOM が無いがタッチ → mobile/common.md と android（Compose）/ ios（SwiftUI））。
 2. §1 の表を 1 行ずつ埋める。分からない行は「無し」でよい（`capture`・`logs` は省略できる。記録に「撮っていません」「ログ: 0 件」と出る）。
 3. 受け口は、組み立てを JS で書けるなら `submitFeedback` + 好きな Sink、書けないなら HTTP の受け口（`core/feedback-dev-server.mjs`）に submission を送る。Node が無い受け口（Rust など）は `references/spec/data.md` §3.1 と `transport.md` §1 の規則を移植し、契約テストと同じ内容のテストを書く。
 4. **実際に動かして確かめる**（`setup.md` 手順 8 と本番の成果物の検査）。skill に取り込むのは確かめたものだけ。

@@ -1,0 +1,5 @@
+// Feedback.Debug.xcconfig — Debug の xcconfig から #include "Feedback.Debug.xcconfig" する（Release からは読まない）。
+// 前提: target の INFOPLIST_PREPROCESS = YES（Debug・Release の両方。Release で #ifdef の行を消すため）。
+INFOPLIST_PREPROCESSOR_DEFINITIONS = $(inherited) FEEDBACK_MODE=1
+// 受け口の URL。xcconfig では // がコメントになるので http:/$()/ と書く。例: http:/$()/127.0.0.1:<ポート>/<受け口のパス>
+FEEDBACK_ENDPOINT =
