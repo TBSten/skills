@@ -79,7 +79,7 @@ references/
 | `assets/templates/adapters/web/astro/` | Astro の Dev Toolbar 統合（受け口）と toolbar アプリ・dist の検査 |
 | `assets/templates/adapters/desktop/electron/` | main の IPC の受け口・開発時だけの preload・renderer の入口・既存の開発用メニューに足す例 |
 | `assets/templates/adapters/mobile/` | `compose/`（Android・CMP 共通の `FeedbackRoot` / `Modifier.fbTarget`）・`android/`（debug / release の source set）・`kmp/`（ターゲットごとの差し込み）・`ios/`（SwiftUI の `.fbTarget`・Debug の xcconfig） |
-| `assets/templates/single-html/` | agent が作って人に渡す 1 枚の HTML のひな形（JSON から描く殻 + コメント + 質問への回答）・例のデータ・e2e |
+| `assets/templates/adapters/web/single-html/` | agent が作って人に渡す 1 枚の HTML のひな形（JSON から描く殻 + コメント + 質問への回答）・例のデータ・e2e |
 | `assets/templates/data/` | 送信 body と記録の frontmatter の JSON Schema・記録とメモの例 |
 | `assets/templates/review/` | Review の指摘・人が足す選択肢・判断の記録の例 |
 | `scripts/detect.sh` | タイミングの判定（読み取りだけ） |

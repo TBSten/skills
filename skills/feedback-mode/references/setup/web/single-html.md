@@ -1,6 +1,6 @@
 # 1 枚の HTML（agent が作るレポート・チェックリスト）にフィードバックを付ける
 
-検証状況: ひな形 `assets/templates/single-html/feedback-report.html` を `scripts/single-html.mjs new` で作り、ヘッドレスの Chromium（PC 1280px・スマホ幅 390px・保存が止められた状態）で `feedback-report.e2e.cjs` を通した（選ぶ → Shift で足す → 書く → 保存 → 印 → 再読み込みで書きかけが残る → ドラッグで引用 → ページ全体 → details を開ける → Esc → まとめてコピーの中身 → 2 回目は新しいものだけ → すべて消す → 戻す、横スクロール・コンソールのエラーが無い）。スマホの実機のブラウザでも確かめた: Android 16 エミュレータの Chrome 134（CDP のタッチ。`feedback-report.android-chrome.cjs`）と iOS 26.2 シミュレータの Safari（Maestro 2.3.0）で、入る → タップで選ぶ → ソフトキーボードで書く → 保存 → 終える → まとめてコピー（iOS は `xcrun simctl pbpaste` でクリップボードの中身まで）。実機（USB の端末）は未確認。作り方そのものは、コードベースのレポートと導入のチェックリストで運用したもの。
+検証状況: ひな形 `assets/templates/adapters/web/single-html/feedback-report.html` を `scripts/single-html.mjs new` で作り、ヘッドレスの Chromium（PC 1280px・スマホ幅 390px・保存が止められた状態）で `feedback-report.e2e.cjs` を通した（選ぶ → Shift で足す → 書く → 保存 → 印 → 再読み込みで書きかけが残る → ドラッグで引用 → ページ全体 → details を開ける → Esc → まとめてコピーの中身 → 2 回目は新しいものだけ → すべて消す → 戻す、横スクロール・コンソールのエラーが無い）。スマホの実機のブラウザでも確かめた: Android 16 エミュレータの Chrome 134（CDP のタッチ。`feedback-report.android-chrome.cjs`）と iOS 26.2 シミュレータの Safari（Maestro 2.3.0）で、入る → タップで選ぶ → ソフトキーボードで書く → 保存 → 終える → まとめてコピー（iOS は `xcrun simctl pbpaste` でクリップボードの中身まで）。実機（USB の端末）は未確認。作り方そのものは、コードベースのレポートと導入のチェックリストで運用したもの。
 
 対象は**アプリではなく、agent が作って人に渡す 1 枚の HTML**（調査レポート・導入のチェックリスト・設計の比較表・質問票）。サーバーも置き場も無い。人は HTML を開いて項目にコメントし、質問に答え、まとめてコピーしてチャットに貼る。agent は貼られた文を読んで HTML のデータを直す。
 
@@ -21,7 +21,7 @@ node "$S" get <出力先>/report.html > data.json # 直すときは取り出し�
 node "$S" set <出力先>/report.html data.json   # 検査に落ちたら書かない
 ```
 
-- 例のデータ: `assets/templates/single-html/example.data.json`。`file` は `new` が出力先の名前に合わせる。
+- 例のデータ: `assets/templates/adapters/web/single-html/example.data.json`。`file` は `new` が出力先の名前に合わせる。
 - 殻（CSS・JS）は直さない。足りない見せ方があれば、データの書き方で表せないかを先に考える（表・リスト・注記・折りたたみの組み合わせ）。
 
 ## 2. データの形
@@ -83,11 +83,11 @@ node "$S" set <出力先>/report.html data.json   # 検査に落ちたら書か�
 
 ## 5. 確かめる
 
-`node assets/templates/single-html/feedback-report.e2e.cjs [<report.html>]`（Playwright が要る。無ければ skip）。殻を直したときは必ず通す。
+`node assets/templates/adapters/web/single-html/feedback-report.e2e.cjs [<report.html>]`（Playwright が要る。無ければ skip）。殻を直したときは必ず通す。
 
 スマホの実機のブラウザ（殻のスマホ向けの部分を直したとき）:
 
-- **Android の Chrome**（エミュレータか USB の実機）: `report.html` のあるディレクトリで `python3 -m http.server 8090 --bind 127.0.0.1`、`adb reverse tcp:8090 tcp:8090`、Chrome で `http://localhost:8090/report.html` を開き、`adb forward tcp:9333 localabstract:chrome_devtools_remote` のあと `node assets/templates/single-html/feedback-report.android-chrome.cjs http://127.0.0.1:9333`。新しい AVD の Chrome は初回の画面が出るので、規約に同意する代わりに `adb shell 'echo "chrome --disable-fre --no-first-run" > /data/local/tmp/chrome-command-line'` と `adb shell am set-debug-app --persistent com.android.chrome` で飛ばす。
+- **Android の Chrome**（エミュレータか USB の実機）: `report.html` のあるディレクトリで `python3 -m http.server 8090 --bind 127.0.0.1`、`adb reverse tcp:8090 tcp:8090`、Chrome で `http://localhost:8090/report.html` を開き、`adb forward tcp:9333 localabstract:chrome_devtools_remote` のあと `node assets/templates/adapters/web/single-html/feedback-report.android-chrome.cjs http://127.0.0.1:9333`。新しい AVD の Chrome は初回の画面が出るので、規約に同意する代わりに `adb shell 'echo "chrome --disable-fre --no-first-run" > /data/local/tmp/chrome-command-line'` と `adb shell am set-debug-app --persistent com.android.chrome` で飛ばす。
 - **キーボード**: CDP の文字入力ではソフトキーボードが出ない。入力欄を `adb shell input tap` で押して出し、`visualViewport.offsetTop + height` がシートの下端以上か（シートが隠れていないか）を見る。
 - **iOS の Safari**（シミュレータ）: `xcrun simctl openurl booted http://127.0.0.1:8090/report.html` で開き、Maestro（`appId: com.apple.mobilesafari`、`tapOn: "<表示の文字>"`）で操作し、コピーのあと `xcrun simctl pbpaste booted` で中身を見る。
 
