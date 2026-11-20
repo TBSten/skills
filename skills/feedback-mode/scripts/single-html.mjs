@@ -60,7 +60,7 @@ export function validate(data) {
       if (type === 'table') {
         if (!Array.isArray(b.columns) || !b.columns.length) where(`${bp}.columns`, '1 つ以上の { key, label } の配列にしてください');
         else b.columns.forEach((c, j) => { if (typeof c?.key !== 'string' || !/^[\w-]+$/.test(c.key)) where(`${bp}.columns[${j}].key`, '英数字・_・- の文字列にしてください'); });
-        if (!Array.isArray(b.rows)) where(`${bp}.rows`, '配列にしてください'); else ids(b.rows, `${bp}.rows`);
+        if (!Array.isArray(b.rows)) where(`${bp}.rows`, '配列にしてください'); else { b.rows.forEach((r, j) => { if (!r || typeof r !== 'object' || Array.isArray(r)) where(`${bp}.rows[${j}]`, '{ <列の key>: 値 } のオブジェクトにしてください'); }); ids(b.rows, `${bp}.rows`); }
       }
       if (type === 'details') { if (typeof b.summary !== 'string') where(`${bp}.summary`, '文字列にしてください'); blocks(b.blocks ?? [], `${bp}.blocks`); }
     });

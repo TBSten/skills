@@ -1,5 +1,6 @@
 // feedback-report.e2e.cjs — feedback-report.html をヘッドレスの Chromium で確かめる（Playwright が要る。無ければ skip）。
-//   node feedback-report.e2e.cjs [<report.html>]   既定: このディレクトリの example.data.json から一時ファイルを作って使う
+//   node feedback-report.e2e.cjs [<report.html>]   例のデータ（example.data.json）から作った HTML で決まった流れを通す。
+//   <report.html> を渡すと、それにも中身に依らない確認（開く → 本文の最初の項目に書く → 保存 → コピー・エラー 0・横スクロール 0）をする
 // 確かめること（references/setup/web/single-html.md §7）:
 //   PC とスマホ幅: 選ぶ → 書く → 保存 → 印 → まとめてコピーの中身 / コンソールのエラー 0・横スクロール 0
 //   書きかけが再読み込みで消えない / 2 回目のコピーは新しいものだけ / 保存できない状態でもコピーできる / 回答が JSON で入る
@@ -10,14 +11,18 @@ const { execFileSync } = require('node:child_process');
 let chromium;
 try { ({ chromium } = require('playwright')); } catch { console.log('SKIP: playwright が無い'); process.exit(0); }
 
+const { pathToFileURL } = require('node:url');
 const assert = (c, m) => { if (!c) throw new Error(`NG: ${m}`); console.log(`ok - ${m}`); };
-const file = process.argv[2] ?? (() => {
+// 決まった流れは、中身を知っている例のデータから作った HTML で確かめる
+const example = (() => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'fb-single-'));
   const out = path.join(dir, 'report.html');
   execFileSync(process.execPath, [path.join(__dirname, '../../../scripts/single-html.mjs'), 'new', out, '--data', path.join(__dirname, 'example.data.json')]);
   return out;
 })();
-const url = `file://${file}`;
+const url = pathToFileURL(example).href;
+// 引数の HTML は中身に依らないことだけ確かめる
+const target = process.argv[2] ? pathToFileURL(path.resolve(process.argv[2])).href : null;
 
 async function run(browser, { name, viewport, storage = true }) {
   console.log(`# ${name}`);
@@ -111,12 +116,42 @@ async function run(browser, { name, viewport, storage = true }) {
   await ctx.close();
 }
 
+async function runAny(browser, { name, viewport, href }) {
+  console.log(`# ${name}`);
+  const ctx = await browser.newContext({ viewport, hasTouch: viewport.width < 600, permissions: ['clipboard-read', 'clipboard-write'] });
+  const page = await ctx.newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
+  await page.goto(href);
+  await page.click('#fb-toggle');
+  const loc = page.locator('[data-fb^="sections"]').first();
+  await loc.evaluate((el) => el.scrollIntoView({ block: 'center' }));
+  const b = await loc.boundingBox();
+  await page.mouse.click(b.x + Math.min(10, b.width / 2), b.y + Math.min(8, b.height / 2));
+  assert(await page.locator('#fb-editor').isVisible(), '本文の最初の項目をクリックで入力欄が開く');
+  await page.fill('#fb-editor textarea', 'e2e の確認');
+  await page.click('#fb-editor [data-act=save]');
+  assert(await page.locator('.fb-badge').first().isVisible(), '保存すると印が出る');
+  await page.keyboard.press('Escape');
+  await page.click('#fb-menu [data-act=copy]'); await page.waitForTimeout(200);
+  const text = await page.evaluate(() => navigator.clipboard.readText()).catch(() => page.locator('#fb-preview textarea').inputValue());
+  assert(/対象: \S+/.test(text) && text.includes('> e2e の確認'), 'コピーに対象と文が入る');
+  assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), '横スクロールが無い');
+  assert(errors.length === 0, `コンソールのエラーが無い ${errors.join(' / ')}`);
+  await ctx.close();
+}
+
 (async () => {
   const browser = await chromium.launch();
   try {
     await run(browser, { name: 'PC', viewport: { width: 1280, height: 800 } });
     await run(browser, { name: 'スマホ幅', viewport: { width: 390, height: 844 } });
     await run(browser, { name: '保存できない', viewport: { width: 1280, height: 800 }, storage: false });
+    if (target) {
+      await runAny(browser, { name: `${process.argv[2]}（PC）`, viewport: { width: 1280, height: 800 }, href: target });
+      await runAny(browser, { name: `${process.argv[2]}（スマホ幅）`, viewport: { width: 390, height: 844 }, href: target });
+    }
     console.log('PASS');
   } finally { await browser.close(); }
 })().catch((e) => { console.error(e.message); process.exit(1); });

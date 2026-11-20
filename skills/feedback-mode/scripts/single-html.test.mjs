@@ -26,10 +26,10 @@ test('差し替えは `<` を逃がし、</script> を含む文でも切れな�
 });
 
 test('検査: よくある間違いを場所つきで返す', () => {
-  const errs = validate({ title: '', sections: [{ id: 'a b', title: 'x', blocks: [{ type: 'chart' }, { type: 'table', columns: [], rows: [] }] }, { id: 'dup', title: 'y' }, { id: 'dup', title: 'z' }],
+  const errs = validate({ title: '', sections: [{ id: 'a b', title: 'x', blocks: [{ type: 'chart' }, { type: 'table', columns: [], rows: [] }, { type: 'table', columns: [{ key: 'k', label: 'K' }], rows: [null, ['x']] }] }, { id: 'dup', title: 'y' }, { id: 'dup', title: 'z' }],
     questions: [{ id: 'q1', text: 't', options: [{ value: 'a', label: 'A' }, { value: 'b', label: 'B' }], recommend: 'c' }] });
   const has = (re) => assert.ok(errs.some((e) => re.test(e)), `${re} が無い: ${errs.join(' | ')}`);
-  has(/^title:/); has(/^sections\[0\]\.id:/); has(/^sections\[0\]\.blocks\[0\]\.type:.*chart/); has(/^sections\[0\]\.blocks\[1\]\.columns:/); has(/^sections\[2\]\.id:.*重複/); has(/^questions\[0\]\.recommend:/);
+  has(/^title:/); has(/^sections\[0\]\.id:/); has(/^sections\[0\]\.blocks\[0\]\.type:.*chart/); has(/^sections\[0\]\.blocks\[1\]\.columns:/); has(/^sections\[0\]\.blocks\[2\]\.rows\[0\]:/); has(/^sections\[0\]\.blocks\[2\]\.rows\[1\]:/); has(/^sections\[2\]\.id:.*重複/); has(/^questions\[0\]\.recommend:/);
 });
 
 test('cli: new → get → set → check', () => {
