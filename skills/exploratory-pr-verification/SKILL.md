@@ -64,7 +64,7 @@ They require `bash`, `git`, `jq`, and an authenticated `gh` (for `pr-state.sh`).
 | `scripts/init-exploration.sh <pr-id>` | Scaffold `.local/tmp/exploratory-pr-<id>/` (problems subdirs, log, gradle-isolation) + the FINAL-SUMMARY.md skeleton incl. the cluster-family table |
 | `scripts/new-ticket.sh --cat N --severity P0..P3 --slug <slug> --id <pr-id> [--iter N]` | Atomically allocate the next `NNNN` (parallel-safe across all 5 cats) and generate the ticket skeleton; prints the file path |
 | `scripts/pr-state.sh <pr>` | One JSON snapshot: force-push detection, new commits, maintainer-latency band (§16 table built in), own-comment count vs the 8/12 thresholds, unresolved review threads (paginated) |
-| `templates/kick-prompts/cat1.md … cat5.md` | Per-cat subagent kick prompts with required reading, cat role, touch-domain constraints, and ticket-script usage embedded — the orchestrator only substitutes `<id>` and `<iter>` |
+| `templates/kick-prompts/cat1.md … cat5.md` | Per-cat subagent kick prompts with required reading, cat role, touch-domain constraints, and ticket-script usage embedded — the orchestrator only substitutes `<id>`, `<iter>` and `<skill-root>` (absolute `SKILL_ROOT`) |
 
 ## 1. Overall workflow
 
@@ -75,7 +75,7 @@ They require `bash`, `git`, `jq`, and an authenticated `gh` (for `pr-state.sh`).
 4. **Hard reset if needed** (`git reset --hard origin/<branch>`) when the JSON reports
    `forcePushSuspected` or new commits; revert working tree first if dirty
 5. **Kick N (default 5) explore subagents in parallel** — build each prompt from
-   `templates/kick-prompts/cat<N>.md`, substituting only `<id>` / `<iter>`
+   `templates/kick-prompts/cat<N>.md`, substituting only `<id>` / `<iter>` / `<skill-root>` (absolute `SKILL_ROOT`)
    (all `run_in_background: true`)
 6. **Receive completion notifications one by one**; aggregate findings
 7. **Post a PR comment only for P0/P1 findings** that are not duplicates of previous comments
@@ -102,7 +102,7 @@ KMP library / server framework / build tooling / etc.).
 
 Kick each cat with its template from `templates/kick-prompts/cat<N>.md` — the required-reading
 list, role, touch-domain constraint, and ticket-script usage are embedded; the orchestrator
-substitutes only `<id>` and `<iter>`.
+substitutes only `<id>`, `<iter>` and `<skill-root>`.
 
 ## 3. PDCA cycle for dynamic verification
 
@@ -233,7 +233,7 @@ The orchestrator should `date`-check remaining time before kicking and pick the 
 The kick-prompt templates (`templates/kick-prompts/cat<N>.md`) already embed this list — use
 them. Each subagent prompt must direct the cat to read, in order:
 
-- This SKILL.md (`<repo-root>/.claude/skills/exploratory-pr-verification/SKILL.md`) — first
+- This SKILL.md (`<skill-root>/SKILL.md`) — first
 - `.local/tmp/exploratory-pr-<id>/FINAL-SUMMARY.md` (the latest snapshot)
 - Recent iteration log files (the cat's previous output)
 - Salient ticket files (the important ones — skim only)

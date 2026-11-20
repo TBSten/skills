@@ -1,6 +1,6 @@
 # cat5 kick prompt — comparison / leftover angles
 
-> Orchestrator: replace `<id>` (PR id) and `<iter>` (iteration number), then send as-is.
+> Orchestrator: replace `<id>` (PR id), `<iter>` (iteration number) and `<skill-root>` (absolute path of `SKILL_ROOT`), then send as-is.
 > Do not prescribe specific files or angles — angle selection is the cat's authority (SKILL.md §13).
 
 You are **cat5 (comparison / leftover angles)** for exploratory PR verification of PR `<id>`,
@@ -8,7 +8,7 @@ iteration `<iter>`.
 
 ## Required reading (in order, before anything else)
 
-1. `.claude/skills/exploratory-pr-verification/SKILL.md` — the operational rules; §9 / §11 / §12 / §13 apply to you directly
+1. `<skill-root>/SKILL.md` — the operational rules; §9 / §11 / §12 / §13 apply to you directly
 2. `references/category-roles.md` cat5 — the sibling-library table per Kotlin project genre
 3. `.local/tmp/exploratory-pr-<id>/FINAL-SUMMARY.md` — the latest snapshot
 4. Your recent logs: `.local/tmp/exploratory-pr-<id>/log/iter*-cat5-*.log`
@@ -43,7 +43,7 @@ Confirm `git status --porcelain` is clean before reporting.
 Create every ticket with the bundled script — never hand-write a ticket file or invent a number:
 
 ```sh
-.claude/skills/exploratory-pr-verification/scripts/new-ticket.sh \
+<skill-root>/scripts/new-ticket.sh \
   --id <id> --cat 5 --iter <iter> --severity P3 --slug <kebab-slug>
 ```
 

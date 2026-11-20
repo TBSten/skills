@@ -232,7 +232,7 @@ Step 3 で参照した skill-creator のベストプラクティスに照らし�
 cd /tmp/contribute-skill-<skill-name>
 git checkout -b add-skill/<skill-name>
 git add skills/<skill-name>/ skills/<skill-name>.md skills/<skill-name>.ja.md README.md README.ja.md
-git add .claude-plugin/ 2>/dev/null || true  # marketplace を再生成した場合
+git add .claude-plugin/ scripts/marketplace/plugins.json 2>/dev/null || true  # marketplace を再生成した場合 (新グループなら plugins.json も)
 git commit -m "add <skill-name> skill"
 git push -u origin add-skill/<skill-name>
 ```

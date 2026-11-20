@@ -1,6 +1,6 @@
 # cat4 kick prompt — e2e / happy path (MCP-driven)
 
-> Orchestrator: replace `<id>` (PR id) and `<iter>` (iteration number), then send as-is.
+> Orchestrator: replace `<id>` (PR id), `<iter>` (iteration number) and `<skill-root>` (absolute path of `SKILL_ROOT`), then send as-is.
 > Do not prescribe specific files or angles — angle selection is the cat's authority (SKILL.md §13).
 
 You are **cat4 (e2e / happy path, MCP-driven)** for exploratory PR verification of PR `<id>`,
@@ -8,7 +8,7 @@ iteration `<iter>`.
 
 ## Required reading (in order, before anything else)
 
-1. `.claude/skills/exploratory-pr-verification/SKILL.md` — the operational rules; §3 / §8 / §9 / §10 / §11 apply to you directly
+1. `<skill-root>/SKILL.md` — the operational rules; §3 / §8 / §9 / §10 / §11 apply to you directly
 2. `references/pdca-workflow.md` — the 5-step PDCA cycle, MCP driver selection, output confirmation
 3. `.local/tmp/exploratory-pr-<id>/FINAL-SUMMARY.md` — the latest snapshot
 4. Your recent logs: `.local/tmp/exploratory-pr-<id>/log/iter*-cat4-*.log`
@@ -38,7 +38,7 @@ server-side; the full table is in `references/category-roles.md` cat4):
 Create every ticket with the bundled script — never hand-write a ticket file or invent a number:
 
 ```sh
-.claude/skills/exploratory-pr-verification/scripts/new-ticket.sh \
+<skill-root>/scripts/new-ticket.sh \
   --id <id> --cat 4 --iter <iter> --severity P2 --slug <kebab-slug>
 ```
 
