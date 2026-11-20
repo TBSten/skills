@@ -31,6 +31,8 @@ useEffect(() => {
 }, [])
 ```
 
+Next.js では `import.meta.env.VITE_*` が無い。コピーした `feedback-entry.dev.js` の `start()` で、送信先と鍵の 2 か所を `process.env.NEXT_PUBLIC_FEEDBACK_ENDPOINT` と `process.env.NEXT_PUBLIC_FEEDBACK_TOKEN` に置き換える（どちらも `.env.development.local` にだけ書く）。
+
 ## 本番から外す
 
 dom と同じ（静的 import にしない・依存は devDependencies・送信先は開発用の env だけ）。確かめる: Vite は `dist`、Next.js は `.next/static` を `check-no-feedback-in-prod.sh` で検査する。

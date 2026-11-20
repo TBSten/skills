@@ -18,6 +18,15 @@
 export async function start() {
   if (window.__feedback) return; // 2 回呼ばれても 1 つだけ（React の StrictMode・HMR）。await の前に印を付ける
   window.__feedback = { pending: true };
+  try {
+    await install();
+  } catch (e) {
+    delete window.__feedback; // 失敗したら印を外し、次の呼び出しでやり直せるようにする
+    throw e;
+  }
+}
+
+async function install() {
   const { installFeedbackMode, httpTransport } = await import('./feedback-mode.js');
   // const { default: html2canvas } = await import('html2canvas'); window.html2canvas = html2canvas; // スクショを撮るなら（devDependency）
   const endpoint = import.meta.env.VITE_FEEDBACK_ENDPOINT; // 例: http://127.0.0.1:7373/__feedback

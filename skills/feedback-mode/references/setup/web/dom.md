@@ -10,7 +10,7 @@ React・Electron・Tauri の画面側もこれを使う（`react.md`・`../deskt
 
 | 差し込み口 | 埋め方 |
 |---|---|
-| `entry` | 既定はホットキー Alt+Shift+F（`opts.hotkey`。Mac の Alt+文字は別の文字になるので `e.code` で判定）。返り値の `enter()` をメニュー・FAB・既存の dev panel から呼ぶ |
+| `entry` | **既存の debug menu・dev panel があれば、その項目から返り値の `enter()` を呼ぶだけにし、`hotkey: () => false` で既定のホットキーを切る**（入口を増やさない。`../setup.md` §3）。基盤が無いときだけ既定のホットキー Alt+Shift+F（`e.code` で判定）か FAB を使う |
 | `pick` / `block` | 組み込み（全面オーバーレイ + `elementsFromPoint` + window の capture）。iframe の中は選べない |
 | `name` | `data-fb="画面/部品"` を付ける |
 | `collect` | `getScreen`（既定: `location.pathname`）・`getView`（store の状態から）・`stateOf(el)`・`getEnv` |
