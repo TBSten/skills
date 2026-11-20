@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# detect.sh — その環境に「フィードバック置き場・Sink 設定・feedback mode の配線」があるかを調べ、実践（loop）と構築（build）のどちらに進むかを提案する。
+# detect.sh — その環境に「フィードバック置き場・Sink 設定・feedback mode の配線」があるかを調べ、loop（消化）と setup（導入）のどちらに進むかを提案する。
 # 使い方: bash scripts/detect.sh [リポジトリのルート（既定: カレント）]
 # 読み取りだけ（何も変更しない）。出力の末尾の VERDICT= を SKILL.md の判定表に当てはめる。
 # -e は付けない: grep の「見つからない」(終了コード 1) を正常系として扱うため。失敗は各所で明示的に判定する
@@ -33,14 +33,14 @@ for p in 'installFeedbackMode' 'registerFeedback' 'feedback-core' 'FeedbackProvi
 done
 [ $wiring -eq 0 ] && echo "  （見つからない）"
 
-echo "== 4. 実践用の skill（feedback-loop 相当）"
+echo "== 4. 消化用の skill（feedback-loop 相当）"
 loopskill=0
 for d in .claude/skills/feedback-loop .claude/skills/feedback-mode "$HOME/.claude/skills/feedback-loop" "$HOME/.claude/skills/feedback-mode"; do
   [ -d "$d" ] && { echo "  $d"; loopskill=1; }
 done
 [ $loopskill -eq 0 ] && echo "  （見つからない）"
 
-echo "== 5. 既存のデバッグ基盤（情報。判定は変えない。build 手順 1b で使う）"
+echo "== 5. 既存のデバッグ基盤（情報。判定は変えない。references/setup/setup.md §3 で使う）"
 dbg=$(grep -rIlE -e 'DebugMenu|debugMenu|debug menu|DevMenu|DevSettings|dev ?panel|DebugDrawer|Hyperion|FLEX|devtools|shakeToDebug|onShake' "${EXCL[@]}" --include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' --include='*.mjs' --include='*.vue' --include='*.dart' --include='*.swift' --include='*.kt' --include='*.java' --include='*.rs' . 2>/dev/null | head -8)
 [ -n "$dbg" ] && echo "$dbg" | sed 's/^/  /' || echo "  （見つからない）"
 echo "  ビルド種別の判定（__DEV__ / kDebugMode / BuildConfig.DEBUG / #if DEBUG / import.meta.env.DEV / isPackaged）を使うファイル数:"
@@ -49,7 +49,7 @@ for p in '__DEV__' 'kDebugMode' 'BuildConfig\.DEBUG' '#if DEBUG' 'import\.meta\.
   [ "$n" -gt 0 ] && echo "    $p: $n"
 done
 
-echo "== 6. 既存のログ基盤（情報。判定は変えない。build 手順 1c で使う）"
+echo "== 6. 既存のログ基盤（情報。判定は変えない。references/setup/setup.md §4 で使う）"
 lg=$(grep -rIlE -e 'electron-log|winston|pino|loglevel|Timber|CocoaLumberjack|OSLog|os_log|Sentry\.|addBreadcrumb|LogBuffer|ring ?buffer|Logger\.root|createLogger|new Logger|logger\.(info|warn|error|debug)\(|\blog\.(info|warn|error|debug)\(' "${EXCL[@]}" --include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' --include='*.mjs' --include='*.dart' --include='*.swift' --include='*.kt' --include='*.java' --include='*.rs' . 2>/dev/null | head -8)
 [ -n "$lg" ] && echo "$lg" | sed 's/^/  /' || echo "  （見つからない）"
 
@@ -69,11 +69,11 @@ done
 
 echo "== 判定"
 if [ $inbox_found -eq 1 ] && [ $wiring -gt 0 ]; then v=loop; r="置き場も配線もある"
-elif [ $inbox_found -eq 1 ]; then v=loop; r="置き場はあるが配線は見つからない（別アプリ・手書きメモ・他の取り込み元）。構築は頼まれたときだけ"
-elif [ $wiring -gt 0 ]; then v=partial; r="配線はあるが置き場・記録が無い（部分的）。動作確認を build の手順 10〜12 で行ってから loop"
+elif [ $inbox_found -eq 1 ]; then v=loop; r="置き場はあるが配線は見つからない（別アプリ・手書きメモ・他の取り込み元）。setup は頼まれたときだけ"
+elif [ $wiring -gt 0 ]; then v=partial; r="配線はあるが置き場・記録が無い（部分的）。references/setup/setup.md の手順 8〜10 で動作確認してから loop"
 elif [ $review_found -eq 1 ]; then v=review; r="Review の置き場（review/）だけがある。references/review/review.md を読む"
-else v=build; r="置き場も配線も見つからない"; fi
+else v=setup; r="置き場も配線も見つからない"; fi
 echo "VERDICT=$v  ($r)"
-[ $loopskill -eq 1 ] && [ "$v" != build ] && echo "NOTE: 既存の feedback-loop skill があるなら、それを正として使い、loop/ は差分の確認に使う"
+[ $loopskill -eq 1 ] && [ "$v" != setup ] && echo "NOTE: 既存の feedback-loop skill があるなら、それを正として使い、loop/ は差分の確認に使う"
 [ $review_resolved -gt 0 ] && echo "NOTE: review/ に人が答えた指摘が $review_resolved 件ある。references/review/review.md §8 で処理する"
-echo "NOTE: ユーザーの明示（「作って」= build / 「対応して」= loop / 両方）が判定より優先"
+echo "NOTE: ユーザーの明示（「作って」= setup / 「対応して」= loop / 両方）が判定より優先"

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# copy-core.sh — feedback-mode のコア（Sink の契約・採番・redact・文の組み立て・3 つの Sink・テスト）と HTTP の受け口を導入先にコピーし、node:test が通ることを確認する。
+# copy-core.sh — feedback-mode のコア（Sink の契約・採番・redact・文の組み立て・3 つの Sink・HTTP の受け口・テスト）を導入先にコピーし、node:test が通ることを確認する。
 # 使い方: bash copy-core.sh <導入先ディレクトリ> [--force]
 #   導入先: dev 専用のディレクトリ（本番ビルドから除外しやすい場所。例: dev/feedback）。無ければ作る。
-#   配置: <導入先>/core/*.mjs（コア・Sink・テスト）と <導入先>/web/feedback-dev-server.mjs（契約テストが HTTP の受け口を使うため。相対 import を保つ）。
+#   配置: <導入先>/core/*.mjs（コア・Sink・HTTP の受け口・テスト）。adapter のひな形（Astro の統合・Electron の main）は <導入先>/core/ を相対 import する。
 #   --force: 既存のファイルを上書きする（既定は 1 つでも既存があればコピーせず中断する）。
 # 終了コード: 0 = コピーしてテストが通った / 1 = テスト失敗・コピー先に既存ファイルあり / 2 = 使い方の誤り・前提（node）が無い
 # 出力: 成功時は最後に OK 行（コピーしたファイル数とテスト結果）。
@@ -16,12 +16,11 @@ usage() { echo "usage: bash $0 <dest-dir> [--force]" >&2; exit 2; }
 DEST="$1"; FORCE=0
 if [ $# -eq 2 ]; then [ "$2" = "--force" ] && FORCE=1 || usage; fi
 
-command -v node >/dev/null 2>&1 || { echo "error: node が見つかりません。Node 18 以上を入れてください（Node が無い環境は references/concepts.md の規則を移植して同等のテストを書く）" >&2; exit 2; }
+command -v node >/dev/null 2>&1 || { echo "error: node が見つかりません。Node 18 以上を入れてください（Node が無い環境は references/spec/data.md と references/spec/transport.md の規則を移植して同等のテストを書く）" >&2; exit 2; }
 [ -d "${SRC}/core" ] || { echo "error: テンプレートが見つかりません: ${SRC}/core（skill の配置が壊れています。再インストールしてください）" >&2; exit 2; }
 
 files=()
 for f in "${SRC}"/core/*.mjs; do files+=("core/$(basename "$f")"); done
-files+=("web/feedback-dev-server.mjs")
 
 if [ "$FORCE" -eq 0 ]; then
   conflicts=()
@@ -32,7 +31,7 @@ if [ "$FORCE" -eq 0 ]; then
   fi
 fi
 
-mkdir -p "${DEST}/core" "${DEST}/web"
+mkdir -p "${DEST}/core"
 for rel in "${files[@]}"; do cp "${SRC}/${rel}" "${DEST}/${rel}"; done
 
 # ディレクトリを渡す形（node --test core/）は新しい Node（v25 で確認）で「Cannot find module」になるので、ファイルを並べて渡す

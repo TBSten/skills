@@ -1,11 +1,11 @@
 /**
- * file-sink.mjs — ローカルのファイルに置く Sink。Node 専用（node:fs）。【実績】
+ * file-sink.mjs — ローカルのファイルに置く Sink。Node 専用（node:fs）。
  *
  * 参照実装（Electron アプリ）の次の 2 ファイルを、Electron・TypeScript に依存しない形で写して Sink の 1 実装にしたもの:
  *   - src/main/feedbackFile.ts   → putEntry（yymmdd-xx.md の採番・wx 書き込み・競合の再試行）・list / read / archive
  *   - src/main/feedbackShots.ts  → putAttachments（<YYYYMMDD-HHMMSS>/window.png, element.png）
  * 参照実装の具体パス（読み替える箇所）: 置き場 = <リポジトリ>/feedback、対応済み置き場 = feedback/archived、添付 = <リポジトリ>/.local/tmp/feedback/<日時>/
- * 【追加】で足したもの: list / read / archive（参照実装のアプリ側にはなく、Agent 運用で人・オーケストレータが ls / cat / mv していた操作を関数にした）。
+ * で足したもの: list / read / archive（参照実装のアプリ側にはなく、Agent 運用で人・オーケストレータが ls / cat / mv していた操作を関数にした）。
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -248,7 +248,7 @@ export function createFileSink({ repoRoot, dir = DEFAULT_INBOX_DIR, attachDir = 
       fs.renameSync(file, dest); // 参照実装の「mv」
       return info(id, 'archived', dest);
     },
-    /** 上書きする文書（メモ）。同じディレクトリの tmp に書いてから rename する（読み手に書きかけが見えない）【追加】 */
+    /** 上書きする文書（メモ）。同じディレクトリの tmp に書いてから rename する（読み手に書きかけが見えない）*/
     async writeDoc(relPath, text) {
       const abs = docFile(relPath);
       fs.mkdirSync(path.dirname(abs), { recursive: true });

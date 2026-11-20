@@ -2,16 +2,16 @@
  * feedback-core.mjs — フィードバック機能の「置き場に依存しないコア」（依存なし・ESM・Node でもブラウザでも動く）。
  *
  * 中身（すべて純粋な関数。ファイルを読み書きしない）:
- *   - Sink（フィードバック置き場）の契約（下の JSDoc）と submitFeedback（スクショの添付 → 文の組み立て → 置き場へ保存の一連）【追加】
- *   - 採番の規則 nextSeqFromIds（置き場が何であっても同じ。archived の番号も数える）【実績】
- *   - redact（秘密情報の伏せ字）【実績】/ cropRect（スクショの切り抜き範囲）【実績】/ buildFeedbackMarkdown（文の組み立て）【追加】
- *   - 記録の形 schema 1（frontmatter の kind / omitted / dirty / stale。meta を渡したときだけ書く。旧形と両方を読める parseRecordFrontmatter）【実績: Web 参照実装】
- *   - safeDocPath（上書きする文書 = メモの置き場の相対パスの検査）【実績: Web 参照実装】
+ *   - Sink（フィードバック置き場）の契約（下の JSDoc）と submitFeedback（スクショの添付 → 文の組み立て → 置き場へ保存の一連）
+ *   - 採番の規則 nextSeqFromIds（置き場が何であっても同じ。archived の番号も数える）
+ *   - redact（秘密情報の伏せ字）/ cropRect（スクショの切り抜き範囲）/ buildFeedbackMarkdown（文の組み立て）
+ *   - 記録の形 schema 1（frontmatter の kind / omitted / dirty / stale。meta を渡したときだけ書く。旧形と両方を読める parseRecordFrontmatter）
+ *   - safeDocPath（上書きする文書 = メモの置き場の相対パスの検査）
  * 置き場の実装は別ファイル:
- *   file-sink.mjs   ローカルのファイル（参照実装の feedbackFile.ts・feedbackShots.ts の写し）【実績】
- *   memory-sink.mjs メモリ（テスト・契約の確認用）【追加】
- *   http-sink.mjs   HTTP で別マシンの受け口（feedback-dev-server.mjs）に送る・読む・閉じる【追加】
- *   （Issue トラッカー・クラウドストレージは references/build/architecture.md §2.2 に概要のみ【未検証】）
+ *   file-sink.mjs   ローカルのファイル（参照実装の feedbackFile.ts・feedbackShots.ts の写し）
+ *   memory-sink.mjs メモリ（テスト・契約の確認用）
+ *   http-sink.mjs   HTTP で別マシンの受け口（feedback-dev-server.mjs）に送る・読む・閉じる
+ *   （Issue トラッカー・クラウドストレージは references/spec/transport.md に概要のみ）
  *
  * 参照実装との関係: 参照実装は main の buildFeedback（feedbackText.ts + feedbackFile.ts + feedbackShots.ts）が、置き場（ファイル）を直接呼んでいる。
  * ここではその 3 つを「文の組み立て（このファイル）」と「置き場（Sink）」に分け、置き場を差し替えられるようにした。
@@ -166,7 +166,7 @@ export function block(lines, lang = 'text') {
 const kv = (obj) => Object.entries(obj ?? {}).map(([k, v]) => `- ${k}: ${v === null || v === undefined ? 'null' : one(typeof v === 'object' ? JSON.stringify(v) : v)}`);
 
 // ---------------------------------------------------------------------------
-// 記録の形 schema 1（frontmatter）【実績: Web 参照実装】。旧形（frontmatter なし）も読めるように、書くのは meta を渡したときだけ
+// 記録の形 schema 1（frontmatter）。旧形（frontmatter なし）も読めるように、書くのは meta を渡したときだけ
 
 /** frontmatter の schema の値。frontmatter の無い旧形は 0 として扱う */
 export const RECORD_SCHEMA = 1;
@@ -211,7 +211,7 @@ export function parseRecordFrontmatter(text) {
 }
 
 /**
- * payload の形は assets/templates/feedback.schema.json。
+ * payload の形は assets/templates/data/feedback.schema.json。
  *   appName, pointer（Agent への案内: ソースの場所・ログの形）, comment,
  *   target { path, element, selector, rect, click, screen, state }, shots { window, element, error }（参照 = Sink が返した refs）,
  *   env {…}, screen {…}, view {…}, logs [{ ts, level, text }]
@@ -232,7 +232,7 @@ export function buildFeedbackMarkdown(payload, options = DEFAULT_OPTIONS, { logL
     lines.push('', '## 選んだ位置', '');
     lines.push(`- 画面: ${code(t.screen ?? '')}`, `- 部品の道筋（data-fb / testID など）: ${code(t.path ?? '')}`, `- 要素: ${one(t.element ?? '')}`);
     if (t.selector) lines.push(`- セレクタ: ${code(t.selector)}`);
-    // 場所を一意に指す手がかり（references/build/locate.md）。xpath / selector は保存の前に引き直して同じ要素に戻ったものだけを送る
+    // 場所を一意に指す手がかり（references/setup/web/locate.md）。xpath / selector は保存の前に引き直して同じ要素に戻ったものだけを送る
     if (t.xpath) lines.push(`- XPath: ${code(t.xpath)}`);
     if (t.fragment) lines.push(`- テキストフラグメント URL: ${t.fragment}`);
     if (t.source) lines.push(`- ソースの行: ${code(t.source)}`);
@@ -287,7 +287,7 @@ export function buildFeedbackMarkdown(payload, options = DEFAULT_OPTIONS, { logL
 }
 
 // ---------------------------------------------------------------------------
-// 送信の一連（参照実装 main.ts の buildFeedback + saveFeedback に相当）【追加】
+// 送信の一連（参照実装 main.ts の buildFeedback + saveFeedback に相当）
 
 const SINK_METHODS = ['putAttachments', 'putEntry', 'list', 'read', 'archive'];
 

@@ -14,16 +14,17 @@ gh skill install tbsten/skills feedback-mode
 選んだ部品を枠で囲んだスクリーンショット）を自動で付けて、**1 件 = 1 記録**としてフィードバック置き場（Inbox）に保存する。
 Claude Code は置き場を読み、記録を実装・調査・設計に振り分けてサブエージェントに任せ、対応済みの記録を archive して報告する。
 
-この skill は **分岐ルーター**。起動時に環境を判定（`scripts/detect.sh`）し、必要な側だけを読む。
+references は **タイミング別** に分け、setup はさらに **プラットフォームごとの adapter** に分けた。起動時にタイミングを判定（`scripts/detect.sh`）し、その入口だけを読む。
 
-| 置き場 | 配線 | 判定 | 読むもの |
-|---|---|---|---|
-| ある | ある / 無い | `loop` | `references/loop/`（消化ループ）だけ |
-| 無い | ある（部分的） | `partial` | 構築ガイドの一部の手順 → loop |
-| 無い（`review/` だけ） | 無い | `review` | `references/review/`（agent の指摘を人に答えてもらう側）だけ |
-| 無い | 無い | `build` | `references/build/`（構築）だけ |
+| 判定 | 状況 | 読むもの |
+|---|---|---|
+| `setup` | 置き場も配線も無い | `references/setup/setup.md` と adapter のファイル **1 枚**（例: `setup/web/astro.md`） |
+| `partial` | 配線はあるが記録が無い | `setup.md` の一部の手順 → loop |
+| `loop` | 置き場がある | `references/loop/`（消化ループ）だけ |
+| `review` | `review/` だけがある | `references/review/`（agent の指摘を人に答えてもらう側）だけ |
 
-片側しか読まないので、関係のない指示がコンテキストに入らない。
+共通仕様（満たすべき機能の必須 / optional・ディレクトリと記録の形・Sink と通信）は `references/spec/` にあり、手順の中で指されたところだけを読む。
+必要なところしか読まないので、関係のない指示がコンテキストに入らない。
 
 逆向き（agent → 人）の道具も持つ。
 
@@ -45,6 +46,7 @@ Claude Code は置き場を読み、記録を実装・調査・設計に振り�
 
 ## 設計方針
 
+- **プラットフォームは adapter で差し替え**: 環境で変わるのは決まった差し込み口（入口・部品の選択・名前・操作を止める・文脈・ログ・スクショ・送り方・本番除外・Agent への案内）だけ。受け口・Sink・記録の形は共通なので、新しい環境は adapter のファイルを 1 枚埋めれば足せる
 - **Sink による抽象化**: 置き場を `Sink` インターフェース（`putAttachments` / `putEntry` / `list` / `read` / `archive`）にした。
   同梱の実装はローカルのファイル・メモリ（テスト用）・HTTP。Issue トラッカー・クラウドストレージは概要のみ
 - **debug ビルド限定**: 配線はビルド時に消す（DCE + 動的 import、`#if DEBUG`、debug source set、別 entrypoint など）。実行時の `enabled` は保険で、
@@ -56,23 +58,17 @@ Claude Code は置き場を読み、記録を実装・調査・設計に振り�
 
 | パス | 役割 |
 |---|---|
-| `SKILL.md` | ルーター。環境を判定し、build・loop・review のどれか 1 つだけ読む |
-| `references/concepts.md` | 用語・記録の形・状態遷移・Sink の契約（共通） |
-| `references/build/` | 構築ガイド（手順・チェックリスト）・アーキテクチャ・環境別の実装指針・静的な HTML のフィードバック（`static-html.md`） |
+| `SKILL.md` | 全体像・タイミングの判定・同梱テンプレートの一覧 |
+| `references/setup/` | `setup.md`（共通の手順・debug 限定・既存のデバッグ基盤・ログ・チェックリスト）、`adapter.md`（差し込み口・adapter の一覧・作り方）、環境ごとの adapter: `web/`（dom・react・astro・single-html と Web の optional 機能の作り方）・`desktop/`（electron・tauri）・`mobile/`（common・react-native・flutter・ios・android） |
 | `references/loop/` | 消化ループ（運用ルール・分類・履歴・報告）・サブエージェントのプロンプト・全体チェック・落とし穴 |
-| `references/review/` | Review の形・流れ・ボタン・選択肢・cli（`review.md`）、印と popup の UI の決まり（`ui.md`）、判断の記録（`decisions.md`） |
-| `assets/templates/` | 導入先にコピーするコード: コア（Sink・採番・redact・Markdown の組み立て・node:test のテスト）・Electron main の配線・Web の UI・モバイル（React Native / Flutter）・既存の debug menu に乗せる例・TypeScript 版のコアと vitest の Sink 契約テスト（`core-ts/`）・Astro の Dev Toolbar 統合（`web/astro/`）・記録とメモの例・JSON スキーマ・Review の指摘 / 選択肢 / 判断の例（`review/`） |
-| `scripts/detect.sh` | 読み取りだけの環境判定。`VERDICT=loop` / `partial` / `review` / `build` を出す |
-| `scripts/review.mjs` | Review の cli（list / show / check / resolve / remove / reopen / send / archived / actions）。導入先の UI の受け口は import して同じ規則で読み書きする。Node 18 以上・依存なし |
-| `scripts/decisions.py` | 判断の記録の検査（check）・照合（match）・Review からの写し（record-review）。python3 の標準ライブラリだけ |
-| `scripts/copy-core.sh` | コアのテンプレートを導入先にコピーし、`node:test` を実行する |
-| `scripts/check-no-feedback-in-prod.sh` | 本番ビルドの成果物にフィードバックモードの痕跡が残っていないか grep する |
+| `references/review/` | Review の形・流れ・ボタン・cli、UI の決まり、判断の記録 |
+| `references/spec/` | `features.md`（必須 / optional）・`data.md`（ディレクトリ・記録・メモ・履歴）・`transport.md`（Sink の契約・Transport・受け口の API） |
+| `assets/templates/core/`・`core-ts/` | 共通のコア: Sink の契約・採番・redact・記録の組み立て・ファイル / メモリ / HTTP の Sink・HTTP の受け口・テスト |
+| `assets/templates/adapters/` | 環境ごとのひな形: `web/dom`・`web/astro`・`desktop/electron`・`mobile/react-native`・`mobile/flutter` |
+| `assets/templates/data/`・`review/` | 記録・メモ・Review の指摘・判断の JSON スキーマと例 |
+| `scripts/` | `detect.sh`（タイミングの判定）・`copy-core.sh`（コアのコピーとテスト）・`check-no-feedback-in-prod.sh`（本番の成果物の検査）・`review.mjs`（Review の cli）・`decisions.py`（判断の記録） |
 
 ## 成熟度と既知の制約
 
-status は **Experimental**。参照実装は、このループを数週間運用した社内向けの Electron ツール。
-2 つ目の参照実装（Astro 7 + Starlight の Web の docs サイト）で、Astro の Dev Toolbar 統合・schema 1 の記録・場所の手がかり・メモ機能・TypeScript 版のコアを足した。TypeScript 版のコア（vitest 32 件）と、最小の Astro 7 のプロジェクトでの統合も確認済み。
-確認済み: コアのテンプレート（メモリ・ファイル・HTTP の Sink に対する `node:test` 36 件）、Web の UI と開発用サーバ（ヘッドレス Electron）、
-偽の成果物に対する本番検査。その後、同じ Web 参照実装で運用した Review（指摘の印と popup・人が足す選択肢・ユーザ影響と推奨度）・判断の記録・静的な HTML のフィードバックを汎用化して足した（`review.mjs` の `node:test` 19 件・`decisions.py` の unittest 21 件で確認。UI は仕様だけで雛形コードは無い）。**未検証**: Electron main の配線・Tauri・React Native・Flutter・iOS / Android のネイティブ断片・html2canvas のスクリーンショット（Web の `modern-screenshot` は確認済み）・
-LAN 越しや実機からの HTTP・各環境の「本番から外す」ビルド設定・Issue トラッカー / クラウドストレージの Sink。
-リリース前には必ず成果物を検査すること。
+status は **Experimental**。確認済み: コア（メモリ・ファイル・HTTP の Sink に対する `node:test` 36 件 + skip 1 件）、TypeScript 版のコア（vitest 32 件）、`review.mjs`（`node:test` 19 件）、`decisions.py`（unittest 21 件）、DOM の adapter（ヘッドレスのブラウザ）、Astro の adapter（Astro 7 + Starlight の実サイトと最小プロジェクト）。Electron の流れは元にしたアプリで数週間運用したが、ひな形の配線そのものは未検証。
+**未検証**: Tauri・React Native・Flutter・iOS / Android のネイティブ・html2canvas のスクショ・LAN 越しや実機からの HTTP・各環境の「本番から外す」ビルド設定・Issue トラッカー / クラウドストレージの Sink。各 adapter のファイルの冒頭に検証状況を書いてある。リリース前には必ず成果物を検査すること。

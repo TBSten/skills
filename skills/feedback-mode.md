@@ -17,15 +17,16 @@ The app attaches context automatically (which part, the screen state, recent log
 selected part outlined) and stores **one record per feedback** in a feedback inbox. Claude Code then reads the inbox,
 splits the records into implement / investigate / design work for subagents, archives the handled ones, and reports.
 
-The skill is a **branching router**. On start it inspects the environment (`scripts/detect.sh`):
+References are split **by timing**, and setup is split **by platform adapter**. On start the skill decides the timing (`scripts/detect.sh`) and reads only that entry:
 
-| Inbox | Wiring | Verdict | What is read |
-|---|---|---|---|
-| exists | exists / missing | `loop` | only `references/loop/` (triage loop) |
-| missing | exists (partial) | `partial` | a few steps of the build guide, then the loop |
-| missing (only `review/`) | missing | `review` | only `references/review/` (the side where a human answers the agent's findings) |
-| missing | missing | `build` | only `references/build/` (construction) |
+| Verdict | Situation | What is read |
+|---|---|---|
+| `setup` | no inbox, no wiring | `references/setup/setup.md` plus **one** adapter file (e.g. `setup/web/astro.md`) |
+| `partial` | wiring but no records | a few steps of `setup.md`, then the loop |
+| `loop` | an inbox exists | only `references/loop/` (triage loop) |
+| `review` | only `review/` exists | only `references/review/` (a human answers the agent's findings) |
 
+Shared specs live in `references/spec/` (required / optional features, directory and record formats, Sink and transport) and are read only where a step points to them.
 Only one side is read, so unrelated instructions never enter the context.
 
 It also covers the other direction (agent → human):
@@ -49,6 +50,7 @@ It also covers the other direction (agent → human):
 
 ## Design policies
 
+- **Platform adapters**: only a fixed set of slots changes per environment (entry, pick, name, block, collect, logs, capture, transport, exclude, pointer). The receiver, Sink and record format stay shared, so adding a platform means filling one adapter file
 - **Sink abstraction**: the inbox is a `Sink` interface (`putAttachments` / `putEntry` / `list` / `read` / `archive`).
   Implementations shipped: local files, memory (tests), HTTP. Issue tracker and cloud storage are outlined only
 - **Debug builds only**: wiring is removed at build time (DCE + dynamic import, `#if DEBUG`, debug source set,
@@ -59,25 +61,19 @@ It also covers the other direction (agent → human):
 
 ## Contents
 
-| Path | Purpose |
+| Path | Role |
 |---|---|
-| `SKILL.md` | Router: detect the environment, read only one of build / loop / review |
-| `references/concepts.md` | Terms, record format, state transitions, the Sink contract (shared) |
-| `references/build/` | Build guide (steps, checklist), architecture, per-platform guidance, static HTML feedback (`static-html.md`) |
-| `references/loop/` | Triage loop (rules, classification, history, report), subagent prompts, full check, lessons learned |
-| `references/review/` | Review: file format, flow, buttons, added choices, CLI (`review.md`); rules for the marks-and-popup UI (`ui.md`); decisions (`decisions.md`) |
-| `assets/templates/` | Code to copy into your app: core (Sinks, numbering, redact, Markdown builder, node:test tests), a TypeScript core with a vitest Sink contract (`core-ts/`), Electron main wiring, web UI, an Astro Dev Toolbar integration (`web/astro/`), mobile (React Native / Flutter), existing-debug-menu examples, JSON schema, record and memo examples, Review finding / choice / decision examples (`review/`) |
-| `scripts/detect.sh` | Read-only environment check that prints `VERDICT=loop` / `partial` / `review` / `build` |
-| `scripts/review.mjs` | Review CLI (list / show / check / resolve / remove / reopen / send / archived / actions). A UI's dev-server handler imports it to read and write with the same rules. Node 18+, no dependencies |
-| `scripts/decisions.py` | Decisions: check, match against findings, copy from Review (record-review). Python 3 standard library only |
-| `scripts/copy-core.sh` | Copies the core templates into your app and runs the `node:test` suite |
-| `scripts/check-no-feedback-in-prod.sh` | Greps a production build artifact for leftovers of the feedback mode |
+| `SKILL.md` | Overview, timing decision, list of bundled templates |
+| `references/setup/` | `setup.md` (common steps, debug-only wiring, existing debug infra, logging, checklist), `adapter.md` (slot list, adapter list, how to add one), and per-platform adapters: `web/` (dom, react, astro, single-html + Web optional features), `desktop/` (electron, tauri), `mobile/` (common, react-native, flutter, ios, android) |
+| `references/loop/` | Triage loop (rules, classification, history, reporting), subagent prompts, full check, lessons |
+| `references/review/` | Review format / flow / buttons / CLI, UI rules, decisions |
+| `references/spec/` | `features.md` (required / optional), `data.md` (directories, records, memos, history), `transport.md` (Sink contract, transports, receiver API) |
+| `assets/templates/core/` · `core-ts/` | Shared core: Sink contract, numbering, redact, record builder, file / memory / HTTP Sinks, HTTP receiver, tests |
+| `assets/templates/adapters/` | Per-platform templates: `web/dom`, `web/astro`, `desktop/electron`, `mobile/react-native`, `mobile/flutter` |
+| `assets/templates/data/` · `review/` | JSON Schema and examples of records, memos, review findings and decisions |
+| `scripts/` | `detect.sh` (timing), `copy-core.sh` (copy core + run tests), `check-no-feedback-in-prod.sh` (grep production artifacts), `review.mjs` (Review CLI), `decisions.py` (decisions) |
 
 ## Maturity and known limitations
 
-Status: **Experimental**. The reference implementation is an internal Electron tool that has run this loop for weeks.
-A second reference implementation (a web docs site built with Astro 7 + Starlight) added the Astro Dev Toolbar integration, the schema 1 record, location hints, the memo feature and the TypeScript core.
-Verified here: the core templates (36 `node:test` tests across memory / file / HTTP Sinks), the TypeScript core (32 vitest tests), the Astro integration in a minimal Astro 7 project, the web UI with the dev server in headless Electron,
-and the production-artifact check against fake artifacts. Later, Review (marks and popups for findings, human-added choices, user impact and recommendation scores), decisions and static HTML feedback, all run on the same web reference implementation, were generalized and added (19 `node:test` tests for `review.mjs`, 21 unittest tests for `decisions.py`; the UI is specified but ships no template code). **Not verified**: the Electron main wiring, Tauri, React Native, Flutter,
-native iOS / Android snippets, html2canvas screenshots (the web reference implementation's `modern-screenshot` is verified), HTTP over a LAN / on real devices, the per-platform "strip from production" build settings,
-and Issue-tracker / cloud-storage Sinks. Always inspect your release artifact before shipping.
+Status is **Experimental**. Verified: the core (`node:test` 36 passing + 1 skipped over memory / file / HTTP Sinks), the TypeScript core (vitest 32), `review.mjs` (`node:test` 19), `decisions.py` (unittest 21), the DOM adapter in a headless browser, and the Astro adapter on a real Astro 7 + Starlight site and a minimal project. The Electron flow ran for weeks in the app it was extracted from, but the template wiring itself is unverified.
+**Unverified**: Tauri, React Native, Flutter, native iOS / Android, html2canvas screenshots, HTTP over LAN or from devices, each platform's production-exclusion build settings, and issue-tracker / cloud-storage Sinks. Each adapter file states its own verification status. Always check the production artifact before release.

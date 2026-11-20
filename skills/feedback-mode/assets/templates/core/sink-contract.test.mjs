@@ -11,7 +11,7 @@ import path from 'node:path';
 import { createMemorySink } from './memory-sink.mjs';
 import { createFileSink } from './file-sink.mjs';
 import { createHttpSink } from './http-sink.mjs';
-import { createHandler } from '../web/feedback-dev-server.mjs';
+import { createHandler } from './feedback-dev-server.mjs';
 import { submitFeedback } from './feedback-core.mjs';
 
 const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), 'fbsink-'));
