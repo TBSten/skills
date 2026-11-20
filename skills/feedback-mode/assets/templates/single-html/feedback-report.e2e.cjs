@@ -49,6 +49,10 @@ async function run(browser, { name, viewport, storage = true }) {
   }
   await page.click('#fb-editor [data-act=save]');
   assert(await page.locator('.fb-badge').first().isVisible(), '保存すると印が出る');
+  // 保存の直後に出るお知らせが、終えるボタン（#fb-toggle）に重ならない（実機の Android Chrome で押せなかった）。
+  // 保存できないときは「保存できない」を知らせる一覧を開いているので見ない
+  // 文の長さ（フォント）で横幅が変わるので、縦に重ならないこと（お知らせの下端 ≦ ボタンの上端）で見る
+  if (storage) assert(await page.evaluate(() => { const t = document.querySelector('#fb-toggle'); const r = t.getBoundingClientRect(); const toast = document.querySelector('#fb-toast'); const ok = t.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)); return ok && (toast.hidden || toast.getBoundingClientRect().bottom <= r.top); }), '保存の直後も終えるボタンを押せる（お知らせが重ならない）');
   // 書きかけ: 別の項目に書いて、再読み込みしても残る
   await click('[data-fb="sections[id=roles].blocks[0]"]');
   await page.fill('#fb-editor textarea', '書きかけ');

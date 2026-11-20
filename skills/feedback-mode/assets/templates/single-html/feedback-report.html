@@ -55,8 +55,8 @@ body.fb-on [data-fb]:hover{outline:2px dashed var(--accent);outline-offset:2px}
 #fb-list .meta{color:var(--muted);font-size:12px}
 #fb-preview textarea{width:100%;min-height:240px;font:13px/1.5 ui-monospace,monospace;white-space:pre-wrap;background:var(--bg);color:var(--fg);border:1px solid var(--line)}
 .fb-head{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:600}
-#fb-toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--fb-menu-h) + 20px);z-index:1004;background:var(--fg);color:var(--bg);padding:8px 14px;border-radius:6px;display:flex;gap:10px;align-items:center}
-#fb-toast button{background:transparent;color:inherit;border-color:currentColor;min-height:28px}
+#fb-toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--fb-menu-h) + 76px);max-width:calc(100vw - 32px);pointer-events:none;z-index:1004;background:var(--fg);color:var(--bg);padding:8px 14px;border-radius:6px;display:flex;gap:10px;align-items:center}
+#fb-toast button{pointer-events:auto;background:transparent;color:inherit;border-color:currentColor;min-height:28px}
 .fb-warn{color:var(--warn);font-size:13px}
 .fb-hint-sp{display:none}
 [hidden]{display:none!important}
@@ -64,7 +64,7 @@ body.fb-on [data-fb]:hover{outline:2px dashed var(--accent);outline-offset:2px}
   .fb-ui button,button.fb-ui{min-height:44px}
   .fb-hint{display:none}.fb-hint-sp{display:inline}
   #fb-banner button{min-height:36px}
-  #fb-editor{left:0!important;right:0;top:auto!important;bottom:0;width:auto;max-width:none;border-radius:12px 12px 0 0}
+  #fb-editor{left:0!important;right:0;top:auto!important;bottom:var(--fb-kb,0px);width:auto;max-width:none;max-height:calc(100dvh - var(--fb-kb,0px));overflow:auto;border-radius:12px 12px 0 0}
   #fb-editor textarea,.q textarea{font-size:16px}
   #fb-list,#fb-preview{left:8px;right:8px;width:auto;max-width:none}
 }
@@ -377,6 +377,11 @@ function updateUi() {
   if (!list.hidden) renderList();
 }
 addEventListener('resize', () => updateUi());
+// スマホでキーボードが出ても、Chrome・Safari とも layout viewport は縮まず bottom:0 のシートが隠れる。見えている範囲（visualViewport）の下端まで持ち上げる
+if (window.visualViewport) {
+  const fitKeyboard = () => { const vv = visualViewport; document.documentElement.style.setProperty('--fb-kb', `${Math.max(0, innerHeight - vv.height - vv.offsetTop)}px`); };
+  visualViewport.addEventListener('resize', fitKeyboard); visualViewport.addEventListener('scroll', fitKeyboard); fitKeyboard();
+}
 render(); updateUi();
 if (!store.ok) showToast('このブラウザでは保存できません。コメントはすぐコピーしてください');
 })();
