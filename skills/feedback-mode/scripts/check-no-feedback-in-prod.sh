@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
-# check-no-feedback-in-prod.sh — 本番ビルドの成果物に feedback-mode のコード・UI・送信先・依存が残っていないことを確かめる。【追加】参照実装には無い
+# check-no-feedback-in-prod.sh — 本番ビルドの成果物に feedback-mode のコード・UI・送信先・依存が残っていないことを確かめる。
 #
 # 使い方: scripts/check-no-feedback-in-prod.sh <本番ビルドの成果物> [...]
 #   成果物: ディレクトリ（dist/・build/・.next/・Electron の out/ や app.asar を展開したもの）、.apk / .aab / .ipa / .app / .asar / .zip
 #   例: Web `npm run build && scripts/check-no-feedback-in-prod.sh dist`
 #       Electron `scripts/check-no-feedback-in-prod.sh "out/MyApp-darwin-arm64/MyApp.app/Contents/Resources"`（app.asar は npx asar extract で展開してから）
 #       Android `./gradlew assembleRelease && scripts/check-no-feedback-in-prod.sh app/build/outputs/apk/release/app-release.apk`
-#       iOS（Release の .app / .ipa）、Flutter（build/app/outputs/…、build/ios/…）、React Native（release の JS バンドルを含む apk / ipa）
+#       iOS（Release の .app / .ipa）。モバイルは check-android-release.sh・check-ios-release.sh が権限・設定も見る
+#       Tauri は release のバイナリがフロントエンドを圧縮して埋め込むので、dist/ を検査する
 # 終了コード: 0 = 見つからない / 1 = 見つかった（成果物と文字列を表示）/ 2 = 使い方の誤り
 # 限界: 文字列の grep なので、難読化・暗号化・圧縮（asar・jar 内の圧縮は unzip で展開する）されたものは見逃す。
 #       権限（スクショ・ネットワーク）は別に確認する（下のコメント）。パターンは templates の識別子・文字列に合わせている。自分のアプリで足す。
@@ -21,7 +22,7 @@ PATTERNS=(
   'app:feedback-save'        # Electron の IPC チャネル
   'feedbackApi'              # preload が公開する名前
   'html2canvas'              # スクショの依存
-  'FeedbackRoot' 'FbTarget' 'FeedbackProvider'  # Compose の FeedbackRoot・SwiftUI の FbTarget など（難読化されると見逃す）
+  'FeedbackRoot' 'FbTarget'  # Compose の FeedbackRoot・SwiftUI の FbTarget など（難読化されると見逃す）
   'installFeedbackMode' 'getRecentLogs'
   '10\.0\.2\.2:7373'         # Android エミュレータから開発機への URL
   ':7373'                    # 受け口の既定のポート
@@ -36,7 +37,7 @@ for target in "$@"; do
     *.apk|*.aab|*.ipa|*.zip|*.jar|*.war) dir="$work/$(basename "$target")"; mkdir -p "$dir"; unzip -qq -o "$target" -d "$dir" || { echo "unzip failed: $target" >&2; exit 2; } ;;
   esac
   for p in "${PATTERNS[@]}"; do
-    # -a: バイナリも文字列として。-I は使わない（.dex・.so・Mach-O・Flutter の libapp.so も見る）。node_modules 等の除外はしない（成果物の中身なので）
+    # -a: バイナリも文字列として。-I は使わない（.dex・.so・Mach-O も見る）。node_modules 等の除外はしない（成果物の中身なので）
     hits=$(grep -r -a -l -E -- "$p" "$dir" 2>/dev/null | head -5)
     if [ -n "$hits" ]; then status=1; echo "FOUND /$p/ in $target"; echo "$hits" | sed 's/^/    /'; fi
   done

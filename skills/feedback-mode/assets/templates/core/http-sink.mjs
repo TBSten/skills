@@ -4,7 +4,7 @@
  * 想定:
  *   - スマホ実機・別マシンのアプリ → 同じ LAN の開発機（リポジトリがあるマシン）の受け口。受け口は裏で file-sink を使う。
  *   - Agent が別マシンから受け口の置き場を list / read / archive する（受け口の裏がファイルなら、Agent は開発機で直接 ls / mv してもよい）。
- * 画面側（ブラウザ・RN・Flutter など）が JS で文を組み立てられない場合は、この Sink ではなく feedback-mode.js の transport（生の submission を
+ * 画面側（ブラウザ・Compose・SwiftUI など）が JS で文を組み立てられない場合は、この Sink ではなく feedback-mode.js の transport（生の submission を
  * POST /__feedback に送る）を使い、受け口側で submitFeedback を呼ぶ（assets/templates/core/feedback-dev-server.mjs が両方に対応）。
  *
  * 認証: 受け口に FEEDBACK_TOKEN を設定したら、ここにも token を渡す（ヘッダ x-feedback-token）。LAN に出すときは必須にする。

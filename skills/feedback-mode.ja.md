@@ -36,7 +36,7 @@ references は **タイミング別** に分け、setup はさらに **プラッ
 
 ## 使うべきタイミング
 
-- Web（DOM・React・Astro）・Desktop（Electron / Tauri）アプリで、画面・状態・ログ・スクリーンショット付きのフィードバックを Claude Code の作業に流したい
+- Web（DOM・React・Astro）・Desktop（Electron / Tauri）・モバイル（Android の Compose・Compose Multiplatform・iOS の SwiftUI）アプリで、画面・状態・ログ・スクリーンショット付きのフィードバックを Claude Code の作業に流したい
 - フィードバックの保存先（ローカルのファイル・開発機への HTTP 受け口・Issue トラッカー・クラウドストレージ）を変えたい
 - フォルダに溜まったフィードバックを、サブエージェントで一通り対応させたい
 - すでに debug menu・開発者向け画面があり、そこにフィードバックの入口を足したい
@@ -59,39 +59,41 @@ references は **タイミング別** に分け、setup はさらに **プラッ
 | パス | 役割 |
 |---|---|
 | `SKILL.md` | 全体像・タイミングの判定・同梱テンプレートの一覧 |
-| `references/setup/` | `setup.md`（共通の手順・debug 限定・既存のデバッグ基盤・ログ・チェックリスト）、`adapter.md`（差し込み口・adapter の一覧・作り方）、環境ごとの adapter: `web/`（dom・react・astro・single-html と Web の optional 機能の作り方）・`desktop/`（electron・tauri） |
+| `references/setup/` | `setup.md`（共通の手順・debug 限定・既存のデバッグ基盤・ログ・チェックリスト）、`adapter.md`（差し込み口・adapter の一覧・作り方）、環境ごとの adapter: `web/`（dom・react・astro・single-html と Web の optional 機能の作り方）・`desktop/`（electron・tauri）・`mobile/`（common・android・kmp・ios） |
 | `references/loop/` | 消化ループ（運用ルール・分類・履歴・報告）・サブエージェントのプロンプト・全体チェック・落とし穴 |
 | `references/review/` | Review の形・流れ・ボタン・cli、UI の決まり、判断の記録 |
 | `references/spec/` | `features.md`（必須 / optional）・`data.md`（ディレクトリ・記録・メモ・履歴）・`transport.md`（Sink の契約・Transport・受け口の API） |
 | `assets/templates/core/`・`core-ts/` | 共通のコア: Sink の契約・採番・redact・記録の組み立て・ファイル / メモリ / HTTP の Sink・HTTP の受け口・テスト |
-| `assets/templates/adapters/` | 環境ごとのひな形: `web/dom`・`web/astro`・`desktop/electron` |
+| `assets/templates/adapters/` | 環境ごとのひな形: `web/dom`・`web/astro`・`desktop/electron`・`mobile/compose`・`mobile/android`・`mobile/kmp`・`mobile/ios` |
 | `assets/templates/data/`・`review/` | 記録・メモ・Review の指摘・判断の JSON スキーマと例 |
-| `scripts/` | `detect.sh`（タイミングの判定）・`copy-core.sh`（コアのコピーとテスト）・`check-no-feedback-in-prod.sh`（本番の成果物の検査）・`watch-inbox.mjs`（新しい記録を待ち、来たらすぐ loop を始める）・`review.mjs`（Review の cli）・`decisions.py`（判断の記録） |
+| `scripts/` | `detect.sh`（タイミングの判定）・`copy-core.sh`（コアのコピーとテスト）・`check-no-feedback-in-prod.sh`（本番の成果物の検査）・`check-android-release.sh` / `check-ios-release.sh`（release の APK・`.app` の権限と設定も見る）・`watch-inbox.mjs`（新しい記録を待ち、来たらすぐ loop を始める）・`review.mjs`（Review の cli）・`decisions.py`（判断の記録） |
 
 ## 環境ごとの対応表
 
-| 機能 | DOM | React + Vite | Astro | Electron | Tauri | 1 枚の HTML |
-|---|---|---|---|---|---|---|
-| 必須の通し（入る → 選ぶ → 送る → 記録ができる・下にクリックが届かない・本番の検査） | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 入口 | ホットキー・既存の dev panel から `enter()` | 同左 | Dev Toolbar のアプリ | 開発メニューの項目 | ホットキー | 右下のボタン |
-| 送り方（Transport） | HTTP | HTTP | toolbar のメッセージ | IPC | HTTP | クリップボード |
-| O1 スクリーンショット | ✅ html2canvas | ✅ html2canvas | 📝 modern-screenshot | ✅ `capturePage` | — | — |
-| O2 下書き | 🧩 | 🧩 | 📝 | 🧩 | 🧩 | ✅ |
-| O3 複数選択 | — | — | 📝 | — | — | ✅ |
-| O4 テキストの選択 | — | — | 📝 | — | — | ✅ |
-| O5 ページ全体 | — | — | 🧩 | — | — | ✅ |
-| O6 場所の手がかり | ✅ CSS セレクタ | ✅ CSS セレクタ | ✅ XPath・セレクタ | ✅ CSS セレクタ | ✅ CSS セレクタ | ✅ JSON の場所 |
-| O7 popover | — | — | ✅ | — | — | ✅ |
-| O8 スマホ幅 | — | — | ✅ | — | — | ✅ |
-| O9 テーマ追従 | — | — | ✅ | — | — | 🧩 |
-| O10 メモ | — | — | 📝 | — | — | — |
-| O11 オプションの記憶 | 🧩 | 🧩 | — | 🧩 | 🧩 | — |
+| 機能 | DOM | React + Vite | Astro | Electron | Tauri | 1 枚の HTML | Android（Compose） | CMP（Android・iOS・Desktop・Web） | iOS（SwiftUI） |
+|---|---|---|---|---|---|---|---|---|---|
+| 必須の通し（入る → 選ぶ → 送る → 記録ができる・下にクリックが届かない・本番の検査） | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 入口 | ホットキー・既存の dev panel から `enter()` | 同左 | Dev Toolbar のアプリ | 開発メニューの項目 | ホットキー | 右下のボタン | 画面の隅の「FB」ボタン | 同左 | 同左 |
+| 送り方（Transport） | HTTP | HTTP | toolbar のメッセージ | IPC | HTTP | クリップボード | HTTP | HTTP | HTTP |
+| O1 スクリーンショット | ✅ html2canvas | ✅ html2canvas | 📝 modern-screenshot | ✅ `capturePage` | — | — | ✅ graphics layer | ✅ graphics layer | ✅ `drawHierarchy` |
+| O2 下書き | 🧩 | 🧩 | 📝 | 🧩 | 🧩 | ✅ | — | — | — |
+| O3 複数選択 | — | — | 📝 | — | — | ✅ | — | — | — |
+| O4 テキストの選択 | — | — | 📝 | — | — | ✅ | — | — | — |
+| O5 ページ全体 | — | — | 🧩 | — | — | ✅ | — | — | — |
+| O6 場所の手がかり | ✅ CSS セレクタ | ✅ CSS セレクタ | ✅ XPath・セレクタ | ✅ CSS セレクタ | ✅ CSS セレクタ | ✅ JSON の場所 | — | — | — |
+| O7 popover | — | — | ✅ | — | — | ✅ | — | — | — |
+| O8 スマホ幅 | — | — | ✅ | — | — | ✅ | — | — | — |
+| O9 テーマ追従 | — | — | ✅ | — | — | 🧩 | — | — | — |
+| O10 メモ | — | — | 📝 | — | — | — | — | — | — |
+| O11 オプションの記憶 | 🧩 | 🧩 | — | 🧩 | 🧩 | — | — | — | — |
 
 ✅ ひな形にコードがあり、その環境で動かして確かめた　🧩 ひな形にコードはあるが、その機能はその環境で動かしていない　📝 作り方だけ（コードは無い。実際の運用で使った作り方）　— 無い
+
+CMP の Desktop は、ウィンドウを人が操作するところまでは確かめていない（同じ画面を UI テストで動かして送った）。モバイルの実機（USB の Android・iOS）も未確認。
 
 機能の中身は `references/spec/features.md`、各環境で何の版をどう確かめたかは各 adapter のファイルの冒頭。
 
 ## 成熟度と既知の制約
 
-status は **Experimental**。確認済み: コア（メモリ・ファイル・HTTP の Sink に対する `node:test` 36 件 + skip 1 件）、TypeScript 版のコア（vitest 32 件）、`review.mjs`（`node:test` 19 件）、`decisions.py`（unittest 21 件）、`watch-inbox.mjs`（`node:test` 8 件）。adapter は、ひな形をそのままコピーした最小アプリを実際に動かして確かめた: DOM と React 19 + Vite 7（ヘッドレスの Chromium。html2canvas のスクショも）、Astro 7（Starlight の実サイトと最小プロジェクト）、Electron 38（xvfb + Playwright の `_electron`）、Tauri 2（Linux の xvfb + tauri-driver）。どれも本番の成果物を `check-no-feedback-in-prod.sh` で検査した。
+status は **Experimental**。確認済み: コア（メモリ・ファイル・HTTP の Sink に対する `node:test` 36 件 + skip 1 件）、TypeScript 版のコア（vitest 32 件）、`review.mjs`（`node:test` 19 件）、`decisions.py`（unittest 21 件）、`watch-inbox.mjs`（`node:test` 8 件）。adapter は、ひな形をそのままコピーした最小アプリを実際に動かして確かめた: DOM と React 19 + Vite 7（ヘッドレスの Chromium。html2canvas のスクショも）、Astro 7（Starlight の実サイトと最小プロジェクト）、Electron 38（xvfb + Playwright の `_electron`）、Tauri 2（Linux の xvfb + tauri-driver）、Android の Compose（エミュレータ API 36.1）、Compose Multiplatform（Android エミュレータ・iOS シミュレータ・wasmJs の Chrome。Desktop は UI テストで 1 件送るまで）、iOS の SwiftUI（iOS 26.2 シミュレータ）。USB の Android 実機と iOS 実機はまだ確かめていない。どれも本番の成果物を `check-no-feedback-in-prod.sh` で検査した。
 実際に動かしたものだけを載せている。各 adapter のファイルの冒頭に、何の版で何を確かめたかを書いてある。リリース前には必ず成果物を検査すること。

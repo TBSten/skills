@@ -66,7 +66,7 @@ Sink { kind, capabilities{put,list,read,archive,doc}
 
 | メソッドとパス | 中身 | 使う側 |
 |---|---|---|
-| `POST /__feedback` | submission（`data.md` §4。画像は base64）→ `submitFeedback` → `{ ok, id, ref, bytes, shots }` | 文を組み立てない画面（Flutter・ネイティブ・dom） |
+| `POST /__feedback` | submission（`data.md` §4。画像は base64）→ `submitFeedback` → `{ ok, id, ref, bytes, shots }` | 文を組み立てない画面（dom・Compose・SwiftUI） |
 | `POST /__feedback/attachments` | `{ files:[{name,mime,dataBase64}], now? }` → `{ ok, refs, dir, error }` | HTTP の Sink |
 | `POST /__feedback/entries` | `{ text, now? }` → `{ ok, entry }`（受け口でも redact） | HTTP の Sink |
 | `GET /__feedback/entries?state=open` | 一覧 | loop（別マシンのとき） |

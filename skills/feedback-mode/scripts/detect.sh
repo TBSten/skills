@@ -27,7 +27,7 @@ sink_hits=$( { grep -rIlE 'FEEDBACK_(ENDPOINT|DIR|TOKEN|HOST|REPO_ROOT)|feedback
 
 echo "== 3. feedback mode の配線（画面側・受け口側のコード）"
 wiring=0
-for p in 'installFeedbackMode' 'registerFeedback' 'feedback-core' 'FeedbackProvider' 'FeedbackRoot' 'FbTarget' 'app:feedback' '__feedback' 'data-fb'; do
+for p in 'installFeedbackMode' 'registerFeedback' 'feedback-core' 'FeedbackRoot' 'FbTarget' 'app:feedback' '__feedback' 'data-fb'; do
   n=$(grep -rIlE -e "$p" "${EXCL[@]}" --include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' --include='*.mjs' --include='*.vue' --include='*.svelte' --include='*.dart' --include='*.swift' --include='*.kt' --include='*.rs' --include='*.html' . 2>/dev/null | wc -l | tr -d ' ')
   [ "$n" -gt 0 ] && { echo "  $p: $n ファイル"; wiring=$((wiring + n)); }
 done

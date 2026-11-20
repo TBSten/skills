@@ -39,7 +39,7 @@ It also covers the other direction (agent → human):
 
 ## When to use
 
-- You develop a web (DOM / React / Astro) or desktop (Electron / Tauri) app and want
+- You develop a web (DOM / React / Astro), desktop (Electron / Tauri), or mobile (Android Compose / Compose Multiplatform / iOS SwiftUI) app and want
   in-app feedback that carries screen, state, logs, and screenshots into a Claude Code workflow
 - You want to change where feedback is stored (local files, an HTTP receiver on a dev machine, an issue tracker, cloud storage)
 - Feedback has piled up in a folder and you want Claude Code to work through it with subagents
@@ -64,39 +64,41 @@ It also covers the other direction (agent → human):
 | Path | Role |
 |---|---|
 | `SKILL.md` | Overview, timing decision, list of bundled templates |
-| `references/setup/` | `setup.md` (common steps, debug-only wiring, existing debug infra, logging, checklist), `adapter.md` (slot list, adapter list, how to add one), and per-platform adapters: `web/` (dom, react, astro, single-html + Web optional features), `desktop/` (electron, tauri) |
+| `references/setup/` | `setup.md` (common steps, debug-only wiring, existing debug infra, logging, checklist), `adapter.md` (slot list, adapter list, how to add one), and per-platform adapters: `web/` (dom, react, astro, single-html + Web optional features), `desktop/` (electron, tauri), `mobile/` (common, android, kmp, ios) |
 | `references/loop/` | Triage loop (rules, classification, history, reporting), subagent prompts, full check, lessons |
 | `references/review/` | Review format / flow / buttons / CLI, UI rules, decisions |
 | `references/spec/` | `features.md` (required / optional), `data.md` (directories, records, memos, history), `transport.md` (Sink contract, transports, receiver API) |
 | `assets/templates/core/` · `core-ts/` | Shared core: Sink contract, numbering, redact, record builder, file / memory / HTTP Sinks, HTTP receiver, tests |
-| `assets/templates/adapters/` | Per-platform templates: `web/dom`, `web/astro`, `desktop/electron` |
+| `assets/templates/adapters/` | Per-platform templates: `web/dom`, `web/astro`, `desktop/electron`, `mobile/compose`, `mobile/android`, `mobile/kmp`, `mobile/ios` |
 | `assets/templates/data/` · `review/` | JSON Schema and examples of records, memos, review findings and decisions |
-| `scripts/` | `detect.sh` (timing), `copy-core.sh` (copy core + run tests), `check-no-feedback-in-prod.sh` (grep production artifacts), `watch-inbox.mjs` (wait for new records so the loop can start right away), `review.mjs` (Review CLI), `decisions.py` (decisions) |
+| `scripts/` | `detect.sh` (timing), `copy-core.sh` (copy core + run tests), `check-no-feedback-in-prod.sh` (grep production artifacts), `check-android-release.sh` / `check-ios-release.sh` (also check permissions and settings in release APKs / `.app`), `watch-inbox.mjs` (wait for new records so the loop can start right away), `review.mjs` (Review CLI), `decisions.py` (decisions) |
 
 ## Supported features by platform
 
-| Feature | DOM | React + Vite | Astro | Electron | Tauri | Single HTML |
-|---|---|---|---|---|---|---|
-| Required flow (enter → pick → send → record saved, no click reaches the app, production check) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Entry point | Hotkey, or `enter()` from an existing dev panel | Same | Dev Toolbar app | Dev menu item | Hotkey | Button at the bottom right |
-| Transport | HTTP | HTTP | Toolbar messages | IPC | HTTP | Clipboard |
-| O1 Screenshot | ✅ html2canvas | ✅ html2canvas | 📝 modern-screenshot | ✅ `capturePage` | — | — |
-| O2 Drafts | 🧩 | 🧩 | 📝 | 🧩 | 🧩 | ✅ |
-| O3 Multi-select | — | — | 📝 | — | — | ✅ |
-| O4 Text selection | — | — | 📝 | — | — | ✅ |
-| O5 Whole page | — | — | 🧩 | — | — | ✅ |
-| O6 Location hints | ✅ CSS selector | ✅ CSS selector | ✅ XPath, selector | ✅ CSS selector | ✅ CSS selector | ✅ JSON path |
-| O7 Popover | — | — | ✅ | — | — | ✅ |
-| O8 Phone width | — | — | ✅ | — | — | ✅ |
-| O9 Follow the page theme | — | — | ✅ | — | — | 🧩 |
-| O10 Memos | — | — | 📝 | — | — | — |
-| O11 Remember options | 🧩 | 🧩 | — | 🧩 | 🧩 | — |
+| Feature | DOM | React + Vite | Astro | Electron | Tauri | Single HTML | Android (Compose) | CMP (Android, iOS, Desktop, Web) | iOS (SwiftUI) |
+|---|---|---|---|---|---|---|---|---|---|
+| Required flow (enter → pick → send → record saved, no click reaches the app, production check) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Entry point | Hotkey, or `enter()` from an existing dev panel | Same | Dev Toolbar app | Dev menu item | Hotkey | Button at the bottom right | Corner “FB” button | Same | Same |
+| Transport | HTTP | HTTP | Toolbar messages | IPC | HTTP | Clipboard | HTTP | HTTP | HTTP |
+| O1 Screenshot | ✅ html2canvas | ✅ html2canvas | 📝 modern-screenshot | ✅ `capturePage` | — | — | ✅ graphics layer | ✅ graphics layer | ✅ `drawHierarchy` |
+| O2 Drafts | 🧩 | 🧩 | 📝 | 🧩 | 🧩 | ✅ | — | — | — |
+| O3 Multi-select | — | — | 📝 | — | — | ✅ | — | — | — |
+| O4 Text selection | — | — | 📝 | — | — | ✅ | — | — | — |
+| O5 Whole page | — | — | 🧩 | — | — | ✅ | — | — | — |
+| O6 Location hints | ✅ CSS selector | ✅ CSS selector | ✅ XPath, selector | ✅ CSS selector | ✅ CSS selector | ✅ JSON path | — | — | — |
+| O7 Popover | — | — | ✅ | — | — | ✅ | — | — | — |
+| O8 Phone width | — | — | ✅ | — | — | ✅ | — | — | — |
+| O9 Follow the page theme | — | — | ✅ | — | — | 🧩 | — | — | — |
+| O10 Memos | — | — | 📝 | — | — | — | — | — | — |
+| O11 Remember options | 🧩 | 🧩 | — | 🧩 | 🧩 | — | — | — | — |
 
 ✅ template code exists and was run on that platform　🧩 template code exists, but that feature was not run on that platform　📝 recipe only (no code; a recipe used in real use)　— not available
+
+CMP Desktop was not operated by hand in a window (the same screen was driven by a UI test to send a record). Physical mobile devices (USB Android, iOS) are not verified.
 
 See `references/spec/features.md` for what each feature does, and the top of each adapter file for the versions and how each platform was verified.
 
 ## Maturity and known limitations
 
-Status is **Experimental**. Verified: the core (`node:test` 36 passing + 1 skipped over memory / file / HTTP Sinks), the TypeScript core (vitest 32), `review.mjs` (`node:test` 19), `decisions.py` (unittest 21), `watch-inbox.mjs` (`node:test` 8), and each adapter by actually running a minimal app with the templates copied as-is: DOM and React 19 + Vite 7 in headless Chromium (including html2canvas screenshots), Astro 7 (a real Starlight site and a minimal project), Electron 38 (Playwright `_electron` under xvfb), and Tauri 2 (tauri-driver under xvfb on Linux). Each run also checked the production artifact with `check-no-feedback-in-prod.sh`.
+Status is **Experimental**. Verified: the core (`node:test` 36 passing + 1 skipped over memory / file / HTTP Sinks), the TypeScript core (vitest 32), `review.mjs` (`node:test` 19), `decisions.py` (unittest 21), `watch-inbox.mjs` (`node:test` 8), and each adapter by actually running a minimal app with the templates copied as-is: DOM and React 19 + Vite 7 in headless Chromium (including html2canvas screenshots), Astro 7 (a real Starlight site and a minimal project), Electron 38 (Playwright `_electron` under xvfb), Tauri 2 (tauri-driver under xvfb on Linux), Android Compose (emulator, API 36.1), Compose Multiplatform (Android emulator, iOS simulator, wasmJs in Chrome; Desktop up to sending one record from a UI test), and iOS SwiftUI (iOS 26.2 simulator). Physical Android (USB) and iOS devices are not verified yet. Each run also checked the production artifact with `check-no-feedback-in-prod.sh`.
 Only things that were actually run are included. Each adapter file starts with what was verified and on which versions. Always check the production artifact before release.

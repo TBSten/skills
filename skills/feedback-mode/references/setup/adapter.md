@@ -8,7 +8,7 @@
 |---|---|---|
 | `entry` 入口 | モードに入る手段。既存の debug menu・dev toolbar があればそこに 1 項目足す（新しく作らない） | ホットキー Alt+Shift+F・メニュー項目・FAB・シェイク・Dev Menu の項目・Astro の toolbar アプリ |
 | `pick` 部品の選択 | ポインタ・タップの位置から部品を決める | `document.elementsFromPoint`・名前を付けた部品の registry から位置を含む最小の矩形・`UIView.hitTest`・ビューの再帰 |
-| `name` 部品の名前 | 道筋に使う名前の付け方（`references/spec/features.md` R5） | `data-fb`・`<FbTarget name>`・`accessibilityIdentifier`・`testTag` |
+| `name` 部品の名前 | 道筋に使う名前の付け方（`references/spec/features.md` R5） | `data-fb`・`Modifier.fbTarget("画面/部品")`・`.fbTarget("部品")`・`accessibilityIdentifier`・`testTag` |
 | `block` 操作を止める | モード中にアプリへ入力が届かないようにする（R3） | 全面の透明オーバーレイ + window の capture で click / key / focus を止める |
 | `collect` 文脈 | `getScreen`（画面 ID）・`getView`（画面の状態。モデルから）・`stateOf`（要素ごとのアプリ固有の状態）・`getEnv`（版・OS） | ルーターの現在地・store の状態 |
 | `logs` ログ | `getRecentLogs()` → `[{ ts, level, text }]`（古い順）と、任意の `logEvent(level, text)`。**既存のログ基盤を読むだけ**（作るのは別タスク。`setup.md` §4） | アプリの logger のバッファ・Sentry の breadcrumb |

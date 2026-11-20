@@ -3,7 +3,7 @@ name: feedback-mode
 description: >-
   アプリの debug ビルドに「フィードバックモード」（画面の部品を選んでコメントすると、画面・状態・ログ・スクリーンショット付きの記録が
   置き場に溜まる）を入れ（setup）、溜まった記録を Claude Code が実装・調査・設計に振り分けて消化する（loop）skill。
-  Web（DOM・React・Astro）・Desktop（Electron・Tauri）を adapter で差し替え、
+  Web（DOM・React・Astro）・Desktop（Electron・Tauri）・モバイル（Android の Compose・Compose Multiplatform・iOS の SwiftUI）を adapter で差し替え、
   保存先（ファイル・HTTP）は Sink で差し替える。本番ビルドには入れない。
   agent の指摘を画面の印と popup で人に答えてもらう Review、人の判断を溜めて二度聞かない判断の記録、
   agent が作る 1 枚の HTML に人がコメントして返す仕組みも扱う。
@@ -59,7 +59,8 @@ references/
 │  ├ setup.md       共通の手順・debug 限定・既存のデバッグ基盤・ログ・チェックリスト
 │  ├ adapter.md     差し込み口の一覧・adapter の一覧・新しい環境の adapter の作り方
 │  ├ web/           dom / react / astro / single-html（＋ interaction・locate・memo: Web の optional 機能の作り方）
-│  └ desktop/       electron / tauri
+│  ├ desktop/       electron / tauri
+│  └ mobile/        common（先に読む）/ android / kmp / ios
 ├ loop/       ループ中に読む: loop.md（＋ subagent-prompt・full-check・lessons）
 ├ review/     agent の指摘に人が答えるとき: review.md・ui.md・decisions.md
 └ spec/       共通仕様（setup・loop の中で指されたところだけ読む）
@@ -77,11 +78,13 @@ references/
 | `assets/templates/adapters/web/dom/` | DOM 版のフィードバックモード（`feedback-mode.js`）・開発ビルドの入口・暫定のログ |
 | `assets/templates/adapters/web/astro/` | Astro の Dev Toolbar 統合（受け口）と toolbar アプリ・dist の検査 |
 | `assets/templates/adapters/desktop/electron/` | main の IPC の受け口・開発時だけの preload・renderer の入口・既存の開発用メニューに足す例 |
+| `assets/templates/adapters/mobile/` | `compose/`（Android・CMP 共通の `FeedbackRoot` / `Modifier.fbTarget`）・`android/`（debug / release の source set）・`kmp/`（ターゲットごとの差し込み）・`ios/`（SwiftUI の `.fbTarget`・Debug の xcconfig） |
 | `assets/templates/single-html/` | agent が作って人に渡す 1 枚の HTML のひな形（JSON から描く殻 + コメント + 質問への回答）・例のデータ・e2e |
 | `assets/templates/data/` | 送信 body と記録の frontmatter の JSON Schema・記録とメモの例 |
 | `assets/templates/review/` | Review の指摘・人が足す選択肢・判断の記録の例 |
 | `scripts/detect.sh` | タイミングの判定（読み取りだけ） |
 | `scripts/copy-core.sh` | `core/` を導入先にコピーして `node --test` を通す |
+| `scripts/check-android-release.sh`・`check-ios-release.sh` | release の APK・`.app` にフィードバックのコード・URL・権限・設定が残っていないかを見る |
 | `scripts/check-no-feedback-in-prod.sh` | 本番の成果物にフィードバックモードの痕跡が無いかを grep |
 | `scripts/single-html.mjs` | 1 枚の HTML を作る・データ（JSON）を取り出す・差し替える・検査する（`node:test` 5 件） |
 | `scripts/watch-inbox.mjs` | Inbox を見張り、新しい記録が来たら `NEW <id> <パス>` を出して終わる（loop の §2.6。`node:test` 8 件） |
