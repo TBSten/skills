@@ -32,7 +32,7 @@ agent ──（指摘）──▶ review/ ──▶ 人がボタンで答える 
 
 ## 1. タイミングを決める
 
-1. 人の明示が最優先: 「作って・入れたい・導入」→ **setup**、「対応して・ループ・処理して・見張って」→ **loop**（見張りは `references/loop/loop.md` §2.6）、両方 → setup のあと loop。「指摘を見せたい・人に答えてもらいたい」→ **review**、「判断を記録して」→ `references/review/decisions.md`、「agent が作る HTML にコメントできるように」→ `references/setup/web/single-html.md` だけ。
+1. 人の明示が最優先: 「作って・入れたい・導入」→ **setup**、「対応して・ループ・処理して・見張って」→ **loop**（見張りは `references/loop/watch.md`）、両方 → setup のあと loop。「指摘を見せたい・人に答えてもらいたい」→ **review**、「判断を記録して」→ `references/review/decisions.md`、「agent が作る HTML にコメントできるように」→ `references/setup/web/single-html.md` だけ。
 2. 明示が無ければ判定 script を実行する（読み取りだけ。末尾に `VERDICT=` を出す）。script は読解・書き換え・再実装せず、そのまま実行する。
 
 ```bash
@@ -87,7 +87,7 @@ references/
 | `scripts/check-android-release.sh`・`check-ios-release.sh` | release の APK・`.app` にフィードバックのコード・URL・権限・設定が残っていないかを見る |
 | `scripts/check-no-feedback-in-prod.sh` | 本番の成果物にフィードバックモードの痕跡が無いかを grep |
 | `scripts/single-html.mjs` | 1 枚の HTML を作る・データ（JSON）を取り出す・差し替える・検査する（`node:test` 5 件） |
-| `scripts/watch-inbox.mjs` | Inbox を見張り、新しい記録が来たら `NEW <id> <パス>` を出して終わる（loop の §2.6。`node:test` 8 件） |
+| `scripts/watch-inbox.mjs` | Inbox（ファイル・`--url` で HTTP の受け口）を見張り、新しい記録ごとに `NEW <id> <ref>` を出す。`--once`・`--exec`・`--timeout`（`references/loop/watch.md`。`node:test` 8 件） |
 | `scripts/review.mjs` | Review の cli（`node:test` 19 件） |
 | `scripts/decisions.py` | 判断の記録の検査・照合・Review からの写し（unittest 21 件） |
 

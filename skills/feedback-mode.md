@@ -71,7 +71,7 @@ It also covers the other direction (agent → human):
 | `assets/templates/core/` · `core-ts/` | Shared core: Sink contract, numbering, redact, record builder, file / memory / HTTP Sinks, HTTP receiver, tests |
 | `assets/templates/adapters/` | Per-platform templates: `web/dom`, `web/astro`, `desktop/electron`, `mobile/compose`, `mobile/android`, `mobile/kmp`, `mobile/ios` |
 | `assets/templates/data/` · `review/` | JSON Schema and examples of records, memos, review findings and decisions |
-| `scripts/` | `detect.sh` (timing), `copy-core.sh` (copy core + run tests), `check-no-feedback-in-prod.sh` (grep production artifacts), `check-android-release.sh` / `check-ios-release.sh` (also check permissions and settings in release APKs / `.app`), `watch-inbox.mjs` (wait for new records so the loop can start right away), `review.mjs` (Review CLI), `decisions.py` (decisions) |
+| `scripts/` | `detect.sh` (timing), `copy-core.sh` (copy core + run tests), `check-no-feedback-in-prod.sh` (grep production artifacts), `check-android-release.sh` / `check-ios-release.sh` (also check permissions and settings in release APKs / `.app`), `watch-inbox.mjs` (watch the Inbox and report or run a command for each new record), `review.mjs` (Review CLI), `decisions.py` (decisions) |
 
 ## Supported features by platform
 
@@ -84,7 +84,7 @@ It also covers the other direction (agent → human):
 | O2 Drafts | 🧩 | 🧩 | 📝 | 🧩 | 🧩 | ✅ | — | — | — |
 | O3 Multi-select | — | — | 📝 | — | — | ✅ | — | — | — |
 | O4 Text selection | — | — | 📝 | — | — | ✅ | — | — | — |
-| O5 Whole page | — | — | 🧩 | — | — | ✅ | — | — | — |
+| O5 Whole page | — | — | 🧩 | — | — | ✅ | 🧩 | 🧩 | — |
 | O6 Location hints | ✅ CSS selector | ✅ CSS selector | ✅ XPath, selector | ✅ CSS selector | ✅ CSS selector | ✅ JSON path | — | — | — |
 | O7 Popover | — | — | ✅ | — | — | ✅ | — | — | — |
 | O8 Phone width | — | — | ✅ | — | — | ✅ | — | — | — |

@@ -66,7 +66,7 @@ references は **タイミング別** に分け、setup はさらに **プラッ
 | `assets/templates/core/`・`core-ts/` | 共通のコア: Sink の契約・採番・redact・記録の組み立て・ファイル / メモリ / HTTP の Sink・HTTP の受け口・テスト |
 | `assets/templates/adapters/` | 環境ごとのひな形: `web/dom`・`web/astro`・`desktop/electron`・`mobile/compose`・`mobile/android`・`mobile/kmp`・`mobile/ios` |
 | `assets/templates/data/`・`review/` | 記録・メモ・Review の指摘・判断の JSON スキーマと例 |
-| `scripts/` | `detect.sh`（タイミングの判定）・`copy-core.sh`（コアのコピーとテスト）・`check-no-feedback-in-prod.sh`（本番の成果物の検査）・`check-android-release.sh` / `check-ios-release.sh`（release の APK・`.app` の権限と設定も見る）・`watch-inbox.mjs`（新しい記録を待ち、来たらすぐ loop を始める）・`review.mjs`（Review の cli）・`decisions.py`（判断の記録） |
+| `scripts/` | `detect.sh`（タイミングの判定）・`copy-core.sh`（コアのコピーとテスト）・`check-no-feedback-in-prod.sh`（本番の成果物の検査）・`check-android-release.sh` / `check-ios-release.sh`（release の APK・`.app` の権限と設定も見る）・`watch-inbox.mjs`（Inbox を見張り、新しい記録ごとに知らせる・コマンドを実行する）・`review.mjs`（Review の cli）・`decisions.py`（判断の記録） |
 
 ## 環境ごとの対応表
 
@@ -79,7 +79,7 @@ references は **タイミング別** に分け、setup はさらに **プラッ
 | O2 下書き | 🧩 | 🧩 | 📝 | 🧩 | 🧩 | ✅ | — | — | — |
 | O3 複数選択 | — | — | 📝 | — | — | ✅ | — | — | — |
 | O4 テキストの選択 | — | — | 📝 | — | — | ✅ | — | — | — |
-| O5 ページ全体 | — | — | 🧩 | — | — | ✅ | — | — | — |
+| O5 ページ全体 | — | — | 🧩 | — | — | ✅ | 🧩 | 🧩 | — |
 | O6 場所の手がかり | ✅ CSS セレクタ | ✅ CSS セレクタ | ✅ XPath・セレクタ | ✅ CSS セレクタ | ✅ CSS セレクタ | ✅ JSON の場所 | — | — | — |
 | O7 popover | — | — | ✅ | — | — | ✅ | — | — | — |
 | O8 スマホ幅 | — | — | ✅ | — | — | ✅ | — | — | — |
