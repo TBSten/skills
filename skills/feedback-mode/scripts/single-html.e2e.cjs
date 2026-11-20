@@ -1,5 +1,5 @@
-// feedback-report.e2e.cjs — feedback-report.html をヘッドレスの Chromium で確かめる（Playwright が要る。無ければ skip）。
-//   node feedback-report.e2e.cjs [<report.html>]   例のデータ（example.data.json）から作った HTML で決まった流れを通す。
+// single-html.e2e.cjs — feedback-report.html をヘッドレスの Chromium で確かめる（Playwright が要る。無ければ skip）。
+//   node single-html.e2e.cjs [<report.html>]   例のデータ（example.data.json）から作った HTML で決まった流れを通す。
 //   <report.html> を渡すと、それにも中身に依らない確認（開く → 本文の最初の項目に書く → 保存 → コピー・エラー 0・横スクロール 0）をする
 // 確かめること（references/setup/web/single-html.md §7）:
 //   PC とスマホ幅: 選ぶ → 書く → 保存 → 印 → まとめてコピーの中身 / コンソールのエラー 0・横スクロール 0
@@ -17,7 +17,7 @@ const assert = (c, m) => { if (!c) throw new Error(`NG: ${m}`); console.log(`ok 
 const example = (() => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'fb-single-'));
   const out = path.join(dir, 'report.html');
-  execFileSync(process.execPath, [path.join(__dirname, '../../../../../scripts/single-html.mjs'), 'new', out, '--data', path.join(__dirname, 'example.data.json')]);
+  execFileSync(process.execPath, [path.join(__dirname, 'single-html.mjs'), 'new', out, '--data', path.join(__dirname, '../assets/templates/adapters/web/single-html/example.data.json')]);
   return out;
 })();
 const url = pathToFileURL(example).href;

@@ -5,14 +5,14 @@
 
 ひな形:
 - `assets/templates/adapters/mobile/compose/`（共通。プラットフォームの API を使わない Compose のコード 5 枚。KMP の commonMain にもそのまま使う）: `FeedbackRoot.kt`（入口・オーバーレイ・シート・送信）、`FbTarget.kt`（`Modifier.fbTarget` と registry）、`FeedbackShots.kt`（赤枠と切り抜き）、`FeedbackModels.kt`（`FeedbackConfig`・`FeedbackTransport`・返事の読み取り）、`FeedbackJson.kt`
-- `assets/templates/adapters/mobile/android/debug/`: `FeedbackHost.kt`（HTTP の transport・PNG・env を埋めた入口）、`AndroidManifest.xml`、`res/xml/feedback_network_security_config.xml`
-- `assets/templates/adapters/mobile/android/release/FeedbackHost.kt`: 同じ形の no-op
+- `assets/templates/adapters/mobile/android/debug/`（`src/debug/` と同じ並び）: `kotlin/FeedbackHost.kt`（HTTP の transport・PNG・env を埋めた入口）、`AndroidManifest.xml`、`res/xml/feedback_network_security_config.xml`
+- `assets/templates/adapters/mobile/android/release/kotlin/FeedbackHost.kt`: 同じ形の no-op
 
 依存は Compose の foundation と activity-compose だけ（material3・OkHttp・kotlinx.serialization は足さない）。KMP（Compose Multiplatform）なら `kmp.md`。先に `common.md` を読む。
 
 ## 置き方
 
-1. `compose/*.kt` と `android/debug/FeedbackHost.kt` を `app/src/debug/kotlin/<package>/feedback/` に、`android/release/FeedbackHost.kt` を `app/src/release/kotlin/<package>/feedback/` に置く。`package` と `FeedbackHost.kt` の `import …BuildConfig` を導入先に合わせる。
+1. `compose/*.kt` と `android/debug/kotlin/FeedbackHost.kt` を `app/src/debug/kotlin/<package>/feedback/` に、`android/release/kotlin/FeedbackHost.kt` を `app/src/release/kotlin/<package>/feedback/` に置く。`package` と `FeedbackHost.kt` の `import …BuildConfig` を導入先に合わせる。
 2. `android/debug/AndroidManifest.xml` を `app/src/debug/`、`feedback_network_security_config.xml` を `app/src/debug/res/xml/` に置く。
 3. `app/build.gradle.kts` の debug にだけ送信先を渡す（既定値を持たない）。開発機の `~/.gradle/gradle.properties` に `feedback.endpoint=http://10.0.2.2:7373/__feedback`（コミットしない）。
 

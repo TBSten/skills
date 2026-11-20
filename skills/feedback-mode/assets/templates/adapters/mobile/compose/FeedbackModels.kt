@@ -13,7 +13,7 @@ class FeedbackConfig(
     val getRecentLogs: () -> List<FeedbackLog> = { emptyList() },
     // null ならスクショを撮らない（O1 を入れない）
     val encodePng: ((ImageBitmap) -> ByteArray?)? = null,
-    // 撮った画像を描き直せる形にする。Android は hardware bitmap なので software に写す（android/debug/FeedbackHost.kt）
+    // 撮った画像を描き直せる形にする。Android は hardware bitmap なので software に写す（android/debug/kotlin/FeedbackHost.kt）
     val prepareShot: (ImageBitmap) -> ImageBitmap = { it },
     // 既存の debug menu から controller.enter() を呼ぶなら false にする
     val showEntryButton: Boolean = true,
