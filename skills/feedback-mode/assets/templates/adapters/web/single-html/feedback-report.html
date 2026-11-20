@@ -157,8 +157,12 @@ const store = {
   del(k, a = SESSION) { try { area(a).removeItem(k); } catch { /* 無くてよい */ } },
 };
 try { localStorage.setItem(`${KEY}:probe`, '1'); localStorage.removeItem(`${KEY}:probe`); } catch { store.ok = false; }
-const state = { comments: [], answers: {}, ...(store.get(KEY) || {}) };
-const persist = () => { store.set(KEY, { comments: state.comments, answers: state.answers }); updateUi(); };
+// 同じ中身をタブの sessionStorage にも写す。Chromium は file:// で開いたページの localStorage を、再読み込みの直後に失うことがある
+// （ヘッドレスで約 1 割。sessionStorage は失わなかった）。読むときは新しい方を使う
+const saved = [store.get(KEY), store.get(KEY, SESSION)].filter(Boolean).sort((a, b) => (b.savedAt ?? 0) - (a.savedAt ?? 0))[0];
+const state = { comments: [], answers: {}, ...(saved ? { comments: saved.comments ?? [], answers: saved.answers ?? {} } : {}) };
+if (saved && store.get(KEY)?.savedAt !== saved.savedAt) store.set(KEY, saved); // 失った localStorage を戻す
+const persist = () => { const v = { comments: state.comments, answers: state.answers, savedAt: Date.now() }; store.set(KEY, v); store.set(KEY, v, SESSION); updateUi(); };
 function setAnswer(id, patch) {
   state.answers[id] = { ...(state.answers[id] || { answer: null, note: null }), ...patch, updatedAt: Date.now(), sentAt: state.answers[id]?.sentAt ?? null };
   persist();

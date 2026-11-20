@@ -1,4 +1,4 @@
-<!-- 記録の例（schema 1。submitFeedback に meta を渡したとき）【実績: Web 参照実装の形を汎用版の節に合わせたもの】。
+<!-- 記録の例（schema 1。submitFeedback に meta を渡したとき）。
      frontmatter の無い記録（feedback-file.example.md・手書きのメモ）は旧形（schema 0）として読む。両方が同じ置き場に混ざってよい。 -->
 ---
 schema: 1

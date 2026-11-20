@@ -1,5 +1,5 @@
 /**
- * http-sink.mjs — HTTP で別マシンの受け口（assets/templates/core/feedback-dev-server.mjs）に送る・読む・閉じる Sink。【未検証: 実機・LAN 越しは未検証】
+ * http-sink.mjs — HTTP で別マシンの受け口（assets/templates/core/feedback-dev-server.mjs）に送る・読む・閉じる Sink。localhost の契約テスト（sink-contract.test.mjs）で確かめた。LAN 越しは確かめていない。
  *
  * 想定:
  *   - スマホ実機・別マシンのアプリ → 同じ LAN の開発機（リポジトリがあるマシン）の受け口。受け口は裏で file-sink を使う。

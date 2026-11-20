@@ -1,4 +1,4 @@
-<!-- メモの例（references/setup/web/optional/memo.md）【実績: Web 参照実装の形を汎用化したもの】。置き場は <Inbox>/memo/<言語>/<ページのパス>.md。
+<!-- メモの例（references/setup/web/optional/memo.md）。置き場は <Inbox>/memo/<言語>/<ページのパス>.md。
      見える部分（frontmatter・ページのメモ・箇所のメモ）は Agent が読む用。末尾の HTML コメントの JSON は画面の読み直し用で、loop は読まなくてよい。
      メモは利用者のもの。loop は書き換えない・archive しない。 -->
 ---

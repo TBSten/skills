@@ -66,6 +66,14 @@ async function run(browser, { name, viewport, storage = true }) {
     await page.click('#fb-toggle');
     await click('[data-fb="sections[id=roles].blocks[0]"]');
     assert((await page.inputValue('#fb-editor textarea')) === '書きかけ', '書きかけが再読み込みで消えない');
+    assert((await page.locator('.fb-badge').count()) > 0 && (await page.isChecked('input[name=q-q1][value=vm]')), '保存したコメントと回答が再読み込みで消えない');
+    // Chromium は file:// の localStorage を再読み込みで失うことがある。失っても sessionStorage の写しから戻る
+    await page.evaluate(() => localStorage.clear());
+    await page.reload();
+    assert((await page.locator('.fb-badge').count()) > 0 && (await page.isChecked('input[name=q-q1][value=vm]')), 'localStorage を失っても sessionStorage の写しから戻る');
+    assert(await page.evaluate(() => Object.keys(localStorage).some((k) => k.startsWith('fb-single:'))), '戻した中身を localStorage にも書き戻す');
+    await page.click('#fb-toggle');
+    await click('[data-fb="sections[id=roles].blocks[0]"]');
   }
   await page.fill('#fb-editor textarea', 'Repository の説明が足りない');
   await page.click('#fb-editor [data-act=save]');

@@ -24,7 +24,9 @@ Web の adapter（dom・react・astro）で optional の機能（`references/spe
 
 要素を選ばない送信を、モードの案内の帯に「このページについて」「サイトについて」として置く。記録の `kind` は `page` / `site`（`references/spec/data.md` §3.4）。page はページのソースファイル（分かれば）を、site は開いていたページの URL を手がかりに書く。
 
-## 4. スマホのブラウザ【実績: iPhone・Pixel のエミュレーション（WebKit・Chromium）で確認】
+## 4. スマホのブラウザ
+
+iPhone・Pixel のエミュレーション（WebKit・Chromium）で確かめた。
 
 同じページを `astro dev --host` などでスマホから開いて使う場合。
 
