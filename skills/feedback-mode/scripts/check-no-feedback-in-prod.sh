@@ -36,6 +36,8 @@ for target in "$@"; do
   case "$target" in
     *.apk|*.aab|*.ipa|*.zip|*.jar|*.war) dir="$work/$(basename "$target")"; mkdir -p "$dir"; unzip -qq -o "$target" -d "$dir" || { echo "unzip failed: $target" >&2; exit 2; } ;;
   esac
+  # 空の成果物（ビルドが失敗して空のディレクトリだけ残った）を「痕跡なし」にしない
+  if [ -z "$(find "$dir" -type f -size +0 -print -quit 2>/dev/null)" ]; then echo "error: $target に中身のあるファイルがありません。ビルドが失敗していないか確かめる" >&2; exit 2; fi
   for p in "${PATTERNS[@]}"; do
     # -a: バイナリも文字列として。-I は使わない（.dex・.so・Mach-O も見る）。node_modules 等の除外はしない（成果物の中身なので）
     hits=$(grep -r -a -l -E -- "$p" "$dir" 2>/dev/null | head -5)

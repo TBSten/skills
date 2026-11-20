@@ -18,6 +18,8 @@ fun platformFeedbackConfig(
     getScreen: () -> String = { "" },
     getView: () -> Map<String, Any?> = { emptyMap() },
     getRecentLogs: () -> List<FeedbackLog> = { emptyList() },
+    // 既存の debug 画面から入るなら false にし、setupFeedback(config, controller = fb) の fb.enter() を呼ぶ
+    showEntryButton: Boolean = true,
 ) = FeedbackConfig(
     appName = appName,
     transport = httpTransport(endpoint, token),
@@ -28,4 +30,5 @@ fun platformFeedbackConfig(
     getRecentLogs = getRecentLogs,
     encodePng = ::encodePng,
     prepareShot = ::prepareShot,
+    showEntryButton = showEntryButton,
 )

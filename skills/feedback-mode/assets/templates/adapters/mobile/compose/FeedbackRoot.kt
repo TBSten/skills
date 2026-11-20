@@ -180,10 +180,15 @@ private fun FeedbackOverlay(
                     comment, { comment = it },
                     Modifier.fillMaxWidth().heightIn(min = 72.dp).background(Color(0xFFF2F2F2)).padding(8.dp),
                     textStyle = TextStyle(fontSize = 16.sp),
+                    decorationBox = { inner ->
+                        Box {
+                            if (comment.isEmpty()) BasicText("この部品へのコメント（空でも送れる）", style = TextStyle(fontSize = 16.sp, color = Color(0xFF888888)))
+                            inner()
+                        }
+                    },
                 )
                 error?.let { BasicText(it, style = TextStyle(color = Color(0xFFCC0000), fontSize = 13.sp)) }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    if (index + 1 < (candidates?.size ?: 0)) Chip("親を選ぶ") { index++ }
                     Chip(if (sending) "送信中…" else "送る") {
                         if (sending) return@Chip
                         sending = true
@@ -223,7 +228,8 @@ private fun FeedbackOverlay(
                             if (result.ok) onExit() else error = "送れませんでした: ${result.error}" // R6
                         }
                     }
-                    Chip("やめる") { candidates = null; comment = ""; error = null }
+                    if (index + 1 < (candidates?.size ?: 0)) Chip("親を選ぶ") { index++ }
+                    Chip("閉じる") { candidates = null; error = null } // 書いた文は残す（次に選んだ部品へ持っていく）
                 }
             }
         }
