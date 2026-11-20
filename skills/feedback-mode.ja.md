@@ -68,6 +68,29 @@ references は **タイミング別** に分け、setup はさらに **プラッ
 | `assets/templates/data/`・`review/` | 記録・メモ・Review の指摘・判断の JSON スキーマと例 |
 | `scripts/` | `detect.sh`（タイミングの判定）・`copy-core.sh`（コアのコピーとテスト）・`check-no-feedback-in-prod.sh`（本番の成果物の検査）・`watch-inbox.mjs`（新しい記録を待ち、来たらすぐ loop を始める）・`review.mjs`（Review の cli）・`decisions.py`（判断の記録） |
 
+## 環境ごとの対応表
+
+| 機能 | DOM | React + Vite | Astro | Electron | Tauri | 1 枚の HTML |
+|---|---|---|---|---|---|---|
+| 必須の通し（入る → 選ぶ → 送る → 記録ができる・下にクリックが届かない・本番の検査） | ✅ | ✅ | ✅ | ✅ | ✅ | 📝 |
+| 入口 | ホットキー・既存の dev panel から `enter()` | 同左 | Dev Toolbar のアプリ | 開発メニューの項目 | ホットキー | 右下のボタン |
+| 送り方（Transport） | HTTP | HTTP | toolbar のメッセージ | IPC | HTTP | クリップボード |
+| O1 スクリーンショット | ✅ html2canvas | ✅ html2canvas | 📝 modern-screenshot | ✅ `capturePage` | — | — |
+| O2 下書き | 🧩 | 🧩 | 📝 | 🧩 | 🧩 | — |
+| O3 複数選択 | — | — | 📝 | — | — | 📝 |
+| O4 テキストの選択 | — | — | 📝 | — | — | 📝 |
+| O5 ページ全体 | — | — | 🧩 | — | — | 📝 |
+| O6 場所の手がかり | ✅ CSS セレクタ | ✅ CSS セレクタ | ✅ XPath・セレクタ | ✅ CSS セレクタ | ✅ CSS セレクタ | 📝 JSON の場所 |
+| O7 popover | — | — | ✅ | — | — | — |
+| O8 スマホ幅 | — | — | ✅ | — | — | — |
+| O9 テーマ追従 | — | — | ✅ | — | — | — |
+| O10 メモ | — | — | 📝 | — | — | — |
+| O11 オプションの記憶 | 🧩 | 🧩 | — | 🧩 | 🧩 | — |
+
+✅ ひな形にコードがあり、その環境で動かして確かめた　🧩 ひな形にコードはあるが、その機能はその環境で動かしていない　📝 作り方だけ（コードは無い。実際の運用で使った作り方）　— 無い
+
+機能の中身は `references/spec/features.md`、各環境で何の版をどう確かめたかは各 adapter のファイルの冒頭。
+
 ## 成熟度と既知の制約
 
 status は **Experimental**。確認済み: コア（メモリ・ファイル・HTTP の Sink に対する `node:test` 36 件 + skip 1 件）、TypeScript 版のコア（vitest 32 件）、`review.mjs`（`node:test` 19 件）、`decisions.py`（unittest 21 件）、`watch-inbox.mjs`（`node:test` 8 件）。adapter は、ひな形をそのままコピーした最小アプリを実際に動かして確かめた: DOM と React 19 + Vite 7（ヘッドレスの Chromium。html2canvas のスクショも）、Astro 7（Starlight の実サイトと最小プロジェクト）、Electron 38（xvfb + Playwright の `_electron`）、Tauri 2（Linux の xvfb + tauri-driver）。どれも本番の成果物を `check-no-feedback-in-prod.sh` で検査した。

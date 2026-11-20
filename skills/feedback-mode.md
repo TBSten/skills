@@ -73,6 +73,29 @@ It also covers the other direction (agent → human):
 | `assets/templates/data/` · `review/` | JSON Schema and examples of records, memos, review findings and decisions |
 | `scripts/` | `detect.sh` (timing), `copy-core.sh` (copy core + run tests), `check-no-feedback-in-prod.sh` (grep production artifacts), `watch-inbox.mjs` (wait for new records so the loop can start right away), `review.mjs` (Review CLI), `decisions.py` (decisions) |
 
+## Supported features by platform
+
+| Feature | DOM | React + Vite | Astro | Electron | Tauri | Single HTML |
+|---|---|---|---|---|---|---|
+| Required flow (enter → pick → send → record saved, no click reaches the app, production check) | ✅ | ✅ | ✅ | ✅ | ✅ | 📝 |
+| Entry point | Hotkey, or `enter()` from an existing dev panel | Same | Dev Toolbar app | Dev menu item | Hotkey | Button at the bottom right |
+| Transport | HTTP | HTTP | Toolbar messages | IPC | HTTP | Clipboard |
+| O1 Screenshot | ✅ html2canvas | ✅ html2canvas | 📝 modern-screenshot | ✅ `capturePage` | — | — |
+| O2 Drafts | 🧩 | 🧩 | 📝 | 🧩 | 🧩 | — |
+| O3 Multi-select | — | — | 📝 | — | — | 📝 |
+| O4 Text selection | — | — | 📝 | — | — | 📝 |
+| O5 Whole page | — | — | 🧩 | — | — | 📝 |
+| O6 Location hints | ✅ CSS selector | ✅ CSS selector | ✅ XPath, selector | ✅ CSS selector | ✅ CSS selector | 📝 JSON path |
+| O7 Popover | — | — | ✅ | — | — | — |
+| O8 Phone width | — | — | ✅ | — | — | — |
+| O9 Follow the page theme | — | — | ✅ | — | — | — |
+| O10 Memos | — | — | 📝 | — | — | — |
+| O11 Remember options | 🧩 | 🧩 | — | 🧩 | 🧩 | — |
+
+✅ template code exists and was run on that platform　🧩 template code exists, but that feature was not run on that platform　📝 recipe only (no code; a recipe used in real use)　— not available
+
+See `references/spec/features.md` for what each feature does, and the top of each adapter file for the versions and how each platform was verified.
+
 ## Maturity and known limitations
 
 Status is **Experimental**. Verified: the core (`node:test` 36 passing + 1 skipped over memory / file / HTTP Sinks), the TypeScript core (vitest 32), `review.mjs` (`node:test` 19), `decisions.py` (unittest 21), `watch-inbox.mjs` (`node:test` 8), and each adapter by actually running a minimal app with the templates copied as-is: DOM and React 19 + Vite 7 in headless Chromium (including html2canvas screenshots), Astro 7 (a real Starlight site and a minimal project), Electron 38 (Playwright `_electron` under xvfb), and Tauri 2 (tauri-driver under xvfb on Linux). Each run also checked the production artifact with `check-no-feedback-in-prod.sh`.
