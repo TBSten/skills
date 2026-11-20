@@ -17,7 +17,7 @@ const assert = (c, m) => { if (!c) throw new Error(`NG: ${m}`); console.log(`ok 
 const example = (() => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'fb-single-'));
   const out = path.join(dir, 'report.html');
-  execFileSync(process.execPath, [path.join(__dirname, '../../../scripts/single-html.mjs'), 'new', out, '--data', path.join(__dirname, 'example.data.json')]);
+  execFileSync(process.execPath, [path.join(__dirname, '../../../../../scripts/single-html.mjs'), 'new', out, '--data', path.join(__dirname, 'example.data.json')]);
   return out;
 })();
 const url = pathToFileURL(example).href;

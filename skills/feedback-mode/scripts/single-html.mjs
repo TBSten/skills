@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// single-html.mjs — agent が作って人に渡す 1 枚の HTML（assets/templates/single-html/feedback-report.html）のデータを読み書きする cli。
+// single-html.mjs — agent が作って人に渡す 1 枚の HTML（assets/templates/adapters/web/single-html/feedback-report.html）のデータを読み書きする cli。
 // node の標準だけで動く（Node 18 以上、依存なし）。この script を読解・書き換え・再実装せず、そのまま実行する。
 // 形と流れは references/setup/web/single-html.md。
 //
@@ -14,7 +14,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-export const TEMPLATE = path.join(HERE, '..', 'assets', 'templates', 'single-html', 'feedback-report.html');
+export const TEMPLATE = path.join(HERE, '..', 'assets', 'templates', 'adapters', 'web', 'single-html', 'feedback-report.html');
 const OPEN = '<script type="application/json" id="report">';
 const CLOSE = '</script>';
 const BLOCK_TYPES = new Set(['p', 'list', 'table', 'callout', 'details']);
