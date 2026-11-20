@@ -14,6 +14,7 @@
  *   POST /__feedback/entries                HTTP Sink 用 { text, now? }（受け口でも redact を掛ける）→ { ok, entry }
  *   GET  /__feedback/entries?state=open     一覧 / GET /__feedback/entries/:id 全文 / POST /__feedback/entries/:id/archive { note }
  * 守ること: 既定は 127.0.0.1 にだけ bind する・ブラウザの Origin は localhost 系だけ許す・本文の大きさに上限・本番では起動しない。
+ * 記録は schema 1（frontmatter 付き）で書く。FEEDBACK_SCHEMA=0 で旧形（frontmatter なし）。
  * FEEDBACK_TOKEN を設定すると、ヘッダ x-feedback-token が一致しない要求を 401 にする（LAN に出すときは必須）。
  * Vite / webpack-dev-server を使うなら、同じ handler を middleware に載せ替えてよい（未検証）。
  */
@@ -27,6 +28,8 @@ const MAX_BODY = 30 * 1024 * 1024; // 参照実装の IPC は 500,000 字まで�
 const asDate = (v) => { const d = typeof v === 'string' ? new Date(v) : null; return d && !Number.isNaN(d.getTime()) ? d : undefined; }; // クライアントの時刻（採番の日付・添付の名前。無ければ受け口の時刻）
 const ORIGIN_OK = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/;
 
+// 記録は schema 1（frontmatter 付き。references/spec/data.md §3.4）。旧形にしたいときだけ FEEDBACK_SCHEMA=0
+const schemaMeta = process.env.FEEDBACK_SCHEMA === '0' ? undefined : {};
 export function createHandler({ sink = createFileSink({ repoRoot: path.resolve(process.env.FEEDBACK_REPO_ROOT ?? process.cwd()), dir: process.env.FEEDBACK_DIR ?? 'feedback', attachDir: process.env.FEEDBACK_ATTACH_DIR ?? '.local/tmp/feedback' }), token = process.env.FEEDBACK_TOKEN ?? null } = {}) {
   return async function handle(req, res) {
     const origin = req.headers.origin;
@@ -53,7 +56,7 @@ export function createHandler({ sink = createFileSink({ repoRoot: path.resolve(p
       if (req.method === 'POST' && p === '/__feedback') {
         if (!body || typeof body.payload !== 'object' || typeof body.payload.comment !== 'string' || body.payload.comment.length > 20_000) return send(400, { ok: false, error: '不正な指定です' });
         const dec = (b64) => (b64 ? new Uint8Array(Buffer.from(b64, 'base64')) : null);
-        const r = await submitFeedback({ sink, payload: body.payload, options: body.options, windowPng: dec(body.windowPng), elementPng: dec(body.elementPng), shotError: body.shotError ?? null });
+        const r = await submitFeedback({ sink, payload: body.payload, options: body.options, windowPng: dec(body.windowPng), elementPng: dec(body.elementPng), shotError: body.shotError ?? null, meta: schemaMeta });
         const { text: _omit, ...rest } = r;
         console.log(`[feedback] ${r.ref} (${r.bytes} bytes)`);
         return send(200, { ...rest, rel: r.ref /* 旧クライアント互換 */ });
@@ -87,5 +90,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     console.error('FEEDBACK_HOST を localhost 以外にするときは FEEDBACK_TOKEN が必要です');
     process.exit(1);
   }
-  http.createServer(createHandler()).listen(port, host, () => console.log(`feedback receiver: http://${host}:${port}/__feedback`));
+  http.createServer(createHandler()).listen(port, host, () => {
+    console.log(`feedback receiver: http://${host}:${port}/__feedback`);
+    if (host !== '127.0.0.1' && host !== 'localhost') console.warn('警告: LAN から書き込めます（x-feedback-token が要る）。作業が終わったら止める');
+  });
 }
