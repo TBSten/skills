@@ -88,7 +88,7 @@
   |---|---|
   | HTTP の受け口（dom・react・tauri・モバイル） | `feedback-dev-server.mjs` の環境変数 `FEEDBACK_REPO_ROOT`・`FEEDBACK_DIR`・`FEEDBACK_ATTACH_DIR`・`FEEDBACK_SCHEMA`。起動コマンド（`package.json` の script など）に書く。自前の置き場は `createHandler({ sink })` |
   | Electron の main | `registerFeedback({ sink: createFileSink({ repoRoot, dir, attachDir }) })`。記録の形は schema 0 で固定 |
-  | Astro の統合 | `feedbackMode({ dir })` と `FEEDBACK_DIR`。添付は `.local/tmp/feedback/`、記録の形は schema 1 で固定（変えるなら統合の `createFileSink` の行を直す） |
+  | Astro の統合 | `feedbackMode({ dir })`。環境変数 `FEEDBACK_DIR` があればそちらが勝つ。ひな形はスクショを撮らないので添付は無い（問い 3 は飛ばす）。記録の形は schema 1 で固定 |
   | 1 枚の HTML | 選ばない（ブラウザに溜めてクリップボードで渡す） |
 
 - 後から変えるときも同じ表の設定を変えるだけでよい（画面側は変えない）。変えたら loop の値と正本 docs も直す。

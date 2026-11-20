@@ -1,4 +1,4 @@
-// Astro の Dev Toolbar に載せるフィードバックモードの統合（ひな形）。【実績: Astro 7 + Starlight の docs サイトを縮めたもの】
+// Astro の Dev Toolbar に載せるフィードバックモードの統合（ひな形）。
 //
 // 使い方（astro.config.mjs）:
 //   import feedbackMode from './<dev 専用の場所>/feedback-integration'
