@@ -2,6 +2,10 @@
 
 アプリに **debug ビルド限定のフィードバックモード** を組み込み、溜まったフィードバックを Claude Code に消化させる。
 
+[![デモ: Astro の docs サイトで見出しを選んでコメントを送る](./feedback-mode-demo.gif)](./feedback-mode-demo.mp4)
+
+Astro の docs サイトで、見出しを選んでコメントを書いて送るまで（約 50 秒。[動画（mp4）](./feedback-mode-demo.mp4)）。
+
 ## インストール
 
 ```sh

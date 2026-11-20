@@ -2,6 +2,10 @@
 
 Build a **debug-only feedback mode** into your app, and let Claude Code triage the feedback it collects.
 
+[![Demo: picking a heading on an Astro docs site and sending a comment](./feedback-mode-demo.gif)](./feedback-mode-demo.mp4)
+
+Picking a heading on an Astro docs site, writing a comment and sending it (about 50 s; [video (mp4)](./feedback-mode-demo.mp4)).
+
 > The skill body is written in Japanese. This page is an English overview.
 
 ## Install
