@@ -77,11 +77,13 @@ references/
 | `assets/templates/adapters/web/dom/` | DOM 版のフィードバックモード（`feedback-mode.js`）・開発ビルドの入口・暫定のログ |
 | `assets/templates/adapters/web/astro/` | Astro の Dev Toolbar 統合（受け口）と toolbar アプリ・dist の検査 |
 | `assets/templates/adapters/desktop/electron/` | main の IPC の受け口・開発時だけの preload・renderer の入口・既存の開発用メニューに足す例 |
+| `assets/templates/single-html/` | agent が作って人に渡す 1 枚の HTML のひな形（JSON から描く殻 + コメント + 質問への回答）・例のデータ・e2e |
 | `assets/templates/data/` | 送信 body と記録の frontmatter の JSON Schema・記録とメモの例 |
 | `assets/templates/review/` | Review の指摘・人が足す選択肢・判断の記録の例 |
 | `scripts/detect.sh` | タイミングの判定（読み取りだけ） |
 | `scripts/copy-core.sh` | `core/` を導入先にコピーして `node --test` を通す |
 | `scripts/check-no-feedback-in-prod.sh` | 本番の成果物にフィードバックモードの痕跡が無いかを grep |
+| `scripts/single-html.mjs` | 1 枚の HTML を作る・データ（JSON）を取り出す・差し替える・検査する（`node:test` 5 件） |
 | `scripts/watch-inbox.mjs` | Inbox を見張り、新しい記録が来たら `NEW <id> <パス>` を出して終わる（loop の §2.6。`node:test` 8 件） |
 | `scripts/review.mjs` | Review の cli（`node:test` 19 件） |
 | `scripts/decisions.py` | 判断の記録の検査・照合・Review からの写し（unittest 21 件） |

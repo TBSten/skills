@@ -77,18 +77,18 @@ It also covers the other direction (agent → human):
 
 | Feature | DOM | React + Vite | Astro | Electron | Tauri | Single HTML |
 |---|---|---|---|---|---|---|
-| Required flow (enter → pick → send → record saved, no click reaches the app, production check) | ✅ | ✅ | ✅ | ✅ | ✅ | 📝 |
+| Required flow (enter → pick → send → record saved, no click reaches the app, production check) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Entry point | Hotkey, or `enter()` from an existing dev panel | Same | Dev Toolbar app | Dev menu item | Hotkey | Button at the bottom right |
 | Transport | HTTP | HTTP | Toolbar messages | IPC | HTTP | Clipboard |
 | O1 Screenshot | ✅ html2canvas | ✅ html2canvas | 📝 modern-screenshot | ✅ `capturePage` | — | — |
-| O2 Drafts | 🧩 | 🧩 | 📝 | 🧩 | 🧩 | — |
-| O3 Multi-select | — | — | 📝 | — | — | 📝 |
-| O4 Text selection | — | — | 📝 | — | — | 📝 |
-| O5 Whole page | — | — | 🧩 | — | — | 📝 |
-| O6 Location hints | ✅ CSS selector | ✅ CSS selector | ✅ XPath, selector | ✅ CSS selector | ✅ CSS selector | 📝 JSON path |
-| O7 Popover | — | — | ✅ | — | — | — |
-| O8 Phone width | — | — | ✅ | — | — | — |
-| O9 Follow the page theme | — | — | ✅ | — | — | — |
+| O2 Drafts | 🧩 | 🧩 | 📝 | 🧩 | 🧩 | ✅ |
+| O3 Multi-select | — | — | 📝 | — | — | ✅ |
+| O4 Text selection | — | — | 📝 | — | — | ✅ |
+| O5 Whole page | — | — | 🧩 | — | — | ✅ |
+| O6 Location hints | ✅ CSS selector | ✅ CSS selector | ✅ XPath, selector | ✅ CSS selector | ✅ CSS selector | ✅ JSON path |
+| O7 Popover | — | — | ✅ | — | — | ✅ |
+| O8 Phone width | — | — | ✅ | — | — | ✅ |
+| O9 Follow the page theme | — | — | ✅ | — | — | 🧩 |
 | O10 Memos | — | — | 📝 | — | — | — |
 | O11 Remember options | 🧩 | 🧩 | — | 🧩 | 🧩 | — |
 
