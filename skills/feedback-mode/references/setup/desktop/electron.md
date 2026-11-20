@@ -26,7 +26,7 @@
 // main（ESM）
 const isDev = !app.isPackaged;
 // ⭐️ preload を本番と開発で別ファイルにする
-mainWindow = new BrowserWindow({ webPreferences: { preload: path.join(__dirname, isDev ? 'dev/feedback/preload-feedback.cjs' : 'preload.cjs'), contextIsolation: true, sandbox: false } });
+mainWindow = new BrowserWindow({ webPreferences: { preload: path.join(__dirname, isDev ? 'dev/feedback/preload-feedback.cjs' : 'preload.cjs'), contextIsolation: true, sandbox: !isDev } });
 if (isDev) {
   const { registerFeedback } = await import('./dev/feedback/main-feedback.mjs');
   const { createFileSink } = await import('./dev/feedback/core/file-sink.mjs');
@@ -52,5 +52,5 @@ if (import.meta.env.DEV) import('./dev/renderer-feedback.js').then((m) => m.star
 ## この環境の注意
 
 - **ヘッドレスで動かせるようにする**（`show: false` を環境変数で切り替える）。Linux のコンテナでは `xvfb-run` と `--no-sandbox`（root のとき）。スモークは Playwright の `_electron.launch` で起動し、メニューは `app.evaluate(({ Menu }) => …click())`、部品は実際のマウス操作で選ぶ。
-- `preload-feedback.cjs` は `require` で本来の preload を読むので、そのウィンドウは `sandbox: false` にする。
+- `preload-feedback.cjs` は `require` で本来の preload を読むので、開発時のウィンドウだけ `sandbox: false` にする（上の例の `sandbox: !isDev`）。パッケージ版は sandbox のまま。
 - 開発起動では **main が古いまま renderer だけ新しくなる**ことがある。新しい IPC や設定キーを main が知らないエラーになり、再起動で直る。調べてほしいという記録の多くがこれ（`references/loop/lessons.md`）。

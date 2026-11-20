@@ -151,6 +151,11 @@ async function defaultCapture(targetRect, rootEl) {
   const top = Math.max(0, Math.floor((targetRect.y - m) * sy));
   const right = Math.min(canvas.width, Math.ceil((targetRect.x + targetRect.width + m) * sx));
   const bottom = Math.min(canvas.height, Math.ceil((targetRect.y + targetRect.height + m) * sy));
+  // 選んだ要素を枠で囲む（モードの DOM は ignoreElements で写らないので、.fb-frame の代わりに canvas に描く）。切り抜きにも写るよう先に描く
+  const g = canvas.getContext('2d');
+  g.strokeStyle = '#e5484d';
+  g.lineWidth = 3 * Math.min(sx, sy);
+  g.strokeRect((targetRect.x - 1.5) * sx, (targetRect.y - 1.5) * sy, (targetRect.width + 3) * sx, (targetRect.height + 3) * sy);
   const png = (c) => c.toDataURL('image/png').split(',')[1];
   let element = null;
   if (right - left >= 1 && bottom - top >= 1) {
@@ -160,11 +165,6 @@ async function defaultCapture(targetRect, rootEl) {
     c.getContext('2d').drawImage(canvas, left, top, c.width, c.height, 0, 0, c.width, c.height);
     element = png(c);
   }
-  // 選んだ要素を枠で囲む（モードの DOM は ignoreElements で写らないので、.fb-frame の代わりに canvas に描く）
-  const g = canvas.getContext('2d');
-  g.strokeStyle = '#e5484d';
-  g.lineWidth = 3 * Math.min(sx, sy);
-  g.strokeRect((targetRect.x - 1.5) * sx, (targetRect.y - 1.5) * sy, (targetRect.width + 3) * sx, (targetRect.height + 3) * sy);
   return { windowPng: png(canvas), elementPng: element };
 }
 
