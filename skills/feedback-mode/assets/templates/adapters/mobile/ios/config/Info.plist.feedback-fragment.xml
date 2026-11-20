@@ -1,0 +1,5 @@
+<!-- Add inside <dict> of Info.plist. With INFOPLIST_PREPROCESS = YES, only Debug (FEEDBACK_MODE=1) keeps it. Keep this comment ASCII: non-ASCII here makes the preprocessor warn. -->
+#ifdef FEEDBACK_MODE
+	<key>FeedbackEndpoint</key>
+	<string>$(FEEDBACK_ENDPOINT)</string>
+#endif

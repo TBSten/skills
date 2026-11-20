@@ -3,6 +3,8 @@
 //   iOS:     sharedUI/src/iosFeedbackOn/kotlin/   （Xcode の Debug のときだけ使われる）
 //   Desktop: desktopApp/src/feedbackOn/kotlin/   （-Pfeedback=true のときだけ）
 //   Web:     webApp/src/wasmFeedbackOn/kotlin/   （-Pfeedback=true のときだけ）
+// package: iOS・Desktop・Web は呼ぶ側の main.kt と同じルート package のままでよい。
+// Android は呼ぶ Activity と同じ package を先頭に書く（Kotlin は package 付きのファイルからルート package の宣言を参照できない）
 // 起動時（setContent / ComposeUIViewController / application / ComposeViewport の前）に installFeedback() を 1 回呼ぶ
 import com.example.app.debughooks.setupFeedback
 import com.example.feedback.platformFeedbackConfig

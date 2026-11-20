@@ -81,7 +81,11 @@ struct FeedbackOverlayView: View {
                     .ignoresSafeArea() // 左上 = window の左上にそろえる
                     .allowsHitTesting(false)
             }
-            VStack { Spacer(); panel }
+            GeometryReader { g in
+                // 選んだ部品が下半分にあるときは吹き出しを上に出す（部品を隠さない）
+                let low = (mode.selection.map { registry.item($0.current.id)?.rect ?? $0.current.rect }?.midY ?? 0) > g.frame(in: .global).midY
+                VStack { if !low { Spacer() }; panel; if low { Spacer() } }
+            }
         }
     }
 

@@ -54,6 +54,7 @@ final class FeedbackMode: ObservableObject {
 
     private var overlayWindow: UIWindow?
     private weak var appWindow: UIWindow?
+    private weak var focusedBeforeEnter: UIResponder?
     private let openedAt = Date()
 
     /// 入口。既存の debug 画面の項目・シェイク・入口ボタンから呼ぶ
@@ -64,7 +65,8 @@ final class FeedbackMode: ObservableObject {
               let win = scene.windows.first(where: { $0.isKeyWindow && !($0 is FeedbackOverlayWindow) }) ?? scene.windows.first
         else { return }
         appWindow = win
-        win.endEditing(true) // 入力中の欄を外す（TODO: 出たときにフォーカスを戻す）
+        focusedBeforeEnter = Self.firstResponder(in: win)
+        win.endEditing(true) // 入力中の欄を外す。出たときに focusedBeforeEnter へ戻す
         let host = UIHostingController(rootView: FeedbackOverlayView(mode: self))
         host.view.backgroundColor = .clear
         let overlay = FeedbackOverlayWindow(windowScene: scene)
@@ -79,7 +81,14 @@ final class FeedbackMode: ObservableObject {
         overlayWindow?.isHidden = true
         overlayWindow = nil
         appWindow?.makeKey()
+        focusedBeforeEnter?.becomeFirstResponder(); focusedBeforeEnter = nil
         selection = nil; comment = ""; status = ""; sending = false; active = false
+    }
+
+    private static func firstResponder(in v: UIView) -> UIResponder? {
+        if v.isFirstResponder { return v }
+        for sub in v.subviews { if let r = firstResponder(in: sub) { return r } }
+        return nil
     }
 
     /// タップ位置（window 座標）を含む最小の部品を選ぶ
@@ -157,7 +166,9 @@ final class FeedbackMode: ObservableObject {
 
     /// 環境変数 → Info.plist の順に読む（空文字は無し扱い）
     nonisolated static func setting(_ env: String, plistKey: String) -> String? {
-        let v = ProcessInfo.processInfo.environment[env] ?? Bundle.main.object(forInfoDictionaryKey: plistKey) as? String
+        // 環境変数が空文字なら Info.plist に戻る（SIMCTL_CHILD_… を空で渡しても隠れない）
+        let e = ProcessInfo.processInfo.environment[env]
+        let v = (e?.isEmpty == false) ? e : Bundle.main.object(forInfoDictionaryKey: plistKey) as? String
         return (v?.isEmpty ?? true) ? nil : v
     }
 }

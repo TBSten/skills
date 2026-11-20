@@ -114,7 +114,7 @@ export function safeDocPath(relPath) {
 // スクリーンショットの切り抜き範囲（参照実装 feedbackShots.ts の cropRect）
 
 /**
- * 要素の切り抜き範囲（画像の px）。target（CSS px / dp）+ margin に、画像と viewport の比（devicePixelRatio）を掛け、画像の中に収める。
+ * 要素の切り抜き範囲（画像の px）。target（論理座標: CSS px / dp / pt）+ margin に、画像と viewport の比（devicePixelRatio）を掛け、画像の中に収める。
  * 収まる部分が無ければ null。
  */
 export function cropRect(target, viewport, image, margin = ELEMENT_MARGIN) {
@@ -229,13 +229,13 @@ export function buildFeedbackMarkdown(payload, options = DEFAULT_OPTIONS, { logL
   const t = payload.target;
   if (o.target && t) {
     lines.push('', '## 選んだ位置', '');
-    lines.push(`- 画面: ${code(t.screen ?? '')}`, `- 部品の道筋（data-fb / testID など）: ${code(t.path ?? '')}`, `- 要素: ${one(t.element ?? '')}`);
+    lines.push(`- 画面: ${code(t.screen ?? '')}`, `- 部品の道筋（data-fb / fbTarget など）: ${code(t.path ?? '')}`, `- 要素: ${one(t.element ?? '')}`);
     if (t.selector) lines.push(`- セレクタ: ${code(t.selector)}`);
     // 場所を一意に指す手がかり（references/setup/web/optional/locate.md）。xpath / selector は保存の前に引き直して同じ要素に戻ったものだけを送る
     if (t.xpath) lines.push(`- XPath: ${code(t.xpath)}`);
     if (t.fragment) lines.push(`- テキストフラグメント URL: ${t.fragment}`);
     if (t.source) lines.push(`- ソースの行: ${code(t.source)}`);
-    if (t.rect) lines.push(`- 矩形: x ${Math.round(t.rect.x)}・y ${Math.round(t.rect.y)}・${Math.round(t.rect.width)} × ${Math.round(t.rect.height)}（CSS px / dp。ウィンドウの左上から）`);
+    if (t.rect) lines.push(`- 矩形: x ${Math.round(t.rect.x)}・y ${Math.round(t.rect.y)}・${Math.round(t.rect.width)} × ${Math.round(t.rect.height)}（CSS px / dp / pt。ウィンドウの左上から）`);
     if (t.click) lines.push(`- クリックした座標: (${Math.round(t.click.x)}, ${Math.round(t.click.y)})`);
     lines.push('- 要素の状態:', ...(Object.keys(t.state ?? {}).length ? kv(t.state).map((l) => `  ${l}`) : ['  - なし']));
   }

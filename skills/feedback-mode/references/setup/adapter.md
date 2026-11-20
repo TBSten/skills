@@ -29,9 +29,9 @@ Web 系の DOM 版（`assets/templates/adapters/web/dom/feedback-mode.js`）は�
 | web | single-html（agent が作る 1 枚の HTML） | `web/single-html.md` | `adapters/web/single-html/`（+ `scripts/single-html.mjs`） | PC・スマホ幅・保存できない状態で e2e を確認 |
 | desktop | electron | `desktop/electron.md` | `adapters/desktop/electron/` | Electron 38 で通し・capturePage・asar の検査を確認 |
 | desktop | tauri | `desktop/tauri.md` | dom を使う | Tauri 2 + Vite 7（Linux）で通し・release の検査を確認 |
-| mobile | android（Jetpack Compose） | `mobile/android.md` | `adapters/mobile/compose/` + `adapters/mobile/android/` | エミュレータ（API 36.1）で通しと release の APK の検査を確認。View（XML）の画面は未確認 |
-| mobile | kmp（Compose Multiplatform: Android・iOS・Desktop・Web） | `mobile/kmp.md` | `adapters/mobile/compose/` + `adapters/mobile/kmp/` | Android エミュレータ・iOS シミュレータ・wasmJs（Chrome）で通しを、Desktop は UI テストで 1 件送るまでを確認。4 つとも本番の成果物の検査を確認 |
-| mobile | ios（SwiftUI） | `mobile/ios.md` | `adapters/mobile/ios/` | iOS 26.2 シミュレータで通しと Release の `.app` の検査を確認。実機は未確認 |
+| mobile | android（Jetpack Compose） | `mobile/android.md` | `adapters/mobile/compose/` + `adapters/mobile/android/` | エミュレータ（API 36.1）で通しと release の APK の検査を確認（docs だけで新しいアプリに導入する検証も通過）。別ウィンドウ（Dialog・Popup・ModalBottomSheet）の中は選べない。View（XML）の画面は未確認 |
+| mobile | kmp（Compose Multiplatform: Android・iOS・Desktop・Web） | `mobile/kmp.md` | `adapters/mobile/compose/` + `adapters/mobile/kmp/` | Android エミュレータ・iOS シミュレータ・wasmJs（Chrome）・Desktop（UI テスト）で通しと本番の成果物の検査を確認（docs だけで新しいアプリに導入する検証も通過）。別ウィンドウの中は選べない |
+| mobile | ios（SwiftUI） | `mobile/ios.md` | `adapters/mobile/ios/` | iOS 26.2 シミュレータで通しと Release の `.app` の検査を確認（docs だけで新しいアプリに導入する検証も通過）。alert は選べない。実機は未確認 |
 
 モバイル共通の前提（DOM が無い・ホバーが無い・端末から開発機へ届かせる）は `mobile/common.md`。Web 共通の操作の作り方は `web/optional/interaction.md`、場所の手がかりは `web/optional/locate.md`、メモは `web/optional/memo.md`。
 

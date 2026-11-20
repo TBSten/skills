@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalWasmJsInterop::class)
+
 package com.example.feedback
 
 import androidx.compose.ui.graphics.ImageBitmap
@@ -12,8 +14,11 @@ import org.w3c.fetch.Response
 // 受け口は Origin が localhost 系だけを許す（CORS の preflight にも答える）
 actual fun httpTransport(endpoint: String, token: String?): FeedbackTransport = FeedbackTransport { json ->
     if (endpoint.isBlank()) return@FeedbackTransport FeedbackResult(false, error = "受け口の URL が未設定")
-    val res = window.fetch(endpoint, postInit(json, token)).await<Response>()
-    parseFeedbackResponse(res.status.toInt(), res.text().await<JsString>().toString())
+    // 受け口に届かないと fetch は TypeError で落ちる。読める文にして返す（R6: 吹き出しに出してモードを続ける）
+    runCatching {
+        val res = window.fetch(endpoint, postInit(json, token)).await<Response>()
+        parseFeedbackResponse(res.status.toInt(), res.text().await<JsString>().toString())
+    }.getOrElse { FeedbackResult(false, error = "受け口に届きません（$endpoint）") }
 }
 
 // Kotlin の RequestInit(...) は使わない: 渡していない項目も null で入り、fetch が「'cache' に null は不正」で失敗する
