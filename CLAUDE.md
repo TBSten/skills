@@ -7,6 +7,8 @@ TBSten の Claude Code skills・rules コレクションリポジトリ。
 ```
 .
 ├── README.md / README.ja.md    # スキル・ルール一覧 (HTML table 形式)
+├── .claude-plugin/
+│   └── marketplace.json         # Claude Code plugin marketplace 定義 (生成物。手で編集しない)
 ├── skills/
 │   ├── <skill-name>.md          # スキル詳細ドキュメント (英語)
 │   ├── <skill-name>.ja.md       # スキル詳細ドキュメント (日本語)
@@ -56,6 +58,14 @@ TBSten の Claude Code skills・rules コレクションリポジトリ。
 - status / group は英語詳細ドキュメント `prompts/<prompt-name>.md` の frontmatter に記載 (PROMPT.md には書かない)
 - 追加・更新は `.claude/skills/contribute-prompt.md` スキルで行う (既存 skill のプロンプト化手順もそこに記載)
 
+## Plugin marketplace
+
+- リポジトリ自体が Claude Code plugin marketplace `tbsten-skills` を兼ねる (`/plugin marketplace add TBSten/skills` → `/plugin install <plugin>@tbsten-skills`)
+- plugin は Group と 1 対 1 (contribute-* は `contribute` plugin)。どの plugin も `source: "./"` + `skills` 配列で `skills/<name>` を参照するだけで、ファイルの複製や plugin.json は持たない。`Archived` の skill は収録しない。rule / prompt は plugin の対象外
+- `.claude-plugin/marketplace.json` は生成物。SSoT は SKILL.md の `metadata.group` / `metadata.status` と `scripts/marketplace/plugins.json` (グループ ↔ plugin 名の対応)。skill の追加・削除・group / status 変更のたびに `scripts/marketplace/generate.sh` を実行して差分をコミットする
+- 新グループを追加したら `scripts/marketplace/plugins.json` に plugin を足し、README の「🧩 Plugin としてインストール」表にも行を足す
+- CI `.github/workflows/marketplace-check.yml` が `generate.sh --check` と `claude plugin validate . --strict` で再生成漏れ・スキーマ違反を検出する
+
 ## AI 責務最小化
 
 - 各 skill / rule / prompt は、実行時に AI が判断する範囲を最小限にする。決定的な作業 (scaffold・コピー・置換・コマンド列・検証) は script に寄せる
@@ -85,6 +95,7 @@ TBSten の Claude Code skills・rules コレクションリポジトリ。
 
 - **SSoT**: skill は `SKILL.md` の `metadata.status`、rule / prompt はそれぞれ `rules/<name>.md` / `prompts/<name>.md` の frontmatter `status`
 - README.md / README.ja.md の Status 列は SSoT のミラー (絵文字+ラベル表示)。必ず一致させる
+- skill の status を変えたら `scripts/marketplace/generate.sh` で marketplace.json も再生成する (Archived は plugin から外れる)
 - `Archived` の skill / rule / prompt は README の通常テーブルには載せず、🤝 Contribute セクション下の `<details>` (Archived 一覧) に移動する
 - 新規追加時のデフォルトは `Experimental`
 - status の変更は `.claude/skills/change-status.md` スキルで行う

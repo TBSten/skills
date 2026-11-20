@@ -209,6 +209,7 @@ curl -fsSL https://rules.tbsten.me/i | bash -s -- <rule-name>
 
 ## 注意点
 
+- rule は Claude Code plugin marketplace (`.claude-plugin/marketplace.json`) には載らない (plugin が扱えるのは skill 等のみ)。rule の追加・更新で marketplace の再生成は不要。ただし新しいグループを作った場合は、そのグループの skill が入る plugin を `scripts/marketplace/plugins.json` に追加しておく (contribute-skill.md の Step 6)
 - `<rule-name>.md` (英語) と `<rule-name>.ja.md` (日本語) は **常に同期して更新** する
 - テーブルは HTML `<table>` タグで記述し、Install 列のコマンドは ```sh code block で記載する
 - 参照ファイルのパス設計時は、ユーザーのプロジェクトルートに展開されることを考慮する

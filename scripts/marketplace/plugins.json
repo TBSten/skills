@@ -1,0 +1,51 @@
+{
+  "marketplace": {
+    "name": "tbsten-skills",
+    "owner": { "name": "TBSten", "url": "https://github.com/TBSten" },
+    "description": "TBSten's Claude Code skills, one plugin per group."
+  },
+  "plugins": [
+    {
+      "group": "タスク管理",
+      "name": "task-management",
+      "category": "productivity",
+      "description": "Local Markdown ticket system and a status board for tracking tasks."
+    },
+    {
+      "group": "Kotlin / Android アプリ開発",
+      "name": "kotlin-android-app",
+      "category": "development",
+      "description": "Kotlin / Compose Multiplatform app patterns (Tuple, SimpleLoader, Navigation 3 tabs, snapshot testing)."
+    },
+    {
+      "group": "Kotlin ライブラリ/ツール開発",
+      "name": "kotlin-library-dev",
+      "category": "development",
+      "description": "Kotlin library and tooling development (Compiler Plugin, KSP, Maven Central publish, IntelliJ plugin)."
+    },
+    {
+      "group": "Web フロントエンド",
+      "name": "web-frontend",
+      "category": "development",
+      "description": "Web frontend scaffolding (React + Vite + Supabase)."
+    },
+    {
+      "group": "Git / GitHub",
+      "name": "git-github",
+      "category": "development",
+      "description": "GitHub PR workflows (PR fix loop, exploratory PR / nightly verification, visual explanations)."
+    },
+    {
+      "group": "テスト・検証",
+      "name": "testing-verification",
+      "category": "testing",
+      "description": "Verification method scoring and in-app feedback mode loops."
+    },
+    {
+      "group": null,
+      "name": "contribute",
+      "category": "development",
+      "description": "Skills for contributing new skills / rules / prompts to TBSten/skills via pull requests."
+    }
+  ]
+}

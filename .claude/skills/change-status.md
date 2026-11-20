@@ -95,6 +95,16 @@ README.md / README.ja.md のステータス列は **frontmatter を正とした�
 
 逆に `Archived` から他の status へ戻す場合は、Archived テーブルから通常テーブルへ行を戻す。
 
+### Step 3.5: plugin marketplace の再生成 (skill のみ)
+
+対象が skill の場合、status は plugin への収録有無 (`Archived` は収録しない) に影響するため、script をそのまま実行する:
+
+```bash
+scripts/marketplace/generate.sh
+```
+
+`OK marketplace: ...` を確認し、`.claude-plugin/marketplace.json` の差分も変更に含める。rule / prompt は marketplace に載らないので不要。
+
 ### Step 4: 差分確認と報告
 
 1. `git diff` で変更内容を確認し、SSoT と README のステータスが一致していることを確認する
@@ -104,5 +114,6 @@ README.md / README.ja.md のステータス列は **frontmatter を正とした�
 ## 注意点
 
 - frontmatter (SSoT) と README のステータスは **常に一致** させる。片方だけの更新は禁止
+- skill の status を変えたら `scripts/marketplace/generate.sh` で `.claude-plugin/marketplace.json` を再生成する (手で編集しない)
 - status は 5 値のみ。表記ゆれ (`active`, `WIP中` 等) を許さない
 - 複数の skill / rule / prompt をまとめて変更する場合は、1 件ずつ Step 2-3 を繰り返す

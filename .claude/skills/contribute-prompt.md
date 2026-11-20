@@ -213,6 +213,7 @@ https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/prompts/<prompt-
 
 ## 注意点
 
+- prompt は Claude Code plugin marketplace (`.claude-plugin/marketplace.json`) には載らない (plugin が扱えるのは skill 等のみ)。prompt の追加・更新で marketplace の再生成は不要。ただし新しいグループを作った場合は、そのグループの skill が入る plugin を `scripts/marketplace/plugins.json` に追加しておく (contribute-skill.md の Step 6)
 - `<prompt-name>.md` (英語) と `<prompt-name>.ja.md` (日本語) は **常に同期して更新** する
 - PROMPT.md は raw URL 直取得で単体実行されるため、リポジトリ内の相対パス参照を残さない (必ず raw URL / sparse clone 経由にする)
 - status / group は `prompts/<prompt-name>.md` の frontmatter を SSoT とし、README と必ず一致させる (PROMPT.md には書かない)

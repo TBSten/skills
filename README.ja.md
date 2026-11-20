@@ -6,6 +6,102 @@ TBSten の [Claude Code](https://docs.anthropic.com/en/docs/claude-code) スキ�
 
 > **ステータス:** 🌱 WIP ・ 🧪 Experimental ・ ✅ Active ・ 💎 Active-Prime ・ ❌ Archived
 
+## 🧩 Plugin としてインストール
+
+このリポジトリは Claude Code の plugin marketplace (`tbsten-skills`) としても使える。グループごとに 1 つの plugin にまとめており、plugin を入れるとそのグループの skill (Archived 以外) がまとめて入る。skill は `<plugin>:<skill>` の名前で呼べる。
+
+```sh
+/plugin marketplace add TBSten/skills
+/plugin install kotlin-library-dev@tbsten-skills
+```
+
+Claude Code 2.1.275 以降は下表の 1 行だけで marketplace の追加とインストールを同時にできる。ルール・プロンプトは plugin に含まれないので、各セクションの方法で使う。
+
+<table>
+<tr>
+<th>グループ</th>
+<th>Plugin</th>
+<th>インストール</th>
+</tr>
+<tr>
+<td>🔴 タスク管理</td>
+<td><code>task-management</code></td>
+<td>
+
+```sh
+/plugin install task-management --marketplace TBSten/skills
+```
+
+</td>
+</tr>
+<tr>
+<td>🟢 Kotlin / Android アプリ開発</td>
+<td><code>kotlin-android-app</code></td>
+<td>
+
+```sh
+/plugin install kotlin-android-app --marketplace TBSten/skills
+```
+
+</td>
+</tr>
+<tr>
+<td>🟣 Kotlin ライブラリ/ツール開発</td>
+<td><code>kotlin-library-dev</code></td>
+<td>
+
+```sh
+/plugin install kotlin-library-dev --marketplace TBSten/skills
+```
+
+</td>
+</tr>
+<tr>
+<td>🔵 Web フロントエンド</td>
+<td><code>web-frontend</code></td>
+<td>
+
+```sh
+/plugin install web-frontend --marketplace TBSten/skills
+```
+
+</td>
+</tr>
+<tr>
+<td>⚫️ Git / GitHub</td>
+<td><code>git-github</code></td>
+<td>
+
+```sh
+/plugin install git-github --marketplace TBSten/skills
+```
+
+</td>
+</tr>
+<tr>
+<td>🟡 テスト・検証</td>
+<td><code>testing-verification</code></td>
+<td>
+
+```sh
+/plugin install testing-verification --marketplace TBSten/skills
+```
+
+</td>
+</tr>
+<tr>
+<td>🤝 コントリビュート用スキル</td>
+<td><code>contribute</code></td>
+<td>
+
+```sh
+/plugin install contribute --marketplace TBSten/skills
+```
+
+</td>
+</tr>
+</table>
+
 ## ⭐️ 利用可能なスキル
 
 <table>
