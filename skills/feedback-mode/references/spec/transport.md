@@ -4,8 +4,8 @@
 
 ```
 画面（adapter）──Transport──▶ 受け口 ──▶ Sink（置き場）◀── loop（list / read / archive）
- 部品を選ぶ・材料を集める   IPC / HTTP /      submitFeedback:        ファイル / メモリ / HTTP /
- （data.md §4 の body）     toolbar のメッセージ  添付 → 組み立て → redact → 保存   Issue / クラウド
+ 部品を選ぶ・材料を集める   IPC / HTTP /      submitFeedback:        ファイル / メモリ / HTTP
+ （data.md §4 の body）     toolbar のメッセージ  添付 → 組み立て → redact → 保存
 ```
 
 - Sink を変えるのは受け口の側だけで、画面側は変えない。
@@ -46,19 +46,16 @@ Sink { kind, capabilities{put,list,read,archive,doc}
 | ローカルのファイル（既定） | `core/file-sink.mjs`・`core-ts/file-sink.ts` | `<root>/<dir>/yymmdd-xx.md`・`<dir>/archived/`・添付は `attachDir/<日時>/`（TS 版は `<dir>/attachments/`）。`archive` は rename + 対応メモ |
 | メモリ | `core/memory-sink.mjs`・`core-ts/memory-sink.ts` | テスト・モックアップ用。契約テストの基準 |
 | HTTP | `core/http-sink.mjs` | 別マシンの受け口（下の §3.2）に送る・読む・閉じる。画面で文を組み立てられる環境向け |
-| Issue トラッカー | （無い。概要のみ） | `putEntry` = Issue 作成、`list` / `read` = 検索・取得、`archive` = クローズ + ラベル + 対応内容のコメント。添付は別ストレージの URL。トークンは受け口（サーバ・CI）にだけ置く。外部に出す同意が要る |
-| クラウドストレージ | （無い。概要のみ） | `putEntry` = `inbox/<id>.md` を条件付き書き込み（`If-None-Match`）、`archive` = `archived/` へコピー + 削除、`list` = prefix 一覧。添付は署名付き URL |
 
-loop 側の読み方・閉じ方は Sink ごとに違う（`references/loop/loop.md` §2.1）。
+ほかの置き場（Issue トラッカーなど）に入れたいときは、§1 の契約どおりに Sink を作り、契約テストに足して通してから使う（同梱はしていない）。loop 側の読み方・閉じ方は `references/loop/loop.md` §2.1。
 
 ## 3. Transport と受け口
 
 | Transport | 受け口 | 使う adapter | ファイル |
 |---|---|---|---|
 | IPC | Electron の main（`registerFeedback`。チャネル `app:feedback-save`） | electron | `adapters/desktop/electron/main-feedback.mjs` |
-| IPC（invoke） | Tauri の Rust コマンド、または下の HTTP の受け口を sidecar で | tauri | （無い。規則を移植） |
 | toolbar のメッセージ | Astro の統合（`toolbar.on('feedback-mode:save')`。HMR の WebSocket に乗る） | astro | `adapters/web/astro/feedback-integration.ts` |
-| HTTP | 開発用サーバ `feedback-dev-server.mjs`（`node` で別プロセス、または dev サーバの middleware に `createHandler({ sink })`） | dom・react・react-native・flutter・ios・android | `core/feedback-dev-server.mjs` |
+| HTTP | 開発用サーバ `feedback-dev-server.mjs`（`node` で別プロセス） | dom・react・tauri・（モバイル） | `core/feedback-dev-server.mjs` |
 | クリップボード | 無い（人が会話に貼る） | single-html | （HTML の中に書く） |
 
 ### 3.1 結果の形

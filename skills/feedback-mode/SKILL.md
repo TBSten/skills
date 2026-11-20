@@ -3,12 +3,13 @@ name: feedback-mode
 description: >-
   アプリの debug ビルドに「フィードバックモード」（画面の部品を選んでコメントすると、画面・状態・ログ・スクリーンショット付きの記録が
   置き場に溜まる）を入れ（setup）、溜まった記録を Claude Code が実装・調査・設計に振り分けて消化する（loop）skill。
-  Web（DOM・React・Astro）・Desktop（Electron・Tauri）・モバイル（React Native・Flutter・iOS・Android）を adapter で差し替え、
-  保存先（ファイル・HTTP・Issue）は Sink で差し替える。本番ビルドには入れない。
+  Web（DOM・React・Astro）・Desktop（Electron・Tauri）を adapter で差し替え、
+  保存先（ファイル・HTTP）は Sink で差し替える。本番ビルドには入れない。
   agent の指摘を画面の印と popup で人に答えてもらう Review、人の判断を溜めて二度聞かない判断の記録、
   agent が作る 1 枚の HTML に人がコメントして返す仕組みも扱う。
   Use when requested: "フィードバックモードを作って", "アプリにフィードバック機能を入れたい", "debug ビルドにフィードバックを入れたい",
   "フィードバックの保存先を変えたい", "feedback を対応して", "溜まったフィードバックを処理", "feedback ループを回したい",
+  "フィードバックが来たらすぐ対応して", "feedback を見張って",
   "指摘を画面で見せたい", "直さないと答えたのをまた聞かないで", "レポートの HTML にコメントできるようにしたい",
   "add feedback mode to my app", "process the feedback inbox", "show review findings to a human".
 metadata:
@@ -22,7 +23,7 @@ metadata:
 
 ```
 人 ──（アプリの上で部品を選んでコメント）──▶ adapter ──Transport──▶ 受け口 ──▶ Sink（Inbox）
-                                          環境ごとに差し替え            共通（core）     ファイル / HTTP / Issue
+                                          環境ごとに差し替え            共通（core）     ファイル / HTTP
 Inbox ──▶ loop（オーケストレータが分類 → サブエージェントが対応 → archive → 報告）
 agent ──（指摘）──▶ review/ ──▶ 人がボタンで答える ──▶ loop が拾う・判断の記録に写す
 ```
@@ -31,7 +32,7 @@ agent ──（指摘）──▶ review/ ──▶ 人がボタンで答える 
 
 ## 1. タイミングを決める
 
-1. 人の明示が最優先: 「作って・入れたい・導入」→ **setup**、「対応して・ループ・処理して」→ **loop**、両方 → setup のあと loop。「指摘を見せたい・人に答えてもらいたい」→ **review**、「判断を記録して」→ `references/review/decisions.md`、「agent が作る HTML にコメントできるように」→ `references/setup/web/single-html.md` だけ。
+1. 人の明示が最優先: 「作って・入れたい・導入」→ **setup**、「対応して・ループ・処理して・見張って」→ **loop**（見張りは `references/loop/loop.md` §2.6）、両方 → setup のあと loop。「指摘を見せたい・人に答えてもらいたい」→ **review**、「判断を記録して」→ `references/review/decisions.md`、「agent が作る HTML にコメントできるように」→ `references/setup/web/single-html.md` だけ。
 2. 明示が無ければ判定 script を実行する（読み取りだけ。末尾に `VERDICT=` を出す）。script は読解・書き換え・再実装せず、そのまま実行する。
 
 ```bash
@@ -58,8 +59,7 @@ references/
 │  ├ setup.md       共通の手順・debug 限定・既存のデバッグ基盤・ログ・チェックリスト
 │  ├ adapter.md     差し込み口の一覧・adapter の一覧・新しい環境の adapter の作り方
 │  ├ web/           dom / react / astro / single-html（＋ interaction・locate・memo: Web の optional 機能の作り方）
-│  ├ desktop/       electron / tauri
-│  └ mobile/        common（先に読む）/ react-native / flutter / ios / android
+│  └ desktop/       electron / tauri
 ├ loop/       ループ中に読む: loop.md（＋ subagent-prompt・full-check・lessons）
 ├ review/     agent の指摘に人が答えるとき: review.md・ui.md・decisions.md
 └ spec/       共通仕様（setup・loop の中で指されたところだけ読む）
@@ -76,14 +76,13 @@ references/
 | `assets/templates/core-ts/` | コアの TypeScript 版（ファイル・メモリの Sink・採番・パス検査）と vitest の契約テスト（32 件） |
 | `assets/templates/adapters/web/dom/` | DOM 版のフィードバックモード（`feedback-mode.js`）・開発ビルドの入口・暫定のログ |
 | `assets/templates/adapters/web/astro/` | Astro の Dev Toolbar 統合（受け口）と toolbar アプリ・dist の検査 |
-| `assets/templates/adapters/desktop/electron/` | main の IPC の受け口・既存の開発用メニューに足す例 |
-| `assets/templates/adapters/mobile/react-native/` | `FeedbackProvider` / `FbTarget`・Dev Menu に足す例 |
-| `assets/templates/adapters/mobile/flutter/` | `FeedbackRoot` / `FbTarget` |
+| `assets/templates/adapters/desktop/electron/` | main の IPC の受け口・開発時だけの preload・renderer の入口・既存の開発用メニューに足す例 |
 | `assets/templates/data/` | 送信 body と記録の frontmatter の JSON Schema・記録とメモの例 |
 | `assets/templates/review/` | Review の指摘・人が足す選択肢・判断の記録の例 |
 | `scripts/detect.sh` | タイミングの判定（読み取りだけ） |
 | `scripts/copy-core.sh` | `core/` を導入先にコピーして `node --test` を通す |
 | `scripts/check-no-feedback-in-prod.sh` | 本番の成果物にフィードバックモードの痕跡が無いかを grep |
+| `scripts/watch-inbox.mjs` | Inbox を見張り、新しい記録が来たら `NEW <id> <パス>` を出して終わる（loop の §2.6。`node:test` 8 件） |
 | `scripts/review.mjs` | Review の cli（`node:test` 19 件） |
 | `scripts/decisions.py` | 判断の記録の検査・照合・Review からの写し（unittest 21 件） |
 

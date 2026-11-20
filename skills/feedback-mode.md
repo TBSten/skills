@@ -39,7 +39,7 @@ It also covers the other direction (agent → human):
 
 ## When to use
 
-- You develop a desktop (Electron / Tauri), web, or mobile (iOS / Android / React Native / Flutter) app and want
+- You develop a web (DOM / React / Astro) or desktop (Electron / Tauri) app and want
   in-app feedback that carries screen, state, logs, and screenshots into a Claude Code workflow
 - You want to change where feedback is stored (local files, an HTTP receiver on a dev machine, an issue tracker, cloud storage)
 - Feedback has piled up in a folder and you want Claude Code to work through it with subagents
@@ -64,16 +64,16 @@ It also covers the other direction (agent → human):
 | Path | Role |
 |---|---|
 | `SKILL.md` | Overview, timing decision, list of bundled templates |
-| `references/setup/` | `setup.md` (common steps, debug-only wiring, existing debug infra, logging, checklist), `adapter.md` (slot list, adapter list, how to add one), and per-platform adapters: `web/` (dom, react, astro, single-html + Web optional features), `desktop/` (electron, tauri), `mobile/` (common, react-native, flutter, ios, android) |
+| `references/setup/` | `setup.md` (common steps, debug-only wiring, existing debug infra, logging, checklist), `adapter.md` (slot list, adapter list, how to add one), and per-platform adapters: `web/` (dom, react, astro, single-html + Web optional features), `desktop/` (electron, tauri) |
 | `references/loop/` | Triage loop (rules, classification, history, reporting), subagent prompts, full check, lessons |
 | `references/review/` | Review format / flow / buttons / CLI, UI rules, decisions |
 | `references/spec/` | `features.md` (required / optional), `data.md` (directories, records, memos, history), `transport.md` (Sink contract, transports, receiver API) |
 | `assets/templates/core/` · `core-ts/` | Shared core: Sink contract, numbering, redact, record builder, file / memory / HTTP Sinks, HTTP receiver, tests |
-| `assets/templates/adapters/` | Per-platform templates: `web/dom`, `web/astro`, `desktop/electron`, `mobile/react-native`, `mobile/flutter` |
+| `assets/templates/adapters/` | Per-platform templates: `web/dom`, `web/astro`, `desktop/electron` |
 | `assets/templates/data/` · `review/` | JSON Schema and examples of records, memos, review findings and decisions |
-| `scripts/` | `detect.sh` (timing), `copy-core.sh` (copy core + run tests), `check-no-feedback-in-prod.sh` (grep production artifacts), `review.mjs` (Review CLI), `decisions.py` (decisions) |
+| `scripts/` | `detect.sh` (timing), `copy-core.sh` (copy core + run tests), `check-no-feedback-in-prod.sh` (grep production artifacts), `watch-inbox.mjs` (wait for new records so the loop can start right away), `review.mjs` (Review CLI), `decisions.py` (decisions) |
 
 ## Maturity and known limitations
 
-Status is **Experimental**. Verified: the core (`node:test` 36 passing + 1 skipped over memory / file / HTTP Sinks), the TypeScript core (vitest 32), `review.mjs` (`node:test` 19), `decisions.py` (unittest 21), the DOM adapter in a headless browser, and the Astro adapter on a real Astro 7 + Starlight site and a minimal project. The Electron flow ran for weeks in the app it was extracted from, but the template wiring itself is unverified.
-**Unverified**: Tauri, React Native, Flutter, native iOS / Android, html2canvas screenshots, HTTP over LAN or from devices, each platform's production-exclusion build settings, and issue-tracker / cloud-storage Sinks. Each adapter file states its own verification status. Always check the production artifact before release.
+Status is **Experimental**. Verified: the core (`node:test` 36 passing + 1 skipped over memory / file / HTTP Sinks), the TypeScript core (vitest 32), `review.mjs` (`node:test` 19), `decisions.py` (unittest 21), `watch-inbox.mjs` (`node:test` 8), and each adapter by actually running a minimal app with the templates copied as-is: DOM and React 19 + Vite 7 in headless Chromium (including html2canvas screenshots), Astro 7 (a real Starlight site and a minimal project), Electron 38 (Playwright `_electron` under xvfb), and Tauri 2 (tauri-driver under xvfb on Linux). Each run also checked the production artifact with `check-no-feedback-in-prod.sh`.
+Only things that were actually run are included. Each adapter file starts with what was verified and on which versions. Always check the production artifact before release.

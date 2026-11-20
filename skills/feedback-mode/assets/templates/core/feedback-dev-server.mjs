@@ -1,10 +1,10 @@
 /**
  * feedback-dev-server.mjs — フィードバックの受け口（開発用）。
  *
- * 参照実装では「画面 → IPC → main がファイルを書く」だったところを、Electron の main が無い環境（Web・モバイル・Tauri の dev）向けに
+ * 参照実装では「画面 → IPC → main がファイルを書く」だったところを、Electron の main が無い環境（Web・モバイルの dev）向けに
  * 「画面 → HTTP POST → このサーバが Sink に書く」へ置き換えたもの。文の組み立て・redact・採番は参照実装と同じ規則（core/）。
  * 置き場（Sink）は差し替えられる: 既定は file-sink（参照実装と同じ。FEEDBACK_REPO_ROOT / FEEDBACK_DIR / FEEDBACK_ATTACH_DIR）。
- * createHandler({ sink }) に別の Sink（Issue トラッカー等。references/spec/transport.md）を渡せば、画面側は変えずに置き場だけ変わる。
+ * createHandler({ sink }) に別の Sink（references/spec/transport.md §1 の契約どおりに作ったもの）を渡せば、画面側は変えずに置き場だけ変わる。
  *
  *   FEEDBACK_REPO_ROOT=/path/to/repo FEEDBACK_DIR=feedback FEEDBACK_ATTACH_DIR=.local/tmp/feedback node feedback-dev-server.mjs
  *
@@ -15,7 +15,6 @@
  *   GET  /__feedback/entries?state=open     一覧 / GET /__feedback/entries/:id 全文 / POST /__feedback/entries/:id/archive { note }
  * 守ること: 既定は 127.0.0.1 にだけ bind する・ブラウザの Origin は localhost 系だけ許す・本文の大きさに上限・本番では起動しない。
  * FEEDBACK_TOKEN を設定すると、ヘッダ x-feedback-token が一致しない要求を 401 にする（LAN に出すときは必須）。
- * Vite / webpack-dev-server を使うなら、同じ handler を middleware に載せ替えてよい（未検証）。
  */
 import http from 'node:http';
 import path from 'node:path';

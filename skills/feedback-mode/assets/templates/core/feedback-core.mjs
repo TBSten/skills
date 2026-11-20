@@ -11,7 +11,6 @@
  *   file-sink.mjs   ローカルのファイル（参照実装の feedbackFile.ts・feedbackShots.ts の写し）
  *   memory-sink.mjs メモリ（テスト・契約の確認用）
  *   http-sink.mjs   HTTP で別マシンの受け口（feedback-dev-server.mjs）に送る・読む・閉じる
- *   （Issue トラッカー・クラウドストレージは references/spec/transport.md に概要のみ）
  *
  * 参照実装との関係: 参照実装は main の buildFeedback（feedbackText.ts + feedbackFile.ts + feedbackShots.ts）が、置き場（ファイル）を直接呼んでいる。
  * ここではその 3 つを「文の組み立て（このファイル）」と「置き場（Sink）」に分け、置き場を差し替えられるようにした。

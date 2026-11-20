@@ -1,5 +1,5 @@
 /**
- * feedback-mode.js — Web / WebView（Electron・Tauri・Capacitor の画面側を含む）用の「フィードバックモード」最小実装。依存なし・ESM。
+ * feedback-mode.js — Web / WebView（Electron・Tauri の画面側を含む）用の「フィードバックモード」最小実装。依存なし・ESM。
  *
  * 参照実装（renderer の feedback.ts・elementInfo.ts）の骨格を、アプリ固有の部分（モデルから作る画面の状態・
  * 初心者/中級者モード・ダイアログ内への配置・data-fb の大量付与）を除いて写したもの。
@@ -19,7 +19,7 @@
  * 送信の差し替え（保存先の抽象化）:
  *   画面側の差し替え点は transport（画面 → 受け口）。受け口（feedback-dev-server.mjs / Electron main）の裏で Sink（ファイル・Issue 等）を差し替える。
  *   httpTransport(endpoint, {headers})  既定。LAN の開発機の受け口へ HTTP POST（スマホ実機・別マシン）
- *   ipcTransport(fn)                    Electron / Tauri: IPC で main（Rust）に渡す（参照実装と同じ経路）
+ *   ipcTransport(fn)                    Electron: IPC で main に渡す（参照実装と同じ経路。desktop/electron の renderer-feedback.js）
  *   自作: async (body) => ({ ok, id, ref, error })  例: 共有シートに Markdown を渡す・Issue トラッカーの API を直接呼ぶ（要トークンの扱い注意）
  *
  * 使い方（開発ビルドの入口だけで）:
@@ -160,6 +160,11 @@ async function defaultCapture(targetRect, rootEl) {
     c.getContext('2d').drawImage(canvas, left, top, c.width, c.height, 0, 0, c.width, c.height);
     element = png(c);
   }
+  // 選んだ要素を枠で囲む（モードの DOM は ignoreElements で写らないので、.fb-frame の代わりに canvas に描く）
+  const g = canvas.getContext('2d');
+  g.strokeStyle = '#e5484d';
+  g.lineWidth = 3 * Math.min(sx, sy);
+  g.strokeRect((targetRect.x - 1.5) * sx, (targetRect.y - 1.5) * sy, (targetRect.width + 3) * sx, (targetRect.height + 3) * sy);
   return { windowPng: png(canvas), elementPng: element };
 }
 

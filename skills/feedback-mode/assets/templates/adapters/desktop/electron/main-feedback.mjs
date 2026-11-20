@@ -1,12 +1,12 @@
 /**
- * Electron main 側の配線（参照実装 src/main/main.ts の buildFeedback / saveFeedback / IPC に相当。ESM の最小版）。【未検証: 実アプリでは未検証】
+ * Electron main 側の配線（参照実装 src/main/main.ts の buildFeedback / saveFeedback / IPC に相当。ESM の最小版）。
  *
  * 参照実装との違い:
  *   - 置き場は Sink として差し替えられる（既定は file-sink。参照実装は feedbackFile.ts を直接呼んでいた）
  *   - 画面の状態・環境・ログは renderer が payload に入れて送る（参照実装は main が env・ログを持つ）。main のログも載せたいなら payload.logs に足す
  *   - **debug ビルド限定**（参照実装には無い）。registerFeedback は isDev が true のときだけ IPC を登録する。
  *     isDev には `!app.isPackaged` を渡す。さらに、本番のビルド（electron-builder の files）からこのファイルと core/ を除く、
- *     preload でも本番では公開しない、までやる（references/setup/desktop/electron.md）。
+ *     preload は本番と開発で別ファイルにする（preload-feedback.cjs）、までやる（references/setup/desktop/electron.md）。
  *
  * 使い方（main.js から。本番ビルドで消えるよう、条件つきの動的 import にする）:
  *   if (!app.isPackaged) {
@@ -45,16 +45,4 @@ export function registerFeedback({ ipcMain, getWindow, sink, isDev }) {
   });
 }
 
-// ---- preload.js（contextIsolation: true の前提。debug のときだけ公開する）----
-//   const { contextBridge, ipcRenderer } = require('electron');
-//   if (process.env.NODE_ENV !== 'production' /* または app.isPackaged を main から渡す */) {
-//     contextBridge.exposeInMainWorld('feedbackApi', { save: (body) => ipcRenderer.invoke('app:feedback-save', body) });
-//   }
-//
-// ---- renderer（画面側。feedback-entry.dev.js の代わりに）----
-//   const { installFeedbackMode, ipcTransport } = await import('./feedback-mode.js');
-//   // ログは main のログ基盤（別タスク）から読むなら、renderer の getRecentLogs に IPC で渡すか、payload.logs を main で足す（ここでは省略）
-//   installFeedbackMode({ enabled: true, appName: 'MyApp', transport: ipcTransport(window.feedbackApi.save), capture: async () => ({}) /* main が撮る */ });
-//
-// ---- メニュー（参照実装は macOS メニューの「フィードバックモードへ」⌥⌘F。debug のときだけ項目を足す）----
-//   { label: 'フィードバックモードへ', accelerator: 'Alt+Command+F', click: () => win.webContents.send('app:menu-feedback', { action: 'mode', on: true }) }
+// preload は preload-feedback.cjs、renderer の入口は renderer-feedback.js、メニューは electron-dev-menu.mjs。

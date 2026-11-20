@@ -58,7 +58,7 @@
   4. 基盤がスクショ・ログのバッファ・環境情報・バグ報告の送信先を持っていれば、`capture`・`logs`・`getEnv`・Sink として再利用する。
   5. 基盤のメニューを閉じてからモードに入るか（全面オーバーレイと衝突しないか）。
 - 見つかっても §2 の「外すものの一覧」と検査は省かない。
-- 最小例: `assets/templates/adapters/desktop/electron/electron-dev-menu.mjs`、`assets/templates/adapters/mobile/react-native/react-native-devmenu.ts`。
+- 最小例: `assets/templates/adapters/desktop/electron/electron-dev-menu.mjs`（Electron の開発メニュー）、`references/setup/web/dom.md` の `entry`（既存の dev panel から `enter()`）。
 
 ## 4. ログ
 

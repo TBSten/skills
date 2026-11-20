@@ -1,6 +1,6 @@
 /**
  * Sink の契約テスト: どの置き場でも、同じ操作で同じ結果になること（採番・保存・添付・一覧・読み・アーカイブ）。
- * 新しい Sink（Issue トラッカー等）を足したら、ここに makeSink を 1 つ足すだけで同じ契約を確かめられる。
+ * 新しい Sink を足したら、ここに makeSink を 1 つ足すだけで同じ契約を確かめられる。
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';

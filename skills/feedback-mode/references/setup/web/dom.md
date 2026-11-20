@@ -1,8 +1,8 @@
 # web / dom（素の DOM・Vite・webpack・WebView の画面側）
 
-検証状況: ヘッドレスのブラウザで「ホバー → クリック → 吹き出し → 送信 → 置き場に記録ができる・下の要素にクリックが届かない・Esc で出る・`enabled` を渡さないと何もしない」を確認。html2canvas でのスクショ・Vite の middleware への載せ替えは未検証。
+検証状況: ヘッドレスのブラウザで「ホバー → クリック → 吹き出し → 送信 → 置き場に記録ができる・下の要素にクリックが届かない・Esc で出る・`enabled` を渡さないと何もしない」を確認。React + Vite の構成で html2canvas のスクショ（ウィンドウ全体に選んだ要素の枠・要素の周り）も確認（`react.md`）。
 ひな形: `assets/templates/adapters/web/dom/`（`feedback-mode.js` 本体・`feedback-entry.dev.js` 開発ビルドの入口・`log-buffer.example.js` 暫定のログ）。受け口は `core/feedback-dev-server.mjs`。
-React・Electron・Tauri の画面側もこれを使う（`react.md`・`../desktop/`）。
+React・Electron・Tauri の画面側もこれを使う（`react.md`・`../desktop/electron.md`・`../desktop/tauri.md`）。
 
 ## 差し込み口
 
@@ -16,7 +16,7 @@ React・Electron・Tauri の画面側もこれを使う（`react.md`・`../deskt
 | `collect` | `getScreen`（既定: `location.pathname`）・`getView`（store の状態から）・`stateOf(el)`・`getEnv` |
 | `logs` | `getRecentLogs`・`logEvent` |
 | `capture` | 既定は `window.html2canvas` があれば使う（無ければ撮らない）。差し替えは `opts.capture`（例: `modern-screenshot`。作り方は `interaction.md` §5）。CSS の一部・クロスオリジン画像・canvas・video は崩れる |
-| `transport` | `httpTransport(import.meta.env.VITE_FEEDBACK_ENDPOINT, { headers: { 'x-feedback-token': … } })`。受け口は別プロセスの `node core/feedback-dev-server.mjs`（`FEEDBACK_REPO_ROOT` を導入先に）か、dev サーバの middleware に `createHandler({ sink })` |
+| `transport` | `httpTransport(import.meta.env.VITE_FEEDBACK_ENDPOINT, { headers: { 'x-feedback-token': … } })`。受け口は別プロセスの `node core/feedback-dev-server.mjs`（`FEEDBACK_REPO_ROOT` を導入先に） |
 | `pointer` | `opts.pointer` |
 
 `opts.enabled === true` でなければ何もしない（保険）。`transport` は必須で、既定の URL は持たない。

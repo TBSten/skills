@@ -36,7 +36,7 @@ references は **タイミング別** に分け、setup はさらに **プラッ
 
 ## 使うべきタイミング
 
-- Desktop（Electron / Tauri）・Web・スマホ（iOS / Android / React Native / Flutter）アプリで、画面・状態・ログ・スクリーンショット付きのフィードバックを Claude Code の作業に流したい
+- Web（DOM・React・Astro）・Desktop（Electron / Tauri）アプリで、画面・状態・ログ・スクリーンショット付きのフィードバックを Claude Code の作業に流したい
 - フィードバックの保存先（ローカルのファイル・開発機への HTTP 受け口・Issue トラッカー・クラウドストレージ）を変えたい
 - フォルダに溜まったフィードバックを、サブエージェントで一通り対応させたい
 - すでに debug menu・開発者向け画面があり、そこにフィードバックの入口を足したい
@@ -59,16 +59,16 @@ references は **タイミング別** に分け、setup はさらに **プラッ
 | パス | 役割 |
 |---|---|
 | `SKILL.md` | 全体像・タイミングの判定・同梱テンプレートの一覧 |
-| `references/setup/` | `setup.md`（共通の手順・debug 限定・既存のデバッグ基盤・ログ・チェックリスト）、`adapter.md`（差し込み口・adapter の一覧・作り方）、環境ごとの adapter: `web/`（dom・react・astro・single-html と Web の optional 機能の作り方）・`desktop/`（electron・tauri）・`mobile/`（common・react-native・flutter・ios・android） |
+| `references/setup/` | `setup.md`（共通の手順・debug 限定・既存のデバッグ基盤・ログ・チェックリスト）、`adapter.md`（差し込み口・adapter の一覧・作り方）、環境ごとの adapter: `web/`（dom・react・astro・single-html と Web の optional 機能の作り方）・`desktop/`（electron・tauri） |
 | `references/loop/` | 消化ループ（運用ルール・分類・履歴・報告）・サブエージェントのプロンプト・全体チェック・落とし穴 |
 | `references/review/` | Review の形・流れ・ボタン・cli、UI の決まり、判断の記録 |
 | `references/spec/` | `features.md`（必須 / optional）・`data.md`（ディレクトリ・記録・メモ・履歴）・`transport.md`（Sink の契約・Transport・受け口の API） |
 | `assets/templates/core/`・`core-ts/` | 共通のコア: Sink の契約・採番・redact・記録の組み立て・ファイル / メモリ / HTTP の Sink・HTTP の受け口・テスト |
-| `assets/templates/adapters/` | 環境ごとのひな形: `web/dom`・`web/astro`・`desktop/electron`・`mobile/react-native`・`mobile/flutter` |
+| `assets/templates/adapters/` | 環境ごとのひな形: `web/dom`・`web/astro`・`desktop/electron` |
 | `assets/templates/data/`・`review/` | 記録・メモ・Review の指摘・判断の JSON スキーマと例 |
-| `scripts/` | `detect.sh`（タイミングの判定）・`copy-core.sh`（コアのコピーとテスト）・`check-no-feedback-in-prod.sh`（本番の成果物の検査）・`review.mjs`（Review の cli）・`decisions.py`（判断の記録） |
+| `scripts/` | `detect.sh`（タイミングの判定）・`copy-core.sh`（コアのコピーとテスト）・`check-no-feedback-in-prod.sh`（本番の成果物の検査）・`watch-inbox.mjs`（新しい記録を待ち、来たらすぐ loop を始める）・`review.mjs`（Review の cli）・`decisions.py`（判断の記録） |
 
 ## 成熟度と既知の制約
 
-status は **Experimental**。確認済み: コア（メモリ・ファイル・HTTP の Sink に対する `node:test` 36 件 + skip 1 件）、TypeScript 版のコア（vitest 32 件）、`review.mjs`（`node:test` 19 件）、`decisions.py`（unittest 21 件）、DOM の adapter（ヘッドレスのブラウザ）、Astro の adapter（Astro 7 + Starlight の実サイトと最小プロジェクト）。Electron の流れは元にしたアプリで数週間運用したが、ひな形の配線そのものは未検証。
-**未検証**: Tauri・React Native・Flutter・iOS / Android のネイティブ・html2canvas のスクショ・LAN 越しや実機からの HTTP・各環境の「本番から外す」ビルド設定・Issue トラッカー / クラウドストレージの Sink。各 adapter のファイルの冒頭に検証状況を書いてある。リリース前には必ず成果物を検査すること。
+status は **Experimental**。確認済み: コア（メモリ・ファイル・HTTP の Sink に対する `node:test` 36 件 + skip 1 件）、TypeScript 版のコア（vitest 32 件）、`review.mjs`（`node:test` 19 件）、`decisions.py`（unittest 21 件）、`watch-inbox.mjs`（`node:test` 8 件）。adapter は、ひな形をそのままコピーした最小アプリを実際に動かして確かめた: DOM と React 19 + Vite 7（ヘッドレスの Chromium。html2canvas のスクショも）、Astro 7（Starlight の実サイトと最小プロジェクト）、Electron 38（xvfb + Playwright の `_electron`）、Tauri 2（Linux の xvfb + tauri-driver）。どれも本番の成果物を `check-no-feedback-in-prod.sh` で検査した。
+実際に動かしたものだけを載せている。各 adapter のファイルの冒頭に、何の版で何を確かめたかを書いてある。リリース前には必ず成果物を検査すること。

@@ -17,35 +17,32 @@
 | `exclude` 本番から外す | ビルド時に消す方法・実行時の保険・成果物の検査パターン（R1） | 動的 import + `import.meta.env.DEV`・`app.isPackaged`・`__DEV__`・別 entrypoint・debug source set・`#if DEBUG` |
 | `pointer` Agent への案内 | 記録の冒頭に書く 1 行（ソースの場所・ログの形・正本 docs） | 「ソースは `src/`、ログの形は README の『ログ』」 |
 
-Web 系の DOM 版（`assets/templates/adapters/web/dom/feedback-mode.js`）は、この表がそのまま `installFeedbackMode(opts)` の引数になっている（`hotkey`・`getScreen`・`getView`・`stateOf`・`getEnv`・`getRecentLogs`・`logEvent`・`capture`・`transport`・`pointer`・`enabled`）。DOM が無い環境のひな形（RN・Flutter）は、そのうち `appName`・`transport`・`getRecentLogs`（RN は `getView` も）を同じ名前で受ける。足りない差し込み口は、同じ名前で props / 引数を足す。
+Web 系の DOM 版（`assets/templates/adapters/web/dom/feedback-mode.js`）は、この表がそのまま `installFeedbackMode(opts)` の引数になっている（`hotkey`・`getScreen`・`getView`・`stateOf`・`getEnv`・`getRecentLogs`・`logEvent`・`capture`・`transport`・`pointer`・`enabled`）。DOM が無い環境の adapter を作るときも、差し込み口は同じ名前で props / 引数にする。
 
 ## 2. adapter の一覧
 
 | 分類 | adapter | 読むファイル | ひな形 | 検証状況 |
 |---|---|---|---|---|
-| web | dom（素の DOM・Vite・webpack） | `web/dom.md` | `adapters/web/dom/` | ヘッドレスのブラウザで通しを確認 |
-| web | react | `web/react.md` | dom を使う | dom と同じ（React の配線は未確認） |
+| web | dom（素の DOM・Vite・webpack） | `web/dom.md` | `adapters/web/dom/` | ヘッドレスの Chromium で通しを確認 |
+| web | react（+ Vite） | `web/react.md` | dom を使う | React 19 + Vite 7 で通し・スクショ・本番の検査を確認 |
 | web | astro | `web/astro.md` | `adapters/web/astro/` | Astro 7 の実サイトと最小プロジェクトで確認 |
 | web | single-html（agent が作る 1 枚の HTML） | `web/single-html.md` | 無い（作り方だけ） | 実プロダクトで確認 |
-| desktop | electron | `desktop/electron.md` | `adapters/desktop/electron/` | 元にした実アプリで運用。ひな形の配線は未確認 |
-| desktop | tauri | `desktop/tauri.md` | dom を使う | 未検証 |
-| mobile | react-native | `mobile/react-native.md` | `adapters/mobile/react-native/` | 未検証（コンパイルも未確認） |
-| mobile | flutter | `mobile/flutter.md` | `adapters/mobile/flutter/` | 未検証（コンパイルも未確認） |
-| mobile | ios | `mobile/ios.md` | 無い（断片だけ） | 未検証 |
-| mobile | android | `mobile/android.md` | 無い（断片だけ） | 未検証 |
+| desktop | electron | `desktop/electron.md` | `adapters/desktop/electron/` | Electron 38 で通し・capturePage・asar の検査を確認 |
+| desktop | tauri | `desktop/tauri.md` | dom を使う | Tauri 2 + Vite 7（Linux）で通し・release の検査を確認 |
 
-モバイル共通の前提（DOM が無い・ホバーが無い・端末から開発機へ送る）は `mobile/common.md`。Web 共通の操作の作り方は `web/interaction.md`、場所の手がかりは `web/locate.md`、メモは `web/memo.md`。
+Web 共通の操作の作り方は `web/interaction.md`、場所の手がかりは `web/locate.md`、メモは `web/memo.md`。
 
 ## 3. 一覧に無い環境の adapter を作る
 
-1. いちばん近い adapter を土台にする（DOM がある → dom、DOM が無いがタッチ → mobile/common.md と react-native / flutter、Rust → tauri）。
+1. いちばん近い adapter を土台にする（DOM がある → dom、WebView + 別言語の本体 → tauri（受け口は HTTP の別プロセス））。
 2. §1 の表を 1 行ずつ埋める。分からない行は「無し」でよい（`capture`・`logs` は省略できる。記録に「撮っていません」「ログ: 0 件」と出る）。
 3. 受け口は、組み立てを JS で書けるなら `submitFeedback` + 好きな Sink、書けないなら HTTP の受け口（`core/feedback-dev-server.mjs`）に submission を送る。Node が無い受け口（Rust など）は `references/spec/data.md` §3.1 と `transport.md` §1 の規則を移植し、契約テストと同じ内容のテストを書く。
-4. 作ったら `setup/<分類>/<環境>.md` を、下の形で足す（skill に取り込むなら contribute-skill の手順で）。
+4. **実際に動かして確かめる**（`setup.md` 手順 8 と本番の成果物の検査）。skill に取り込むのは確かめたものだけ。
+5. `setup/<分類>/<環境>.md` を、下の形で足す（skill に取り込むなら contribute-skill の手順で）。
 
 ```markdown
 # <環境>
-検証状況: <確かめたこと / 未検証のこと を 1〜2 行>
+検証状況: <何の版で・どう動かして・何を確かめたか を 1〜2 行>
 ひな形: `assets/templates/adapters/<分類>/<環境>/`（無ければ「無い」）
 
 ## 差し込み口

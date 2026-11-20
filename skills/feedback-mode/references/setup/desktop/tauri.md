@@ -1,26 +1,32 @@
-# desktop / tauri（Rust + WebView）
+# desktop / tauri
 
-検証状況: 未検証（手順だけ）。
-ひな形: 画面側は dom の `feedback-mode.js`。Rust 側のコードは無い。
+検証状況: Tauri 2 + Vite 7 の最小アプリ（`create-tauri-app` の vanilla を Vite に載せ替え。Linux・WebKitGTK 4.1・xvfb）で、dom のひな形（`feedback-mode.js`・`feedback-entry.dev.js`）をそのまま使い、tauri-driver（WebDriver）の実入力で「ホットキーで入る → 部品をクリック（下のボタンにクリックが届かない）→ 書く → HTTP で受け口へ → 置き場に記録」を確認。`tauri build` の `dist` で検査が通ることも確認。Rust の IPC（`invoke`）で受ける形・スクショ・macOS / Windows は未確認なので載せていない。
+ひな形: dom のもの（`assets/templates/adapters/web/dom/`）をそのまま使う。Tauri 専用のコードは無い。
+
+画面は WebView の DOM なので、dom と同じものを入れる。受け口は Rust に移植せず、開発時だけ別プロセスで `core/feedback-dev-server.mjs` を動かし、WebView から HTTP で送る。
 
 ## 差し込み口
 
 | 差し込み口 | 埋め方 |
 |---|---|
-| `entry` | `tauri::menu` のイベントで `emit` し、renderer が `fb.enter('menu')`。またはホットキー（dom の既定） |
-| `pick` / `block` / `name` / `collect` | dom と同じ |
-| `logs` | `tauri-plugin-log` などのファイルの末尾、または Rust 側のバッファを `invoke` で読む |
-| `capture` | 標準のウィンドウ画像の API が無い。(a) html2canvas（WebView の描画と差が出る）(b) Rust の `xcap` などでウィンドウを撮る (c) macOS の `screencapture` を呼ぶ。dpr と `cropRect` の扱いは同じ |
-| `transport` | (a) `invoke('feedback_save', body)` を `ipcTransport` に渡し、Rust のコマンドで保存する。`references/spec/data.md` §3.1 の規則（`yymmdd-xx`・`OpenOptions::new().create_new(true)`・`archived/` も数える・ルート外とシンボリックリンクの拒否・redact）を移植する。(b) 移植が面倒なら、開発中だけ `core/feedback-dev-server.mjs` を sidecar で起動し、`httpTransport` で送る |
-| `pointer` | dom と同じ |
+| `entry` | フロントエンドの入口で、開発ビルドだけ動的 import（dom と同じ）。既存の開発メニュー・dev panel があればそこから `enter()` |
+| `transport` | `httpTransport(import.meta.env.VITE_FEEDBACK_ENDPOINT)`。開発時の WebView は `devUrl`（`http://localhost:1420` など）から読まれるので、受け口の Origin の確認（localhost 系だけ許す）を通る |
+| `capture` | 未確認（html2canvas は WebKitGTK では試していない）。撮らないなら記録に「撮っていません」と出る |
+| ほか | dom と同じ |
+
+```json
+// src-tauri/tauri.conf.json（フロントエンドを Vite で組む）
+"build": { "devUrl": "http://localhost:1420", "frontendDist": "../dist", "beforeBuildCommand": "npx vite build" }
+```
 
 ## 本番から外す
 
-- Rust 側は `#[cfg(debug_assertions)]` か Cargo feature（`--features feedback` を dev だけ）で `invoke_handler` に登録する。
-- 開発機への接続（`connect-src` の `127.0.0.1:7373`）は開発用の設定（`tauri.dev.conf.json` など）にだけ足す。
-- フロントは dom と同じ。
-- 確かめる: release のバンドルを `check-no-feedback-in-prod.sh`。
+- フロントエンドは dom と同じ（`import.meta.env.DEV` + 動的 import。静的 import にしない）。`tauri build` は `vite build` の結果を埋め込むので、`dist` に残らなければバイナリにも残らない。
+- Rust 側には何も足さない（コマンド・権限・capabilities を増やさない）。
+- `app.security.csp` を設定しているアプリは、開発時だけ `connect-src` に `http://127.0.0.1:7373` を足す（本番の設定に書かない）。
+- 確かめる: `npx tauri build --no-bundle` のあと `bash "${CLAUDE_SKILL_DIR}/scripts/check-no-feedback-in-prod.sh" dist`。release のバイナリはフロントエンドを圧縮して埋め込むので、バイナリへの grep では見つけられない。`dist` を検査する。
 
 ## この環境の注意
 
-- (a) の Rust 移植をしたら、`core/sink-contract.test.mjs` と同じ内容のテストを Rust で書く。
+- ヘッドレスの確認は tauri-driver（`cargo install tauri-driver --locked`）と WebKitWebDriver（Linux は `webkit2gtk-driver`）を `xvfb-run` の中で動かし、WebDriver の actions で実際にキーとマウスを送る。Playwright は Tauri の WebView を操作できない。
+- Linux でビルドするには `libwebkit2gtk-4.1-dev` が要る。
