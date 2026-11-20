@@ -6,6 +6,102 @@
 
 > **Status:** 🌱 WIP · 🧪 Experimental · ✅ Active · 💎 Active-Prime · ❌ Archived
 
+## 🧩 Install as Plugins
+
+This repository is also a Claude Code plugin marketplace (`tbsten-skills`). Skills are bundled into one plugin per group; installing a plugin installs every non-archived skill in that group. Skills are invoked as `<plugin>:<skill>`.
+
+```sh
+/plugin marketplace add TBSten/skills
+/plugin install kotlin-library-dev@tbsten-skills
+```
+
+On Claude Code 2.1.275 or later, the single line in the table below adds the marketplace and installs in one step. Rules and prompts are not part of the plugins; use them as described in their sections.
+
+<table>
+<tr>
+<th>Group</th>
+<th>Plugin</th>
+<th>Install</th>
+</tr>
+<tr>
+<td>🔴 Task Management</td>
+<td><code>task-management</code></td>
+<td>
+
+```sh
+/plugin install task-management --marketplace TBSten/skills
+```
+
+</td>
+</tr>
+<tr>
+<td>🟢 Kotlin / Android App Development</td>
+<td><code>kotlin-android-app</code></td>
+<td>
+
+```sh
+/plugin install kotlin-android-app --marketplace TBSten/skills
+```
+
+</td>
+</tr>
+<tr>
+<td>🟣 Kotlin Library / Tool Development</td>
+<td><code>kotlin-library-dev</code></td>
+<td>
+
+```sh
+/plugin install kotlin-library-dev --marketplace TBSten/skills
+```
+
+</td>
+</tr>
+<tr>
+<td>🔵 Web Frontend</td>
+<td><code>web-frontend</code></td>
+<td>
+
+```sh
+/plugin install web-frontend --marketplace TBSten/skills
+```
+
+</td>
+</tr>
+<tr>
+<td>⚫️ Git / GitHub</td>
+<td><code>git-github</code></td>
+<td>
+
+```sh
+/plugin install git-github --marketplace TBSten/skills
+```
+
+</td>
+</tr>
+<tr>
+<td>🟡 Testing / Verification</td>
+<td><code>testing-verification</code></td>
+<td>
+
+```sh
+/plugin install testing-verification --marketplace TBSten/skills
+```
+
+</td>
+</tr>
+<tr>
+<td>🤝 Contribute skills</td>
+<td><code>contribute</code></td>
+<td>
+
+```sh
+/plugin install contribute --marketplace TBSten/skills
+```
+
+</td>
+</tr>
+</table>
+
 ## ⭐️ Available Skills
 
 <table>

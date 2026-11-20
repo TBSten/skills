@@ -144,7 +144,7 @@ description は第三者視点で記述する (例: "This skill should be used w
 | ⚫️ | Git / GitHub | Git / GitHub |
 | 🟡 | テスト・検証 | Testing / Verification |
 
-適切なグループが無い場合は、CLAUDE.md の Group 表とこの表に新グループを追加した上で使う。
+適切なグループが無い場合は、CLAUDE.md の Group 表とこの表に新グループを追加した上で使う。グループは plugin と 1 対 1 なので、`scripts/marketplace/plugins.json` にも plugin を追加する (Step 6)。
 
 #### Markdown 本文
 
@@ -234,13 +234,28 @@ gh skill install tbsten/skills <skill-name>
 </tr>
 ````
 
+### Step 6: plugin marketplace の再生成
+
+このリポジトリは Claude Code plugin marketplace (`/plugin marketplace add TBSten/skills`) を兼ねている。
+`.claude-plugin/marketplace.json` は SKILL.md の `metadata.group` / `metadata.status` と `scripts/marketplace/plugins.json` から生成する派生物なので、手で編集せず script をそのまま実行する (読解・書き換え・再実装しない):
+
+```bash
+scripts/marketplace/generate.sh
+```
+
+- `OK marketplace: plugins=N skills=M` が出れば成功。生成された `.claude-plugin/marketplace.json` の差分をコミットに含める
+- skill はグループと同名の plugin に自動で入る (グループ ↔ plugin の対応は `scripts/marketplace/plugins.json`)。`Archived` の skill はどの plugin にも入らない
+- 新しいグループを作った場合は「plugin が定義されていないグループがある」で失敗する。`scripts/marketplace/plugins.json` の `plugins` に `{ "group", "name" (kebab-case), "category", "description" }` を 1 件追加してから再実行し、README の「🧩 Plugin としてインストール」表にも行を足す
+- CI (`.github/workflows/marketplace-check.yml`) が `generate.sh --check` と `claude plugin validate` を実行し、再生成漏れを検出する
+
 ## 既存スキルの更新
 
 1. `skills/<skill-name>/` 内の該当ファイルを編集する
 2. SKILL.md の `description` を変更した場合は `skills/<skill-name>.md` / `<skill-name>.ja.md` の説明も同期する
 3. 詳細ドキュメント (`skills/<skill-name>.md`, `<skill-name>.ja.md`) も必要に応じて更新する
 4. リソースの追加・削除も同ディレクトリ内で行う
-5. skill の振る舞いを変えたら、`evals/` があれば合わせて直す (古い期待値のままだと次の skill-eval で失敗扱いになる)。直したら `scripts/skill-eval/check-evals.sh --skill <name>` を通す
+5. `name` (ディレクトリ名)・`metadata.group`・`metadata.status` を変えた、または skill を追加・削除した場合は Step 6 の `scripts/marketplace/generate.sh` を実行して `.claude-plugin/marketplace.json` を更新する (description や本文だけの変更なら不要)
+6. skill の振る舞いを変えたら、`evals/` があれば合わせて直す (古い期待値のままだと次の skill-eval で失敗扱いになる)。直したら `scripts/skill-eval/check-evals.sh --skill <name>` を通す
 
 ## 注意点
 
@@ -251,4 +266,5 @@ gh skill install tbsten/skills <skill-name>
 - status は SKILL.md の `metadata.status` を SSoT とし、README のステータス列と必ず一致させる
 - group は SKILL.md の `metadata.group` (日本語グループ名) を SSoT とし、README のグループ列 (英語版は英語名) と必ず一致させる。グループセルの記載はグループ先頭行のみ (絵文字付き)、継続行は空セル
 - README の説明列は最大 80 文字。収まらない詳細は詳細ドキュメント側に書く
+- `.claude-plugin/marketplace.json` は手で編集しない。skill の追加・削除・group / status 変更のたびに `scripts/marketplace/generate.sh` で再生成する
 - 決定的な手順は prose で書かず script 化する。「AI 責務最小化 (script 化)」セクションのチェックリストを PR 前に実施する

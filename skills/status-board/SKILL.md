@@ -48,7 +48,7 @@ overlay を `$W/overlay.prev.json` に置いて要約を stderr に出すので�
 
 ## 手順
 
-以下 `SB=.claude/skills/status-board`、`W=<スクラッチパッド>` とする。
+以下 `SB=${CLAUDE_SKILL_DIR}` (この SKILL.md があるディレクトリ。plugin・`gh skill install` どちらの導入でも同じ)、`W=<スクラッチパッド>` とする。
 
 ### 1. 環境チェックと収集（コマンド 1 回）
 

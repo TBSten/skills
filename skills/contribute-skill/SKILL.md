@@ -104,7 +104,7 @@ contribute-skill.md を読み込んだ後、以下のように統合する:
 
 - **contribute-skill.md の Step 1 (確認事項)**: contribute-skill の Step 1-2 で既に完了。スキップする
 - **contribute-skill.md の Step 2 (SKILL.md 作成)**: フォーマット・構成ルールに従う。内容は contribute-skill の Step 2 で整理した知見を使う
-- **contribute-skill.md の Step 3-5 (リソース配置・ドキュメント・README)**: そのまま従う
+- **contribute-skill.md の Step 3-6 (リソース配置・ドキュメント・README・plugin marketplace の再生成)**: そのまま従う
 - **contribute-skill.md の「AI 責務最小化 (script 化)」**: Step 4 のリソース設計時に従う。決定的な手順は scripts/ に script 化する
 
 ガイドが見つからない場合は、以下の「フォールバック」セクションに従う。
@@ -147,6 +147,7 @@ Step 2 で整理した知見をもとに、SKILL.md の各セクションを埋�
 3. `skills/<skill-name>.md` — 詳細ドキュメント (英語)
 4. `skills/<skill-name>.ja.md` — 詳細ドキュメント (日本語)
 5. `README.md` と `README.ja.md` の Available Skills テーブルに行を追加
+6. clone 先に `scripts/marketplace/generate.sh` があれば、読解・書き換えせずそのまま実行して `.claude-plugin/marketplace.json` を再生成する (`OK marketplace: ...` が出れば成功)
 
 ### レビューの提示方法
 
@@ -190,6 +191,7 @@ PR 作成前に以下を確認する。
    - SKILL.md の frontmatter に `metadata.status` があり、README のステータス列 (絵文字+ラベル) と一致していること
    - SKILL.md の frontmatter に `metadata.group` があり、README のグループ列と一致していること。行が同じグループのまとまりに挿入され、グループセルはグループ先頭行のみ絵文字付きで記載・継続行は空セルになっていること
    - README の説明セルが 80 文字以内であること (収まらない詳細は詳細ドキュメント側に書く)
+   - `scripts/marketplace/generate.sh` がある場合、`scripts/marketplace/generate.sh --check` が `OK marketplace: up to date` を出すこと
 2. **SKILL.md の word count が 5,000 words 以下か** — `wc -w` で確認。超える場合は詳細を references/ に分離する
 3. **SKILL.md と references/ に情報重複がないか** — SKILL.md には概要・手順のみ、詳細コード例は references/ に分離
 4. **example/ 内の import が整合しているか** — `grep -r "^import"` でプロジェクト固有依存が残っていないか確認
@@ -229,7 +231,8 @@ Step 3 で参照した skill-creator のベストプラクティスに照らし�
 ```bash
 cd /tmp/contribute-skill-<skill-name>
 git checkout -b add-skill/<skill-name>
-git add skills/<skill-name>/ README.md README.ja.md
+git add skills/<skill-name>/ skills/<skill-name>.md skills/<skill-name>.ja.md README.md README.ja.md
+git add .claude-plugin/ scripts/marketplace/plugins.json 2>/dev/null || true  # marketplace を再生成した場合 (新グループなら plugins.json も)
 git commit -m "add <skill-name> skill"
 git push -u origin add-skill/<skill-name>
 ```

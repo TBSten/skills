@@ -1,0 +1,35 @@
+name: marketplace-check
+
+# .claude-plugin/marketplace.json が SKILL.md (metadata.group / status) と
+# scripts/marketplace/plugins.json から再生成された最新の状態か、かつ Claude Code が読める形式かを検証する。
+on:
+  pull_request:
+    paths:
+      - "skills/**"
+      - ".claude-plugin/**"
+      - "scripts/marketplace/**"
+      - ".github/workflows/marketplace-check.yml"
+  push:
+    branches: [main]
+    paths:
+      - "skills/**"
+      - ".claude-plugin/**"
+      - "scripts/marketplace/**"
+      - ".github/workflows/marketplace-check.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: marketplace.json is up to date
+        run: scripts/marketplace/generate.sh --check
+
+      - name: claude plugin validate
+        run: |
+          npm install -g @anthropic-ai/claude-code@latest
+          claude plugin validate . --strict

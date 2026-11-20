@@ -1,0 +1,128 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "tbsten-skills",
+  "owner": {
+    "name": "TBSten",
+    "url": "https://github.com/TBSten"
+  },
+  "metadata": {
+    "description": "TBSten's Claude Code skills, one plugin per group."
+  },
+  "plugins": [
+    {
+      "name": "task-management",
+      "description": "Local Markdown ticket system and a status board for tracking tasks.",
+      "source": "./",
+      "strict": false,
+      "category": "productivity",
+      "author": {
+        "name": "TBSten"
+      },
+      "homepage": "https://github.com/TBSten/skills",
+      "skills": [
+        "./skills/local-ticket-system",
+        "./skills/status-board"
+      ]
+    },
+    {
+      "name": "kotlin-android-app",
+      "description": "Kotlin / Compose Multiplatform app patterns (Tuple, SimpleLoader, Navigation 3 tabs, snapshot testing).",
+      "source": "./",
+      "strict": false,
+      "category": "development",
+      "author": {
+        "name": "TBSten"
+      },
+      "homepage": "https://github.com/TBSten/skills",
+      "skills": [
+        "./skills/kmp-snapshot-testing-setup",
+        "./skills/kotlin-tuple",
+        "./skills/navigation3-main-tab",
+        "./skills/simple-loader"
+      ]
+    },
+    {
+      "name": "kotlin-library-dev",
+      "description": "Kotlin library and tooling development (Compiler Plugin, KSP, Maven Central publish, IntelliJ plugin).",
+      "source": "./",
+      "strict": false,
+      "category": "development",
+      "author": {
+        "name": "TBSten"
+      },
+      "homepage": "https://github.com/TBSten/skills",
+      "skills": [
+        "./skills/collector-compiler-plugin",
+        "./skills/intellij-plugin-dev",
+        "./skills/kotlin-compiler-plugin-dev",
+        "./skills/kotlin-compiler-plugin-setup",
+        "./skills/kotlin-library-bootup",
+        "./skills/kotlin-maven-central-publish",
+        "./skills/ksp-plugin-setup"
+      ]
+    },
+    {
+      "name": "web-frontend",
+      "description": "Web frontend scaffolding (React + Vite + Supabase).",
+      "source": "./",
+      "strict": false,
+      "category": "development",
+      "author": {
+        "name": "TBSten"
+      },
+      "homepage": "https://github.com/TBSten/skills",
+      "skills": [
+        "./skills/react-vite-supabase-starter"
+      ]
+    },
+    {
+      "name": "git-github",
+      "description": "GitHub PR workflows (PR fix loop, exploratory PR / nightly verification, visual explanations).",
+      "source": "./",
+      "strict": false,
+      "category": "development",
+      "author": {
+        "name": "TBSten"
+      },
+      "homepage": "https://github.com/TBSten/skills",
+      "skills": [
+        "./skills/exploratory-nightly-verification",
+        "./skills/exploratory-pr-verification",
+        "./skills/pr-fix-loop",
+        "./skills/visual-explanation"
+      ]
+    },
+    {
+      "name": "testing-verification",
+      "description": "Verification method scoring and in-app feedback mode loops.",
+      "source": "./",
+      "strict": false,
+      "category": "testing",
+      "author": {
+        "name": "TBSten"
+      },
+      "homepage": "https://github.com/TBSten/skills",
+      "skills": [
+        "./skills/check-method-level",
+        "./skills/feedback-mode"
+      ]
+    },
+    {
+      "name": "contribute",
+      "description": "Skills for contributing new skills / rules / prompts to TBSten/skills via pull requests.",
+      "source": "./",
+      "strict": false,
+      "category": "development",
+      "author": {
+        "name": "TBSten"
+      },
+      "homepage": "https://github.com/TBSten/skills",
+      "skills": [
+        "./skills/contribute-batch",
+        "./skills/contribute-prompt",
+        "./skills/contribute-rule",
+        "./skills/contribute-skill"
+      ]
+    }
+  ]
+}
