@@ -15,7 +15,7 @@ React・Electron・Tauri の画面側もこれを使う（`react.md`・`../deskt
 | `name` | `data-fb="画面/部品"` を付ける |
 | `collect` | `getScreen`（既定: `location.pathname`）・`getView`（store の状態から）・`stateOf(el)`・`getEnv` |
 | `logs` | `getRecentLogs`・`logEvent` |
-| `capture` | 既定は `window.html2canvas` があれば使う（無ければ撮らない）。差し替えは `opts.capture`（例: `modern-screenshot`。作り方は `interaction.md` §5）。CSS の一部・クロスオリジン画像・canvas・video は崩れる |
+| `capture` | 既定は `window.html2canvas` があれば使う（無ければ撮らない）。差し替えは `opts.capture`（例: `modern-screenshot`。作り方は `optional/interaction.md` §5）。CSS の一部・クロスオリジン画像・canvas・video は崩れる |
 | `transport` | `httpTransport(import.meta.env.VITE_FEEDBACK_ENDPOINT, { headers: { 'x-feedback-token': … } })`。受け口は別プロセスの `node core/feedback-dev-server.mjs`（`FEEDBACK_REPO_ROOT` を導入先に） |
 | `pointer` | `opts.pointer` |
 
@@ -38,4 +38,4 @@ dev toolbar（フレームワーク付属・内製）・Storybook の addon・`?
 
 - 受け口が別オリジン（`127.0.0.1:7373`）なので、Origin は localhost 系だけ許している。
 - 認証が要る画面・個人情報が写る画面では、送る前のプレビューや要素の伏せ字を検討する。
-- popover・スマホ幅・複数選択・下書きなどの作り方は `interaction.md`、場所の手がかりは `locate.md`。
+- popover・スマホ幅・複数選択・下書きなどの作り方は `optional/interaction.md`、場所の手がかりは `optional/locate.md`。

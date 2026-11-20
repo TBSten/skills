@@ -75,7 +75,7 @@ It also covers the other direction (agent → human):
 | `assets/templates/core/` · `core-ts/` | Shared core: Sink contract, numbering, redact, record builder, file / memory / HTTP Sinks, HTTP receiver, tests |
 | `assets/templates/adapters/` | Per-platform templates: `web/dom`, `web/astro`, `web/single-html`, `desktop/electron`, `mobile/compose`, `mobile/android`, `mobile/kmp`, `mobile/ios` |
 | `assets/templates/data/` · `review/` | JSON Schema and examples of records, memos, review findings and decisions |
-| `scripts/` | `detect.sh` (timing), `copy-core.sh` (copy core + run tests), `check-no-feedback-in-prod.sh` (grep production artifacts), `check-android-release.sh` / `check-ios-release.sh` (also check permissions and settings in release APKs / `.app`), `watch-inbox.mjs` (watch the Inbox and report or run a command for each new record), `review.mjs` (Review CLI), `decisions.py` (decisions) |
+| `scripts/` | `detect.sh` (timing), `copy-core.sh` (copy core + run tests), `check-no-feedback-in-prod.sh` (grep production artifacts), `check-android-release.sh` / `check-ios-release.sh` (also check permissions and settings in release APKs / `.app`), `watch-inbox.mjs` (watch the Inbox and report or run a command for each new record), `single-html.mjs` (create a single HTML page and read / write its data; its e2e lives alongside), `review.mjs` (Review CLI), `decisions.py` (decisions) |
 
 ## Supported features by platform
 

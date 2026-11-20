@@ -231,7 +231,7 @@ export function buildFeedbackMarkdown(payload, options = DEFAULT_OPTIONS, { logL
     lines.push('', '## 選んだ位置', '');
     lines.push(`- 画面: ${code(t.screen ?? '')}`, `- 部品の道筋（data-fb / testID など）: ${code(t.path ?? '')}`, `- 要素: ${one(t.element ?? '')}`);
     if (t.selector) lines.push(`- セレクタ: ${code(t.selector)}`);
-    // 場所を一意に指す手がかり（references/setup/web/locate.md）。xpath / selector は保存の前に引き直して同じ要素に戻ったものだけを送る
+    // 場所を一意に指す手がかり（references/setup/web/optional/locate.md）。xpath / selector は保存の前に引き直して同じ要素に戻ったものだけを送る
     if (t.xpath) lines.push(`- XPath: ${code(t.xpath)}`);
     if (t.fragment) lines.push(`- テキストフラグメント URL: ${t.fragment}`);
     if (t.source) lines.push(`- ソースの行: ${code(t.source)}`);

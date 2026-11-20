@@ -1,5 +1,5 @@
 // Dev Toolbar のアプリ（ひな形）: モードに入る → 要素を選ぶ（マウスはクリック、タッチはタップ）→ そばの popover（幅 600px 以下はシート）に書く → 送る。
-// 【実績: Astro 7 + Starlight の docs サイトを縮めたもの】。テキスト選択・右クリックの入口・複数選択・スクショ・ドラッグ・下書きは references/setup/web/interaction.md。
+// 【実績: Astro 7 + Starlight の docs サイトを縮めたもの】。テキスト選択・右クリックの入口・複数選択・スクショ・ドラッグ・下書きは references/setup/web/optional/interaction.md。
 import { defineToolbarApp } from 'astro/toolbar'
 import { EVENT_RESULT, EVENT_SAVE, LOG_GLOBAL, type SaveRequest, type SaveResult } from './protocol'
 
@@ -73,7 +73,7 @@ const STYLE = `
 
 type Picked = { kind: 'element'; el: Element } | { kind: 'page' }
 
-// ---- 場所: 保存の前に引き直し、同じ要素に戻ったものだけを書く（references/setup/web/locate.md） ----
+// ---- 場所: 保存の前に引き直し、同じ要素に戻ったものだけを書く（references/setup/web/optional/locate.md） ----
 
 function xpathOf(el: Element): string | null {
 	const steps: string[] = []

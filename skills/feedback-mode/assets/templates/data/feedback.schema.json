@@ -22,7 +22,7 @@
             "screen": { "type": "string", "description": "画面の ID（参照実装: top / detail / dialog:<名前>）" },
             "path": { "type": "string", "description": "名前の道筋（data-fb / testID / Semantics label を外側からつないだもの）。無い要素は「祖先の道筋 › 要素の説明」" },
             "element": { "type": "string", "description": "要素の種類とラベル（button.punch-btn「退勤」）" },
-            "selector": { "type": "string", "description": "CSS セレクタの道筋（Web のみ）。保存の前に引き直して同じ要素に戻ったものだけ（references/setup/web/locate.md）" },
+            "selector": { "type": "string", "description": "CSS セレクタの道筋（Web のみ）。保存の前に引き直して同じ要素に戻ったものだけ（references/setup/web/optional/locate.md）" },
             "xpath": { "type": "string", "description": "XPath（Web のみ）。selector と同じく引き直して確かめたものだけ" },
             "fragment": { "type": "string", "description": "テキストフラグメントの URL（#:~:text=…）。テキストを選んだとき" },
             "source": { "type": "string", "description": "ソースの行 path:12-14（Markdown 由来のページなど、取れる場合だけ）" },

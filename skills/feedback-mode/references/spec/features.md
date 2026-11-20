@@ -31,10 +31,10 @@
 | O7 | popover | 幕を敷かず、選んだもののそばに浮かべる。外を押しても書いてあれば閉じない。header をドラッグで動かせる | astro（ドラッグは作り方だけ） |
 | O8 | スマホ幅 | 600px 以下は下から出るシート。入力 16px 以上・押せる高さ 44px 以上・`visualViewport` に追従。タップは pointerup で判定 | astro |
 | O9 | テーマ追従 | ページのダークテーマに合わせる | astro |
-| O10 | メモ | ページと箇所ごとに書き溜める継続メモ（`data.md` §5） | 作り方だけ（`references/setup/web/memo.md`） |
+| O10 | メモ | ページと箇所ごとに書き溜める継続メモ（`data.md` §5） | 作り方だけ（`references/setup/web/optional/memo.md`） |
 | O11 | オプションの記憶 | 節のオン/オフを覚える | dom（`localStorage`） |
 
-「作り方だけ」のものは、Web の実アプリで動かした作り方が `references/setup/web/interaction.md` にある（コードは無い）。
+「作り方だけ」のものは、Web の実アプリで動かした作り方が `references/setup/web/optional/interaction.md` にある（コードは無い）。
 
 ひな形に無い組み合わせは、ほかの adapter の実装か作り方を移植して足す。
 

@@ -70,7 +70,7 @@ references は **タイミング別** に分け、setup はさらに **プラッ
 | `assets/templates/core/`・`core-ts/` | 共通のコア: Sink の契約・採番・redact・記録の組み立て・ファイル / メモリ / HTTP の Sink・HTTP の受け口・テスト |
 | `assets/templates/adapters/` | 環境ごとのひな形: `web/dom`・`web/astro`・`web/single-html`・`desktop/electron`・`mobile/compose`・`mobile/android`・`mobile/kmp`・`mobile/ios` |
 | `assets/templates/data/`・`review/` | 記録・メモ・Review の指摘・判断の JSON スキーマと例 |
-| `scripts/` | `detect.sh`（タイミングの判定）・`copy-core.sh`（コアのコピーとテスト）・`check-no-feedback-in-prod.sh`（本番の成果物の検査）・`check-android-release.sh` / `check-ios-release.sh`（release の APK・`.app` の権限と設定も見る）・`watch-inbox.mjs`（Inbox を見張り、新しい記録ごとに知らせる・コマンドを実行する）・`review.mjs`（Review の cli）・`decisions.py`（判断の記録） |
+| `scripts/` | `detect.sh`（タイミングの判定）・`copy-core.sh`（コアのコピーとテスト）・`check-no-feedback-in-prod.sh`（本番の成果物の検査）・`check-android-release.sh` / `check-ios-release.sh`（release の APK・`.app` の権限と設定も見る）・`watch-inbox.mjs`（Inbox を見張り、新しい記録ごとに知らせる・コマンドを実行する）・`single-html.mjs`（1 枚の HTML を作る・データを読み書きする。e2e も同じ場所）・`review.mjs`（Review の cli）・`decisions.py`（判断の記録） |
 
 ## 環境ごとの対応表
 

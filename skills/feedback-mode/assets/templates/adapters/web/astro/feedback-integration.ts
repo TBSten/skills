@@ -101,7 +101,7 @@ export default function feedbackMode(opts: FeedbackModeOptions = {}): AstroInteg
 					const { requestId, payload, options } = c.req
 					let result: SaveResult
 					try {
-						// meta を渡すと schema 1 の frontmatter（kind・omitted…）が付く。dirty / stale はソースのファイルが分かる場合に足す（references/setup/web/locate.md）。
+						// meta を渡すと schema 1 の frontmatter（kind・omitted…）が付く。dirty / stale はソースのファイルが分かる場合に足す（references/setup/web/optional/locate.md）。
 						const r = await submitFeedback({ sink, payload: { ...payload, appName: opts.appName ?? 'site', pointer: opts.pointer }, options, meta: {} })
 						logger.info(`フィードバックを保存しました: ${r.ref}`)
 						result = { requestId, ok: true, ref: r.ref }

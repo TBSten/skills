@@ -11,10 +11,10 @@ Dev Toolbar が「既存のデバッグ基盤」（`../setup.md` §3）になる
 |---|---|
 | `entry` | 統合の `astro:config:setup` で `addDevToolbarApp({ id, name, icon, entrypoint })`。FAB・ホットキーは要らない |
 | `pick` / `block` | `feedback-app.ts` に入っている（マウスはクリック、タッチは pointerup でタップを判定） |
-| `name` | 無くてもよい（場所は XPath・セレクタ・ソースの行で指す。`locate.md`）。部品の名前が欲しければ `data-fb` |
+| `name` | 無くてもよい（場所は XPath・セレクタ・ソースの行で指す。`optional/locate.md`）。部品の名前が欲しければ `data-fb` |
 | `collect` | `feedback-app.ts` の payload（`screen` に URL・viewport・dpr）。ページのソースファイルが分かれば統合で足す |
 | `logs` | `injectScript('head-inline', …)` で入れるリングバッファ（下）。feedback 専用の暫定で、ログ基盤ではない |
-| `capture` | ひな形には無い。足すなら `modern-screenshot` を toolbar アプリの中で動的 import（`interaction.md` §5） |
+| `capture` | ひな形には無い。足すなら `modern-screenshot` を toolbar アプリの中で動的 import（`optional/interaction.md` §5） |
 | `transport` | toolbar のメッセージ（HMR の WebSocket）。ブラウザ側 `server.send('feedback-mode:save')` → 統合 `toolbar.on(…)` → Sink → `toolbar.send('feedback-mode:result')`。`requestId` で対応づけ、約 10 秒で時間切れ。`server.on` の購読は外せないので `init` で 1 回だけ |
 | `pointer` | 統合の options |
 
@@ -39,6 +39,6 @@ Dev Toolbar が「既存のデバッグ基盤」（`../setup.md` §3）になる
 
 - `astro dev --host` で LAN に出すと、同じネットワークの人が保存できる。起動時に警告を 1 行出す。
 - 依存を動的 import する（スクショのライブラリなど）なら、`optimizeDeps.include` に先に入れる。入れないと初めて読んだ瞬間に Vite がページを再読み込みする。
-- Markdown のソースの行（`data-fb-src`）を付けるなら `locate.md` §4（Astro 7 の Markdown は rehype ではなく Sätteri）。
-- dev はソースの変更で全リロードされるので、E2E はリポジトリの写しで dev を立てる（`interaction.md` §13）。
-- Esc の `keyup` で toolbar が閉じるので、こちらで扱った Esc の keyup は止める（`interaction.md` §9）。
+- Markdown のソースの行（`data-fb-src`）を付けるなら `optional/locate.md` §4（Astro 7 の Markdown は rehype ではなく Sätteri）。
+- dev はソースの変更で全リロードされるので、E2E はリポジトリの写しで dev を立てる（`optional/interaction.md` §13）。
+- Esc の `keyup` で toolbar が閉じるので、こちらで扱った Esc の keyup は止める（`optional/interaction.md` §9）。

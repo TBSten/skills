@@ -1,10 +1,10 @@
-// feedback-report.android-chrome.cjs — Android（エミュレータ・実機）の Chrome で feedback-report.html を確かめる。
+// single-html.android-chrome.cjs — Android（エミュレータ・実機）の Chrome で feedback-report.html を確かめる。
 //   タップは CDP の Input.dispatchTouchEvent（本物のタッチ）。キーボードの確かめは references/setup/web/single-html.md §7 の手順で
 // 準備（references/setup/web/single-html.md §7）:
 //   python3 -m http.server 8090 --bind 127.0.0.1（report.html のあるディレクトリで）
 //   adb reverse tcp:8090 tcp:8090 && adb forward tcp:9333 localabstract:chrome_devtools_remote
 //   Chrome で http://localhost:8090/report.html を開いておく
-// 使い方: node feedback-report.android-chrome.cjs http://127.0.0.1:9333     （playwright-core か playwright が要る）
+// 使い方: node single-html.android-chrome.cjs http://127.0.0.1:9333     （playwright-core か playwright が要る）
 let chromium;
 try { ({ chromium } = require('playwright-core')); } catch { try { ({ chromium } = require('playwright')); } catch { console.log('SKIP: playwright が無い'); process.exit(0); } }
 const assert = (c, m) => { if (!c) throw new Error(`NG: ${m}`); console.log(`ok - ${m}`); };

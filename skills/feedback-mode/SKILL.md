@@ -4,7 +4,7 @@ description: >-
   アプリの debug ビルドに「フィードバックモード」（画面の部品を選んでコメントすると、画面・状態・ログ・スクリーンショット付きの記録が
   置き場に溜まる）を入れ（setup）、溜まった記録を Claude Code が実装・調査・設計に振り分けて消化する（loop）skill。
   Web（DOM・React・Astro）・Desktop（Electron・Tauri）・モバイル（Android の Compose・Compose Multiplatform・iOS の SwiftUI）を adapter で差し替え、
-  保存先（ファイル・HTTP）は Sink で差し替える。本番ビルドには入れない。
+  保存方法（置き場・添付・git に入れるか・記録の形）は setup で人が選ぶ。本番ビルドには入れない。
   agent の指摘を画面の印と popup で人に答えてもらう Review、人の判断を溜めて二度聞かない判断の記録、
   agent が作る 1 枚の HTML に人がコメントして返す仕組みも扱う。
   Use when requested: "フィードバックモードを作って", "アプリにフィードバック機能を入れたい", "debug ビルドにフィードバックを入れたい",
@@ -32,7 +32,7 @@ agent ──（指摘）──▶ review/ ──▶ 人がボタンで答える 
 
 ## 1. タイミングを決める
 
-1. 人の明示が最優先: 「作って・入れたい・導入」→ **setup**、「対応して・ループ・処理して・見張って」→ **loop**（見張りは `references/loop/watch.md`）、両方 → setup のあと loop。「指摘を見せたい・人に答えてもらいたい」→ **review**、「判断を記録して」→ `references/review/decisions.md`、「agent が作る HTML にコメントできるように」→ `references/setup/web/single-html.md` だけ。
+1. 人の明示が最優先: 「作って・入れたい・導入」→ **setup**、「対応して・ループ・処理して・見張って」→ **loop**（見張りは `references/loop/watch.md`）、両方 → setup のあと loop。「指摘を見せたい・人に答えてもらいたい」→ **review**、「判断を記録して」→ `references/review/decisions.md`、「agent が作る HTML にコメントできるように」→ `references/setup/web/single-html.md` だけ。「保存先を変えたい」→ `references/setup/setup.md` §5 だけ。
 2. 明示が無ければ判定 script を実行する（読み取りだけ。末尾に `VERDICT=` を出す）。script は読解・書き換え・再実装せず、そのまま実行する。
 
 ```bash
@@ -56,9 +56,9 @@ bash "${CLAUDE_SKILL_DIR}/scripts/detect.sh" <対象リポジトリのルート>
 ```
 references/
 ├ setup/      最初の導入で読む
-│  ├ setup.md       共通の手順・debug 限定・既存のデバッグ基盤・ログ・チェックリスト
+│  ├ setup.md       共通の手順・debug 限定・既存のデバッグ基盤・ログ・保存方法の選択・チェックリスト
 │  ├ adapter.md     差し込み口の一覧・adapter の一覧・新しい環境の adapter の作り方
-│  ├ web/           dom / react / astro / single-html（＋ interaction・locate・memo: Web の optional 機能の作り方）
+│  ├ web/           dom / react / astro / single-html（＋ optional/: interaction・locate・memo＝Web の optional 機能の作り方）
 │  ├ desktop/       electron / tauri
 │  └ mobile/        common（先に読む）/ android / kmp / ios
 ├ loop/       ループ中に読む: loop.md（＋ subagent-prompt・full-check・lessons）
@@ -77,7 +77,7 @@ references/
 | `assets/templates/core-ts/` | コアの TypeScript 版（ファイル・メモリの Sink・採番・パス検査）と vitest の契約テスト（32 件） |
 | `assets/templates/adapters/web/dom/` | DOM 版のフィードバックモード（`feedback-mode.js`）・開発ビルドの入口・暫定のログ |
 | `assets/templates/adapters/web/astro/` | Astro の Dev Toolbar 統合（受け口）と toolbar アプリ・dist の検査 |
-| `assets/templates/adapters/web/single-html/` | agent が作って人に渡す 1 枚の HTML のひな形（JSON から描く殻 + コメント + 質問への回答）・例のデータ・e2e |
+| `assets/templates/adapters/web/single-html/` | agent が作って人に渡す 1 枚の HTML のひな形（JSON から描く殻 + コメント + 質問への回答）・例のデータ |
 | `assets/templates/adapters/desktop/electron/` | main の IPC の受け口・開発時だけの preload・renderer の入口・既存の開発用メニューに足す例 |
 | `assets/templates/adapters/mobile/` | `compose/`（Android・CMP 共通の `FeedbackRoot` / `Modifier.fbTarget`）・`android/`（debug / release の source set）・`kmp/`（ターゲットごとの差し込み）・`ios/`（SwiftUI の `.fbTarget`・Debug の xcconfig） |
 | `assets/templates/data/` | 送信 body と記録の frontmatter の JSON Schema・記録とメモの例 |
@@ -86,7 +86,7 @@ references/
 | `scripts/copy-core.sh` | `core/` を導入先にコピーして `node --test` を通す |
 | `scripts/check-android-release.sh`・`check-ios-release.sh` | release の APK・`.app` にフィードバックのコード・URL・権限・設定が残っていないかを見る |
 | `scripts/check-no-feedback-in-prod.sh` | 本番の成果物にフィードバックモードの痕跡が無いかを grep |
-| `scripts/single-html.mjs` | 1 枚の HTML を作る・データ（JSON）を取り出す・差し替える・検査する（`node:test` 5 件） |
+| `scripts/single-html.mjs` | 1 枚の HTML を作る・データ（JSON）を取り出す・差し替える・検査する（`node:test` 5 件）。殻を直したら `single-html.e2e.cjs`（ヘッドレスの Chromium）、Android の Chrome は `single-html.android-chrome.cjs` |
 | `scripts/watch-inbox.mjs` | Inbox（ファイル・`--url` で HTTP の受け口）を見張り、新しい記録ごとに `NEW <id> <ref>` を出す。`--once`・`--exec`・`--timeout`（`references/loop/watch.md`。`node:test` 8 件） |
 | `scripts/review.mjs` | Review の cli（`node:test` 19 件） |
 | `scripts/decisions.py` | 判断の記録の検査・照合・Review からの写し（unittest 21 件） |

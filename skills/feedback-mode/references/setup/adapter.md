@@ -33,7 +33,7 @@ Web 系の DOM 版（`assets/templates/adapters/web/dom/feedback-mode.js`）は�
 | mobile | kmp（Compose Multiplatform: Android・iOS・Desktop・Web） | `mobile/kmp.md` | `adapters/mobile/compose/` + `adapters/mobile/kmp/` | Android エミュレータ・iOS シミュレータ・wasmJs（Chrome）で通しを、Desktop は UI テストで 1 件送るまでを確認。4 つとも本番の成果物の検査を確認 |
 | mobile | ios（SwiftUI） | `mobile/ios.md` | `adapters/mobile/ios/` | iOS 26.2 シミュレータで通しと Release の `.app` の検査を確認。実機は未確認 |
 
-モバイル共通の前提（DOM が無い・ホバーが無い・端末から開発機へ届かせる）は `mobile/common.md`。Web 共通の操作の作り方は `web/interaction.md`、場所の手がかりは `web/locate.md`、メモは `web/memo.md`。
+モバイル共通の前提（DOM が無い・ホバーが無い・端末から開発機へ届かせる）は `mobile/common.md`。Web 共通の操作の作り方は `web/optional/interaction.md`、場所の手がかりは `web/optional/locate.md`、メモは `web/optional/memo.md`。
 
 ## 3. 一覧に無い環境の adapter を作る
 

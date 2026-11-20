@@ -55,4 +55,4 @@
 - `review.mjs check` が OK のファイルで、印が全部出る（読めない指摘・無いファイルは一覧の「読めない指摘」に出る）。
 - dev サーバーと cli を同時に書いても消し合わない（lock）。
 - 本番の成果物に Review の目印が無い（`scripts/check-no-feedback-in-prod.sh` に目印を足して回す）。
-- E2E: 印 → popup → 解決済み → ファイルに `status: resolved` が書かれる、を 1 本（`references/setup/web/interaction.md` §13 の E2E の注意も同じ）。
+- E2E: 印 → popup → 解決済み → ファイルに `status: resolved` が書かれる、を 1 本（`references/setup/web/optional/interaction.md` §13 の E2E の注意も同じ）。
