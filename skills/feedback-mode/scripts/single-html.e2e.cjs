@@ -98,7 +98,6 @@ async function run(browser, { name, viewport, storage = true }) {
 
   // まとめてコピー
   const first = await copied();
-  if (!first.includes("\"vm\"")) console.log("DEBUG first=", JSON.stringify(first.slice(0, 400)));
   assert(first.includes('```json') && first.includes('"q1"') && first.includes('"vm"'), 'コピーに回答の JSON が入る');
   assert(first.includes('コードベースのレポート（report.html）へのフィードバックです'), 'コピーの 1 行目にファイルと件数');
   assert(first.includes('対象: sections[id=overview].blocks[0].rows[id=frameworks].value'), 'コピーに JSON の場所');
