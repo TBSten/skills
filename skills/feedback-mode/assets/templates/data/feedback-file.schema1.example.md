@@ -27,12 +27,12 @@ omitted: ["shots","env","view"]
 ## 選んだ位置
 
 - 画面: `/guides/setup/`
-- 部品の道筋（data-fb / testID など）: `本文/手順`
+- 部品の道筋（data-fb / fbTarget など）: `本文/手順`
 - 要素: ol「設定ファイルを開く…」
 - セレクタ: `main > ol:nth-of-type(2)`
 - XPath: `/html[1]/body[1]/main[1]/ol[2]`
 - ソースの行: `<docs-dir>/guides/setup.md:42-45`
-- 矩形: x 312・y 640・720 × 96（CSS px / dp。ウィンドウの左上から）
+- 矩形: x 312・y 640・720 × 96（CSS px / dp / pt。ウィンドウの左上から）
 - 要素の状態:
   - なし
 

@@ -9,7 +9,7 @@
 | 部品の選択（`pick`） | DOM が無い。名前を付けた部品の矩形を registry に登録し、タップ位置を含む最小の矩形を選ぶ（Compose・SwiftUI のひな形）。「親を選ぶ」は次に大きい矩形 |
 | 名前（`name`） | `Modifier.fbTarget("画面/部品")`（Compose）・`.fbTarget("部品")`（SwiftUI）。既存の `testTag`・`accessibilityIdentifier` は書き換えない |
 | ホバー | 無い。「モードに入る → 部品をタップ → 下のシート」。シートは画面下に固定し、キーボードに隠れないようにする |
-| 入口（`entry`） | 画面の隅の小さなボタン（ひな形の「FB」）・既存の debug 画面の項目。シェイクは iOS のひな形にあるが未検証 |
+| 入口（`entry`） | 画面の隅の小さなボタン（ひな形の「FB」）・既存の debug 画面の項目。シート・モーダル（別ウィンドウ）の上ではルートのボタンが隠れるので、その中にも入口を置く。シェイクは iOS のひな形にあるが未検証 |
 | 送り先（`transport`） | 端末からリポジトリには書けない。開発機の HTTP の受け口（`core/feedback-dev-server.mjs`）に submission を送る |
 | スクショの倍率 | 論理座標（dp / pt）と画像の px の比 = 画面密度。記録の `rect`・`viewport` は論理座標、画像は `min(密度, 2)` 倍 |
 

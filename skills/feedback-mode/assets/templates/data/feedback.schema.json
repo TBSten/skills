@@ -20,7 +20,7 @@
           "description": "選んだ部品。メニューから全体のコピーをするだけのとき（部品を選ばない）は無し",
           "properties": {
             "screen": { "type": "string", "description": "画面の ID（参照実装: top / detail / dialog:<名前>）" },
-            "path": { "type": "string", "description": "名前の道筋（data-fb / testID / Semantics label を外側からつないだもの）。無い要素は「祖先の道筋 › 要素の説明」" },
+            "path": { "type": "string", "description": "名前の道筋（data-fb / fbTarget / testID を外側からつないだもの）。無い要素は「祖先の道筋 › 要素の説明」" },
             "element": { "type": "string", "description": "要素の種類とラベル（button.punch-btn「退勤」）" },
             "selector": { "type": "string", "description": "CSS セレクタの道筋（Web のみ）。保存の前に引き直して同じ要素に戻ったものだけ（references/setup/web/locate.md）" },
             "xpath": { "type": "string", "description": "XPath（Web のみ）。selector と同じく引き直して確かめたものだけ" },
@@ -66,6 +66,6 @@
         "attachments": { "type": "array", "items": { "type": "string" }, "description": "添付の参照（パス・URL）" }
       }
     },
-    "rect": { "type": "object", "required": ["x", "y", "width", "height"], "properties": { "x": { "type": "number" }, "y": { "type": "number" }, "width": { "type": "number" }, "height": { "type": "number" } }, "description": "CSS px / dp。ウィンドウの左上から" }
+    "rect": { "type": "object", "required": ["x", "y", "width", "height"], "properties": { "x": { "type": "number" }, "y": { "type": "number" }, "width": { "type": "number" }, "height": { "type": "number" } }, "description": "CSS px / dp / pt（論理座標）。ウィンドウの左上から" }
   }
 }
