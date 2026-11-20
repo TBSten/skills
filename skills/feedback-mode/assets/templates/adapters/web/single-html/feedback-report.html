@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>レポート</title>
+<!--
+  feedback-report.html — agent が作って人に渡す 1 枚の HTML（レポート・チェックリスト・比較表）。
+  データは下の JSON の script 要素（id="report"）だけ。agent はこの JSON だけを書き換える（scripts/single-html.mjs set）。
+  殻（このファイルの残り）は書き換えない。人はページの項目にコメントし、回答を選び、右下の「まとめてコピー」でチャットに貼る。
+  references/setup/web/single-html.md
+-->
+<style>
+:root{color-scheme:light dark;--bg:#fff;--fg:#1b1f24;--muted:#57606a;--line:#d0d7de;--card:#f6f8fa;--accent:#2f6feb;--accent-fg:#fff;--warn:#bf3989;--mark:#fff8c5;--err-bg:#ffebe9;--err-fg:#82071e;--fb-menu-h:0px}
+@media (prefers-color-scheme:dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#8d96a0;--line:#30363d;--card:#161b22;--accent:#4493f8;--accent-fg:#0d1117;--warn:#db61a2;--mark:#3b2e00;--err-bg:#3c1618;--err-fg:#ffaba8}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.7 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;padding-bottom:calc(var(--fb-menu-h) + 96px)}
+main{max-width:920px;margin:0 auto;padding:24px 16px}
+h1{font-size:1.6rem;margin:0 0 4px}h2{font-size:1.25rem;margin:32px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--line)}
+.sub{color:var(--muted);margin:0 0 16px}
+table{border-collapse:collapse;width:100%;margin:8px 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left;vertical-align:top}th{background:var(--card)}
+.callout{border-left:4px solid var(--accent);background:var(--card);padding:8px 12px;margin:8px 0;border-radius:4px}
+.callout.warn{border-color:var(--warn)}
+details{margin:8px 0}summary{cursor:pointer;font-weight:600}
+.q{border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin:12px 0;background:var(--card)}
+.q-text{font-weight:600;margin-bottom:6px}.q label{display:flex;gap:8px;align-items:flex-start;padding:4px 0;cursor:pointer}
+.q .rec{font-size:12px;color:var(--accent);border:1px solid var(--accent);border-radius:10px;padding:0 6px;margin-left:4px;white-space:nowrap}
+.q textarea{width:100%;font:inherit;min-height:44px;margin-top:6px;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px}
+.q .answered{color:var(--muted);font-size:13px}
+#fb-error{background:var(--err-bg);color:var(--err-fg);padding:12px 16px;white-space:pre-wrap;font-family:ui-monospace,monospace}
+/* ---- フィードバックモード ---- */
+.fb-ui,.fb-ui *{font-size:14px;line-height:1.5}
+.fb-ui button,button.fb-ui{font:inherit;min-height:36px;padding:4px 12px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer}
+.fb-ui button.primary,button.fb-ui.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+#fb-toggle{position:fixed;right:16px;bottom:calc(var(--fb-menu-h) + 16px);z-index:1000;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+#fb-banner{position:fixed;top:0;left:0;right:0;z-index:999;background:var(--accent);color:var(--accent-fg);padding:6px 12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+#fb-banner button{min-height:28px;padding:0 10px}
+body.fb-on{padding-top:44px}
+body.fb-on [data-fb]{cursor:crosshair}
+body.fb-on [data-fb]:hover{outline:2px dashed var(--accent);outline-offset:2px}
+[data-fb].fb-picked{outline:2px solid var(--accent)!important;outline-offset:2px;background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.fb-has{position:relative}
+.fb-badge{display:inline-block;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:var(--warn);color:#fff;font-size:12px;line-height:20px;text-align:center;margin-left:6px;vertical-align:middle;cursor:pointer;user-select:none}
+#fb-editor{position:fixed;z-index:1002;width:360px;max-width:calc(100vw - 32px);background:var(--bg);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.28)}
+#fb-editor header{cursor:move;padding:8px 12px;border-bottom:1px solid var(--line);font-weight:600;display:flex;justify-content:space-between;gap:8px;touch-action:none}
+#fb-editor .body{padding:8px 12px 12px}
+#fb-editor .targets{max-height:120px;overflow:auto;color:var(--muted);font-size:13px;margin-bottom:6px;overflow-wrap:anywhere}
+#fb-editor textarea{width:100%;min-height:96px;font:inherit;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px}
+#fb-editor .row{display:flex;gap:6px;justify-content:flex-end;margin-top:8px;flex-wrap:wrap}
+#fb-menu{position:fixed;left:0;right:0;bottom:0;z-index:1001;background:var(--card);border-top:1px solid var(--line);padding:8px 16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#fb-menu .count{margin-right:auto;color:var(--muted)}
+#fb-list,#fb-preview{position:fixed;z-index:1003;inset:auto 16px calc(var(--fb-menu-h) + 16px) auto;width:420px;max-width:calc(100vw - 32px);max-height:60vh;overflow:auto;background:var(--bg);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.28);padding:12px}
+#fb-list ol{padding-left:20px;margin:8px 0}#fb-list li{margin-bottom:10px;overflow-wrap:anywhere}
+#fb-list .meta{color:var(--muted);font-size:12px}
+#fb-preview textarea{width:100%;min-height:240px;font:13px/1.5 ui-monospace,monospace;white-space:pre-wrap;background:var(--bg);color:var(--fg);border:1px solid var(--line)}
+.fb-head{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:600}
+#fb-toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--fb-menu-h) + 76px);max-width:calc(100vw - 32px);pointer-events:none;z-index:1004;background:var(--fg);color:var(--bg);padding:8px 14px;border-radius:6px;display:flex;gap:10px;align-items:center}
+#fb-toast button{pointer-events:auto;background:transparent;color:inherit;border-color:currentColor;min-height:28px}
+.fb-warn{color:var(--warn);font-size:13px}
+.fb-hint-sp{display:none}
+[hidden]{display:none!important}
+@media (max-width:600px),(pointer:coarse){
+  .fb-ui button,button.fb-ui{min-height:44px}
+  .fb-hint{display:none}.fb-hint-sp{display:inline}
+  #fb-banner button{min-height:36px}
+  #fb-editor{left:0!important;right:0;top:auto!important;bottom:var(--fb-kb,0px);width:auto;max-width:none;max-height:calc(100dvh - var(--fb-kb,0px));overflow:auto;border-radius:12px 12px 0 0}
+  #fb-editor textarea,.q textarea{font-size:16px}
+  #fb-list,#fb-preview{left:8px;right:8px;width:auto;max-width:none}
+}
+</style>
+</head>
+<body>
+<div id="fb-error" hidden></div>
+<main id="app"></main>
+<script type="application/json" id="report">
+{"title":"レポートの題","kind":"レポート","file":"report.html","subtitle":"","sections":[],"questions":[]}
+</script>
+<script>
+(() => {
+'use strict';
+// ===== データ =====
+const errorBox = document.getElementById('fb-error');
+let data;
+try { data = JSON.parse(document.getElementById('report').textContent); }
+catch (e) { errorBox.hidden = false; errorBox.textContent = `データの JSON が壊れています（agent が直します）:\n${e.message}`; data = { title: '（データが読めません）', sections: [], questions: [] }; }
+const FILE = data.file || location.pathname.split('/').pop() || 'report.html';
+const KIND = data.kind || 'レポート';
+const KEY = `fb-single:${location.pathname}:${FILE}`;
+document.title = data.title || document.title;
+
+// ===== 描画（JSON → HTML）。宛先の data-fb は JSON の場所 =====
+const app = document.getElementById('app');
+const h = (tag, attrs = {}, ...kids) => {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) if (v != null && v !== false) el.setAttribute(k, v === true ? '' : v);
+  for (const k of kids.flat()) if (k != null) el.append(k instanceof Node ? k : String(k));
+  return el;
+};
+const sel = (arr, i, item) => (item && typeof item === 'object' && item.id != null ? `[id=${item.id}]` : `[${i}]`);
+function block(b, path) {
+  switch (b.type) {
+    case 'list': return h(b.ordered ? 'ol' : 'ul', { 'data-fb': path, 'data-fb-label': b.label },
+      (b.items || []).map((it, i) => h('li', { 'data-fb': `${path}.items[${i}]` }, typeof it === 'string' ? it : it.text)));
+    case 'table': {
+      const cols = b.columns || [];
+      return h('table', { 'data-fb': path, 'data-fb-label': b.label },
+        h('thead', {}, h('tr', {}, cols.map((c) => h('th', {}, c.label ?? c.key)))),
+        h('tbody', {}, (b.rows || []).map((r, i) => {
+          const rp = `${path}.rows${sel(b.rows, i, r)}`;
+          return h('tr', { 'data-fb': rp, 'data-fb-label': String(r[cols[0]?.key] ?? i + 1) },
+            cols.map((c) => h('td', { 'data-fb': `${rp}.${c.key}`, 'data-fb-label': c.label ?? c.key }, r[c.key] ?? '')));
+        })));
+    }
+    case 'callout': return h('div', { class: `callout ${b.tone || ''}`, 'data-fb': path, 'data-fb-label': b.label }, b.text);
+    case 'details': return h('details', { 'data-fb': path, 'data-fb-label': b.summary },
+      h('summary', {}, b.summary), (b.blocks || []).map((c, i) => block(c, `${path}.blocks[${i}]`)));
+    default: return h('p', { 'data-fb': path, 'data-fb-label': b.label }, b.text ?? '');
+  }
+}
+function render() {
+  app.replaceChildren(...[
+    h('h1', { 'data-fb': 'title', 'data-fb-label': '題' }, data.title || ''),
+    data.subtitle ? h('p', { class: 'sub', 'data-fb': 'subtitle', 'data-fb-label': '副題' }, data.subtitle) : null,
+    (data.questions || []).length ? h('section', { 'data-fb': 'questions', 'data-fb-label': '質問' }, h('h2', {}, '質問'), data.questions.map(question)) : null,
+    (data.sections || []).map((s, i) => {
+      const p = `sections${sel(data.sections, i, s)}`;
+      return h('section', { 'data-fb': p, 'data-fb-label': s.title }, h('h2', {}, s.title || ''), (s.blocks || []).map((b, j) => block(b, `${p}.blocks[${j}]`)));
+    }),
+    h('p', { 'data-fb': 'page', 'data-fb-label': 'ページ全体', class: 'sub' }, 'ページ全体へのコメントはここをクリック'),
+  ].flat().filter(Boolean));
+}
+function question(q) {
+  const a = state.answers[q.id] || {};
+  const name = `q-${q.id}`;
+  const box = h('div', { class: 'q', 'data-fb': `questions[id=${q.id}]`, 'data-fb-label': q.id },
+    h('div', { class: 'q-text' }, `${q.id}. ${q.text}`),
+    (q.options || []).map((o) => {
+      const input = h('input', { type: 'radio', name, value: o.value, checked: a.answer === o.value });
+      input.addEventListener('change', () => setAnswer(q.id, { answer: o.value }));
+      return h('label', {}, input, h('span', {}, o.label, o.value === q.recommend ? h('span', { class: 'rec' }, '推奨') : null, o.detail ? h('div', { class: 'answered' }, o.detail) : null));
+    }));
+  const note = h('textarea', { placeholder: '補足（任意）', 'aria-label': `${q.id} の補足` });
+  note.value = a.note ?? '';
+  note.addEventListener('input', () => setAnswer(q.id, { note: note.value || null }));
+  box.append(note);
+  return box;
+}
+
+// ===== 保存（使えないときも動く） =====
+const LOCAL = 'local', SESSION = 'session';
+const area = (a) => (a === SESSION ? window.sessionStorage : window.localStorage); // 取り出しも投げることがある（保存が止められた環境）
+const store = {
+  ok: true,
+  get(k, a = LOCAL) { try { return JSON.parse(area(a).getItem(k) ?? 'null'); } catch { return null; } },
+  set(k, v, a = LOCAL) { try { area(a).setItem(k, JSON.stringify(v)); return true; } catch { if (a === LOCAL) store.ok = false; return false; } },
+  del(k, a = SESSION) { try { area(a).removeItem(k); } catch { /* 無くてよい */ } },
+};
+try { localStorage.setItem(`${KEY}:probe`, '1'); localStorage.removeItem(`${KEY}:probe`); } catch { store.ok = false; }
+// 同じ中身をタブの sessionStorage にも写す。Chromium は file:// で開いたページの localStorage を、再読み込みの直後に失うことがある
+// （ヘッドレスで約 1 割。sessionStorage は失わなかった）。読むときは新しい方を使う
+const saved = [store.get(KEY), store.get(KEY, SESSION)].filter(Boolean).sort((a, b) => (b.savedAt ?? 0) - (a.savedAt ?? 0))[0];
+const state = { comments: [], answers: {}, ...(saved ? { comments: saved.comments ?? [], answers: saved.answers ?? {} } : {}) };
+if (saved && store.get(KEY)?.savedAt !== saved.savedAt) store.set(KEY, saved); // 失った localStorage を戻す
+const persist = () => { const v = { comments: state.comments, answers: state.answers, savedAt: Date.now() }; store.set(KEY, v); store.set(KEY, v, SESSION); updateUi(); };
+function setAnswer(id, patch) {
+  state.answers[id] = { ...(state.answers[id] || { answer: null, note: null }), ...patch, updatedAt: Date.now(), sentAt: state.answers[id]?.sentAt ?? null };
+  persist();
+}
+
+// ===== 宛先 =====
+const textOf = (el) => { const c = el.cloneNode(true); c.querySelectorAll('.fb-badge').forEach((b) => b.remove()); return c.innerText ?? c.textContent; };
+const clip = (s, n) => { const t = String(s).replace(/\s+/g, ' ').trim(); return t.length > n ? `${t.slice(0, n)}…` : t; };
+function labelOf(el) {
+  const parts = [];
+  for (let cur = el; cur && cur !== app; cur = cur.parentElement) {
+    if (!cur.hasAttribute?.('data-fb')) continue;
+    let l = cur.getAttribute('data-fb-label');
+    if (!l) { const hd = cur.querySelector(':scope > h1, :scope > h2, :scope > h3, :scope > summary'); l = hd ? textOf(hd) : clip(textOf(cur), 24); }
+    parts.unshift(clip(l, 40));
+  }
+  return parts.join(' › ');
+}
+const targetOf = (el, quote) => ({ path: el.getAttribute('data-fb'), label: labelOf(el), ...(quote ? { quote: clip(quote, 300) } : { content: clip(textOf(el), 120) }) });
+const findEl = (path) => [...document.querySelectorAll('[data-fb]')].find((e) => e.getAttribute('data-fb') === path);
+const draftKey = (targets) => `${KEY}:draft:${targets.map((t) => t.path).sort().join('|')}`;
+
+// ===== UI =====
+const ui = (html) => { const t = document.createElement('template'); t.innerHTML = html.trim(); const el = t.content.firstElementChild; el.classList.add('fb-ui'); document.body.append(el); return el; };
+const toggle = ui('<button id="fb-toggle" type="button">フィードバック</button>');
+const banner = ui('<div id="fb-banner" role="status" hidden><b>フィードバックモード</b><span class="fb-hint">コメントしたい項目をクリック（文字をドラッグで引用、Shift + クリックで複数）。Esc で終わる</span><span class="fb-hint-sp">項目をタップしてコメント</span><button type="button" data-act="list">一覧</button><button type="button" data-act="exit">終える</button></div>');
+const editor = ui('<div id="fb-editor" role="dialog" aria-label="コメント" hidden><header><span>コメント</span><span class="fb-n"></span></header><div class="body"><div class="targets"></div><textarea aria-label="コメント" placeholder="この項目へのコメント"></textarea><div class="fb-warn" hidden></div><div class="row"><button type="button" data-act="close" title="書きかけは残ります">閉じる</button><button type="button" class="primary" data-act="save" title="⌘/Ctrl + Enter">保存</button></div></div></div>');
+const menu = ui('<div id="fb-menu" hidden><span class="count"></span><button type="button" class="primary" data-act="copy">まとめてコピー</button><button type="button" data-act="preview">コピーされる内容を見る</button><button type="button" data-act="list">一覧</button><button type="button" data-act="json">回答を JSON で保存</button><button type="button" data-act="clear">すべて消す</button></div>');
+const list = ui('<div id="fb-list" hidden><div class="fb-head"><span>コメントの一覧</span><button type="button" data-act="close">閉じる</button></div><div class="fb-warn" data-role="nostore" hidden>このブラウザでは保存できません（プライベートウィンドウなど）。閉じると消えるので、すぐ「まとめてコピー」してください。</div><ol></ol></div>');
+const preview = ui('<div id="fb-preview" hidden><div class="fb-head"><span>コピーされる内容</span><button type="button" data-act="close">閉じる</button></div><textarea readonly></textarea></div>');
+const toast = ui('<div id="fb-toast" role="status" hidden><span></span></div>');
+const ta = editor.querySelector('textarea');
+
+let on = false, picked = [], editing = null, quotedAt = -Infinity; // editing: { id?: string }（id があれば既存の編集）
+function setMode(v) {
+  on = v; document.body.classList.toggle('fb-on', on); banner.hidden = !on;
+  toggle.textContent = on ? 'フィードバックを終える' : 'フィードバック';
+  if (!on) closeEditor();
+}
+function showToast(text, undo) {
+  const span = toast.querySelector('span'); span.textContent = text;
+  toast.querySelector('button')?.remove();
+  if (undo) { const b = document.createElement('button'); b.type = 'button'; b.textContent = '戻す'; b.onclick = () => { undo(); toast.hidden = true; }; toast.append(b); }
+  toast.hidden = false; clearTimeout(showToast.t); showToast.t = setTimeout(() => { toast.hidden = true; }, undo ? 8000 : 2500);
+}
+function markPicked() {
+  document.querySelectorAll('.fb-picked').forEach((e) => e.classList.remove('fb-picked'));
+  for (const t of picked) findEl(t.path)?.classList.add('fb-picked');
+}
+function openEditor(targets, { id = null, text = null } = {}) {
+  if (editing && !editing.id && picked.length) saveDraft();
+  picked = targets; editing = { id }; markPicked();
+  editor.querySelector('.targets').replaceChildren(...targets.map((t) => h('div', {}, `${t.label}`, t.quote ? h('div', {}, `引用: 「${clip(t.quote, 60)}」`) : null)));
+  editor.querySelector('.fb-n').textContent = targets.length > 1 ? `${targets.length} か所` : '';
+  ta.value = text ?? store.get(draftKey(targets), SESSION) ?? '';
+  editor.hidden = false;
+  const pos = store.get(`${KEY}:pos`);
+  const bottomLimit = innerHeight - (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fb-menu-h')) || 0) - 16; // 下のメニューに重ねない
+  if (pos && innerWidth > 600) { editor.style.left = `${Math.min(pos.x, innerWidth - 120)}px`; editor.style.top = `${Math.min(pos.y, innerHeight - 80)}px`; }
+  else if (innerWidth > 600) { // 選んだ項目のそば（画面の中に収める。スクロールはしない）
+    const r = findEl(targets[targets.length - 1].path)?.getBoundingClientRect();
+    const x = Math.max(16, Math.min((r?.left ?? 16), innerWidth - editor.offsetWidth - 16));
+    const y = r && r.bottom + 8 + editor.offsetHeight < bottomLimit ? Math.max(52, r.bottom + 8) : Math.max(52, Math.min((r?.top ?? 60) - editor.offsetHeight - 8, bottomLimit - editor.offsetHeight));
+    editor.style.left = `${x}px`; editor.style.top = `${y}px`;
+  }
+  ta.focus({ preventScroll: true });
+}
+function saveDraft() { const k = draftKey(picked); if (ta.value.trim()) store.set(k, ta.value, SESSION); else store.del(k); }
+function closeEditor() { if (!editor.hidden && editing && !editing.id && picked.length) saveDraft(); editor.hidden = true; picked = []; editing = null; markPicked(); }
+function save() {
+  if (!picked.length) return;
+  const text = ta.value.trim() || '（書いていません）';
+  if (editing?.id) { const c = state.comments.find((x) => x.id === editing.id); if (c) { c.text = text; c.targets = picked; c.sentAt = null; c.updatedAt = Date.now(); } }
+  else state.comments.push({ id: `c${Date.now().toString(36)}`, targets: picked, text, createdAt: Date.now(), updatedAt: Date.now(), sentAt: null });
+  store.del(draftKey(picked));
+  editor.hidden = true; picked = []; editing = null; markPicked();
+  persist();
+  showToast(store.ok ? '保存しました' : '保存できない環境です。すぐコピーしてください');
+  if (!store.ok) openList();
+}
+ta.addEventListener('input', () => { if (editing && !editing.id) saveDraft(); });
+ta.addEventListener('keydown', (e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); save(); } });
+
+// 選ぶ
+document.addEventListener('click', (e) => {
+  if (!on || e.target.closest('.fb-ui')) return;
+  if (e.target.closest('summary')) return; // 畳んだ details はモード中も開け閉めできる
+  if (e.target.closest('.fb-badge')) return;
+  if (performance.now() - quotedAt < 400) { quotedAt = -Infinity; e.preventDefault(); e.stopPropagation(); return; } // ドラッグで引用した直後の click は無視（引用の入力欄を開き直さない）
+  const el = e.target.closest('[data-fb]');
+  if (!el) return;
+  e.preventDefault(); e.stopPropagation();
+  const s = getSelection(); const quote = !e.shiftKey && s && !s.isCollapsed && el.contains(s.anchorNode) ? s.toString() : '';
+  if (e.shiftKey) s?.removeAllRanges();
+  const t = targetOf(el, quote);
+  if (e.shiftKey && !editor.hidden) {
+    const i = picked.findIndex((p) => p.path === t.path);
+    const next = i >= 0 ? picked.filter((_, j) => j !== i) : picked.length >= 20 ? picked : [...picked, t];
+    if (next.length) openEditor(next, { id: editing?.id, text: ta.value }); else closeEditor();
+    return;
+  }
+  openEditor([t]);
+}, true);
+// 引用: ドラッグで文字を選んだら、その場所への入力欄を開く
+document.addEventListener('mouseup', (e) => {
+  if (!on || e.shiftKey || e.target.closest('.fb-ui')) return; // Shift + クリックは複数選択（選択範囲の拡張と取り違えない）
+  const s = getSelection(); if (!s || s.isCollapsed || !s.toString().trim()) return;
+  const el = (s.anchorNode?.nodeType === 1 ? s.anchorNode : s.anchorNode?.parentElement)?.closest('[data-fb]');
+  if (el) { openEditor([targetOf(el, s.toString())]); quotedAt = performance.now(); }
+});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && on) { e.preventDefault(); setMode(false); } });
+toggle.addEventListener('click', () => setMode(!on));
+banner.addEventListener('click', (e) => { const a = e.target.closest('button')?.dataset.act; if (a === 'exit') setMode(false); if (a === 'list') openList(); });
+editor.addEventListener('click', (e) => { const a = e.target.closest('button')?.dataset.act; if (a === 'save') save(); if (a === 'close') closeEditor(); });
+// 入力欄はドラッグで動かせ、位置を覚える
+(() => {
+  const head = editor.querySelector('header'); let d = null;
+  head.addEventListener('pointerdown', (e) => { if (innerWidth <= 600) return; d = { x: e.clientX - editor.offsetLeft, y: e.clientY - editor.offsetTop }; head.setPointerCapture(e.pointerId); });
+  head.addEventListener('pointermove', (e) => { if (!d) return; editor.style.left = `${Math.max(0, Math.min(e.clientX - d.x, innerWidth - 80))}px`; editor.style.top = `${Math.max(0, Math.min(e.clientY - d.y, innerHeight - 40))}px`; });
+  head.addEventListener('pointerup', () => { if (d) store.set(`${KEY}:pos`, { x: editor.offsetLeft, y: editor.offsetTop }); d = null; });
+})();
+
+// ===== 一覧・印 =====
+function openList() { list.hidden = false; preview.hidden = true; renderList(); }
+function renderList() {
+  list.querySelector('[data-role=nostore]').hidden = store.ok;
+  const ol = list.querySelector('ol');
+  ol.replaceChildren(...state.comments.map((c, i) => {
+    const edit = h('button', { type: 'button' }, '直す'); edit.onclick = () => { list.hidden = true; setMode(true); openEditor(c.targets, { id: c.id, text: c.text === '（書いていません）' ? '' : c.text }); };
+    const del = h('button', { type: 'button' }, '消す'); del.onclick = () => { const before = [...state.comments]; state.comments = state.comments.filter((x) => x.id !== c.id); persist(); renderList(); showToast('消しました', () => { state.comments = before; persist(); renderList(); }); };
+    return h('li', {}, h('div', { class: 'meta' }, `${i + 1}. ${c.targets.map((t) => t.label).join(' ／ ')}${c.sentAt ? '（渡し済み）' : ''}`), h('div', {}, c.text), h('div', {}, edit, ' ', del));
+  }));
+  if (!state.comments.length) ol.replaceChildren(h('li', { class: 'meta' }, 'まだありません'));
+}
+list.addEventListener('click', (e) => { if (e.target.closest('button')?.dataset.act === 'close') list.hidden = true; });
+preview.addEventListener('click', (e) => { if (e.target.closest('button')?.dataset.act === 'close') preview.hidden = true; });
+function renderMarks() {
+  document.querySelectorAll('.fb-badge').forEach((b) => b.remove());
+  state.comments.forEach((c, i) => {
+    for (const t of c.targets) {
+      let el = findEl(t.path); if (!el) continue;
+      for (let d = el.closest('details:not([open])'); d; d = d.parentElement?.closest('details:not([open])')) el = d.querySelector(':scope > summary') || d; // 閉じた details の中は、いちばん外の閉じた見出しに
+      const host = el.matches('table, tr, ul, ol, section') ? (el.querySelector('th, td, li, h2') || el) : el;
+      const b = h('span', { class: 'fb-badge fb-ui', title: c.text }, String(i + 1));
+      b.addEventListener('click', (e) => { e.stopPropagation(); openList(); });
+      host.append(b);
+    }
+  });
+}
+
+// ===== 渡す =====
+const isNewAnswer = (a) => a && (a.answer != null || a.note) && (!a.sentAt || a.updatedAt > a.sentAt);
+function pending() {
+  const newC = state.comments.filter((c) => !c.sentAt);
+  const answered = Object.entries(state.answers).filter(([, a]) => a && (a.answer != null || a.note));
+  const newA = answered.filter(([, a]) => isNewAnswer(a));
+  const allSent = !newC.length && !newA.length;
+  return { comments: allSent ? state.comments : newC, answers: allSent ? answered : newA, allSent, newC: newC.length, total: state.comments.length, answered: answered.length };
+}
+function buildText() {
+  const p = pending(); const out = [];
+  if (p.answers.length) {
+    const unanswered = (data.questions || []).filter((q) => !(state.answers[q.id]?.answer != null || state.answers[q.id]?.note)).map((q) => q.id);
+    out.push(`${KIND}（${FILE}）の質問への回答です（${p.answers.length} 件）。${unanswered.length ? `まだ答えていない質問: ${unanswered.join(', ')}` : '全部の質問に答えました。'}`);
+    out.push('```json', JSON.stringify({ target: FILE, answers: Object.fromEntries(p.answers.map(([id, a]) => [id, { answer: a.answer ?? null, note: a.note ?? null }])) }, null, 2), '```', '');
+  }
+  if (p.comments.length) {
+    out.push(`${KIND}（${FILE}）へのフィードバックです（${p.comments.length} 件）。「対象」はこのファイルの JSON の場所です。直して、直せないものは理由を返してください。`, '');
+    p.comments.forEach((c, i) => {
+      out.push(`${i + 1}. ${c.targets[0].label}${c.targets.length > 1 ? ` ほか ${c.targets.length - 1} 件` : ''}`);
+      for (const t of c.targets) {
+        out.push(`   対象: ${t.path}${c.targets.length > 1 ? `（${t.label}）` : ''}`);
+        if (t.quote) out.push(`   引用: 「${t.quote}」`); else if (t.content) out.push(`   内容: 「${t.content}」`);
+      }
+      out.push(...c.text.split('\n').map((l) => `   > ${l}`), '');
+    });
+  }
+  return out.join('\n').trim();
+}
+function markSent() { const now = Date.now(); state.comments.forEach((c) => { c.sentAt = now; }); for (const a of Object.values(state.answers)) if (a) a.sentAt = now; persist(); }
+async function copyAll() {
+  const text = buildText();
+  try { await navigator.clipboard.writeText(text); markSent(); showToast('コピーしました。チャットに貼ってください'); }
+  catch { // コピーできないときは中身を出して全選択し、手でコピーしてもらう
+    preview.hidden = false; list.hidden = true; const t = preview.querySelector('textarea'); t.value = text; t.focus(); t.select();
+    showToast('自動でコピーできませんでした。選択されている文をコピーしてください'); markSent();
+  }
+}
+function saveJson() {
+  const blob = new Blob([JSON.stringify({ target: FILE, answers: Object.fromEntries(Object.entries(state.answers).map(([id, a]) => [id, { answer: a.answer ?? null, note: a.note ?? null }])) }, null, 2)], { type: 'application/json' });
+  const a = h('a', { href: URL.createObjectURL(blob), download: FILE.replace(/\.html?$/, '') + '.answers.json' }); document.body.append(a); a.click(); a.remove();
+}
+menu.addEventListener('click', (e) => {
+  const a = e.target.closest('button')?.dataset.act;
+  if (a === 'copy') copyAll();
+  if (a === 'preview') { list.hidden = true; preview.hidden = false; preview.querySelector('textarea').value = buildText(); }
+  if (a === 'list') openList();
+  if (a === 'json') saveJson();
+  if (a === 'clear') {
+    const before = JSON.parse(JSON.stringify({ comments: state.comments, answers: state.answers }));
+    state.comments = []; state.answers = {}; persist(); render(); renderMarks();
+    showToast('すべて消しました', () => { Object.assign(state, before); persist(); render(); renderMarks(); });
+  }
+});
+function updateUi() {
+  const p = pending();
+  const has = p.total || p.answered;
+  menu.hidden = !has;
+  menu.querySelector('[data-act=json]').hidden = !(data.questions || []).length;
+  const parts = [];
+  if (p.total) parts.push(`フィードバック ${p.total} 件${p.allSent ? '（すべて渡し済み）' : p.newC < p.total ? `（うち ${p.newC} 件は新しい）` : ''}`);
+  if (p.answered) parts.push(`回答 ${p.answered} 件`);
+  menu.querySelector('.count').textContent = parts.join('・');
+  document.documentElement.style.setProperty('--fb-menu-h', has ? `${menu.offsetHeight}px` : '0px');
+  renderMarks();
+  if (!list.hidden) renderList();
+}
+addEventListener('resize', () => updateUi());
+// スマホでキーボードが出ても、Chrome・Safari とも layout viewport は縮まず bottom:0 のシートが隠れる。見えている範囲（visualViewport）の下端まで持ち上げる
+if (window.visualViewport) {
+  const fitKeyboard = () => { const vv = visualViewport; document.documentElement.style.setProperty('--fb-kb', `${Math.max(0, innerHeight - vv.height - vv.offsetTop)}px`); };
+  visualViewport.addEventListener('resize', fitKeyboard); visualViewport.addEventListener('scroll', fitKeyboard); fitKeyboard();
+}
+render(); updateUi();
+if (!store.ok) showToast('このブラウザでは保存できません。コメントはすぐコピーしてください');
+})();
+</script>
+</body>
+</html>
