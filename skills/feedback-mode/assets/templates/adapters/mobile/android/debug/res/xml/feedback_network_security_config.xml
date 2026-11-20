@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- src/debug/res/xml/。開発機の受け口への http（cleartext）だけを許す -->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">10.0.2.2</domain>  <!-- エミュレータから開発機 -->
+        <domain includeSubdomains="false">localhost</domain> <!-- 実機 + adb reverse -->
+        <domain includeSubdomains="false">127.0.0.1</domain>
+        <!-- 実機から LAN 越しに送るときだけ、作業中に開発機の IP を足す（例: 192.168.0.10）。コミットしない -->
+    </domain-config>
+</network-security-config>
