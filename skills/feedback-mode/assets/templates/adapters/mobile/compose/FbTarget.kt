@@ -26,7 +26,7 @@ data class FbEntry(val name: String, val bounds: Rect)
 val LocalFbRegistry = staticCompositionLocalOf<FbRegistry?> { null }
 
 // 部品の名前（R5）。name は外側からつないだ道筋（"ホーム/保存ボタン"）をそのまま書く
-// release では同じ名前の no-op（android/release/FeedbackHost.kt）か、KMP なら hook 経由で外す
+// release では同じ名前の no-op（android/release/kotlin/FeedbackHost.kt）か、KMP なら hook 経由で外す
 fun Modifier.fbTarget(name: String): Modifier = composed {
     val registry = LocalFbRegistry.current ?: return@composed this
     val key = remember { Any() }

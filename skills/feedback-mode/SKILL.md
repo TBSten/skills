@@ -61,7 +61,7 @@ references/
 │  ├ web/           dom / react / astro / single-html（＋ optional/: interaction・locate・memo＝Web の optional 機能の作り方）
 │  ├ desktop/       electron / tauri
 │  └ mobile/        common（先に読む）/ android / kmp / ios
-├ loop/       ループ中に読む: loop.md（＋ subagent-prompt・full-check・lessons）
+├ loop/       ループ中に読む: loop.md（＋ subagent-prompt・full-check・lessons・watch: 記録が増えたらすぐ回す）
 ├ review/     agent の指摘に人が答えるとき: review.md・ui.md・decisions.md
 └ spec/       共通仕様（setup・loop の中で指されたところだけ読む）
    ├ features.md    満たすべき機能（必須 / optional）
