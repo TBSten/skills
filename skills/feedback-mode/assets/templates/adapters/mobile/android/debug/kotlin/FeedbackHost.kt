@@ -6,6 +6,7 @@ import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asImageBitmap
@@ -14,7 +15,7 @@ import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
-import com.example.fbdemo.BuildConfig // TODO: 導入先の applicationId の BuildConfig に変える
+import com.example.fbdemo.BuildConfig // TODO: 導入先の namespace の BuildConfig に変える（BuildConfig の package は namespace で決まる）
 
 @Composable
 fun FeedbackHost(
@@ -22,6 +23,9 @@ fun FeedbackHost(
     getScreen: () -> String = { "" },
     getView: () -> Map<String, Any?> = { emptyMap() },
     getRecentLogs: () -> List<FeedbackLog> = { emptyList() },
+    // 既存の debug menu から入るなら showEntryButton = false にし、同じ controller の enter() をその項目から呼ぶ
+    showEntryButton: Boolean = true,
+    controller: FeedbackController = rememberSaveable(saver = FeedbackController.Saver) { FeedbackController() },
     content: @Composable () -> Unit,
 ) {
     val config = remember {
@@ -35,9 +39,10 @@ fun FeedbackHost(
             getRecentLogs = getRecentLogs,
             encodePng = ::encodePng,
             prepareShot = ::toSoftwareBitmap,
+            showEntryButton = showEntryButton,
         )
     }
-    FeedbackRoot(config, backHandler = { enabled, onBack -> BackHandler(enabled, onBack) }, content = content)
+    FeedbackRoot(config, controller = controller, backHandler = { enabled, onBack -> BackHandler(enabled, onBack) }, content = content)
 }
 
 // transport: 1 件ごとに HTTP POST（エミュレータは http://10.0.2.2:7373/__feedback）。token は受け口を LAN に出すときだけ（x-feedback-token）
