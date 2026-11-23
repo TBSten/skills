@@ -41,7 +41,7 @@ jobs:
       # Dokka HTML を docs/public/api-docs/ に出力する (Astro が /api-docs/ として配信)
       - name: ./gradlew generateApiDocs
         run: ./gradlew generateApiDocs --stacktrace
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           package_json_file: docs/package.json
       - uses: actions/setup-node@v6
@@ -62,8 +62,8 @@ jobs:
       - name: pnpm run build
         working-directory: docs
         run: pnpm run build
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v4
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: docs/dist
 
@@ -78,4 +78,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
