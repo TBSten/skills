@@ -1,0 +1,58 @@
+name: docs-check
+
+# 人間が読むドキュメント (README と skills|rules|prompts/<name>.md / .ja.md) の品質を検査する。
+# 中身は scripts/docs-check/check.sh。書き方の決まりは .claude/rules/docs-writing.md。
+on:
+  pull_request:
+    paths:
+      - "README.md"
+      - "README.ja.md"
+      - "CLAUDE.md"
+      - "skills/*.md"
+      - "skills/*/SKILL.md"
+      - "rules/*.md"
+      - "prompts/*.md"
+      - "scripts/docs-check/**"
+      - ".github/workflows/docs-check.yml"
+  push:
+    branches: [main]
+    paths:
+      - "README.md"
+      - "README.ja.md"
+      - "CLAUDE.md"
+      - "skills/*.md"
+      - "skills/*/SKILL.md"
+      - "rules/*.md"
+      - "prompts/*.md"
+      - "scripts/docs-check/**"
+      - ".github/workflows/docs-check.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          # pairs-changed が base との差分とコミットメッセージを読むので、履歴をすべて取る
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: scripts/docs-check/package-lock.json
+
+      - name: docs_check.py のテスト
+        run: python3 scripts/docs-check/test_docs_check.py
+
+      - name: docs-check (PR)
+        if: github.event_name == 'pull_request'
+        run: scripts/docs-check/check.sh --base "origin/${{ github.base_ref }}"
+
+      - name: docs-check (main)
+        if: github.event_name == 'push'
+        run: scripts/docs-check/check.sh

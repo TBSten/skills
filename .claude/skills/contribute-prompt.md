@@ -121,6 +121,8 @@ PR 作成前に以下を確認する:
 - `prompts/<prompt-name>.md` (英語) — 概要、実行プロンプト、実行内容、参照ファイル、skill 版へのリンク
 - `prompts/<prompt-name>.ja.md` (日本語) — 上記の日本語版
 
+書き方は `.claude/rules/docs-writing.md` に従う。日本語版を先に書き、英語版はそれを訳す (節の構成・コードブロックは日英で 1 対 1)。H1 の直後に相手の言語へのリンク (`[English](./<name>.md)` / `[日本語](./<name>.ja.md)`) を置く。
+
 ### status / group (必須)
 
 rule と同様、**英語詳細ドキュメント `prompts/<prompt-name>.md` の先頭 frontmatter** に記載する
@@ -204,17 +206,31 @@ https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/prompts/<prompt-
 </tr>
 ````
 
+## ドキュメントの検査
+
+人間向けドキュメント (README と詳細ドキュメント) の機械検査を通す。script をそのまま実行する:
+
+```bash
+scripts/docs-check/check.sh --base origin/main
+```
+
+- `OK docs-check` が出れば成功。CI (`.github/workflows/docs-check.yml`) も同じものを回す
+- 言い換え辞書 (`scripts/docs-check/prh.yml`) の指摘は `--fix` で直る。それ以外は ERROR の `fix:` に従って直す
+- 日本語版だけ・英語版だけを変えたと言われたら、もう一方にも同じ変更を入れる (表記だけの修正なら、コミットメッセージに `Docs-Translation-Not-Needed: <パス>` の行を入れる)
+- 内容が実体と合っているか・文章の方針に沿っているかは機械では見ない。気になるときは `.claude/skills/review-docs.md` でレビューする
+
 ## 既存プロンプトの更新
 
 1. `prompts/<prompt-name>/PROMPT.md` を編集する
 2. プロンプト化元の skill が更新された場合は、PROMPT.md にも同じ変更を反映する (内容の同期)
 3. `prompts/<prompt-name>.md` / `<prompt-name>.ja.md` の説明も必要に応じて同期する
 4. 利用者は raw URL を参照するため、main にマージされた時点で最新版が配布される
+5. 「ドキュメントの検査」の `scripts/docs-check/check.sh --base origin/main` を通す
 
 ## 注意点
 
 - prompt は Claude Code plugin marketplace (`.claude-plugin/marketplace.json`) には載らない (plugin が扱えるのは skill 等のみ)。prompt の追加・更新で marketplace の再生成は不要。ただし新しいグループを作った場合は、そのグループの skill が入る plugin を `scripts/marketplace/plugins.json` に追加しておく (contribute-skill.md の Step 6)
-- `<prompt-name>.md` (英語) と `<prompt-name>.ja.md` (日本語) は **常に同期して更新** する
+- `<prompt-name>.md` (英語) と `<prompt-name>.ja.md` (日本語) は **常に同期して更新** する。日本語版が原本で、書き方は `.claude/rules/docs-writing.md`。PR 前に `scripts/docs-check/check.sh` を通す
 - PROMPT.md は raw URL 直取得で単体実行されるため、リポジトリ内の相対パス参照を残さない (必ず raw URL / sparse clone 経由にする)
 - status / group は `prompts/<prompt-name>.md` の frontmatter を SSoT とし、README と必ず一致させる (PROMPT.md には書かない)
 - グループセルの記載はグループ先頭行のみ (絵文字付き)、継続行は空セル

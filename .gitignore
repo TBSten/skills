@@ -1,3 +1,5 @@
 .DS_Store
 .local/
 skills/*/evals/results/
+node_modules/
+__pycache__/
