@@ -9,11 +9,11 @@
 
 ```sh
 git clone --depth 1 --filter=blob:none --sparse https://github.com/TBSten/skills.git /tmp/tbsten-skills
-git -C /tmp/tbsten-skills sparse-checkout set skills/kotlin-compiler-plugin-setup
+git -C /tmp/tbsten-skills sparse-checkout set skills/kotlin-compiler-plugin
 ```
 
 以降に登場する `scripts/...`、`example/...`、`references/...` は、すべて clone 後の
-`/tmp/tbsten-skills/skills/kotlin-compiler-plugin-setup/` 配下のパスを指す。
+`/tmp/tbsten-skills/skills/kotlin-compiler-plugin/` 配下のパスを指す (setup 用の references は `references/setup/` にある)。
 単一ファイルだけ見たい場合は `https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/<パス>` を WebFetch や curl で取得してもよい。
 
 ## 確認事項
@@ -41,7 +41,7 @@ sparse clone した `scripts/scaffold.sh` がプロジェクト一式 (build フ
 **script を読解・書き換え・再実装せず、そのまま実行する。**
 
 ```bash
-bash /tmp/tbsten-skills/skills/kotlin-compiler-plugin-setup/scripts/scaffold.sh \
+bash /tmp/tbsten-skills/skills/kotlin-compiler-plugin/scripts/scaffold.sh \
   --dest <project-root> \
   --name <project-name> \
   --group-id <group-id> \
@@ -89,11 +89,11 @@ script の stdout (末尾 1 行の JSON を含む) と生成ファイルを確�
 
 | ファイル群 | 解説 |
 |---|---|
-| CommandLineProcessor / Registrar / IrExtension / FirExtensionRegistrar | [`references/plugin-registration.md`](https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/skills/kotlin-compiler-plugin-setup/references/plugin-registration.md) |
-| GradlePlugin (KotlinCompilerPluginSupportPlugin) | [`references/gradle-plugin-impl.md`](https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/skills/kotlin-compiler-plugin-setup/references/gradle-plugin-impl.md) |
-| CompilerTest (compile ヘルパー) / integration-test | [`references/testing-patterns.md`](https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/skills/kotlin-compiler-plugin-setup/references/testing-patterns.md) |
+| CommandLineProcessor / Registrar / IrExtension / FirExtensionRegistrar | [`references/plugin-registration.md`](https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/skills/kotlin-compiler-plugin/references/setup/plugin-registration.md) |
+| GradlePlugin (KotlinCompilerPluginSupportPlugin) | [`references/gradle-plugin-impl.md`](https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/skills/kotlin-compiler-plugin/references/setup/gradle-plugin-impl.md) |
+| CompilerTest (compile ヘルパー) / integration-test | [`references/testing-patterns.md`](https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/skills/kotlin-compiler-plugin/references/setup/testing-patterns.md) |
 
-publish-convention が必要な場合は [`references/publish-convention.md`](https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/skills/kotlin-compiler-plugin-setup/references/publish-convention.md) を参照。
+publish-convention が必要な場合は [`references/publish-convention.md`](https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/skills/kotlin-compiler-plugin/references/setup/publish-convention.md) を参照。
 
 ### Step 3: ビルド確認
 
@@ -113,8 +113,8 @@ publish-convention が必要な場合は [`references/publish-convention.md`](ht
   - **A: Source Set Separation** — Gradle がビルド時にソースディレクトリを切り替え。K1/K2 断絶の吸収に最適
   - **B: Compat Module Layer (metro スタイル)** — ServiceLoader で実装を動的選択。K2+ のパッチ差異の吸収に最適
 
-詳細なセットアップ手順と全コード例は [`references/multi-version-setup.md`](https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/skills/kotlin-compiler-plugin-setup/references/multi-version-setup.md) を参照。
-バージョンの追加・削除の継続的な作業は `kotlin-compiler-plugin-dev` スキル (Step 6) を使用する。
+詳細なセットアップ手順と全コード例は [`references/multi-version-setup.md`](https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/skills/kotlin-compiler-plugin/references/setup/multi-version-setup.md) を参照。
+バージョンの追加・削除の継続的な作業は `kotlin-compiler-plugin` スキルの dev モード (`references/dev/guide.md` の Step 6) を使用する。
 
 ## セットアップ完了メッセージ
 

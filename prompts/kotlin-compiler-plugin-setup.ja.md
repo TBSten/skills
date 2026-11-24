@@ -2,7 +2,7 @@
 
 [English](./kotlin-compiler-plugin-setup.md) | [DeepWiki](https://deepwiki.com/TBSten/skills)
 
-[kotlin-compiler-plugin-setup スキル](../skills/kotlin-compiler-plugin-setup.ja.md)の一回限りプロンプト版。スキルをインストールせずに、Kotlin Compiler Plugin のマルチモジュール Gradle プロジェクト — buildSrc convention plugins、compiler-plugin (FIR + IR)、Gradle plugin ラッパー、Kotlin Multiplatform runtime、ユニットテスト (kctfork + Kotest)、インテグレーションテスト — を一式セットアップする。
+[kotlin-compiler-plugin スキル](../skills/kotlin-compiler-plugin.ja.md) (setup モード)の一回限りプロンプト版。スキルをインストールせずに、Kotlin Compiler Plugin のマルチモジュール Gradle プロジェクト — buildSrc convention plugins、compiler-plugin (FIR + IR)、Gradle plugin ラッパー、Kotlin Multiplatform runtime、ユニットテスト (kctfork + Kotest)、インテグレーションテスト — を一式セットアップする。
 
 ## Run
 
@@ -23,10 +23,10 @@ https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/prompts/kotlin-c
 
 プロンプトはローカルのスキルインストールの代わりに、以下を GitHub から取得する:
 
-- [skills/kotlin-compiler-plugin-setup/scripts/scaffold.sh](https://github.com/TBSten/skills/blob/main/skills/kotlin-compiler-plugin-setup/scripts/scaffold.sh) — sparse clone 後にローカル実行する scaffold script
-- [skills/kotlin-compiler-plugin-setup/example/](https://github.com/TBSten/skills/tree/main/skills/kotlin-compiler-plugin-setup/example) — 完全なプロジェクト skeleton (Gradle ビルドファイル + `Example` prefix の Kotlin ソース)
-- [skills/kotlin-compiler-plugin-setup/references/](https://github.com/TBSten/skills/tree/main/skills/kotlin-compiler-plugin-setup/references) — plugin 登録、Gradle plugin 実装、テストパターン、publish convention、multi-version セットアップの設計解説
+- [skills/kotlin-compiler-plugin/scripts/scaffold.sh](https://github.com/TBSten/skills/blob/main/skills/kotlin-compiler-plugin/scripts/scaffold.sh) — sparse clone 後にローカル実行する scaffold script
+- [skills/kotlin-compiler-plugin/example/](https://github.com/TBSten/skills/tree/main/skills/kotlin-compiler-plugin/example) — 完全なプロジェクト skeleton (Gradle ビルドファイル + `Example` prefix の Kotlin ソース)
+- [skills/kotlin-compiler-plugin/references/setup/](https://github.com/TBSten/skills/tree/main/skills/kotlin-compiler-plugin/references/setup) — plugin 登録、Gradle plugin 実装、テストパターン、publish convention、multi-version セットアップの設計解説
 
 ## Related
 
-- スキル版: [skills/kotlin-compiler-plugin-setup](../skills/kotlin-compiler-plugin-setup.ja.md) — `gh skill install tbsten/skills kotlin-compiler-plugin-setup` でインストール
+- スキル版: [skills/kotlin-compiler-plugin](../skills/kotlin-compiler-plugin.ja.md) — `gh skill install tbsten/skills kotlin-compiler-plugin` でインストール

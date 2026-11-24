@@ -192,29 +192,16 @@ gh skill install tbsten/skills kmp-snapshot-testing-setup
 </tr>
 <tr>
 <td>🟣 Kotlin Library / Tool Development</td>
-<td><a href="./skills/kotlin-compiler-plugin-setup.md">kotlin-compiler-plugin-setup</a></td>
+<td><a href="./skills/kotlin-compiler-plugin.md">kotlin-compiler-plugin</a></td>
 <td>
 
 ```sh
-gh skill install tbsten/skills kotlin-compiler-plugin-setup
+gh skill install tbsten/skills kotlin-compiler-plugin
 ```
 
 </td>
 <td>🧪 Experimental</td>
-<td>Set up a Kotlin Compiler Plugin project with the essential toolchain</td>
-</tr>
-<tr>
-<td></td>
-<td><a href="./skills/kotlin-compiler-plugin-dev.md">kotlin-compiler-plugin-dev</a></td>
-<td>
-
-```sh
-gh skill install tbsten/skills kotlin-compiler-plugin-dev
-```
-
-</td>
-<td>🧪 Experimental</td>
-<td>Support developing and reviewing Kotlin Compiler Plugins</td>
+<td>Setup, dev, review and Kotlin version support for compiler plugins</td>
 </tr>
 <tr>
 <td></td>
@@ -267,19 +254,6 @@ gh skill install tbsten/skills ksp-plugin-setup
 </td>
 <td>🧪 Experimental</td>
 <td>Scaffold a KSP plugin with a 3-module layout</td>
-</tr>
-<tr>
-<td></td>
-<td><a href="./skills/collector-compiler-plugin.md">collector-compiler-plugin</a></td>
-<td>
-
-```sh
-gh skill install tbsten/skills collector-compiler-plugin
-```
-
-</td>
-<td>🧪 Experimental</td>
-<td>Scaffold a compiler plugin that collects annotated classes across modules</td>
 </tr>
 <tr>
 <td>🔵 Web Frontend</td>

@@ -8,7 +8,7 @@ v1 の scaffold には含めていない。必要になったら生成後のプ�
 | kover (カバレッジ) | 未対応 | `org.jetbrains.kotlinx.kover` をルートと各モジュールに適用し、CI に `koverXmlReport` を足す |
 | Konsist (アーキテクチャテスト) | 未対応 | JVM の test モジュールを 1 つ足し、パッケージ依存・命名・公開範囲をテストで固定する。モジュールが増えてから入れる価値が出る (出典: ksp-plugin-setup の ArchTest) |
 | context7.json | 未対応 | context7 への登録に公開鍵が要るため scaffold では作らない。README で登録手順を案内する |
-| 複数の Kotlin 版での互換テスト | 未対応 | 床より新しい版でも利用側がビルドできるかを CI matrix で確かめる。compiler plugin 向けの仕組みは kotlin-compiler-plugin-setup にある |
+| 複数の Kotlin 版での互換テスト | 未対応 | 床より新しい版でも利用側がビルドできるかを CI matrix で確かめる。compiler plugin 向けの仕組みは kotlin-compiler-plugin にある |
 
 ## scaffold.sh の既知の制限
 

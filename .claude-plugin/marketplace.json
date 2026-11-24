@@ -52,10 +52,8 @@
       },
       "homepage": "https://github.com/TBSten/skills",
       "skills": [
-        "./skills/collector-compiler-plugin",
         "./skills/intellij-plugin-dev",
-        "./skills/kotlin-compiler-plugin-dev",
-        "./skills/kotlin-compiler-plugin-setup",
+        "./skills/kotlin-compiler-plugin",
         "./skills/kotlin-library-bootup",
         "./skills/kotlin-maven-central-publish",
         "./skills/ksp-plugin-setup"
