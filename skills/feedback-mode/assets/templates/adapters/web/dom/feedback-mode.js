@@ -20,6 +20,7 @@
  *   画面側の差し替え点は transport（画面 → 受け口）。受け口（feedback-dev-server.mjs / Electron main）の裏で Sink（ファイル・Issue 等）を差し替える。
  *   httpTransport(endpoint, {headers})  既定。LAN の開発機の受け口へ HTTP POST（スマホ実機・別マシン）
  *   ipcTransport(fn)                    Electron: IPC で main に渡す（参照実装と同じ経路。desktop/electron の renderer-feedback.js）
+ *   自作の関数                           例: Chrome 拡張はクリップボードに書く（web/chrome-extension の content.js）。{ ok, message } を返す
  *   自作: async (body) => ({ ok, id, ref, error })  例: 共有シートに Markdown を渡す・Issue トラッカーの API を直接呼ぶ（要トークンの扱い注意）
  *
  * 使い方（開発ビルドの入口だけで）:
@@ -220,6 +221,8 @@ export function installFeedbackMode(opts = {}) {
     /** feedback 自身の動き（enter / select / exit / save-failed）をアプリのログ基盤に流す口: (level, text) => void。省略可 */
     logEvent: null,
     capture: defaultCapture,
+    /** 節のオン/オフの初期値（DEFAULT_OPTIONS に上書き）。人が切り替えた値（localStorage）がさらに勝つ */
+    defaultOptions: {},
     ...opts,
   };
   if (o.enabled !== true) return { enter() {}, exit() {}, active: () => false, options: () => ({ ...DEFAULT_OPTIONS }), disabled: true };
@@ -234,9 +237,9 @@ export function installFeedbackMode(opts = {}) {
   let statusEl = null;
   const drafts = new Map(); // 要素ごとの下書き（モードを出ても残す。送ったら消す）
   const offs = [];
-  let options = { ...DEFAULT_OPTIONS };
+  let options = { ...DEFAULT_OPTIONS, ...o.defaultOptions };
   try {
-    options = { ...DEFAULT_OPTIONS, ...JSON.parse(localStorage.getItem(OPTIONS_KEY) ?? '{}') };
+    options = { ...options, ...JSON.parse(localStorage.getItem(OPTIONS_KEY) ?? '{}') };
   } catch { /* 覚えていなければ初期値 */ }
 
   const el = (tag, attrs = {}, ...kids) => {
@@ -464,7 +467,7 @@ export function installFeedbackMode(opts = {}) {
     sending = false;
     drafts.delete(sel.key); // 送ったので下書きは消す
     if (textarea) textarea.value = '';
-    toast(`${result.ref ?? result.rel ?? result.id ?? 'フィードバック'} に追加しました`);
+    toast(result.message ?? `${result.ref ?? result.rel ?? result.id ?? 'フィードバック'} に追加しました`); // transport が message を返せばそれを出す（例: コピーしました）
     exit('save');
   }
 

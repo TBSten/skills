@@ -90,6 +90,7 @@
   | Electron の main | `registerFeedback({ sink: createFileSink({ repoRoot, dir, attachDir }) })`。記録の形は schema 0 で固定 |
   | Astro の統合 | `feedbackMode({ dir })`。環境変数 `FEEDBACK_DIR` があればそちらが勝つ。ひな形はスクショを撮らないので添付は無い（問い 3 は飛ばす）。記録の形は schema 1 で固定 |
   | 1 枚の HTML | 選ばない（ブラウザに溜めてクリップボードで渡す） |
+  | Chrome 拡張 | 選ばない（クリップボードにコピーする）。代わりに拡張の置き場所を聞く（`web/chrome-extension.md` §1） |
 
 - 後から変えるときも同じ表の設定を変えるだけでよい（画面側は変えない）。変えたら loop の値と正本 docs も直す。
 
