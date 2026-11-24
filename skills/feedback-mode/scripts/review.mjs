@@ -501,7 +501,7 @@ export function matchNote(note, names) {
 // ---- Feedback の記録との行き来（「直してもらう」） ----
 
 const two = (n) => String(n).padStart(2, '0')
-/** `yymmdd`（ローカルの日付）。記録の名前の規則は references/concepts.md「名前と採番」。 */
+/** `yymmdd`（ローカルの日付）。記録の名前の規則は references/spec/data.md「名前と採番」。 */
 export const datePrefix = (now) => `${two(now.getFullYear() % 100)}${two(now.getMonth() + 1)}${two(now.getDate())}`
 
 /** 記録の中の `- Review の指摘: <id>`。無ければ null。 */

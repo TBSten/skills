@@ -1,4 +1,4 @@
-// メモリの Sink（TypeScript 版）。契約テストと、ほかの部品のテスト用。file-sink.ts と同じ規則（採番・archive・パス）にそろえる。【実績: Web 参照実装】
+// メモリの Sink（TypeScript 版）。契約テストと、ほかの部品のテスト用。file-sink.ts と同じ規則（採番・archive・パス）にそろえる。
 import { datePrefix, formatId, isEntryId, nextNumber } from './naming'
 import { safeRelPath } from './paths'
 import { ATTACH_NAME, archiveNoteText, type Attachment, type EntryInfo, type EntryState, type PutAttachmentsResult, type Sink } from './sink-types'

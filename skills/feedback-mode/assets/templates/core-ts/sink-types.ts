@@ -1,5 +1,5 @@
-// Sink（フィードバック置き場）の型の TypeScript 版。【実績: Web 参照実装】
-// 契約は references/concepts.md「Sink の契約」と同じ。JS 版（../core/feedback-core.mjs の JSDoc）に、メモ機能が使う writeDoc / readDoc を足したもの。
+// Sink（フィードバック置き場）の型の TypeScript 版。
+// 契約は references/spec/transport.md「Sink の契約」と同じ。JS 版（../core/feedback-core.mjs の JSDoc）に、メモ機能が使う writeDoc / readDoc を足したもの。
 // ファイル実装（file-sink.ts）とメモリ実装（memory-sink.ts）が同じ契約を満たすことを、sink-contract.test.ts（vitest）で確かめる。
 
 export type EntryState = 'open' | 'archived'

@@ -1,12 +1,12 @@
 # Review の UI（印と popup）を作る
 
-構築側の資料。ファイルの形・ボタンの意味・cli は `review.md`。ここは画面の決まりだけを書く。コードの雛形は無い（参照実装は Astro の Dev Toolbar アプリで、ページの部品に強く依存するため）。受け口は `scripts/review.mjs` を import して作る。
+ファイルの形・ボタンの意味・cli は `review.md`。ここは画面の決まりだけを書く。コードの雛形は無い（運用した実装は Astro の Dev Toolbar アプリで、ページの部品に強く依存するため）。受け口は `scripts/review.mjs` を import して作る。
 
-【実績: Web 参照実装】の決まりのうち、場所に依らないものだけを残した。導入先の画面（Web・アプリ・エディタ）に合わせて読み替える。
+の決まりのうち、場所に依らないものだけを残した。導入先の画面（Web・アプリ・エディタ）に合わせて読み替える。
 
 ## 0. 前提
 
-- **dev / debug のときだけ出す**。本番の成果物に入れない（`references/build/build.md` §0 と同じ。本番検査の grep に Review の目印も足す）。
+- **dev / debug のときだけ出す**。本番の成果物に入れない（`references/setup/setup.md` §2 と同じ。本番検査の grep に Review の目印も足す）。
 - 入口はフィードバックモードと同じ場所（Dev Toolbar・debug menu）に「Review」を 1 つ足す。**既定は隠したまま**。出しているあいだはタブ（セッション）の中で覚え、画面を移っても出し続ける。
 - 受け口は `createReviewStore({ inbox, root, filePrefix })` の `load` / `resolve` / `reopen` / `remove` / `send` / `addAction` / `updateAction` / `removeAction` をそのまま呼ぶ。ファイルは開くたび・タブに戻るたびに読み直す（dev サーバーを立て直さない）。
 
@@ -55,4 +55,4 @@
 - `review.mjs check` が OK のファイルで、印が全部出る（読めない指摘・無いファイルは一覧の「読めない指摘」に出る）。
 - dev サーバーと cli を同時に書いても消し合わない（lock）。
 - 本番の成果物に Review の目印が無い（`scripts/check-no-feedback-in-prod.sh` に目印を足して回す）。
-- E2E: 印 → popup → 解決済み → ファイルに `status: resolved` が書かれる、を 1 本（`references/build/interaction.md` の E2E の注意も同じ）。
+- E2E: 印 → popup → 解決済み → ファイルに `status: resolved` が書かれる、を 1 本（`references/setup/web/optional/interaction.md` §13 の E2E の注意も同じ）。

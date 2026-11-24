@@ -1,0 +1,22 @@
+{
+  "title": "コードベースのレポート",
+  "kind": "コードベースのレポート",
+  "file": "report.html",
+  "subtitle": "agent が調べてまとめた現状。違うところはクリックしてコメントしてください。",
+  "questions": [
+    { "id": "q1", "text": "状態管理の置き場所をどちらにそろえますか？", "recommend": "vm",
+      "options": [ { "value": "vm", "label": "ViewModel にそろえる", "detail": "今の 8 割がこの形" }, { "value": "store", "label": "共通の store に寄せる" } ] }
+  ],
+  "sections": [
+    { "id": "overview", "title": "1. 概要", "blocks": [
+      { "type": "table", "label": "基本情報", "columns": [ { "key": "item", "label": "項目" }, { "key": "value", "label": "内容" } ],
+        "rows": [ { "id": "language", "item": "言語", "value": "Kotlin 2.2" }, { "id": "frameworks", "item": "主なフレームワーク", "value": "Compose, Koin" }, { "id": "targets", "item": "ターゲット", "value": "Android" } ] }
+    ] },
+    { "id": "roles", "title": "2. 役割", "blocks": [
+      { "type": "p", "text": "画面ごとに ViewModel を 1 つ置き、データは Repository から読む。" },
+      { "type": "list", "label": "守ること", "items": [ "ViewModel から Context を参照しない", "Repository はインタフェースで受ける" ] },
+      { "type": "callout", "tone": "warn", "text": "feature/settings だけ古い MVP の形が残っている。" },
+      { "type": "details", "summary": "根拠のファイル", "blocks": [ { "type": "list", "items": [ "app/src/main/java/.../HomeViewModel.kt", "feature/settings/src/.../SettingsPresenter.kt" ] } ] }
+    ] }
+  ]
+}
