@@ -62,8 +62,15 @@ export function check(dir) {
     if (m.manifest_version !== 3) errors.push('manifest.json: manifest_version は 3 にしてください');
     for (const k of ['name', 'version']) if (typeof m[k] !== 'string' || !m[k]) errors.push(`manifest.json: ${k} が要ります`);
     if (m.background?.service_worker !== 'background.js') warnings.push('manifest.json: background.service_worker が background.js ではありません（ボタンで content.js を入れるのは background.js）');
-    const war = (m.web_accessible_resources ?? []).some((w) => (w.resources ?? []).some((r) => r === 'vendor/*' || r.startsWith('vendor/')));
-    if (!war) errors.push('manifest.json: web_accessible_resources に vendor/* が要ります（content.js が import する）');
+    const war = (m.web_accessible_resources ?? []).filter((w) => (w.resources ?? []).some((r) => r === 'vendor/*' || r.startsWith('vendor/')));
+    if (!war.length) errors.push('manifest.json: web_accessible_resources に vendor/* が要ります（content.js が import する）');
+    else {
+      // vendor を読めるのは matches に当たるページだけ。外れたページではボタンを押しても入らない（e2e で確かめた）
+      const matches = war.flatMap((w) => w.matches ?? []);
+      const all = matches.includes('<all_urls>') || matches.includes('*://*/*') || (matches.includes('http://*/*') && matches.includes('https://*/*'));
+      if (!matches.length) errors.push('manifest.json: vendor/* を公開する web_accessible_resources に matches がありません（["<all_urls>"] にしてください）');
+      else if (!all) warnings.push(`manifest.json: vendor/* を公開する matches が ${matches.join(', ')} だけです。ほかのサイトではボタンを押しても入りません（どのページでも使うなら ["<all_urls>"]）`);
+    }
     for (const need of ['activeTab', 'scripting', 'clipboardWrite']) if (!(m.permissions ?? []).includes(need)) errors.push(`manifest.json: permissions に ${need} が要ります（activeTab: 押したタブに入る / scripting: content.js を入れる / clipboardWrite: ページの許可なしでコピーする）`);
     const broad = [...(m.host_permissions ?? []), ...(m.content_scripts ?? []).flatMap((c) => c.matches ?? [])].filter((p) => p === '<all_urls>' || p.startsWith('*://*/') || p.startsWith('http://*/') || p.startsWith('https://*/'));
     if (broad.length) warnings.push(`manifest.json: どのサイトにも入る権限があります（${broad.join(', ')}）。ボタンを押したタブにだけ入る activeTab で足りないか確かめてください`);

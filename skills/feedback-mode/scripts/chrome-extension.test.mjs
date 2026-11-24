@@ -60,6 +60,25 @@ test('check: 足りない権限・vendor の読み込み口・広すぎる権限
   assert.ok(check(d).errors.some((e) => /vendor\/feedback-core\.mjs: ありません/.test(e)));
 });
 
+test('check: vendor を公開する matches が狭いと警告、無いと誤り', () => {
+  const d = tmp();
+  create(d);
+  const write = (matches) => {
+    const m = JSON.parse(read(d, 'manifest.json'));
+    m.web_accessible_resources = [{ resources: ['vendor/*'], ...(matches && { matches }), use_dynamic_url: true }];
+    fs.writeFileSync(path.join(d, 'manifest.json'), JSON.stringify(m));
+    return check(d);
+  };
+  let r = write(['https://example.com/*']);
+  assert.deepEqual(r.errors, []);
+  assert.ok(r.warnings.some((w) => /https:\/\/example\.com\/\* だけ/.test(w)), r.warnings.join('\n'));
+  assert.equal(run('check', d).status, 0, '狭めるのは人の選択なので落とさない');
+  r = write(['http://*/*', 'https://*/*']);
+  assert.ok(!r.warnings.some((w) => /matches/.test(w)), 'http と https の両方なら全部のサイト');
+  r = write(undefined);
+  assert.ok(r.errors.some((e) => /matches がありません/.test(e)), r.errors.join('\n'));
+});
+
 test('cli: 使い方の誤りは 2', () => {
   assert.equal(run().status, 2);
   assert.equal(run('build', 'x').status, 2);

@@ -60,7 +60,7 @@ skill を更新したら `node "$E" sync <置き場所>` で `vendor/` だけを
 
 - `activeTab` + `scripting`: ボタンを押したタブにだけ、その時だけ入る。どのサイトにも常に入る権限（`host_permissions`・`content_scripts` の `<all_urls>`）は持たない。`check` は広い権限があれば警告する。
 - `clipboardWrite`: ページの許可なしでコピーするため。外すと「コピーしました」と出るのにクリップボードが空になった。
-- `web_accessible_resources` の `vendor/*`（`use_dynamic_url`）: `content.js` が `import(chrome.runtime.getURL(...))` で読むため。
+- `web_accessible_resources` の `vendor/*`（`matches: ["<all_urls>"]`・`use_dynamic_url`）: `content.js` が `import(chrome.runtime.getURL(...))` で読むため。`matches` に当たらないページでは読み込めず、ボタンを押しても入らない（`https://example.com/*` に狭めると他のサイトで入らず、`http://127.0.0.1/*` に狭めるとどのポートの 127.0.0.1 でも入ることを確かめた）。自分の開発サーバだけで使うなら狭めてよい。`check` は狭いと警告し、`matches` が無いと落ちる。
 - `chrome://`・Chrome ウェブストアのページには入れない（`background.js` が警告を出すだけ）。
 
 ## 5. この環境の注意
