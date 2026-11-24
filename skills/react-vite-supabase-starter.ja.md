@@ -1,5 +1,7 @@
 # react-vite-supabase-starter
 
+[English](./react-vite-supabase-starter.md)
+
 React + Vite + TypeScript + Tailwind CSS v4 + shadcn/ui + TanStack Router + TanStack Query + Supabase のスタックで新規 Web アプリをスキャフォールドする。
 
 ## インストール
@@ -57,7 +59,7 @@ scripts/scaffold.sh --name <project> --app-name "<アプリ名>" --primary "#RRG
         └── hooks/            # 汎用 Hook (useDebounce 等)
 ```
 
-スキャフォールド直後から `pnpm test` / `pnpm build` / `pnpm lint` が全て通る。
+スキャフォールド直後から `pnpm test` / `pnpm build` / `pnpm lint` がすべて通る。
 
 ## 主要パターン
 

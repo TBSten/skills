@@ -1,5 +1,7 @@
 # intellij-plugin-dev
 
+[日本語](./intellij-plugin-dev.ja.md)
+
 A tooling & workflow reference for developing IntelliJ Platform / Android Studio plugins with minimal human effort, agent-driven. It captures the knowledge distilled from building a plugin with a Jewel/Compose tool window + a Kotlin Analysis API frontend + gutter line markers.
 
 ## Core idea

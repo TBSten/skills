@@ -1,5 +1,7 @@
 # exploratory-nightly-verification
 
+[日本語](./exploratory-nightly-verification.ja.md)
+
 A 60-minute single-shot exploratory verification of a Kotlin project's `main` branch.
 
 ## Install

@@ -1,5 +1,7 @@
 # pr-fix-loop
 
+[日本語](./pr-fix-loop.ja.md)
+
 One loop pass that drives **multiple GitHub PRs to green in parallel** — CI-failure triage plus
 review-comment handling, in a single mechanical sweep.
 

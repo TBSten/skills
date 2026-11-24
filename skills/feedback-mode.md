@@ -1,5 +1,7 @@
 # feedback-mode
 
+[日本語](./feedback-mode.ja.md)
+
 Build a **debug-only feedback mode** into your app, and let Claude Code triage the feedback it collects.
 
 [![Demo: picking a heading on an Astro docs site and sending a comment](./feedback-mode-demo.gif)](./feedback-mode-demo.mp4)
@@ -96,7 +98,7 @@ It also covers the other direction (agent → human):
 | O10 Memos | — | — | 📝 | — | — | — | — | — | — |
 | O11 Remember options | 🧩 | 🧩 | — | 🧩 | 🧩 | — | — | — | — |
 
-✅ template code exists and was run on that platform　🧩 template code exists, but that feature was not run on that platform　📝 recipe only (no code; a recipe used in real use)　— not available
+✅ template code exists and was run on that platform · 🧩 template code exists, but that feature was not run on that platform · 📝 recipe only (no code; a recipe used in real use) · — not available
 
 CMP Desktop was not operated by hand in a window (the same screen was driven by a UI test to send a record). Physical mobile devices (USB Android, iOS) are not verified.
 
@@ -104,5 +106,20 @@ See `references/spec/features.md` for what each feature does, and the top of eac
 
 ## Maturity and known limitations
 
-Status is **Experimental**. Verified: the core (`node:test` 36 passing + 1 skipped over memory / file / HTTP Sinks), the TypeScript core (vitest 32), `review.mjs` (`node:test` 19), `decisions.py` (unittest 21), `watch-inbox.mjs` (`node:test` 8), and each adapter by actually running a minimal app with the templates copied as-is: DOM and React 19 + Vite 7 in headless Chromium (including html2canvas screenshots), Astro 7 (a real Starlight site and a minimal project), Electron 38 (Playwright `_electron` under xvfb), Tauri 2 (tauri-driver under xvfb on Linux), Android Compose (emulator, API 36.1), Compose Multiplatform (Android emulator, iOS simulator, wasmJs in Chrome; Desktop up to sending one record from a UI test), and iOS SwiftUI (iOS 26.2 simulator). Physical Android (USB) and iOS devices are not verified yet. Each run also checked the production artifact with `check-no-feedback-in-prod.sh`.
+Status is **Experimental**. Verified by tests:
+
+- Core: `node:test` 36 passing + 1 skipped over memory / file / HTTP Sinks
+- TypeScript core: vitest 32
+- `review.mjs`: `node:test` 19, `decisions.py`: unittest 21, `watch-inbox.mjs`: `node:test` 8
+
+Each adapter was verified by actually running a minimal app with the templates copied as-is.
+
+- DOM and React 19 + Vite 7 in headless Chromium (including html2canvas screenshots)
+- Astro 7 (a real Starlight site and a minimal project)
+- Electron 38 (Playwright `_electron` under xvfb), Tauri 2 (tauri-driver under xvfb on Linux)
+- Android Compose (emulator, API 36.1)
+- Compose Multiplatform (Android emulator, iOS simulator, wasmJs in Chrome; Desktop up to sending one record from a UI test)
+- iOS SwiftUI (iOS 26.2 simulator)
+
+Physical Android (USB) and iOS devices are not verified yet. Each run also checked the production artifact with `check-no-feedback-in-prod.sh`.
 Only things that were actually run are included. Each adapter file starts with what was verified and on which versions. Always check the production artifact before release.

@@ -1,5 +1,7 @@
 # contribute-batch
 
+[日本語](./contribute-batch.ja.md)
+
 A Claude Code skill for triaging multiple pieces of project knowledge into skills / rules / prompts and contributing them to the [TBSten/skills](https://github.com/TBSten/skills) repository in a single pull request.
 
 ## Install
@@ -30,7 +32,7 @@ contribute batch: CLAUDE.md と .claude/rules/ の知見を仕分けして PR �
 2. **Triages** each piece into skill / rule / prompt (or skip) and confirms the plan with you
 3. **Prepares a workspace** via the bundled `scripts/setup-workspace.sh` (clone + working branch, idempotent)
 4. **Creates artifacts in parallel** with subagents (max 5), each following the repository's contribute guides
-5. **Integrates** the results: updates the README tables, runs self-reviews, commits in meaningful units, and creates **one PR**
+5. **Integrates** the results: updates the README tables, runs self-reviews (including the docs check `scripts/docs-check/check.sh`), commits in meaningful units, and creates **one PR**
 
 ## Requirements
 

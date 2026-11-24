@@ -1,5 +1,7 @@
 # react-vite-supabase-starter
 
+[日本語](./react-vite-supabase-starter.ja.md)
+
 Scaffold a new web application with React + Vite + TypeScript + Tailwind CSS v4 + shadcn/ui + TanStack Router + TanStack Query + Supabase.
 
 ## Install

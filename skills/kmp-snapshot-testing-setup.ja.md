@@ -47,9 +47,9 @@ catalog alias の整合) とビルド確認を行う。
 | `core/testing/snapshot` | build.gradle.kts (テンプレート), ProjectConfig, shouldMatchSnapshot, StateHolderSnapshotPbtSpec, LogicSnapshotPbtSpec, KotlinCodeFormat, PBT ユーティリティ |
 | `ui/core/testing` | build.gradle.kts (テンプレート), ComposeSnapshotPbtSpec, runComposableSnapshotTest |
 
-どちらのモジュールも install script が `settings.gradle.kts` への include 追記と
-version catalog (`gradle/libs.versions.toml` の kotest / turbine / kotlinx-serialization /
-coroutines-test エントリ) への追記まで行う。
+どちらのモジュールも、install script が `settings.gradle.kts` への include と
+version catalog への追記まで行う。catalog に足すのは `gradle/libs.versions.toml` の
+kotest / turbine / kotlinx-serialization / coroutines-test のエントリ。
 
 ### シェルスクリプト
 

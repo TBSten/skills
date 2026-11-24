@@ -136,7 +136,7 @@ gh skill install tbsten/skills status-board
 
 </td>
 <td>🧪 Experimental</td>
-<td>Collapse work state (PRs, issues, local branches, open questions) into one dependency graph + kanban HTML</td>
+<td>Put PRs, issues, branches and open questions in one dependency graph + kanban</td>
 </tr>
 <tr>
 <td>🟢 Kotlin / Android App Development</td>
@@ -266,7 +266,7 @@ gh skill install tbsten/skills react-vite-supabase-starter
 
 </td>
 <td>🧪 Experimental</td>
-<td>Create a React + Vite + Tailwind v4 + shadcn/ui + TanStack + Supabase web app project</td>
+<td>Scaffold a React + Vite + Tailwind v4 + shadcn/ui + TanStack + Supabase web app</td>
 </tr>
 <tr>
 <td>⚫️ Git / GitHub</td>
@@ -344,7 +344,7 @@ gh skill install tbsten/skills feedback-mode
 
 </td>
 <td>🧪 Experimental</td>
-<td>Debug-only in-app feedback mode plus a Claude Code loop to triage the feedback, a Review flow where a human answers agent findings with buttons, and recorded decisions</td>
+<td>Add a debug-only in-app feedback mode and let Claude Code work through it</td>
 </tr>
 </table>
 

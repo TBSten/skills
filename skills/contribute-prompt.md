@@ -1,5 +1,7 @@
 # contribute-prompt
 
+[日本語](./contribute-prompt.ja.md)
+
 A Claude Code skill for contributing project knowledge to the [TBSten/skills](https://github.com/TBSten/skills) repository as a one-shot prompt.
 
 ## Install
@@ -29,7 +31,7 @@ contribute prompt: このスキャフォールド手順をワンショットプ�
 1. **Collects knowledge** from the current project (CLAUDE.md, rules, skills, codebase)
 2. **Organizes** the knowledge into a self-contained one-shot prompt
 3. **Clones** TBSten/skills to a temp directory
-4. **Creates** `prompts/<name>/PROMPT.md`, detail docs, and README rows following the repository's conventions
+4. **Creates** `prompts/<name>/PROMPT.md`, detail docs, and README rows following the repository's conventions, and passes the docs check (`scripts/docs-check/check.sh`)
 5. **Creates a PR** against TBSten/skills and validates its title/body format
 
 ## Requirements

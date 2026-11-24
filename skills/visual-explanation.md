@@ -39,7 +39,7 @@ it into the repository.
 |---|---|
 | Setup (once) | Install the rule, then `scripts/setup-pr-template.sh` creates a PR template or prints the snippet to merge into the existing one |
 | 1. Choose | Pick a format from the rule's table (Before / After, timeline, one-page summary, GIF, diff, `<details>` output, or nothing); `references/formats.md` maps it to template parts |
-| 2. Draw | Decide the one sentence and the diagram type for each image ("1 枚の作り方" in `references/formats.md`). Copy `assets/template.html` outside the repo and write one `<section id>` per image, from real runs and data |
+| 2. Draw | Decide the one sentence and the diagram type for each image (`1 枚の作り方` in `references/formats.md`). Copy `assets/template.html` outside the repo and write one `<section id>` per image, from real runs and data |
 | 3. Capture | `scripts/capture.mjs` screenshots each section in light and dark at 420px wide, scale 3, and prints `WARN:` for a missing, duplicated or over-40-character heading and for horizontal overflow. Where screen recording is impossible (cloud sessions), draw real logs frame by frame and join them with `scripts/make-gif.sh` |
 | 4. Attach | `scripts/attach-pr-assets.sh` commits the images to `.github/pr-assets/`, removes them in the next commit, and prints SHA-pinned URLs (public: `raw.githubusercontent.com`, private: `blob/<sha>/...?raw=true`) |
 | 5. Check | `scripts/check-body.mjs` fails when the body has no visual (only ```` ```diff ```` counts among code blocks), the first visual is outside the "What I did" / "Background" section, an image has no alt (or a file-name alt), a URL is pinned to a branch instead of a SHA, or URL styles are mixed |
@@ -54,9 +54,14 @@ it into the repository.
 | `setup-pr-template.sh [<repo-root>]` | repository | `CREATED` / `ALREADY` / `NEEDS_MERGE` per template (incl. `PULL_REQUEST_TEMPLATE/` dirs) + snippet |
 | `check-body.mjs [--no-visual] <body.md \| ->` | PR / ticket body | `OK` or `NG:` lines (exit 1) |
 
-`attach-pr-assets.sh` refuses to run on `main` / `master` / `develop`, on a detached HEAD, with
-other staged changes, with file names outside `[A-Za-z0-9._-]`, or when a name collides with an input
-or an existing file in `.github/pr-assets/`. Pass `--no-visual` to `check-body.mjs` for CI-only or
+`attach-pr-assets.sh` refuses to run when any of these holds:
+
+- the branch is `main` / `master` / `develop`, or HEAD is detached
+- other changes are staged
+- a file name has characters outside `[A-Za-z0-9._-]`
+- a name collides with another input or an existing file in `.github/pr-assets/`
+
+Pass `--no-visual` to `check-body.mjs` for CI-only or
 config-only changes, where the format table allows no image. `capture.mjs` uses only Chrome / Chromium's headless command line (no npm packages);
 set `CHROME_PATH` if it cannot find the browser.
 

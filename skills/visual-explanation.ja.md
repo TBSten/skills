@@ -42,7 +42,7 @@ curl -fsSL https://rules.tbsten.me/i | bash -s -- visual-explanation
 | 4. 添付する | `scripts/attach-pr-assets.sh` が画像を `.github/pr-assets/` にコミットし、次のコミットで消し、SHA 固定 URL を出す (公開: `raw.githubusercontent.com`、非公開: `blob/<sha>/...?raw=true`) |
 | 5. 検証する | `scripts/check-body.mjs` が、見た目が無い (コードブロックは ```` ```diff ```` だけ数える)・1 つ目の見た目が「何をしたか」/「背景」の節に無い・alt が無い (ファイル名のまま)・URL がブランチ名・URL の形が混在、を NG にする |
 
-## Scripts
+## スクリプト
 
 | script | 入力 | 出力 |
 |---|---|---|
@@ -52,7 +52,12 @@ curl -fsSL https://rules.tbsten.me/i | bash -s -- visual-explanation
 | `setup-pr-template.sh [<repo-root>]` | リポジトリ | テンプレートごとに `CREATED` / `ALREADY` / `NEEDS_MERGE` (`PULL_REQUEST_TEMPLATE/` ディレクトリも対象) + snippet |
 | `check-body.mjs [--no-visual] <body.md \| ->` | PR / チケットの本文 | `OK` か `NG:` 行 (終了コード 1) |
 
-`attach-pr-assets.sh` は `main` / `master` / `develop`・detached HEAD・他にステージ済みの変更がある・ファイル名に `[A-Za-z0-9._-]` 以外がある・入力同士や `.github/pr-assets/` の既存ファイルと名前が衝突する、のどれかなら実行を断る。
+`attach-pr-assets.sh` は、次のどれかに当てはまると実行を断る。
+
+- ブランチが `main` / `master` / `develop`、または detached HEAD
+- ほかにステージ済みの変更がある
+- ファイル名に `[A-Za-z0-9._-]` 以外の文字がある
+- 入力どうし、または `.github/pr-assets/` の既存ファイルと名前が衝突する
 CI だけ・設定だけの変更 (見せ方の表で画像なしでよいもの) は `check-body.mjs` に `--no-visual` を付ける。
 `capture.mjs` は Chrome / Chromium の headless コマンドだけで撮る (npm パッケージは要らない)。
 見つからないときは `CHROME_PATH` に実行ファイルのパスを入れる。

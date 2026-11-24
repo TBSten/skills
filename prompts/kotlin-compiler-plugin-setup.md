@@ -20,7 +20,11 @@ Fetch https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/prompts/ko
 ## What it does
 
 - Confirms project name, group ID, plugin ID, setup scope, and Kotlin/Java versions before starting
-- Sparse-clones the repo and runs `scripts/scaffold.sh` as-is (no manual transcription), which generates the full multi-module project from the `example/` skeleton — settings + version catalog, buildSrc convention plugins, compiler-plugin with AutoService + KSP registration classes (CommandLineProcessor / CompilerPluginRegistrar, `supportsK2 = true`, no-op IR transformer, FIR registrar), KMP runtime, gradle-plugin wrapper (KotlinCompilerPluginSupportPlugin), a kctfork + Kotest unit test, and JVM/KMP integration tests using `kotlinCompilerPluginClasspath` — with every name/package/ID replaced
+- Sparse-clones the repo and runs `scripts/scaffold.sh` as-is (no manual transcription), which generates the following from the `example/` skeleton with every name/package/ID replaced
+  - settings + version catalog, buildSrc convention plugins
+  - compiler-plugin with AutoService + KSP registration classes (CommandLineProcessor / CompilerPluginRegistrar, `supportsK2 = true`, no-op IR transformer, FIR registrar)
+  - KMP runtime, gradle-plugin wrapper (KotlinCompilerPluginSupportPlugin)
+  - a kctfork + Kotest unit test, and JVM/KMP integration tests using `kotlinCompilerPluginClasspath`
 - Reviews the generated files (plugin ID, package, versions, replacement leftovers)
 - Verifies the build (`jvmTest` + integration test runs) and optionally guides multi-Kotlin-version support strategies
 

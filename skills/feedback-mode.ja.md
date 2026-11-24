@@ -1,5 +1,7 @@
 # feedback-mode
 
+[English](./feedback-mode.md)
+
 アプリに **debug ビルド限定のフィードバックモード** を組み込み、溜まったフィードバックを Claude Code に消化させる。
 
 [![デモ: Astro の docs サイトで見出しを選んでコメントを送る](./feedback-mode-demo.gif)](./feedback-mode-demo.mp4)
@@ -34,13 +36,13 @@ references は **タイミング別** に分け、setup はさらに **プラッ
 
 | 向き | 道具 | 中身 |
 |---|---|---|
-| agent → 人 | **Review** | agent がレビュー・チェックで見つけた指摘を `<Inbox>/review/*.md` に書き、人は画面の印と popup（または チャット）で読んで「解決済みにする / 直さない / 直してもらう / 人が足した選択肢」で答える。指摘には `impact`（ユーザ影響の有無）と `recommend`（ボタンごとの推奨度）を付ける。cli は `scripts/review.mjs` |
+| agent → 人 | **Review** | agent がレビュー・チェックで見つけた指摘を `<Inbox>/review/*.md` に書き、人は画面の印と popup（または チャット）で読んで「解決済みにする / 直さない / 直してもらう / 人が足した選択肢」で答える。指摘には `impact`（ユーザー影響の有無）と `recommend`（ボタンごとの推奨度）を付ける。cli は `scripts/review.mjs` |
 | 人の答え → 次の回 | **判断の記録** | 「直さない・このまま・後で・方針」を git の `.claude/feedback-decisions/` に溜め、次の回は照らしてから指摘を出す（同じことを二度聞かない）。`scripts/decisions.py` |
 | 人 → agent（agent が作った HTML） | **静的な HTML のフィードバック** | agent が作る 1 枚のレポート・チェックリストに、人が項目を選んでコメント（Shift で複数・引用・書きかけ保持）し、回答とまとめてコピーしてチャットに貼る。宛先は HTML の中の JSON の場所 |
 
 ## 使うべきタイミング
 
-- Web（DOM・React・Astro）・Desktop（Electron / Tauri）・モバイル（Android の Compose・Compose Multiplatform・iOS の SwiftUI）アプリで、画面・状態・ログ・スクリーンショット付きのフィードバックを Claude Code の作業に流したい
+- 画面・状態・ログ・スクリーンショット付きのフィードバックを Claude Code の作業に流したい。対象は Web（DOM・React・Astro）・Desktop（Electron / Tauri）・モバイル（Android の Compose・Compose Multiplatform・iOS の SwiftUI）のアプリ
 - フィードバックの保存先（ローカルのファイル・開発機への HTTP 受け口・Issue トラッカー・クラウドストレージ）を変えたい
 - フォルダに溜まったフィードバックを、サブエージェントで一通り対応させたい
 - すでに debug menu・開発者向け画面があり、そこにフィードバックの入口を足したい
@@ -99,5 +101,20 @@ CMP の Desktop は、ウィンドウを人が操作するところまでは確�
 
 ## 成熟度と既知の制約
 
-status は **Experimental**。確認済み: コア（メモリ・ファイル・HTTP の Sink に対する `node:test` 36 件 + skip 1 件）、TypeScript 版のコア（vitest 32 件）、`review.mjs`（`node:test` 19 件）、`decisions.py`（unittest 21 件）、`watch-inbox.mjs`（`node:test` 8 件）。adapter は、ひな形をそのままコピーした最小アプリを実際に動かして確かめた: DOM と React 19 + Vite 7（ヘッドレスの Chromium。html2canvas のスクショも）、Astro 7（Starlight の実サイトと最小プロジェクト）、Electron 38（xvfb + Playwright の `_electron`）、Tauri 2（Linux の xvfb + tauri-driver）、Android の Compose（エミュレータ API 36.1）、Compose Multiplatform（Android エミュレータ・iOS シミュレータ・wasmJs の Chrome。Desktop は UI テストで 1 件送るまで）、iOS の SwiftUI（iOS 26.2 シミュレータ）。USB の Android 実機と iOS 実機はまだ確かめていない。どれも本番の成果物を `check-no-feedback-in-prod.sh` で検査した。
+status は **Experimental**。テストで確かめたもの:
+
+- コア: メモリ・ファイル・HTTP の Sink に対する `node:test` 36 件 + skip 1 件
+- TypeScript 版のコア: vitest 32 件
+- `review.mjs`: `node:test` 19 件、`decisions.py`: unittest 21 件、`watch-inbox.mjs`: `node:test` 8 件
+
+adapter は、ひな形をそのままコピーした最小アプリを実際に動かして確かめた。
+
+- DOM と React 19 + Vite 7（ヘッドレスの Chromium。html2canvas のスクショも）
+- Astro 7（Starlight の実サイトと最小プロジェクト）
+- Electron 38（xvfb + Playwright の `_electron`）、Tauri 2（Linux の xvfb + tauri-driver）
+- Android の Compose（エミュレータ API 36.1）
+- Compose Multiplatform（Android エミュレータ・iOS シミュレータ・wasmJs の Chrome。Desktop は UI テストで 1 件送るまで）
+- iOS の SwiftUI（iOS 26.2 シミュレータ）
+
+USB の Android 実機と iOS 実機はまだ確かめていない。どれも本番の成果物を `check-no-feedback-in-prod.sh` で検査した。
 実際に動かしたものだけを載せている。各 adapter のファイルの冒頭に、何の版で何を確かめたかを書いてある。リリース前には必ず成果物を検査すること。
