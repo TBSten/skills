@@ -7,10 +7,13 @@ description: >
   開発・レビューでは 30+ 既存プラグインの前例から Extension Point と設計パターンを提案し、
   compat module / source set separation でサポート Kotlin バージョンを追加・削除する。
   hint 関数パターンで別モジュールのアノテーション付きクラスを集める scaffold も作る。
+  compiler plugin / FIR / IR / KotlinCompilerPluginSupportPlugin / compat module が話題に出たら必ず使う。
   Use when requested: "Kotlin compiler plugin を作りたい", "compiler plugin のプロジェクトをセットアップ",
-  "compiler plugin をレビュー", "FIR と IR どっちでやるべき？", "compiler plugin の前例を探して",
-  "Kotlin X.Y.Z をサポートしたい", "compat module を追加したい", "NoSuchMethodError が出た",
-  "Compiler Plugin でクラスを収集したい", "cross-module discovery を実装したい".
+  "compiler plugin の unit test を書きたい", "compiler plugin をレビュー", "FIR と IR どっちでやるべき？",
+  "compiler plugin の前例を探して", "Extension Point の選択は正しいか", "Kotlin X.Y.Z をサポートしたい",
+  "compat module を追加したい", "CI matrix に Kotlin を追加", "kctfork を更新したい",
+  "新しい Kotlin パッチで NoSuchMethodError が出た", "タンデム vs 独立リリース",
+  "Compiler Plugin でクラスを収集したい", "ServiceLoader のコンパイル時版", "cross-module discovery を実装したい".
 metadata:
   status: Experimental
   group: Kotlin ライブラリ/ツール開発
