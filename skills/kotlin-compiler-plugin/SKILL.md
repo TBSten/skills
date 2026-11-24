@@ -29,7 +29,7 @@ Kotlin Compiler Plugin の作業を 3 つのモードに振り分け、モード
 
 | モード | こういう依頼 | 読む guide |
 |---|---|---|
-| **setup** | compiler plugin のプロジェクトを新規に作る (compiler-plugin / gradle-plugin / runtime / kctfork テスト / integration-test / CI・release)。1 JAR で複数 Kotlin 版に対応する基盤を最初から入れる | `references/setup/guide.md` |
+| **setup** | compiler plugin のプロジェクトを新規に作る (compiler-plugin / gradle-plugin / runtime / kctfork テスト / integration-test / CI・release)。1 JAR で複数 Kotlin 版に対応する基盤が必要なら、scaffold 後に guide の Step 4 (上級・任意) で追加する | `references/setup/guide.md` |
 | **dev** | 既存 / 構想中の plugin の設計相談 (FIR と IR どちらか、どの Extension Point か)、前例調査、実装レビュー、サポート Kotlin バージョンの追加・削除、版差分による失敗 (NoSuchMethodError 等) の対処 | `references/dev/guide.md` |
 | **collector** | 複数モジュールに散ったアノテーション付きクラスをコンパイル時に集める (コンパイル時 ServiceLoader、hint 関数パターン、KSP では見えない cross-module 収集) | `references/collector/guide.md` |
 
