@@ -113,5 +113,5 @@ buffer へ書き、空ならファイル自体を開かない (空の `package` 
 
 - [`kotlin-maven-central-publish`](./kotlin-maven-central-publish.ja.md) — このスキルが意図的に
   重複させていない Maven Central 公開の完全手順 (GPG・secrets・Sonatype)
-- [`kotlin-compiler-plugin-setup`](./kotlin-compiler-plugin-setup.ja.md) — symbol processor ではなく
+- [`kotlin-compiler-plugin`](./kotlin-compiler-plugin.ja.md) — symbol processor ではなく
   Kotlin **compiler** plugin (FIR/IR) を作る場合

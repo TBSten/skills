@@ -92,7 +92,7 @@ Maven Central の Secrets、IntelliJ plugin は下記の専用 skill に任せ�
 ## 関連スキル
 
 - [`ksp-plugin-setup`](./ksp-plugin-setup.ja.md) — KSP の symbol processor を作る時
-- [`kotlin-compiler-plugin-setup`](./kotlin-compiler-plugin-setup.ja.md) / [`kotlin-compiler-plugin-dev`](./kotlin-compiler-plugin-dev.ja.md) — Kotlin の compiler plugin を作る時
+- [`kotlin-compiler-plugin`](./kotlin-compiler-plugin.ja.md) — Kotlin の compiler plugin を作る時
 - [`kmp-snapshot-testing-setup`](./kmp-snapshot-testing-setup.ja.md) — snapshot テストと property-based テスト
 - [`kotlin-maven-central-publish`](./kotlin-maven-central-publish.ja.md) — publish 用の GPG 鍵と GitHub Secrets
 - [`intellij-plugin-dev`](./intellij-plugin-dev.ja.md) — IntelliJ plugin を作る時

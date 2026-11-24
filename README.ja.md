@@ -192,29 +192,16 @@ gh skill install tbsten/skills kmp-snapshot-testing-setup
 </tr>
 <tr>
 <td>🟣 Kotlin ライブラリ/ツール開発</td>
-<td><a href="./skills/kotlin-compiler-plugin-setup.ja.md">kotlin-compiler-plugin-setup</a></td>
+<td><a href="./skills/kotlin-compiler-plugin.ja.md">kotlin-compiler-plugin</a></td>
 <td>
 
 ```sh
-gh skill install tbsten/skills kotlin-compiler-plugin-setup
+gh skill install tbsten/skills kotlin-compiler-plugin
 ```
 
 </td>
 <td>🧪 Experimental</td>
-<td>基本的なツールチェインを揃えた Kotlin Compiler Plugin プロジェクト のセットアップ</td>
-</tr>
-<tr>
-<td></td>
-<td><a href="./skills/kotlin-compiler-plugin-dev.ja.md">kotlin-compiler-plugin-dev</a></td>
-<td>
-
-```sh
-gh skill install tbsten/skills kotlin-compiler-plugin-dev
-```
-
-</td>
-<td>🧪 Experimental</td>
-<td>Kotlin Compiler Plugin の開発・レビューを支援する</td>
+<td>Kotlin compiler plugin の新規作成・開発・レビュー・Kotlin 版対応・モジュール横断収集</td>
 </tr>
 <tr>
 <td></td>
@@ -267,19 +254,6 @@ gh skill install tbsten/skills ksp-plugin-setup
 </td>
 <td>🧪 Experimental</td>
 <td>KSP プラグインを 3 モジュール構成でスキャフォールド</td>
-</tr>
-<tr>
-<td></td>
-<td><a href="./skills/collector-compiler-plugin.ja.md">collector-compiler-plugin</a></td>
-<td>
-
-```sh
-gh skill install tbsten/skills collector-compiler-plugin
-```
-
-</td>
-<td>🧪 Experimental</td>
-<td>モジュール横断でアノテーション付きクラスをコンパイル時に収集する Compiler Plugin の scaffold</td>
 </tr>
 <tr>
 <td>🔵 Web フロントエンド</td>

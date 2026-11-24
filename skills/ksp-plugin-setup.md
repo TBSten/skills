@@ -114,5 +114,5 @@ message. Parsing inside `process()` makes it a reported COMPILATION_ERROR instea
 
 - [`kotlin-maven-central-publish`](./kotlin-maven-central-publish.md) — the full Maven Central setup
   (GPG, secrets, Sonatype) this skill deliberately does not duplicate
-- [`kotlin-compiler-plugin-setup`](./kotlin-compiler-plugin-setup.md) — for a Kotlin **compiler**
+- [`kotlin-compiler-plugin`](./kotlin-compiler-plugin.md) — for a Kotlin **compiler**
   plugin (FIR/IR) rather than a symbol processor
