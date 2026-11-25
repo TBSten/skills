@@ -116,6 +116,7 @@ metadata:
 ```
 
 description は第三者視点で記述する (例: "This skill should be used when..." ではなく具体的な機能説明)。
+description に角括弧 (`<` `>`) を書かない。claude.ai の plugin 同期で XML タグ扱いの警告になり、角括弧を除いた文で保存される。プレースホルダは `{name}` のように波括弧で書く (`scripts/marketplace/generate.sh` が検出する)。
 
 #### status (必須)
 
@@ -254,7 +255,7 @@ scripts/marketplace/generate.sh
 2. SKILL.md の `description` を変更した場合は `skills/<skill-name>.md` / `<skill-name>.ja.md` の説明も同期する
 3. 詳細ドキュメント (`skills/<skill-name>.md`, `<skill-name>.ja.md`) も必要に応じて更新する
 4. リソースの追加・削除も同ディレクトリ内で行う
-5. `name` (ディレクトリ名)・`metadata.group`・`metadata.status` を変えた、または skill を追加・削除した場合は Step 6 の `scripts/marketplace/generate.sh` を実行して `.claude-plugin/marketplace.json` を更新する (description や本文だけの変更なら不要)
+5. `name` (ディレクトリ名)・`metadata.group`・`metadata.status` を変えた、または skill を追加・削除した場合は Step 6 の `scripts/marketplace/generate.sh` を実行して `.claude-plugin/marketplace.json` を更新する (description や本文だけの変更なら再生成は不要。ただし description を変えたら `--check` で角括弧が無いことを確かめる)
 6. skill の振る舞いを変えたら、`evals/` があれば合わせて直す (古い期待値のままだと次の skill-eval で失敗扱いになる)。直したら `scripts/skill-eval/check-evals.sh --skill <name>` を通す
 
 ## 注意点
