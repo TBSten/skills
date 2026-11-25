@@ -1,12 +1,12 @@
 ---
 pm_id: "36"
 pm_phase: H
-title: Make
+title: Make or Buy分析表
 project: {{project}}
 updated: {{date}}
 ---
 
-# Make
+# Make or Buy分析表
 
 > 判断したいこと: 外部サービスを使うべき？
 
