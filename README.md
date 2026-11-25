@@ -139,6 +139,19 @@ gh skill install tbsten/skills status-board
 <td>Collapse work state (PRs, issues, local branches, open questions) into one dependency graph + kanban HTML</td>
 </tr>
 <tr>
+<td></td>
+<td><a href="./skills/pm.md">pm</a></td>
+<td>
+
+```sh
+gh skill install tbsten/skills pm
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>Diagnose PM trouble, advise, and draft only the docs that help decide (46 kinds)</td>
+</tr>
+<tr>
 <td>🟢 Kotlin / Android App Development</td>
 <td><a href="./skills/kotlin-tuple.md">kotlin-tuple</a></td>
 <td>
