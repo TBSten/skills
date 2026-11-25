@@ -1,0 +1,10 @@
+schema_version: "1.1"
+name: kickoff-multi-phase
+expected_outcome: |
+  立ち上げ (A) と開発範囲決め (B) の両方にまたがる状況として読み、プロジェクト憲章 01 に加えて
+  スコープ定義書 04・ユーザーストーリーマップ 05・優先順位マトリクス 07 などの B の資料も選ぶ。
+  pm.mjs new で docs/pm/ に作り、依頼文の目的・成功条件・期間・予算・候補機能で埋める。
+  MVP の判断は目的 (感想を残す習慣) に照らして候補を分け、「友達の本棚」「SNS 共有」などを Out of Scope か後回しにする理由を書く。
+  個人開発なので RACI や EVM など重い資料は作らない。最後に sync / check を通して報告する。
+context:
+  scaffold_script: place-files.sh

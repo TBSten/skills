@@ -1,0 +1,23 @@
+[
+  {"query": "なんかよく分からんけどプロジェクトの運用がうまく行ってない。仕様がころころ変わるし、誰が決めたのかも曖昧。PM 目線で助言してほしい", "should_trigger": true},
+  {"query": "今から新しいモバイルアプリのプロジェクトを立ち上げる。プロジェクト憲章とゴールツリーを作りながら目的と成功条件を整理したい", "should_trigger": true},
+  {"query": "営業から SNS ログインを v1.0 に入れてと言われた。入れた場合と入れない場合の影響を、工数・品質・スケジュールまで整理したい", "should_trigger": true},
+  {"query": "v1.0 がいつ終わるか上司に聞かれて答えられない。作業を洗い出して三点見積りして、どこが遅れるとまずいか知りたい", "should_trigger": true},
+  {"query": "来週リリース予定なんだけど、本当に出していいのか判断したい。Go / No-Go の基準を一緒に作って", "should_trigger": true},
+  {"query": "KMP と Flutter とネイティブで技術選定を迷ってる。評価軸に重みをつけて比較して、決めた理由も ADR に残したい", "should_trigger": true},
+  {"query": "スプリントが終わったので KPT で振り返りをしたい。この 2 週間の PR と issue から材料を集めて", "should_trigger": true},
+  {"query": "このプロジェクト、外部の決済 SaaS と KYC API に依存してるんだけど、止まったときのリスクを洗い出して対策を決めておきたい", "should_trigger": true},
+  {"query": "MVP の範囲が決まらなくて揉めてる。候補機能を効果と工数で並べて、やる・やらないを決めたい", "should_trigger": true},
+  {"query": "iOS のことが分かるのが 1 人だけで、その人が休むと全部止まる。チームの体制をどう見直せばいいか相談したい", "should_trigger": true},
+  {"query": "/pm リリースが終わって 1 か月。成果が出たのか評価して、次のプロジェクトに持ち越す教訓をまとめたい", "should_trigger": true},
+  {"query": "今抱えてる PR とブランチの状況を 1 枚の HTML ボードにして、何が止まってるか一目で分かるようにして", "should_trigger": false},
+  {"query": "このリポジトリに Markdown のローカルチケット管理を入れて、バグチケットを 1 枚作って", "should_trigger": false},
+  {"query": "GitHub Projects のボードに Status と Priority のカスタムフィールドを追加する gh コマンドを教えて", "should_trigger": false},
+  {"query": "package.json の依存ライブラリを最新にして、壊れたテストを直して", "should_trigger": false},
+  {"query": "PR #42 の CI が落ちてるので、レビューコメントも含めて全部直るまで修正して push して", "should_trigger": false},
+  {"query": "Kotlin で Gantt チャートを描画する Compose のコンポーネントを実装して。タスクの開始日と期間を受け取る形で", "should_trigger": false},
+  {"query": "IPA のプロジェクトマネージャ試験の午後 II 論文の書き方のコツを教えて。合格者の構成例が知りたい", "should_trigger": false},
+  {"query": "このディレクトリの README を英語に翻訳して、日本語版と同期させて", "should_trigger": false},
+  {"query": "Jira の JQL で、今スプリントの未完了チケットを担当者別に出すクエリを書いて", "should_trigger": false},
+  {"query": "pm2 で Node.js のサーバーをデーモン化して、再起動時に自動で立ち上がるように設定して", "should_trigger": false}
+]
