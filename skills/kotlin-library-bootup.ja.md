@@ -2,15 +2,15 @@
 
 [English](./kotlin-library-bootup.md) | [DeepWiki](https://deepwiki.com/TBSten/skills)
 
-普通の Kotlin / Kotlin Multiplatform ライブラリのプロジェクトを、実運用している OSS ライブラリ群
-(koma-strict、katachi、compose-preview-lab、cream など) が到達した構成で一式立ち上げる
-[Claude Code](https://docs.anthropic.com/en/docs/claude-code) skill です。convention plugin、
+普通の Kotlin / Kotlin Multiplatform ライブラリのプロジェクトを一式立ち上げる
+[Claude Code](https://docs.anthropic.com/en/docs/claude-code) skill。構成は、実運用している OSS ライブラリ群
+(koma-strict、katachi、compose-preview-lab、cream など) が到達したものに合わせる。convention plugin、
 バイナリ互換性チェック、Maven Central への publish、integrationTest ビルド、docs サイト、CI までを生成し、
-ローカルでビルド・テスト・publish が通ることまで確認します。
+ローカルでビルド・テスト・publish が通ることまで確認する。
 
 テンプレートのコピー、ターゲット別ブロックの取捨、プレースホルダーの置換、rename、置換漏れの検証といった
-機械的な作業は `scripts/scaffold.sh` が決定的に行います。`scripts/verify.sh` は Gradle wrapper を用意し、
-ビルド確認を実行してログを `.local/tmp/` に保存します。エージェントは入力値の確認、script の実行、結果のレビューだけを担います。
+機械的な作業は `scripts/scaffold.sh` が決定的に行う。`scripts/verify.sh` は Gradle wrapper を用意し、
+ビルド確認を実行してログを `.local/tmp/` に保存する。エージェントは入力値の確認、script の実行、結果のレビューだけを担う。
 
 ## クイックスタート
 
@@ -34,8 +34,8 @@ Kotlin Multiplatform ライブラリを新規作成して
 | `full` | standard + macOS / watchOS / tvOS / Linux / Windows / androidNative / wasmWasi |
 | `jvm` | `kotlin("jvm")` のみ。Android / Apple の設定と CI job は生成しない |
 
-macOS では Xcode が入っている時だけ Apple ターゲットを有効にするので、Command Line Tools だけの環境でもビルドできます。
-`-PenableAppleTargets=true` / `-PdisableAppleTargets=true` で上書きできます。
+macOS では Xcode が入っている時だけ Apple ターゲットを有効にするので、Command Line Tools だけの環境でもビルドできる。
+`-PenableAppleTargets=true` / `-PdisableAppleTargets=true` で上書きできる。
 
 ## セットアップされる内容
 
@@ -74,20 +74,20 @@ macOS では Xcode が入っている時だけ Apple ターゲットを有効に
 
 ### 重複させずに委譲する
 
-このスキルが作るのは普通のライブラリの土台だけです。KSP processor、compiler plugin、snapshot テスト、
-Maven Central の Secrets、IntelliJ plugin は下記の専用 skill に任せます。ここで生成したプロジェクトの上に併用できます。
+このスキルが作るのは普通のライブラリの土台だけ。KSP processor、compiler plugin、snapshot テスト、
+Maven Central の Secrets、IntelliJ plugin は下記の専用 skill に任せる。ここで生成したプロジェクトの上に併用できる。
 
 ### すべての選択に出典がある
 
 生成物の各手法は実運用しているライブラリから持ってきたもので、どこから来たか・なぜあるかを
-`references/techniques.md` に記録しています。
+`references/techniques.md` に記録している。
 
 ### KMP での Kotlin の床
 
-`coreLibrariesVersion` を下げると JS / Wasm のコンパイルが壊れます。stdlib の klib がコンパイラの ABI と
-一致している必要があるためです。そこで JS / Wasm だけ stdlib をコンパイラの版で解決し、公開 metadata は床のまま
-にしています。利用側に必要な Kotlin は、JVM / Android なら 2.2 以上、JS / Wasm / Native ならライブラリのビルドに
-使った版以上です。
+`coreLibrariesVersion` を下げると JS / Wasm のコンパイルが壊れる。stdlib の klib がコンパイラの ABI と
+一致している必要があるため。そこで JS / Wasm だけ stdlib をコンパイラの版で解決し、公開 metadata は床のまま
+にしている。利用側に必要な Kotlin は、JVM / Android なら 2.2 以上、JS / Wasm / Native ならライブラリのビルドに
+使った版以上。
 
 ## 関連スキル
 

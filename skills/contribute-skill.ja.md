@@ -1,5 +1,7 @@
 # contribute-skill
 
+[English](./contribute-skill.md)
+
 プロジェクトの知見を [TBSten/skills](https://github.com/TBSten/skills) リポジトリに登録するための Claude Code スキル。
 
 ## インストール
@@ -29,7 +31,7 @@ gh skill install tbsten/skills contribute-skill
 1. 現プロジェクトから知見を **収集** (CLAUDE.md, ルール, スキル, コードベース)
 2. 知見を構造化されたスキル形式に **整理**
 3. TBSten/skills を一時ディレクトリに **clone**
-4. リポジトリの規約に従いスキルファイルを **作成**
+4. リポジトリの規約に従いスキルファイルを **作成** し、ドキュメントの機械検査 (`scripts/docs-check/check.sh`) を通す
 5. TBSten/skills に対して **PR を作成**
 
 ## 前提条件

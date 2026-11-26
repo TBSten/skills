@@ -1,5 +1,7 @@
 # contribute-batch
 
+[English](./contribute-batch.md)
+
 プロジェクトで得た複数の知見を skill / rule / prompt に仕分けし、[TBSten/skills](https://github.com/TBSten/skills) リポジトリへ 1 つの PR としてまとめて登録するための Claude Code スキル。
 
 ## インストール
@@ -30,7 +32,7 @@ contribute batch: CLAUDE.md と .claude/rules/ の知見を仕分けして PR �
 2. 知見ごとに skill / rule / prompt / 見送りを **仕分け** し、結果を表で提示して確認
 3. 同梱の `scripts/setup-workspace.sh` で **ワークスペースを準備** (clone + 作業ブランチ、冪等)
 4. 成果物ごとに subagent を **並列起動** (最大 5) し、リポジトリの contribute ガイドに従い作成
-5. README 更新・セルフレビュー・意味単位の commit を経て **1 つの PR を作成**
+5. README 更新・セルフレビュー (ドキュメントの機械検査 `scripts/docs-check/check.sh` を含む)・意味単位の commit を経て **1 つの PR を作成**
 
 ## 前提条件
 

@@ -357,7 +357,7 @@ gh skill install tbsten/skills feedback-mode
 
 </td>
 <td>🧪 Experimental</td>
-<td>debug ビルド専用のアプリ内フィードバックモードを構築し、溜まった記録を Claude Code が消化する。agent の指摘を人がボタンで答える Review と、判断の記録も扱う</td>
+<td>debug ビルド限定のフィードバックモードをアプリに組み込み、溜まった記録を Claude Code に消化させる</td>
 </tr>
 </table>
 
@@ -433,7 +433,7 @@ curl -fsSL https://rules.tbsten.me/i | \
 
 <summary> ルールのインストール方法 </summary>
 
-ルールは `rules/install.sh` 経由でインストールします。`RULE.md` を `.claude/rules/` に、参照ファイルをカレントディレクトリにダウンロードします。
+ルールは `rules/install.sh` 経由でインストールする。`RULE.md` を `.claude/rules/` に、参照ファイルをカレントディレクトリにダウンロードする。
 
 ```sh
 curl -fsSL https://rules.tbsten.me/i | \
@@ -464,7 +464,7 @@ curl -fsSL https://rules.tbsten.me/i | bash -s -- kmp-snapshot-testing -r=abc123
 
 ## 💬 利用可能なプロンプト
 
-スキルをインストールせずに使える一回限りのプロンプト集。「実行」列のプロンプトをコピーして Claude Code に貼り付けると実行できます。
+スキルをインストールせずに使える一回限りのプロンプト集。「実行」列のプロンプトをコピーして Claude Code に貼り付けると実行できる。
 
 <table>
 <tr>

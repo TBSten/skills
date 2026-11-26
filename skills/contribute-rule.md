@@ -1,5 +1,7 @@
 # contribute-rule
 
+[日本語](./contribute-rule.ja.md)
+
 A Claude Code skill for contributing project knowledge to the [TBSten/skills](https://github.com/TBSten/skills) repository as a rule.
 
 ## Install
@@ -29,7 +31,7 @@ contribute rule: このプロジェクトのコミットメッセージルール
 1. **Collects knowledge** from the current project (CLAUDE.md, rules, codebase)
 2. **Organizes** the knowledge into a rule format (RULE.md)
 3. **Clones** TBSten/skills to a temp directory
-4. **Creates** rule files following the repository's conventions
+4. **Creates** rule files following the repository's conventions and passes the docs check (`scripts/docs-check/check.sh`)
 5. **Creates a PR** against TBSten/skills with all required files
 
 ## Requirements

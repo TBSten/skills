@@ -71,6 +71,13 @@ TBSten の Claude Code skills・rules コレクションリポジトリ。
 - 各 skill / rule / prompt は、実行時に AI が判断する範囲を最小限にする。決定的な作業 (scaffold・コピー・置換・コマンド列・検証) は script に寄せる
 - 判断基準・種別ごとの script 同梱方法・PR 前チェックリストは `.claude/skills/contribute-{skill,rule,prompt}.md` の「AI 責務最小化 (script 化)」セクションを正とする
 
+## 人間向けドキュメントの品質
+
+- 対象は人間が読む README.md / README.ja.md と `skills|rules|prompts/<name>.md` / `.ja.md`。SKILL.md・RULE.md・PROMPT.md などの AI 向けファイルは対象外
+- 日本語版が原本、英語版はその訳。書き方の決まり (原本と訳・文章の方針 🆖/🆗・人に直されたときの足し方) は `.claude/rules/docs-writing.md` を正とする
+- 機械検査は `scripts/docs-check/check.sh` (日英の組と構成・リンク・README と SSoT の一致・言い換え辞書 `prh.yml`・である調・文の長さ)。CI `.github/workflows/docs-check.yml` が PR ごとに `--base` 付きで回す
+- 機械では見ない内容の食い違い (詳細ドキュメントと SKILL.md・同梱ファイル) は `.claude/skills/review-docs.md` でレビューする
+
 ## library-watch (自動更新 PR)
 
 - `.github/workflows/library-watch.yml` が約 2 週に 1 回 TBSten の Kotlin ライブラリの差分を調べ、関連 skill を更新する PR (ブランチ `library-watch/auto`) を作る

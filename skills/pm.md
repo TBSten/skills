@@ -1,5 +1,7 @@
 # pm
 
+[日本語](./pm.ja.md)
+
 **A skill that diagnoses project trouble, gives advice, and creates only the documents that help you decide.**
 You can start from "something is off", "we are kicking off a project", or "can we release?".
 

@@ -107,7 +107,7 @@ scripts/marketplace/generate.sh
 
 ### Step 4: 差分確認と報告
 
-1. `git diff` で変更内容を確認し、SSoT と README のステータスが一致していることを確認する
+1. `scripts/docs-check/check.sh` を実行し、`OK readme` (SSoT と README のステータス・置き場所の一致) を含めて `OK docs-check` になることを確かめる。`git diff` で変更内容も見る
 2. 変更ファイル一覧と新旧 status をユーザーに報告する
 3. commit / push は **ユーザーの明示的な許可を得てから** 実行する
 

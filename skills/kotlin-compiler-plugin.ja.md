@@ -50,7 +50,7 @@ kotlin-compiler-plugin/
 
 ### 動作の仕組み
 
-スキルは `scripts/scaffold.sh` を実行する。この script は `example/` の完全なプロジェクト skeleton — build ファイルに加え、実パッケージ `com.example.compilerpluginsetup` + `Example` クラス prefix で書かれた Kotlin ソース (CommandLineProcessor、CompilerPluginRegistrar、IR/FIR extension、no-op transformer、kctfork テストヘルパー、integration test のエントリポイント) — をコピーし、プロジェクト名・パッケージ・Group ID・Plugin ID に置換・rename する。エージェントは script をそのまま実行し (ドキュメントからのコード転記はしない)、生成結果をレビューしてビルドを確認する。
+スキルは `scripts/scaffold.sh` を実行する。この script は `example/` の完全なプロジェクト skeleton をコピーし、プロジェクト名・パッケージ・Group ID・Plugin ID に置換・rename する。skeleton は build ファイルと Kotlin ソースからなる。Kotlin ソースは実パッケージ `com.example.compilerpluginsetup` と `Example` クラス prefix で書いてある。中身は CommandLineProcessor、CompilerPluginRegistrar、IR/FIR extension、no-op transformer、kctfork テストヘルパー、integration test のエントリポイント。エージェントは script をそのまま実行し (ドキュメントからのコード転記はしない)、生成結果をレビューしてビルドを確認する。
 
 ### セットアップされるもの
 
@@ -95,7 +95,7 @@ Compiler plugin は `META-INF/services/` ファイルで登録される (`@AutoS
 - `CommandLineProcessor` — Plugin ID を宣言
 - `CompilerPluginRegistrar` — FIR + IR extension を登録
 
-#### FIR vs IR
+#### FIR と IR の使い分け
 
 - **FIR (Frontend)** — バリデーション、正確な行番号でのエラー報告
 - **IR (Backend)** — バイトコード/JS/Native 出力に影響する実際のコード変換
@@ -109,7 +109,7 @@ kctfork でインメモリコンパイルし、リフレクションで結果を
 
 ### 関連
 
-- [kitakkun/kotlin-compiler-plugin-skills](https://github.com/kitakkun/kotlin-compiler-plugin-skills) (MIT, kitakkun 作) — scaffold 後、bootstrap・公式テストインフラ (diagnostic / box テスト。kctfork と併用)・Gradle plugin 連携・複数バージョン対応の guide を参照する。内容はコピーせず raw URL で参照し、ローカルにインストール済みならそちらを優先する
+- [kitakkun/kotlin-compiler-plugin-skills](https://github.com/kitakkun/kotlin-compiler-plugin-skills) (MIT, kitakkun 作) — scaffold 後に参照する guide。bootstrap・公式テストインフラ (diagnostic / box テスト。kctfork と併用)・Gradle plugin 連携・複数バージョン対応を扱う。内容はコピーせず raw URL で参照し、ローカルにインストール済みならそちらを優先する
 - [dev モード](#dev-モード) — 30+ プラグインの前例調査、FIR/IR Extension 向け kitakkun guide の全トピック対応表、サポート Kotlin バージョンの追加・削除
 
 ## dev モード
@@ -120,7 +120,7 @@ kctfork でインメモリコンパイルし、リフレクションで結果を
 2. **Extension Point を選ぶ** — 要件に合った FIR/IR Extension Point を提案する
 3. **実装をレビュー** — 確立されたパターンとベストプラクティスをもとに実装を評価する
 4. **複数バージョン対応をレビュー** — compat module layer / source set separation のアーキテクチャ評価、タンデム vs 独立リリース戦略の判断支援
-5. **サポート Kotlin バージョンの追加・削除** — compat module の delegation pattern / capability flag / reflection shim / SSOT 駆動 CI matrix / kctfork version mapping を駆使して新バージョン対応を導入
+5. **サポート Kotlin バージョンの追加・削除** — 新しいバージョンへの対応を入れる。使う手法は compat module の delegation pattern / capability flag / reflection shim / SSOT 駆動 CI matrix / kctfork version mapping
 6. **ソースコードを深掘り** — deepwiki MCP を使って参考プラグインの最新ソースコードを読む
 
 ### こんなときに使う
@@ -180,7 +180,7 @@ kctfork でインメモリコンパイルし、リフレクションで結果を
 
 ### 関連
 
-- [kitakkun/kotlin-compiler-plugin-skills](https://github.com/kitakkun/kotlin-compiler-plugin-skills) (MIT, kitakkun 作) — FIR/IR Extension の API、公式テストインフラ、デバッグ、Gradle 連携、複数バージョン対応のトピック別 guide (Kotlin 2.4.x 基準、Kotlin compiler ソースで裏取り済み)。本 skill の `references/dev/details/` が「どの既存プラグインが同じことをしているか」、kitakkun guide が「現行 API でどう書くか」を担う。内容はコピーせずリンクで参照する (`references/dev/external-kitakkun-skills.md` 参照)
+- [kitakkun/kotlin-compiler-plugin-skills](https://github.com/kitakkun/kotlin-compiler-plugin-skills) (MIT, kitakkun 作) — トピック別の guide。FIR/IR Extension の API、公式テストインフラ、デバッグ、Gradle 連携、複数バージョン対応を扱う (Kotlin 2.4.x 基準、Kotlin compiler のソースで裏取り済み)。本 skill の `references/dev/details/` が「どの既存プラグインが同じことをしているか」、kitakkun guide が「現行 API でどう書くか」を担う。内容はコピーせずリンクで参照する (`references/dev/external-kitakkun-skills.md` 参照)
 
 ## collector モード
 
@@ -241,7 +241,7 @@ fun collectApiHandlers(): List<KClass<*>>
 | `registerFunctionAsMetadataVisible()` | hint 関数を downstream モジュールに公開 |
 | `referenceFunctions(CallableId)` | downstream で hint 関数を検索 |
 
-#### metro vs koin
+#### metro と koin の比較
 
 | 観点 | metro | koin |
 |---|---|---|
