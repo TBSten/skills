@@ -51,7 +51,7 @@ gh skill install tbsten/skills kotlin-maven-central-publish
 
 その他の参照ドキュメント:
 
-- `references/convention-options.md` — convention plugin の選択肢。buildSrc と build-logic の違い、署名方式、artifactId / coordinates、Dokka による javadoc を扱う。バージョンの SSoT (catalog か `VERSION_NAME` か、SNAPSHOT を使わない運用) と、古い Kotlin 利用者向けの `languageVersion` / `apiVersion` の床、Gradle plugin モジュールの公開 (`GradlePlugin`) も書いてある
+- `references/convention-options.md` — convention plugin の選択肢。buildSrc と build-logic の違い、署名方式、artifactId / coordinates、Dokka による javadoc を扱う。バージョンの SSoT (catalog か `VERSION_NAME` か、SNAPSHOT を使わない運用) と、古い Kotlin 利用者向けの `languageVersion` / `apiVersion` の床も書いてある。Gradle plugin モジュールの公開 (`GradlePlugin`) も扱う
 - `references/release-flow.md` — ワークフローの設計理由と、tag push 駆動 + GitHub Release 自動生成の代替フロー
 - `references/troubleshooting.md` — よくあるエラー (classpath 競合、`SonatypeHost` 削除、`is final`、401、`BAD_PASSPHRASE` など)
 
