@@ -31,7 +31,11 @@ Fetch https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/prompts/re
 The prompt fetches the whole skill directory from GitHub via sparse clone instead of a local skill install:
 
 - [skills/react-vite-supabase-starter/scripts/scaffold.sh](https://github.com/TBSten/skills/blob/main/skills/react-vite-supabase-starter/scripts/scaffold.sh) — Scaffold script (single source of truth for setup)
-- [skills/react-vite-supabase-starter/example/](https://github.com/TBSten/skills/tree/main/skills/react-vite-supabase-starter/example) — Self-contained template: `root/` (workspace root files), `web/` (app package.json, index.html, env template), `config/` (vite, tsconfig, eslint, vitest, playwright, shadcn `components.json`), `src/` (entry points, router with auth guards, auth context, pages, layout/shared components, data access hooks, `lib/` utilities, theme CSS, sample test)
+- [skills/react-vite-supabase-starter/example/](https://github.com/TBSten/skills/tree/main/skills/react-vite-supabase-starter/example) — Self-contained template
+  - `root/`: workspace root files
+  - `web/`: app package.json, index.html, env template
+  - `config/`: vite, tsconfig, eslint, vitest, playwright, shadcn `components.json`
+  - `src/`: entry points, router with auth guards, auth context, pages, layout/shared components, data access hooks, `lib/` utilities, theme CSS, sample test
 - [skills/react-vite-supabase-starter/references/data-layer-pattern.md](https://github.com/TBSten/skills/blob/main/skills/react-vite-supabase-starter/references/data-layer-pattern.md) — Data access layer pattern (query/mutation hooks, query key conventions)
 
 ## Related

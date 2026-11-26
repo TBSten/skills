@@ -1,5 +1,7 @@
 # navigation3-main-tab
 
+[English](./navigation3-main-tab.md)
+
 Navigation 3 の SceneStrategy を活用した下タブ (BottomNavigation) 管理パターン。Kotlin Multiplatform + Compose プロジェクト向け。
 
 ## インストール
@@ -63,9 +65,9 @@ entry<Home>(
 
 Navigation 3 の公式レシピでは、トップレベルの `Scaffold` で `NavDisplay` を囲み、
 `NavigationBar` をナビゲーショングラフの外側に配置する方法が紹介されている。
-セットアップは簡単だが、**全ての画面が Scaffold の内側に描画される**という大きなデメリットがある。
+セットアップは簡単だが、**すべての画面が Scaffold の内側に描画される**という大きなデメリットがある。
 
-そのため、全画面表示が必要な画面（没入型メディアプレーヤー、オンボーディングフロー、カメラ画面等）の
+そのため、全画面表示が必要な画面（没入型メディアプレーヤー、オンボーディングフロー、カメラ画面など）の
 実装が難しくなる。`NavigationBar` と Scaffold の padding が常に存在するためである。
 ルートに応じてバーを条件付きで非表示にする回避策は複雑さを増し、
 画面遷移時に視覚的なグリッチを引き起こす可能性がある。

@@ -18,11 +18,11 @@ gh skill install tbsten/skills simple-loader
 SimpleLoader を追加して、非同期データ読み込みの状態管理を実装して。
 ```
 
-プロジェクト構造を検出し、設定を確認した上で全ファイルを生成します。
+プロジェクト構造を検出し、設定を確認した上で全ファイルを生成する。
 
 ## 特徴
 
-SimpleLoader は、非同期データ読み込みを sealed interface ベースのステートマシンで管理します。初回読み込み (initialLoad) とリフレッシュ (refresh) を明確に区別します。
+SimpleLoader は、非同期データ読み込みを sealed interface ベースのステートマシンで管理する。初回読み込み (initialLoad) とリフレッシュ (refresh) を明確に区別する。
 
 ### 生成ファイル
 
@@ -33,8 +33,8 @@ SimpleLoader は、非同期データ読み込みを sealed interface ベース�
 | `SimpleLoaderExt.kt` | 拡張関数 (`dataOrNull`, `dataOr`, `exceptionOrNull`) | 任意 |
 | `SimpleLoaderLogger.kt` | `fun interface` によるプラガブルなロギング | 必須 (core が参照) |
 | `IllegalStateTransitionHandler.kt` | 不正遷移時のポリシー (throw/warning/noOp) | 必須 (core が参照) |
-| `SimpleLoaderWithPartialData.kt` | ローディング中の部分データ対応 (プログレス等) | 任意 |
-| UI ヘルパー (`View.kt`, `AnimatedView.kt` 等) | Compose UI での状態表示とアニメーション遷移 | 任意 |
+| `SimpleLoaderWithPartialData.kt` | ローディング中の部分データ対応 (プログレスなど) | 任意 |
+| UI ヘルパー (`View.kt`, `AnimatedView.kt` など) | Compose UI での状態表示とアニメーション遷移 | 任意 |
 
 ### 状態遷移図
 
@@ -95,7 +95,7 @@ val fakeLoader = FakeSimpleLoader<List<String>>(
 
 ## リポジトリ
 
-このスキルは [TBSten/skills](https://github.com/TBSten/skills) の一部です。
+このスキルは [TBSten/skills](https://github.com/TBSten/skills) の一部。
 
 ```
 skills/simple-loader/

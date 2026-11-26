@@ -1,5 +1,7 @@
 # github-get-attachment-url
 
+[English](./github-get-attachment-url.md)
+
 ローカルファイルを GitHub にアップロードし、Issue を作成せずに `user-attachments` URL を取得する。
 
 > [!WARNING]
@@ -28,7 +30,7 @@ gh skill install tbsten/skills github-get-attachment-url
 ## 仕組み
 
 1. `scripts/run.sh` が Python 3.11+ を検出し、初回のみ Playwright `1.61.0` + Chromium を専用のユーザーキャッシュ(`$XDG_CACHE_HOME/github-get-attachment-url`)へインストールする。インストールは `--allow-install` を渡したときだけ実行され、初回は `setup_required` を返して確認を求める。
-2. `scripts/upload.py` が可視の Chromium で `https://github.com/TBSten/actions-test/issues/new` を開き、GitHub への手動サインインを最大 5 分待ち(プロファイルはローカルに保存され次回以降に再利用)、各ファイルを Issue 下書きに添付してアップロード完了を待つ。
+2. `scripts/upload.py` が可視の Chromium で `https://github.com/TBSten/actions-test/issues/new` を開き、GitHub への手動サインインを最大 5 分待つ (プロファイルはローカルに保存し、次回以降も使う)。サインインできたら、各ファイルを Issue の下書きに添付してアップロードの完了を待つ。
 3. 判定に使うのは stdout の JSON だけで、画面上のブラウザー状態は解釈しない。
 
 ## 使い方

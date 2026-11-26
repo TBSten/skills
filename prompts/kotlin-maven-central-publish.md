@@ -20,7 +20,10 @@ Fetch https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/prompts/ko
 ## What it does
 
 - Collects project info (group ID, version, license, GitHub URL, developer info, target modules)
-- Downloads and runs [`scripts/setup-publish.sh`](https://github.com/TBSten/skills/blob/main/skills/kotlin-maven-central-publish/scripts/setup-publish.sh) via `curl`, which idempotently adds the Vanniktech Maven Publish plugin to `gradle/libs.versions.toml`, generates the convention plugin in buildSrc or build-logic (`publish-convention.gradle.kts`) with placeholders already filled in (GitHub URL, license, and developer info are auto-inferred from `git remote` and the `LICENSE` file), and creates the `.github/workflows/publish.yml` (release-driven publish) and `publish-check.yml` (PR `publishToMavenLocal`) workflows
+- Downloads and runs [`scripts/setup-publish.sh`](https://github.com/TBSten/skills/blob/main/skills/kotlin-maven-central-publish/scripts/setup-publish.sh) via `curl`. It does these in one go
+  - Idempotently adds the Vanniktech Maven Publish plugin to `gradle/libs.versions.toml`
+  - Generates `publish-convention.gradle.kts`, the convention plugin in buildSrc or build-logic. GitHub URL, license, and developer info are inferred from `git remote` and the `LICENSE` file
+  - Creates the `.github/workflows/publish.yml` (release-driven publish) and `publish-check.yml` (PR `publishToMavenLocal`) workflows
 - Applies the convention plugin to each module to be published (agent's judgment)
 - Verifies locally with `./gradlew publishToMavenLocal`
 - Downloads and runs [`scripts/setup-secrets.sh`](https://github.com/TBSten/skills/blob/main/skills/kotlin-maven-central-publish/scripts/setup-secrets.sh), an interactive script covering GPG key generation, keyserver upload, private key export, and registering all 5 GitHub Secrets via `gh secret set` — the only manual step left is issuing the Sonatype Central Portal user token

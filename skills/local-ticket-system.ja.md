@@ -1,5 +1,7 @@
 # local-ticket-system
 
+[English](./local-ticket-system.md)
+
 Markdown ベースのローカルチケット管理システム。
 
 ## インストール
@@ -41,7 +43,7 @@ gh skill install tbsten/skills local-ticket-system
 └── deferred/             # 後回しチケット（意図的に将来に先送り）
 ```
 
-## Scripts
+## スクリプト
 
 決定的な作業は同梱 script が担当する (読解・再実装せずそのまま実行する)。失敗時は stderr に `ERROR:` / `WHY:` / `FIX:` が出力される。
 
@@ -61,7 +63,7 @@ gh skill install tbsten/skills local-ticket-system
 
 ## チケットのライフサイクル
 
-### task / bug
+### `task` / `bug`
 
 1. **作成** — `.local/ticket/` 直下にチケットを配置
 2. **作業中** — チェックリストを消化しながら実装
@@ -69,12 +71,12 @@ gh skill install tbsten/skills local-ticket-system
 4. **closed** — 動作確認が完了 → `closed/` へ移動
 5. **deferred** — 意図的に後回し → `deferred/` へ移動（再着手の意図あり）
 
-### chapter
+### `chapter`
 
 1. **作成** — `.local/ticket/` 直下にチャプターを配置
 2. **検討中** — スコープや検討事項を詰めていく
 3. **分割** — task / bug チケットに分割する
-4. **archived** — 全ての子チケットが完了 → `archived/` へ移動
+4. **archived** — すべての子チケットが完了 → `archived/` へ移動
 5. **deferred** — 着手を先送りにするとき → `deferred/` へ移動
 
 ### deferred/ のルール

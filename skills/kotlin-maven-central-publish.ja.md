@@ -1,5 +1,7 @@
 # kotlin-maven-central-publish
 
+[English](./kotlin-maven-central-publish.md)
+
 Kotlin/KMP プロジェクトに Maven Central 公開設定を追加するスキル。Vanniktech Maven Publish プラグイン、GPG 署名、GitHub Actions CI/CD を一括セットアップする。
 
 ## インストール
@@ -12,14 +14,19 @@ gh skill install tbsten/skills kotlin-maven-central-publish
 
 このスキルは Kotlin / Kotlin Multiplatform プロジェクトの Maven Central 公開に必要な設定を自動生成する。機械的なセットアップは同梱の 2 つの script が担い、エージェントは script を読解・書き換え・再実装せずそのまま実行する:
 
-- **`scripts/setup-publish.sh`** — version catalog への Vanniktech Maven Publish プラグイン (Gradle wrapper / Kotlin の版から互換バージョンを自動選択) と自ライブラリのバージョンの冪等追記、`buildSrc` または `build-logic` 等の included build への convention plugin (`publish-convention.gradle.kts`) のプレースホルダー置換済み生成（GitHub URL・ライセンス・開発者情報は `git remote` と `LICENSE` ファイルから自動推定）、GitHub Actions ワークフローの生成 (runner は Apple ターゲットの有無で自動選択) を一括で行う。構成に応じて書き換えが必要なプラグイン要求も報告する。再実行しても安全。既存ファイルは `--force` なしで上書きしない。結果は 1 行 JSON で出力
+- **`scripts/setup-publish.sh`** — 次の 3 つを一括で行う。
+  - version catalog に Vanniktech Maven Publish プラグインと自ライブラリのバージョンを冪等に足す。プラグインの版は Gradle wrapper / Kotlin の版から互換のものを選ぶ
+  - `buildSrc` や `build-logic` などの included build に convention plugin (`publish-convention.gradle.kts`) を生成する。GitHub URL・ライセンス・開発者情報は `git remote` と `LICENSE` ファイルから推定して埋める
+  - GitHub Actions ワークフローを生成する。runner は Apple ターゲットの有無で選ぶ
+
+  構成に応じて書き換えが必要なプラグイン要求も報告する。再実行しても安全。既存ファイルは `--force` なしで上書きしない。結果は 1 行 JSON で出力
 - **`scripts/setup-secrets.sh`** — GPG 鍵の生成 → 公開鍵のキーサーバー送信 → 秘密鍵 export → `gh secret set` による 5 つの GitHub Secrets 登録までを自動化する対話 script。残るユーザー手作業は Sonatype Central Portal の User Token 発行だけ。`--dry-run` 対応
 
 ## 生成されるファイル
 
 | ファイル | 説明 |
 |---|---|
-| `<convention-dir>/src/main/kotlin/publish-convention.gradle.kts` | Central Portal 連携・条件付き署名・フラットな artifactId・POM メタデータの convention plugin (`<convention-dir>` は既定 `buildSrc`、`build-logic` 等も可) |
+| `<convention-dir>/src/main/kotlin/publish-convention.gradle.kts` | Central Portal 連携・条件付き署名・フラットな artifactId・POM メタデータの convention plugin (`<convention-dir>` は既定 `buildSrc`、`build-logic` なども可) |
 | `<convention-dir>/build.gradle.kts` | Vanniktech Maven Publish と Kotlin (/ Android) Gradle plugin を convention ビルドの classpath に載せる |
 | `<convention-dir>/settings.gradle.kts` | ルートの version catalog の import と repositories 定義 |
 | `gradle/libs.versions.toml` | Maven Publish プラグインと (任意で) 自ライブラリのバージョンを追加 |
@@ -44,7 +51,7 @@ gh skill install tbsten/skills kotlin-maven-central-publish
 
 その他の参照ドキュメント:
 
-- `references/convention-options.md` — buildSrc と build-logic の違い、署名方式、artifactId / coordinates、バージョンの SSoT (catalog か `VERSION_NAME` か、SNAPSHOT を使わない運用)、Dokka による javadoc、古い Kotlin 利用者向けの `languageVersion` / `apiVersion` 床
+- `references/convention-options.md` — convention plugin の選択肢。buildSrc と build-logic の違い、署名方式、artifactId / coordinates、Dokka による javadoc を扱う。バージョンの SSoT (catalog か `VERSION_NAME` か、SNAPSHOT を使わない運用) と、古い Kotlin 利用者向けの `languageVersion` / `apiVersion` の床も書いてある
 - `references/release-flow.md` — ワークフローの設計理由と、tag push 駆動 + GitHub Release 自動生成の代替フロー
 - `references/troubleshooting.md` — よくあるエラー (classpath 競合、`SonatypeHost` 削除、`is final`、401、`BAD_PASSPHRASE` など)
 

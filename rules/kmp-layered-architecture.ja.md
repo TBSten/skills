@@ -15,11 +15,11 @@ curl -fsSL https://rules.tbsten.me/i | \
 
 ### 2. コーディング開始:
 
-`app/`, `ui/`, `domain/`, `data/` ディレクトリ内のファイルを変更すると、Claude Code が自動的にアーキテクチャドキュメントを読んでから作業します。
+`app/`, `ui/`, `domain/`, `data/` ディレクトリ内のファイルを変更すると、Claude Code が自動的にアーキテクチャドキュメントを読んでから作業する。
 
 ## 動作内容
 
-**パストリガールール** です。4 層のいずれかのコードが変更される際、対応するアーキテクチャドキュメントを事前に読むよう Claude Code に指示します。
+**パストリガールール**。4 層のいずれかのコードが変更される際、対応するアーキテクチャドキュメントを事前に読むよう Claude Code に指示する。
 
 | パスパターン | ドキュメント |
 |---|---|
@@ -30,10 +30,10 @@ curl -fsSL https://rules.tbsten.me/i | \
 
 ### 規約の機械検証 & feature scaffold
 
-規約の遵守を AI の記憶に頼らないために、以下を同梱しています:
+規約の遵守を AI の記憶に頼らないために、以下を同梱している:
 
-- **`docs/architecture/templates/ArchitectureConventionTest.kt`** — [Konsist](https://docs.konsist.lemonappdev.com/) による規約テストのテンプレート。層間依存 (`README.md` の依存図どおりか)、`Providers` サフィックス強制 (`Module` / 単数 `Provider` 禁止)、`Impl` / `Fake` 命名を検証します。jvmTest に配置し、冒頭の TODO 定数を差し替えて使います。
-- **`tools/kmp-layered-architecture/new-feature.sh`** — `docs/architecture/templates/feature/` から `ui/feature/<name>/` (Screen / ViewModel / Navigation) を生成する scaffold script。既存ファイル (settings.gradle.kts, ui/navigation の各ファイル, DI Providers) への追記は自動化できないため、追記すべきスニペットを stdout に印字します (AI または人間が適用):
+- **`docs/architecture/templates/ArchitectureConventionTest.kt`** — [Konsist](https://docs.konsist.lemonappdev.com/) による規約テストのテンプレート。層間依存 (`README.md` の依存図どおりか)、`Providers` サフィックス強制 (`Module` / 単数 `Provider` 禁止)、`Impl` / `Fake` 命名を検証する。jvmTest に配置し、冒頭の TODO 定数を差し替えて使う。
+- **`tools/kmp-layered-architecture/new-feature.sh`** — 新しい feature の scaffold script。`docs/architecture/templates/feature/` から `ui/feature/<name>/` (Screen / ViewModel / Navigation) を生成する。既存ファイル (settings.gradle.kts, ui/navigation の各ファイル, DI Providers) への追記は自動化できない。そのため追記すべきスニペットを stdout に出し、AI または人間が適用する:
 
 ```bash
 bash tools/kmp-layered-architecture/new-feature.sh Home com.example.app.ui.feature.home
@@ -57,4 +57,4 @@ bash tools/kmp-layered-architecture/new-feature.sh Home com.example.app.ui.featu
 
 インストール後、`docs/architecture/` 内のドキュメントをプロジェクト固有のアーキテクチャ方針、命名規則、DI フレームワークに合わせて編集してください。
 
-> **注意:** 再インストールするとインストールされるファイルは上書きされます。`docs/architecture/` や `tools/kmp-layered-architecture/` 以下へのローカルなカスタマイズも上書きされる点に注意してください。
+> **注意:** 再インストールするとインストールされるファイルは上書きされる。`docs/architecture/` や `tools/kmp-layered-architecture/` 以下へのローカルなカスタマイズも上書きされる点に注意する。

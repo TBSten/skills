@@ -1,5 +1,7 @@
 # status-board
 
+[日本語](./status-board.ja.md)
+
 **Collapse everything you have in flight into a single HTML page.** A dependency-graph SVG plus an
 epic-by-epic kanban, built so that "what is waiting on me" and "what is next" read at a glance.
 
@@ -38,7 +40,7 @@ and its kanban band sits inside the parent's band. Folding a parent folds its wh
 and the "all closed" check counts every descendant's tickets.
 The graph alone can be exported as SVG or PNG — and Shift-clicking several
 tickets exports **a view with only those lifted out of the rest** (see below).
-A 全画面 (fullscreen) button expands the graph alone to fill the viewport; press it again or Esc to return.
+A `全画面` (fullscreen) button expands the graph alone to fill the viewport; press it again or Esc to return.
 
 Two things are designed to be unmissable: the 🙋 hexagon (waiting on a human) and the gold
 `NEXT n` flag (the next move).
@@ -90,15 +92,15 @@ When you do want the whole chain, use the explicit trace below.
 
 ## Trace, NEXT tour, and share cards
 
-- **Upstream / downstream trace** — the「⇠ 上流を点灯」/「下流を点灯 ⇢」buttons in the detail
+- **Upstream / downstream trace** — the `⇠ 上流を点灯` / `下流を点灯 ⇢` buttons in the detail
   panel light everything **transitively** reachable from that ticket (everything else sinks).
   In a PR stack this answers "what stalls if this is stuck" and "what is this stuck behind" at a
   glance. Press again, hit Esc, or use the clear button on the graph to exit.
   Shareable via `?trace=up:<id>` / `?trace=down:<id>` in the URL
-- **NEXT tour** — the「▶ NEXT」button (or the `N` key) walks NEXT 1 → 2 → 3 in order, selecting
+- **NEXT tour** — the `▶ NEXT` button (or the `N` key) walks NEXT 1 → 2 → 3 in order, selecting
   and centring each so the detail panel shows the ticket you are reading. After the last step it
   clears the selection and refits the whole graph
-- **Share card** — the「カード」button exports a **1200×630 PNG (OGP aspect ratio)** with the board
+- **Share card** — the `カード` button exports a **1200×630 PNG (OGP aspect ratio)** with the board
   title and timestamp on top and the graph fitted below. Selection and trace highlighting are baked
   in, so a "this part right here" card is one click away
 - **Keyboard** — `/` focuses search, `F` toggles fullscreen, `N` steps the tour, `Esc` backs out

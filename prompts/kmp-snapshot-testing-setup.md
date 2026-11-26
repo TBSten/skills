@@ -24,7 +24,9 @@ Fetch https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/prompts/km
   `--dry-run`, `--force` optional). The idempotent script:
   - Adds Kotest / Turbine / kotlinx-serialization / coroutines-test entries to `gradle/libs.versions.toml`
   - Copies build-logic convention plugins (`convention-kmp-test`, `convention-kmp-snapshot-testing`, `SnapshotReportTask`) with ProjectConfig FQCN / module path substituted
-  - Creates the core testing module (build.gradle.kts + 26 sources: `shouldMatchSnapshot`, `StateHolderSnapshotPbtSpec`, `LogicSnapshotPbtSpec`, `KotlinCodeFormat`, PBT utilities) and the Compose testing module (build.gradle.kts + `ComposeSnapshotPbtSpec`, `runComposableSnapshotTest`), with `settings.gradle.kts` includes and package renaming
+  - Creates the core testing module: build.gradle.kts + 26 sources (`shouldMatchSnapshot`, `StateHolderSnapshotPbtSpec`, `LogicSnapshotPbtSpec`, `KotlinCodeFormat`, PBT utilities)
+  - Creates the Compose testing module: build.gradle.kts + `ComposeSnapshotPbtSpec`, `runComposableSnapshotTest`
+  - Adds the `settings.gradle.kts` includes and renames packages
   - Installs shell scripts for the snapshot diff workflow (`tools/snapshot-diff.sh` + step scripts)
   - Registers the `cleanSnapshotOutputDir` task in the root `build.gradle.kts`
   - Emits a one-line result JSON (conflicts / warnings / manual follow-ups)

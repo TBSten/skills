@@ -109,6 +109,8 @@ PR 作成前に以下を確認する:
 - `rules/<rule-name>.md` (英語) — ルールの概要、適用対象、インストール方法、含まれるファイルの説明
 - `rules/<rule-name>.ja.md` (日本語) — 上記の日本語版
 
+書き方は `.claude/rules/docs-writing.md` に従う。日本語版を先に書き、英語版はそれを訳す (節の構成・コードブロックは日英で 1 対 1)。H1 の直後に相手の言語へのリンク (`[English](./<name>.md)` / `[日本語](./<name>.ja.md)`) を置く。
+
 #### status (必須)
 
 rule の成熟度は **英語詳細ドキュメント `rules/<rule-name>.md` の先頭 frontmatter** に記載する
@@ -199,6 +201,19 @@ curl -fsSL https://rules.tbsten.me/i | bash -s -- <rule-name>
 </tr>
 ````
 
+### Step 4: ドキュメントの検査
+
+人間向けドキュメント (README と詳細ドキュメント) の機械検査を通す。script をそのまま実行する:
+
+```bash
+scripts/docs-check/check.sh --base origin/main
+```
+
+- `OK docs-check` が出れば成功。CI (`.github/workflows/docs-check.yml`) も同じものを回す
+- 言い換え辞書 (`scripts/docs-check/prh.yml`) の指摘は `--fix` で直る。それ以外は ERROR の `fix:` に従って直す
+- 日本語版だけ・英語版だけを変えたと言われたら、もう一方にも同じ変更を入れる (表記だけの修正なら、コミットメッセージに `Docs-Translation-Not-Needed: <パス>` の行を入れる)
+- 内容が実体と合っているか・文章の方針に沿っているかは機械では見ない。気になるときは `.claude/skills/review-docs.md` でレビューする
+
 ## 既存ルールの更新
 
 1. `rules/<rule-name>/RULE.md` を編集する
@@ -206,11 +221,12 @@ curl -fsSL https://rules.tbsten.me/i | bash -s -- <rule-name>
 3. `rules/<rule-name>.md` / `<rule-name>.ja.md` の説明も必要に応じて同期する
 4. `rules/install.sh` は全ルール共通のスクリプトなので、個別ルールの更新では変更不要
 5. ユーザーは同じインストールコマンドを再実行すれば最新版に更新される
+6. Step 4 の `scripts/docs-check/check.sh --base origin/main` を通す
 
 ## 注意点
 
 - rule は Claude Code plugin marketplace (`.claude-plugin/marketplace.json`) には載らない (plugin が扱えるのは skill 等のみ)。rule の追加・更新で marketplace の再生成は不要。ただし新しいグループを作った場合は、そのグループの skill が入る plugin を `scripts/marketplace/plugins.json` に追加しておく (contribute-skill.md の Step 6)
-- `<rule-name>.md` (英語) と `<rule-name>.ja.md` (日本語) は **常に同期して更新** する
+- `<rule-name>.md` (英語) と `<rule-name>.ja.md` (日本語) は **常に同期して更新** する。日本語版が原本で、書き方は `.claude/rules/docs-writing.md`。PR 前に `scripts/docs-check/check.sh` を通す
 - テーブルは HTML `<table>` タグで記述し、Install 列のコマンドは ```sh code block で記載する
 - 参照ファイルのパス設計時は、ユーザーのプロジェクトルートに展開されることを考慮する
 - status は `rules/<rule-name>.md` の frontmatter を SSoT とし、README のステータス列と必ず一致させる (RULE.md には書かない)

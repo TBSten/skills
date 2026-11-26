@@ -1,5 +1,7 @@
 # check-method-level
 
+[English](./check-method-level.md)
+
 **テスト・動作確認の方法がどれくらい強いか**を 9 つの軸で採点し、Verification Score と Level で伝えるスキル。
 「unit test を書いた」「画面を目で見た」「コードを読んで大丈夫そうだった」のような検証を同じ物差しで比べられるようにする。
 
@@ -69,7 +71,7 @@ Verification Score =
 - **2 軸に分けた理由**: 構築コストと実行コストは性質が違う。CI の E2E は構築が高く実行は安い。手動 QA は構築が安く実行が高い
 - **事実ベースで定義した理由**: `low` / `medium` / `high` のような段階は何を medium とするかの判断が AI に委ねられ、ぶれやすい。「何を新しく用意するか」「1 回に何分かかるか」という確認できる事実で選ばせる
 - 見積もりに幅がある場合は `--run-cost=minutes..tens-of-minutes` のように範囲で指定する。スコア軸の中間指定と違い平均は取らず、安い順に並べた幅のまま表示する
-- 2 軸はセットで指定する (片方だけだと exit 2)。金額・保守の手間 (flaky 対応等) は軸に含めていないので、必要なら文章で添える
+- 2 軸はセットで指定する (片方だけだと exit 2)。金額・保守の手間 (flaky 対応など) は軸に含めていないので、必要なら文章で添える
 
 ```text
 $ ... --build-cost=add-case --run-cost=hours..minutes
@@ -105,7 +107,7 @@ Next: scope→integration, env→test, evidence→render-tree
 <details>
 <summary>その他の実行例</summary>
 
-AI が Playwright 等で画面を見て仕様と比較した E2E:
+AI が Playwright などで画面を見て仕様と比較した E2E:
 
 ```text
 $ ... --scope=e2e --env=staging --execution=manual --evidence=screenshot --oracle=spec \

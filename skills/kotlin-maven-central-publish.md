@@ -1,5 +1,7 @@
 # kotlin-maven-central-publish
 
+[日本語](./kotlin-maven-central-publish.ja.md)
+
 Set up Maven Central publishing for Kotlin/KMP projects using Vanniktech Maven Publish plugin, GPG signing, and GitHub Actions CI/CD.
 
 ## Install
@@ -12,7 +14,12 @@ gh skill install tbsten/skills kotlin-maven-central-publish
 
 This skill automates the setup of Maven Central publishing for Kotlin and Kotlin Multiplatform projects. The mechanical setup is done by two bundled scripts, which the agent runs as-is (no reading, rewriting, or reimplementing):
 
-- **`scripts/setup-publish.sh`** — idempotently adds the Vanniktech Maven Publish plugin (version auto-selected from the Gradle wrapper / Kotlin version) and your library version to the version catalog, generates the convention plugin (`publish-convention.gradle.kts`) in `buildSrc` or an included build such as `build-logic` with placeholders already filled in (GitHub URL, license, and developer info are auto-inferred from `git remote` and the `LICENSE` file), and creates the GitHub Actions workflows (runner auto-selected by whether Apple targets exist). It also reports plugin requests that must be rewritten for the chosen layout. Safe to re-run; never overwrites existing files without `--force`; emits a one-line result JSON.
+- **`scripts/setup-publish.sh`** — does these three in one go.
+  - Idempotently adds the Vanniktech Maven Publish plugin and your library version to the version catalog. The plugin version is chosen to match the Gradle wrapper / Kotlin version
+  - Generates the convention plugin (`publish-convention.gradle.kts`) in `buildSrc` or an included build such as `build-logic`. GitHub URL, license, and developer info are inferred from `git remote` and the `LICENSE` file
+  - Creates the GitHub Actions workflows. The runner is chosen by whether Apple targets exist
+
+  It also reports plugin requests that must be rewritten for the chosen layout. Safe to re-run; never overwrites existing files without `--force`; emits a one-line result JSON.
 - **`scripts/setup-secrets.sh`** — interactive script that generates a GPG key, sends the public key to keyservers, exports the private key, and registers all 5 GitHub Secrets via `gh secret set`. The only remaining manual step is issuing the Sonatype Central Portal user token. Supports `--dry-run`.
 
 ## What Gets Generated
@@ -36,9 +43,9 @@ This skill automates the setup of Maven Central publishing for Kotlin and Kotlin
 ## Usage
 
 After installation, invoke with:
-- "Maven Central に公開したい"
+- "Publish this library to Maven Central"
 - "Set up Maven Central publishing"
-- "publishToMavenLocal できるようにして"
+- "Make publishToMavenLocal work"
 
 The skill collects project information, runs `scripts/setup-publish.sh` to generate the configuration files, applies the convention plugin to the modules to publish, and runs `scripts/setup-secrets.sh` to set up GPG keys and GitHub Secrets. `references/gpg-setup.md` and `references/github-secrets.md` serve as fallback manual instructions for environments where the scripts cannot run.
 
