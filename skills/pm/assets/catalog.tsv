@@ -1,0 +1,47 @@
+id	phase	slug	name	core	decision	view	calc
+01	A	project-charter	プロジェクト憲章	1	そもそも何のために作る？	表	
+02	A	goal-tree	ゴールツリー・KPIツリー	1	各機能はどの価値につながる？	flowchart	
+03	A	stakeholder-map	ステークホルダマップ	0	誰の合意・意見・共有が必要？	quadrantChart	
+04	B	scope-statement	スコープ定義書	1	何を作り、何を作らない？	表	
+05	B	user-story-map	ユーザーストーリーマップ	1	最小限でどの体験を成立させる？	表	
+06	B	requirements-traceability	要求トレーサビリティマトリクス	0	要求の実装・テスト漏れはない？	表	
+07	B	impact-effort-matrix	優先順位マトリクス	0	どれから作るべき？	quadrantChart	
+08	C	roadmap	プロジェクトロードマップ	1	大きな節目はいつ？	gantt	
+09	C	wbs	WBS	1	どんな作業が必要？	flowchart	
+10	C	gantt-chart	ガントチャート	0	いつ完成する？	gantt	
+11	C	critical-path	ネットワーク図・クリティカルパス	0	何が遅れるとまずい？	flowchart	cpm
+12	C	estimate	工数・コスト見積り表	1	予算と納期は現実的？	表	pert
+13	C	resource-histogram	リソースヒストグラム	0	人員は足りている？	xychart	
+14	C	pm-plan	プロジェクトマネジメント計画書	0	何を正常とし、いつ誰がどう対処する？	表	
+15	D	raci	RACIマトリクス	1	誰が判断する？	表	
+16	D	skill-matrix	スキルマトリクス	0	特定の人への依存やスキル不足はない？	表	
+17	D	kanban	カンバンボード	0	作業は滞留していない？	表	
+18	D	burndown	バーンダウンチャート	0	このペースで期限に間に合う？	xychart	
+19	D	evm	EVMチャート	0	進捗とコストは計画どおり？	xychart	evm
+20	D	communication-plan	コミュニケーション計画書	1	誰に何をいつ伝える？	表	
+21	E	risk-register	リスク登録簿	1	将来何が問題になりそう？	表	
+22	E	risk-matrix	リスクマトリクス	1	どのリスクに優先して手を打つ？	quadrantChart	
+23	E	contingency-plan	コンティンジェンシー計画	0	起きたらどう動く？	flowchart	
+24	E	poc-plan	仮説検証ボード・PoC計画書	0	不確かな技術・仮説を採用していい？	表	
+25	F	impact-analysis	変更影響分析表	1	変更すると何が起こる？	表	
+26	F	dependency-map	依存関係図・影響範囲図	0	変更はどこまで波及する？	flowchart	
+27	F	decision-matrix	選択肢評価表	0	どの技術・仕様を選ぶ？	表	matrix
+28	F	adr	ADR・意思決定記録	1	なぜそう決めた？	文書	
+29	F	issue-log	課題管理表	1	発生中の問題をどの順で解く？	表	
+30	F	fishbone	特性要因図	0	なぜ問題が発生した？	flowchart	
+31	G	quality-plan	品質計画書・品質目標マトリクス	1	品質の目標と測り方は？	表	
+32	G	test-strategy	テスト戦略図	1	どのテストに投資する？	flowchart	
+33	G	quality-dashboard	品質ダッシュボード	0	品質は十分？	xychart	
+34	G	pareto	パレート図	0	どこを改善すると効果的？	xychart	pareto
+35	G	control-chart	管理図	0	この変動は異常？	xychart	control
+36	H	make-or-buy	Make or Buy分析表	1	外部サービスを使うべき？	表	
+37	H	supplier-register	外部依存・供給者管理台帳	1	外部依存が止まったらどうなる？	表	
+38	H	rfp	RFP・調達仕様書	0	調達先に何を求め、どう比べる？	表	
+39	I	release-plan	リリース計画・段階的ロールアウト図	1	どう段階的に出す？	flowchart	
+40	I	go-no-go	Go / No-Goチェックリスト	1	リリースしていい？	チェックリスト	
+41	I	compatibility-matrix	移行・互換性マトリクス	0	どの順で出せば壊れない？	表	
+42	I	handover	運用・保守引継ぎ資料	0	開発者がいなくても運用できる？	表	
+43	J	benefits-realization	成果評価レポート	1	作った結果、価値は生まれた？	表	
+44	J	closure-report	プロジェクト終結報告書	0	計画と実績はどうだった？	表	
+45	J	kpt	振り返りボード（KPT）	1	次の開発をどう改善する？	表	
+46	J	lessons-learned	教訓登録簿	0	次のプロジェクトに何を持ち越す？	表	

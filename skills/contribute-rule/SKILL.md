@@ -6,7 +6,7 @@ description: >
   プロジェクトの CLAUDE.md、.claude/rules/、コードベースから知見を収集し、
   再利用可能な Claude Code rule としてパッケージングして PR を作成するまでを一貫して行う。
   rule は .claude/rules/ に配置されるファイルであり、skill とは異なり frontmatter は不要。
-  RULE.md がルール本体となり、詳細ドキュメント (<rule-name>.md / <rule-name>.ja.md) を rules/ ディレクトリ直下に配置する。
+  RULE.md がルール本体となり、詳細ドキュメント ({rule-name}.md / {rule-name}.ja.md) を rules/ ディレクトリ直下に配置する。
   Use when requested: "知見をルールとして登録", "contribute rule", "このルールを共有",
   "ルールとして登録", "ルールをまとめて PR", "この規約をルール化",
   "ベストプラクティスをルールに".

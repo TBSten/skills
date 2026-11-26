@@ -139,6 +139,19 @@ gh skill install tbsten/skills status-board
 <td>作業状態 (PR / issue / ローカルブランチ / 未決事項) を依存グラフ + カンバンの 1 枚 HTML に集約</td>
 </tr>
 <tr>
+<td></td>
+<td><a href="./skills/pm.ja.md">pm</a></td>
+<td>
+
+```sh
+gh skill install tbsten/skills pm
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>PM の困りごとを診断して助言し、判断に効く資料 (憲章・WBS・リスク・ADR 等 46 種) だけ作る</td>
+</tr>
+<tr>
 <td>🟢 Kotlin / Android アプリ開発</td>
 <td><a href="./skills/kotlin-tuple.ja.md">kotlin-tuple</a></td>
 <td>

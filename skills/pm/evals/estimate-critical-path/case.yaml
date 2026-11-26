@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: estimate-critical-path
+expected_outcome: |
+  工数・コスト見積り表 12 とネットワーク図・クリティカルパス 11 を pm.mjs new で作り、tasks.md の値を
+  pm:calc の表だけに書いて pm.mjs sync で計算させる (手計算した結果や図を書かない)。
+  PERT 合計は 5 + 3 + 4 + 8 + 3 = 23 人日、最頻値でのクリティカルパスは A → D → E の 15 日。
+  チャットの悲観値が大きく不確実性が高いことを指摘し、PoC やバッファなどの助言を添える。
+context:
+  scaffold_script: place-files.sh
