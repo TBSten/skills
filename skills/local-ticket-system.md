@@ -1,5 +1,7 @@
 # local-ticket-system
 
+[日本語](./local-ticket-system.ja.md)
+
 Markdown-based local ticket management system for any project.
 
 ## Install
@@ -61,7 +63,7 @@ The deterministic work is handled by bundled scripts (run them as-is; no need to
 
 ## Ticket Lifecycle
 
-### task / bug
+### `task` / `bug`
 
 1. **Created** — Ticket placed in `.local/ticket/`
 2. **In progress** — Work through the checklist items
@@ -69,7 +71,7 @@ The deterministic work is handled by bundled scripts (run them as-is; no need to
 4. **Closed** — Verification complete → move to `closed/`
 5. **Deferred** — Intentionally postponed → move to `deferred/` (intended to revisit later)
 
-### chapter
+### `chapter`
 
 1. **Created** — Chapter placed in `.local/ticket/`
 2. **Planning** — Refine scope and open questions

@@ -111,6 +111,7 @@ orchestrator が以下を順に行う。
 1. **README の一括更新** — 各 subagent の報告 (status / group / 1 行説明) をもとに、`README.md` / `README.ja.md` の該当テーブルへ全成果物の行を追加する。グループのまとまり・グループセルの書式・status 絵文字は `<cloneDir>/.claude/skills/contribute-<type>.md` の規約に従う
 1.5. **plugin marketplace の再生成** — skill を 1 つでも追加・更新した場合、`<cloneDir>/scripts/marketplace/generate.sh` があれば読解・書き換えせずそのまま実行し、`.claude-plugin/marketplace.json` を再生成する (`OK marketplace: ...` が出れば成功。手順の詳細は `<cloneDir>/.claude/skills/contribute-skill.md` の Step 6)
 2. **セルフレビュー** — 成果物ごとに、対応するガイド (`contribute-<type>.md`) のセルフレビュー項目に従って確認する (「PR 前セルフレビュー: AI 責務最小化チェックリスト」を含む)。status / group の SSoT と README の一致、README 説明セル 80 文字以内も確認する
+2.5. **ドキュメントの機械検査** — `<cloneDir>/scripts/docs-check/check.sh --base origin/main` があれば、読解・書き換えせずそのまま実行し、`OK docs-check` になるまで直す (README と SSoT の一致・日英の組と構成・リンク・日本語の言い換えと文の長さを検査する。`--fix` で言い換えは自動で直る)。詳細ドキュメントの書き方は `<cloneDir>/.claude/rules/docs-writing.md` に従う。script が無い古い clone なら飛ばす
 3. **プロジェクト固有情報の除外チェック** — 全成果物を横断して、プロジェクト固有のパス・URL・認証情報・個人名等が含まれていないか確認し、結果をユーザーに報告する
 4. **ユーザー確認** — 以下の形式で提示し、**明示的な許可を得てから** push・PR 作成を実行する:
 

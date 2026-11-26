@@ -1,5 +1,7 @@
 # check-method-level
 
+[日本語](./check-method-level.ja.md)
+
 **Score how strong a testing / verification method is** on 9 axes, and report it as a Verification Score and a Level.
 Puts "wrote a unit test", "looked at the screen", and "read the code and it seemed fine" on the same yardstick.
 

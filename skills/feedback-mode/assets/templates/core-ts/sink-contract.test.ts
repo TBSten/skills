@@ -1,4 +1,4 @@
-// Sink の契約テスト（vitest）。file と memory に同じテストを掛ける。新しい実装を足したら makers に 1 つ足すだけでよい。【実績: Web 参照実装】
+// Sink の契約テスト（vitest）。file と memory に同じテストを掛ける。新しい実装を足したら makers に 1 つ足すだけでよい。
 // 回し方: 導入先で `npx vitest run <このフォルダ>`（vitest を devDependencies に入れる）。
 import { mkdir, mkdtemp, readdir, readFile, rename, rm, stat, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'

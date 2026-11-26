@@ -7,11 +7,11 @@ KSP plugin (Symbol Processor) プロジェクトを [cream.kt](https://github.co
 3 モジュール構成・4 層の processor 設計・golden ファイルによるテスト基盤に加え、作った後も構成が
 崩れないようにアーキテクチャルールを生成先に配置する。
 
-機械的な作業 — `example/` のコピー、ソースセットへのディレクトリ再マッピング、全プレースホルダー
-置換、`Greeting*` / `Example*` 系ファイルの rename、rules の配置 — は `scripts/scaffold.sh`
-(`--dry-run` / `--force` / `--skip-*` オプション付き) が決定的に行い、`scripts/verify.sh` が
-ビルド確認 (ksp テスト・golden・`jvmTest`・ktlint・BCV の `apiCheck`) をログ保存 (`.local/tmp/`)
-付きで実行する。AI エージェントの責務は、入力の確認・script の実行・配置ファイルのレビュー・
+機械的な作業は `scripts/scaffold.sh` (`--dry-run` / `--force` / `--skip-*` オプション付き) が決定的に行う。
+`example/` のコピー、ソースセットへのディレクトリ再マッピング、全プレースホルダーの置換、
+`Greeting*` / `Example*` 系ファイルの rename、rules の配置がこれにあたる。
+ビルドの確認 (ksp テスト・golden・`jvmTest`・ktlint・BCV の `apiCheck`) は `scripts/verify.sh` が実行し、
+ログを `.local/tmp/` に保存する。AI エージェントの責務は、入力の確認・script の実行・配置ファイルのレビュー・
 golden と API dump の初回記録の確認だけ。
 
 インストール不要の一回限り版は
@@ -113,5 +113,5 @@ buffer へ書き、空ならファイル自体を開かない (空の `package` 
 
 - [`kotlin-maven-central-publish`](./kotlin-maven-central-publish.ja.md) — このスキルが意図的に
   重複させていない Maven Central 公開の完全手順 (GPG・secrets・Sonatype)
-- [`kotlin-compiler-plugin-setup`](./kotlin-compiler-plugin-setup.ja.md) — symbol processor ではなく
+- [`kotlin-compiler-plugin`](./kotlin-compiler-plugin.ja.md) — symbol processor ではなく
   Kotlin **compiler** plugin (FIR/IR) を作る場合

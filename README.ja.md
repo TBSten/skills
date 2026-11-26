@@ -139,6 +139,19 @@ gh skill install tbsten/skills status-board
 <td>作業状態 (PR / issue / ローカルブランチ / 未決事項) を依存グラフ + カンバンの 1 枚 HTML に集約</td>
 </tr>
 <tr>
+<td></td>
+<td><a href="./skills/pm.ja.md">pm</a></td>
+<td>
+
+```sh
+gh skill install tbsten/skills pm
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>PM の困りごとを診断して助言し、判断に効く資料 (憲章・WBS・リスク・ADR 等 46 種) だけ作る</td>
+</tr>
+<tr>
 <td>🟢 Kotlin / Android アプリ開発</td>
 <td><a href="./skills/kotlin-tuple.ja.md">kotlin-tuple</a></td>
 <td>
@@ -192,29 +205,16 @@ gh skill install tbsten/skills kmp-snapshot-testing-setup
 </tr>
 <tr>
 <td>🟣 Kotlin ライブラリ/ツール開発</td>
-<td><a href="./skills/kotlin-compiler-plugin-setup.ja.md">kotlin-compiler-plugin-setup</a></td>
+<td><a href="./skills/kotlin-compiler-plugin.ja.md">kotlin-compiler-plugin</a></td>
 <td>
 
 ```sh
-gh skill install tbsten/skills kotlin-compiler-plugin-setup
+gh skill install tbsten/skills kotlin-compiler-plugin
 ```
 
 </td>
 <td>🧪 Experimental</td>
-<td>基本的なツールチェインを揃えた Kotlin Compiler Plugin プロジェクト のセットアップ</td>
-</tr>
-<tr>
-<td></td>
-<td><a href="./skills/kotlin-compiler-plugin-dev.ja.md">kotlin-compiler-plugin-dev</a></td>
-<td>
-
-```sh
-gh skill install tbsten/skills kotlin-compiler-plugin-dev
-```
-
-</td>
-<td>🧪 Experimental</td>
-<td>Kotlin Compiler Plugin の開発・レビューを支援する</td>
+<td>Kotlin compiler plugin の新規作成・開発・レビュー・Kotlin 版対応・モジュール横断収集</td>
 </tr>
 <tr>
 <td></td>
@@ -267,19 +267,6 @@ gh skill install tbsten/skills ksp-plugin-setup
 </td>
 <td>🧪 Experimental</td>
 <td>KSP プラグインを 3 モジュール構成でスキャフォールド</td>
-</tr>
-<tr>
-<td></td>
-<td><a href="./skills/collector-compiler-plugin.ja.md">collector-compiler-plugin</a></td>
-<td>
-
-```sh
-gh skill install tbsten/skills collector-compiler-plugin
-```
-
-</td>
-<td>🧪 Experimental</td>
-<td>モジュール横断でアノテーション付きクラスをコンパイル時に収集する Compiler Plugin の scaffold</td>
 </tr>
 <tr>
 <td>🔵 Web フロントエンド</td>
@@ -370,7 +357,7 @@ gh skill install tbsten/skills feedback-mode
 
 </td>
 <td>🧪 Experimental</td>
-<td>debug ビルド専用のアプリ内フィードバックモードを構築し、溜まった記録を Claude Code が消化する。agent の指摘を人がボタンで答える Review と、判断の記録も扱う</td>
+<td>debug ビルド限定のフィードバックモードをアプリに組み込み、溜まった記録を Claude Code に消化させる</td>
 </tr>
 </table>
 
@@ -446,7 +433,7 @@ curl -fsSL https://rules.tbsten.me/i | \
 
 <summary> ルールのインストール方法 </summary>
 
-ルールは `rules/install.sh` 経由でインストールします。`RULE.md` を `.claude/rules/` に、参照ファイルをカレントディレクトリにダウンロードします。
+ルールは `rules/install.sh` 経由でインストールする。`RULE.md` を `.claude/rules/` に、参照ファイルをカレントディレクトリにダウンロードする。
 
 ```sh
 curl -fsSL https://rules.tbsten.me/i | \
@@ -477,7 +464,7 @@ curl -fsSL https://rules.tbsten.me/i | bash -s -- kmp-snapshot-testing -r=abc123
 
 ## 💬 利用可能なプロンプト
 
-スキルをインストールせずに使える一回限りのプロンプト集。「実行」列のプロンプトをコピーして Claude Code に貼り付けると実行できます。
+スキルをインストールせずに使える一回限りのプロンプト集。「実行」列のプロンプトをコピーして Claude Code に貼り付けると実行できる。
 
 <table>
 <tr>

@@ -56,6 +56,29 @@ fm_value() {
 
 valid_status=" WIP Experimental Active Active-Prime Archived "
 
+# SKILL.md の description に角括弧 (< >) があると claude.ai の marketplace 同期で
+# "description cannot contain XML tags" 警告になり、角括弧を除いた文で保存される。
+# plugin に入る skill ディレクトリ配下の SKILL.md は入れ子 (assets 内のテンプレート等) も読まれるので全部見る。
+#   desc_has_angle <file> → description に < か > があればその行を出す
+desc_has_angle() {
+  awk '
+    NR == 1 { if ($0 != "---") exit; next }
+    $0 == "---" { exit }
+    /^[^ \t]/ { in_desc = 0 }
+    /^description:/ {
+      in_desc = 1
+      v = substr($0, 13); sub(/^[ \t]*[>|][-+]?[ \t]*$/, "", v)
+      if (v ~ /[<>]/) print v
+      next
+    }
+    in_desc && /[<>]/ { print }' "$1"
+}
+while IFS= read -r f; do
+  hit="$(desc_has_angle "$f")"
+  [ -z "$hit" ] ||
+    die "${f#"$ROOT"/} の description に角括弧 (< >) がある: $(echo "$hit" | head -1 | sed 's/^[ \t]*//')" "claude.ai の plugin 同期で XML タグ扱いの警告になり、角括弧を除いた文で保存される" "description 内のプレースホルダを {name} のような波括弧に書き換える"
+done < <(find "$ROOT/skills" -name SKILL.md -not -path '*/evals/*' | sort)
+
 # skill 一覧を {name, group, status} の JSON 配列にする
 skills_json="[]"
 for f in "$ROOT"/skills/*/SKILL.md; do

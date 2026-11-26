@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- src/debug/AndroidManifest.xml。main の manifest に merge される。release には入らない -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- main に INTERNET が無いアプリだけ。あるなら消す -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- main に networkSecurityConfig があるなら、その debug 版を src/debug/res/xml に同じ名前で置いて上書きする -->
+    <application android:networkSecurityConfig="@xml/feedback_network_security_config" />
+</manifest>

@@ -1,5 +1,7 @@
 # github-get-attachment-url
 
+[日本語](./github-get-attachment-url.ja.md)
+
 Upload local files to GitHub and get their `user-attachments` URLs — without creating an issue.
 
 > [!WARNING]

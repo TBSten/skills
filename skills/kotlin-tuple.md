@@ -26,14 +26,14 @@ This skill auto-generates up to 8 files:
 
 | File | Description | Required |
 |---|---|---|
-| [`Tuple.kt`](skills/kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/Tuple.kt) | Data class definitions for Tuple0–TupleN | Required |
-| [`TupleFactory.kt`](skills/kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/TupleFactory.kt) | `tupleOf()` factory functions (0–N arguments) | Required |
-| [`TupleToList.kt`](skills/kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/TupleToList.kt) | `toList()` extension functions | Optional |
-| [`AbstractTupleSerializer.kt`](skills/kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/AbstractTupleSerializer.kt) + [`TupleSerializer.kt`](skills/kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/TupleSerializer.kt) | `KSerializer` implementations for kotlinx.serialization | Optional |
-| [`AwaitAll.kt`](skills/kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/AwaitAll.kt) | Type-safe `awaitAll()` for 1–N `Deferred` values | Optional |
-| [`AwaitAllCatching.kt`](skills/kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/AwaitAllCatching.kt) | `awaitAllCatching()` returning a Tuple of `Result` — one failure does not cancel the rest | Optional |
-| [`TupleResult.kt`](skills/kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/TupleResult.kt) | `allSuccessOrNull()` / `allSuccessOrFailure()` for a Tuple of `Result` | Optional |
-| [`AllNotNullOrNull.kt`](skills/kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/AllNotNullOrNull.kt) | `allNotNullOrNull()` top-level and extension functions | Optional |
+| [`Tuple.kt`](./kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/Tuple.kt) | Data class definitions for Tuple0–TupleN | Required |
+| [`TupleFactory.kt`](./kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/TupleFactory.kt) | `tupleOf()` factory functions (0–N arguments) | Required |
+| [`TupleToList.kt`](./kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/TupleToList.kt) | `toList()` extension functions | Optional |
+| [`AbstractTupleSerializer.kt`](./kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/AbstractTupleSerializer.kt) + [`TupleSerializer.kt`](./kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/TupleSerializer.kt) | `KSerializer` implementations for kotlinx.serialization | Optional |
+| [`AwaitAll.kt`](./kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/AwaitAll.kt) | Type-safe `awaitAll()` for 1–N `Deferred` values | Optional |
+| [`AwaitAllCatching.kt`](./kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/AwaitAllCatching.kt) | `awaitAllCatching()` returning a Tuple of `Result` — one failure does not cancel the rest | Optional |
+| [`TupleResult.kt`](./kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/TupleResult.kt) | `allSuccessOrNull()` / `allSuccessOrFailure()` for a Tuple of `Result` | Optional |
+| [`AllNotNullOrNull.kt`](./kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/AllNotNullOrNull.kt) | `allNotNullOrNull()` top-level and extension functions | Optional |
 
 The max Tuple size (N), target module, and which optional files to generate are all confirmed interactively before generation.
 

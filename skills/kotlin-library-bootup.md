@@ -95,7 +95,7 @@ Native consumers need the Kotlin version the library was built with.
 ## Related Skills
 
 - [`ksp-plugin-setup`](./ksp-plugin-setup.md) — for a KSP symbol processor
-- [`kotlin-compiler-plugin-setup`](./kotlin-compiler-plugin-setup.md) / [`kotlin-compiler-plugin-dev`](./kotlin-compiler-plugin-dev.md) — for a Kotlin compiler plugin
+- [`kotlin-compiler-plugin`](./kotlin-compiler-plugin.md) — for a Kotlin compiler plugin
 - [`kmp-snapshot-testing-setup`](./kmp-snapshot-testing-setup.md) — snapshot and property-based testing
 - [`kotlin-maven-central-publish`](./kotlin-maven-central-publish.md) — GPG keys and GitHub Secrets for publishing
 - [`intellij-plugin-dev`](./intellij-plugin-dev.md) — for an IntelliJ plugin

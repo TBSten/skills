@@ -1,5 +1,7 @@
 # exploratory-pr-verification
 
+[日本語](./exploratory-pr-verification.ja.md)
+
 Operational rules for exploratory PR verification driven by multiple parallel subagents
 in a Kotlin project.
 
@@ -48,12 +50,12 @@ library / build tooling).
 
 ## Core constraints (override everything else)
 
-The two rules that took the most user repetitions to internalize, promoted to override-level:
+These two rules override every other instruction in the skill.
 
-- **A. Never stop the loop** — after a single iteration completes, mechanically walk the §17
-  termination checklist; if unmet, kick the next iteration immediately. Don't ask "what next?"
-- **B. Reflect user feedback into the skill immediately** — any new operational rule the user
-  mentions even once must land in this skill's files in the same turn, not as ad-hoc prompt
+- **A. Never stop the loop** — after one verification pass finishes, go through the termination
+  conditions in SKILL.md §17. If any is unmet, start the next pass right away. Don't ask the user what to do next
+- **B. Reflect user feedback into the skill on the spot** — any new operational rule the user
+  mentions even once goes into the skill's files in the same turn, not into ad-hoc prompt
   tweaks or session memory
 
 ## Temporary directory convention

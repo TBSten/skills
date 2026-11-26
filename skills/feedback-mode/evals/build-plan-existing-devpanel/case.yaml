@@ -1,7 +1,7 @@
 schema_version: "1.1"
 name: build-plan-existing-devpanel
 expected_outcome: |
-  build 側を読み、書き込む前にプランを示して承認を待つ。プランは
+  setup 側（setup.md と web の dom adapter）だけを読み、書き込む前にプランを示して承認を待つ。プランは
   既存のデバッグ基盤 (src/debug/DevPanel.ts の registerDevTab) にフィードバックモードの入口を 1 つ足し、新しいホットキー・FAB・ガードを作らない。
   本番除外は既存の import.meta.env.DEV + 動的 import (ビルド時に消える) に乗り、本番ビルドの dist/ を check-no-feedback-in-prod.sh で検査する。
   ログは既存の logger の recentLogs() を getRecentLogs に繋いで読むだけにし、ログ基盤の変更は別タスクにする。

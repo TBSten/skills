@@ -6,7 +6,7 @@ description: >
   プロジェクトの CLAUDE.md、.claude/rules/、コードベースから知見を収集し、
   再利用可能な Claude Code rule としてパッケージングして PR を作成するまでを一貫して行う。
   rule は .claude/rules/ に配置されるファイルであり、skill とは異なり frontmatter は不要。
-  RULE.md がルール本体となり、詳細ドキュメント (<rule-name>.md / <rule-name>.ja.md) を rules/ ディレクトリ直下に配置する。
+  RULE.md がルール本体となり、詳細ドキュメント ({rule-name}.md / {rule-name}.ja.md) を rules/ ディレクトリ直下に配置する。
   Use when requested: "知見をルールとして登録", "contribute rule", "このルールを共有",
   "ルールとして登録", "ルールをまとめて PR", "この規約をルール化",
   "ベストプラクティスをルールに".
@@ -155,6 +155,10 @@ Step 2 で整理した知見をもとに RULE.md を記述する。
 ## Step 4.5: セルフレビュー
 
 PR 作成前に以下を確認する。
+
+### ドキュメントの機械検査
+
+clone 先のルートで `scripts/docs-check/check.sh --base origin/main` があれば、読解・書き換えせずそのまま実行し、`OK docs-check` になるまで直す (README と SSoT の一致・日英の組と構成・リンク・日本語の言い換えと文の長さを検査する。`--fix` で言い換えは自動で直る)。詳細ドキュメントの書き方は clone 先の `.claude/rules/docs-writing.md` に従う (日本語版が原本、英語版はその訳)。script が無い古い clone なら、この項目は飛ばす。
 
 ### ファイル・フォーマットチェック
 

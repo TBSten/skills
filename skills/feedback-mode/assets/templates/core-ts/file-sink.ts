@@ -1,4 +1,4 @@
-// ファイルの Sink（TypeScript 版）。置き場のルートの下に、記録・archived・添付・上書きする文書（メモ）を置く。【実績: Web 参照実装】
+// ファイルの Sink（TypeScript 版）。置き場のルートの下に、記録・archived・添付・上書きする文書（メモ）を置く。
 //   <root>/yymmdd-xx.md            記録（Inbox）
 //   <root>/archived/yymmdd-xx.md   対応済み（Archive）
 //   <root>/attachments/<日時>/     添付（スクリーンショット）

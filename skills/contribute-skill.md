@@ -1,5 +1,7 @@
 # contribute-skill
 
+[日本語](./contribute-skill.ja.md)
+
 A Claude Code skill for contributing project knowledge to the [TBSten/skills](https://github.com/TBSten/skills) repository.
 
 ## Install
@@ -29,7 +31,7 @@ contribute skill: このプロジェクトのテスト戦略をスキル化し�
 1. **Collects knowledge** from the current project (CLAUDE.md, rules, skills, codebase)
 2. **Organizes** the knowledge into a structured skill format
 3. **Clones** TBSten/skills to a temp directory
-4. **Creates** skill files following the repository's conventions
+4. **Creates** skill files following the repository's conventions and passes the docs check (`scripts/docs-check/check.sh`)
 5. **Creates a PR** against TBSten/skills with all required files
 
 ## Requirements

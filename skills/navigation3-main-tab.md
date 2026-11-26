@@ -1,5 +1,7 @@
 # navigation3-main-tab
 
+[日本語](./navigation3-main-tab.ja.md)
+
 Bottom tab (BottomNavigation) management pattern using Navigation 3's SceneStrategy for Kotlin Multiplatform + Compose projects.
 
 ## Install

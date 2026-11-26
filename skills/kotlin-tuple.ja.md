@@ -2,7 +2,7 @@
 
 [English](./kotlin-tuple.md) | [DeepWiki](https://deepwiki.com/TBSten/skills)
 
-Kotlin / Kotlin Multiplatform プロジェクトに型安全な Tuple ユーティリティを生成する [Claude Code](https://docs.anthropic.com/en/docs/claude-code) スキルです。
+Kotlin / Kotlin Multiplatform プロジェクトに型安全な Tuple ユーティリティを生成する [Claude Code](https://docs.anthropic.com/en/docs/claude-code) スキル。
 
 ## クイックスタート
 
@@ -18,28 +18,28 @@ gh skill install tbsten/skills kotlin-tuple
 このプロジェクトに型安全な Tuple ユーティリティをデフォルト設定で追加して。
 ```
 
-これだけで、スキルがプロジェクト構造を検出し、設定を確認した上で Tuple ファイルを生成します。
+これだけで、スキルがプロジェクト構造を検出し、設定を確認した上で Tuple ファイルを生成する。
 
 ## 機能
 
-最大 8 ファイルを自動生成します。
+最大 8 ファイルを自動生成する。
 
 | ファイル | 内容 | 必須 |
 |---|---|---|
-| [`Tuple.kt`](skills/kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/Tuple.kt) | Tuple0〜TupleN のデータクラス定義 | 必須 |
-| [`TupleFactory.kt`](skills/kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/TupleFactory.kt) | `tupleOf()` ファクトリ関数 (0〜N 引数) | 必須 |
-| [`TupleToList.kt`](skills/kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/TupleToList.kt) | `toList()` 拡張関数 | 選択 |
-| [`AbstractTupleSerializer.kt`](skills/kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/AbstractTupleSerializer.kt) + [`TupleSerializer.kt`](skills/kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/TupleSerializer.kt) | kotlinx.serialization 用 `KSerializer` 実装 | 選択 |
-| [`AwaitAll.kt`](skills/kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/AwaitAll.kt) | 型安全な `awaitAll()` (Deferred 1〜N 個) | 選択 |
-| [`AwaitAllCatching.kt`](skills/kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/AwaitAllCatching.kt) | `Result` の Tuple を返す `awaitAllCatching()`。一部が失敗しても他は巻き込まれない | 選択 |
-| [`TupleResult.kt`](skills/kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/TupleResult.kt) | `Result` の Tuple 用 `allSuccessOrNull()` / `allSuccessOrFailure()` | 選択 |
-| [`AllNotNullOrNull.kt`](skills/kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/AllNotNullOrNull.kt) | `allNotNullOrNull()` トップレベル関数 + 拡張関数 | 選択 |
+| [`Tuple.kt`](./kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/Tuple.kt) | Tuple0〜TupleN のデータクラス定義 | 必須 |
+| [`TupleFactory.kt`](./kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/TupleFactory.kt) | `tupleOf()` ファクトリ関数 (0〜N 引数) | 必須 |
+| [`TupleToList.kt`](./kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/TupleToList.kt) | `toList()` 拡張関数 | 選択 |
+| [`AbstractTupleSerializer.kt`](./kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/AbstractTupleSerializer.kt) + [`TupleSerializer.kt`](./kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/TupleSerializer.kt) | kotlinx.serialization 用 `KSerializer` 実装 | 選択 |
+| [`AwaitAll.kt`](./kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/AwaitAll.kt) | 型安全な `awaitAll()` (Deferred 1〜N 個) | 選択 |
+| [`AwaitAllCatching.kt`](./kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/AwaitAllCatching.kt) | `Result` の Tuple を返す `awaitAllCatching()`。一部が失敗しても他は巻き込まれない | 選択 |
+| [`TupleResult.kt`](./kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/TupleResult.kt) | `Result` の Tuple 用 `allSuccessOrNull()` / `allSuccessOrFailure()` | 選択 |
+| [`AllNotNullOrNull.kt`](./kotlin-tuple/example/src/commonMain/kotlin/com/example/tuple/AllNotNullOrNull.kt) | `allNotNullOrNull()` トップレベル関数 + 拡張関数 | 選択 |
 
-Tuple の最大サイズ (N)、生成先モジュール、どのオプションファイルを生成するかは、生成前に対話的に確認されます。
+Tuple の最大サイズ (N)、生成先モジュール、どのオプションファイルを生成するかは、生成前に対話的に確認される。
 
 ## 使い方
 
-スキルをインストール後、Claude Code に以下のようなリクエストをすると自動的にスキルが発動します。
+スキルをインストール後、Claude Code に以下のようなリクエストをすると自動的にスキルが発動する。
 
 - 「Tuple を追加して」
 - 「tupleOf を生成して」
@@ -49,7 +49,7 @@ Tuple の最大サイズ (N)、生成先モジュール、どのオプション�
 - 「awaitAll の結果を Result で受け取りたい」
 - 「nullable な値をまとめて non-null チェックしたい」
 
-パッケージ名と出力先ディレクトリはプロジェクト構造から推測、または確認の上で生成されます。
+パッケージ名と出力先ディレクトリはプロジェクト構造から推測、または確認の上で生成される。
 
 ### Tuple データクラスと `tupleOf()`
 
@@ -82,7 +82,7 @@ val list: List<Int> = tupleOf(1, 2, 3).toList()          // [1, 2, 3]
 val mixed: List<Any> = tupleOf(1, "a", true).toList()    // [1, "a", true]
 ```
 
-返り値の型は `List<Base>` で、`Base` は全要素の共通スーパータイプです。
+返り値の型は `List<Base>` で、`Base` は全要素の共通スーパータイプ。
 
 ### `KSerializer` (kotlinx.serialization)
 
@@ -104,7 +104,7 @@ val decoded = Json.decodeFromString(serializer, json)
 // decoded: (1, hello, true, 3.14)
 ```
 
-> **Note**: `Tuple2` (= `Pair`) と `Tuple3` (= `Triple`) は kotlinx.serialization に組み込みのシリアライザがあるため、カスタムシリアライザは提供されません。
+> **Note**: `Tuple2` (= `Pair`) と `Tuple3` (= `Triple`) は kotlinx.serialization に組み込みのシリアライザがあるため、カスタムシリアライザは提供されない。
 
 ### `awaitAll()` (型安全)
 
@@ -122,9 +122,9 @@ coroutineScope {
 }
 ```
 
-`kotlinx.coroutines.awaitAll` は `List<T>` (共通型が必要) を返しますが、このオーバーロードは Tuple を返すことで各要素の型を保持します。
+`kotlinx.coroutines.awaitAll` は `List<T>` (共通型が必要) を返すが、このオーバーロードは Tuple を返すことで各要素の型を保持する。
 
-各オーバーロードには Tuple レシーバ形式もあります。
+各オーバーロードには Tuple レシーバ形式もある。
 
 ```kotlin
 coroutineScope {
@@ -149,14 +149,14 @@ name.onFailure { log(it) }
 val resolvedAge = age.getOrDefault(0)
 ```
 
-`awaitAll` は fail-fast です。1 つの `Deferred` が失敗すると構造化並行性により周囲のスコープごと
-キャンセルされ、例外が再送出されます。`awaitAllCatching` は代わりに `suspend () -> T` ブロックを
-受け取り、コルーチンを自身で起動します。そのため各結果は個別の `Result` に格納され、失敗した
-ブロックが他を巻き込むことはありません。`CancellationException` は常に再送出されるため、周囲の
-コルーチンのキャンセルは従来どおり機能します。
+`awaitAll` は fail-fast。1 つの `Deferred` が失敗すると構造化並行性により周囲のスコープごと
+キャンセルされ、例外が再送出される。`awaitAllCatching` は代わりに `suspend () -> T` ブロックを
+受け取り、コルーチンを自身で起動する。そのため各結果は個別の `Result` に格納され、失敗した
+ブロックが他を巻き込むことはない。`CancellationException` は常に再送出されるため、周囲の
+コルーチンのキャンセルは従来どおり機能する。
 
-Tuple レシーバ形式では `suspend {}` リテラルが必要です。`tupleOf` に素の `{ ... }` を渡すと
-非 suspend の関数型として推論されてしまうためです。
+Tuple レシーバ形式では `suspend {}` リテラルが必要。`tupleOf` に素の `{ ... }` を渡すと
+非 suspend の関数型として推論されてしまうため。
 
 ```kotlin
 val (name, age) = tupleOf(
@@ -176,8 +176,8 @@ val values: Tuple2<String, Int>? = results.allSuccessOrNull()
 val single: Result<Tuple2<String, Int>> = results.allSuccessOrFailure()  // 最初の失敗を返す
 ```
 
-`allSuccessOrNull()` は `allNotNullOrNull()` の `Result` 版です。`getOrNull()` と違い、成功値としての
-`null` は保持され、`Result.isFailure` だけが Tuple を畳み潰します。
+`allSuccessOrNull()` は `allNotNullOrNull()` の `Result` 版。`getOrNull()` と違い、成功値としての
+`null` は保持され、`Result.isFailure` だけが Tuple を畳み潰す。
 
 ### `allNotNullOrNull()`
 
@@ -199,15 +199,15 @@ val missing: Tuple2<String, Int>? = allNotNullOrNull("Alice", null)
 // missing: null
 ```
 
-全要素が non-null なら non-nullable な Tuple を返し、いずれかが null なら `null` を返します。
+全要素が non-null なら non-nullable な Tuple を返し、いずれかが null なら `null` を返す。
 
 ## リポジトリ
 
-このスキルは [TBSten/skills](https://github.com/TBSten/skills) の一部です。
+このスキルは [TBSten/skills](https://github.com/TBSten/skills) の一部。
 
 ```
 skills/kotlin-tuple/
 └── SKILL.md          ← `gh skill install` でインストールされるのはこのディレクトリのみ
 ```
 
-`kotlin-tuple.md` などのリポジトリレベルのファイルはスキルのインストールには含まれません。
+`kotlin-tuple.md` などのリポジトリレベルのファイルはスキルのインストールには含まれない。

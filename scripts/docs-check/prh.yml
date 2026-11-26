@@ -1,0 +1,60 @@
+# 言い換え辞書 (日本語の README / 詳細ドキュメントが対象)。言い換えの決まりはここが唯一の置き場。
+# 検査は scripts/docs-check/check.sh (textlint)。自動修正は check.sh --fix。
+# - 人に文章を直されて、機械的に置き換えられるものはここに 1 項目足す (理由のコメントと specs を付ける)
+# - 文脈で正しくも誤りにもなるものは入れない。.claude/rules/docs-writing.md の「文章の方針」に書く
+# - インラインコード・コードブロックは textlint の対象外なので、識別子やコマンドには当たらない
+version: 1
+rules:
+  # 句読点のあとに半角スペースを入れない。日本語の文中で空白が浮いて見え、行の折り返し位置もずれる。
+  - expected: 。
+    pattern: /。 +/
+    prh: 句点 (。) のあとの半角スペースを消す
+    specs:
+      - from: 1 枚にまとめる。 依存グラフで見せる
+        to: 1 枚にまとめる。依存グラフで見せる
+  - expected: 、
+    pattern: /、 +/
+    prh: 読点 (、) のあとの半角スペースを消す
+    specs:
+      - from: review コメント対応を、 1 回で処理する
+        to: review コメント対応を、1 回で処理する
+
+  # 長音の表記ゆれ。README・詳細ドキュメントで多い方 (ユーザー・サーバー) にそろえる。
+  - expected: ユーザー
+    pattern: /ユーザ(?!ー)/
+    specs:
+      - from: ユーザ影響
+        to: ユーザー影響
+  - expected: サーバー
+    pattern: /サーバ(?!ー)/
+    specs:
+      - from: 開発サーバを立てる
+        to: 開発サーバーを立てる
+
+  # 「全て」と「すべて」が混ざっていた。ひらがなにそろえる。
+  - expected: すべて
+    pattern: 全て
+    specs:
+      - from: 全ての画面
+        to: すべての画面
+
+  # 「等」は硬く、読み飛ばされやすい。「など」と書く。冪等・同等・対等・平等・均等 などの熟語は当てない。
+  - expected: など
+    pattern: /(?<![冪同対平均])等(?![価号しく])/
+    specs:
+      - from: toast 等の部品
+        to: toast などの部品
+      - from: 冪等な script
+        to: 冪等な script
+
+  # サービス・製品名の表記。URL (github.com) は小文字なので当たらない。
+  - expected: GitHub
+    pattern: /\bGithub\b/
+    specs:
+      - from: Github Actions で回す
+        to: GitHub Actions で回す
+  - expected: Claude Code
+    pattern: /\bClaude code\b/
+    specs:
+      - from: Claude code の skill
+        to: Claude Code の skill

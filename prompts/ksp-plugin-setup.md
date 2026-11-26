@@ -23,8 +23,16 @@ Fetch https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/prompts/ks
 ## What it does
 
 - Confirms project name, package / group ID, the first annotation name, setup scope and Kotlin/KSP versions before starting
-- Sparse-clones the repository and runs `scripts/scaffold.sh`, which deterministically copies `example/`, remaps directories into source sets, substitutes every placeholder, renames the `Greeting*` / `Example*` files, places the `META-INF/services` provider entry and installs five path-scoped `.claude/rules/*.md` files — the agent never hand-copies or hand-substitutes
-- The scaffolded project contains: the Gradle foundation (version catalog as single source of truth, `buildLogic` included build, `ksp.incremental=false`), the runtime module (annotation declarations only, every KMP target), the JVM-only ksp module (three root files plus `feature/` · `core/` · `options/` · `util/` with one-way dependencies), the `test` module with the KSP × KMP workaround, the kctfork + golden + Konsist test harness, and a GitHub Actions matrix CI
+- Sparse-clones the repository and runs `scripts/scaffold.sh`. The agent never hand-copies or hand-substitutes. The script deterministically does the following
+  - copies `example/` and remaps directories into source sets
+  - substitutes every placeholder and renames the `Greeting*` / `Example*` files
+  - places the `META-INF/services` provider entry and installs five path-scoped `.claude/rules/*.md` files
+- The scaffolded project contains:
+  - the Gradle foundation (version catalog as single source of truth, `buildLogic` included build, `ksp.incremental=false`)
+  - the runtime module (annotation declarations only, every KMP target)
+  - the JVM-only ksp module (three root files plus `feature/` · `core/` · `options/` · `util/` with one-way dependencies)
+  - the `test` module with the KSP × KMP workaround
+  - the kctfork + golden + Konsist test harness, and a GitHub Actions matrix CI
 - Reviews the placed-file list and the layering, then runs `scripts/verify.sh` (the four build checks, logs under `.local/tmp/`) and records and reads the first goldens
 
 ## Referenced files

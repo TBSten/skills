@@ -16,11 +16,11 @@ curl -fsSL \
 
 ### 2. コーディング開始:
 
-エラーハンドリング関連ファイル（`domain/**/error/`, `domain/**/util/`, `data/`, `core/**/*Catching*`, `app/**/ErrorHandling*`, `ui/**/error/`）を変更する際、Claude Code が自動的にエラーハンドリング規約を適用します。
+エラーハンドリング関連のファイルを変更すると、Claude Code が自動的にエラーハンドリング規約を適用する。対象は `domain/**/error/`, `domain/**/util/`, `data/`, `core/**/*Catching*`, `app/**/ErrorHandling*`, `ui/**/error/`。
 
 ## 機能
 
-**パストリガー型ルール**で、4 層 KMP アーキテクチャ全体のエラーハンドリングパターンを統一します。
+**パストリガー型ルール**で、4 層 KMP アーキテクチャ全体のエラーハンドリングパターンを統一する。
 
 ### 主要な規約
 
@@ -35,20 +35,20 @@ curl -fsSL \
 | 層 | 責務 |
 |---|---|
 | **Domain** | `AppError`, `HandleError`, `HandleWarning` interface 定義、retry/recover ユーティリティ提供 |
-| **Data** | 生の例外を `AppError` にマッピング、`CrashlyticsHandleError` 等の実装 |
+| **Data** | 生の例外を `AppError` にマッピング、`CrashlyticsHandleError` などの実装 |
 | **UI** | `HandleErrorDefault`（Observable なエラーリスト）の実装、ViewModel での `handleError { }` パターン |
 | **App** | DI バインディング設定、`plus` 演算子で複数ハンドラを合成 |
 
 ### コピーして使える完全実装
 
-`docs/error-handling/examples/` に規約に沿った完全実装を同梱しています。AI に毎回実装させるのではなく、必要なファイルをコピーして package を置換して使ってください（各ファイル先頭の TODO コメントに配置先の説明があります）:
+`docs/error-handling/examples/` に規約に沿った完全実装を同梱している。AI に毎回実装させるのではなく、必要なファイルをコピーして package を置換して使う（各ファイル先頭の TODO コメントに配置先の説明がある）:
 
 | ファイル | 内容 | 配置先の層 |
 |---|---|---|
 | `AppError.kt` | エラーモデル（sealed class、全サブクラス） | Domain |
 | `ToAppError.kt` | 例外 → AppError マッピング | Data |
 | `RunSuspendCatching.kt` | suspend 関数用 runCatching 代替 | Domain / Core |
-| `SuspendFunctionChain.kt` | retry 等 9 ユーティリティの完全実装 | Domain |
+| `SuspendFunctionChain.kt` | retry など 9 ユーティリティの完全実装 | Domain |
 | `HandleError.kt` / `HandleWarning.kt` | ハンドラ interface | Domain |
 | `HandleErrorDefault.kt` | UI 向けデフォルト実装（Observable なエラーリスト） | UI |
 | `ErrorHandlingProviders.kt` | DI バインディング（Metro 形式、DI に合わせて読み替え） | App |
@@ -65,4 +65,4 @@ curl -fsSL \
 
 インストール後、エラーコード体系やリトライ戦略をプロジェクトの要件に合わせて調整してください。
 
-> **注意:** 再インストールするとインストールされるファイルは上書きされます。`docs/error-handling/` 以下へのローカルなカスタマイズも上書きされる点に注意してください。
+> **注意:** 再インストールするとインストールされるファイルは上書きされる。`docs/error-handling/` 以下へのローカルなカスタマイズも上書きされる点に注意する。

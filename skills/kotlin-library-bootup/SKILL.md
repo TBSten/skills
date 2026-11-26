@@ -31,8 +31,7 @@ Kotlin / KMP ライブラリのプロジェクトを一式生成し、ビルド�
 | やりたいこと | 使う skill |
 |---|---|
 | KSP processor | `ksp-plugin-setup` |
-| compiler plugin / 複数 Kotlin 版対応 | `kotlin-compiler-plugin-setup` / `kotlin-compiler-plugin-dev` (+ kitakkun/kotlin-compiler-plugin-skills) |
-| モジュール横断の収集 (cross-module collection) | `collector-compiler-plugin` |
+| compiler plugin / 複数 Kotlin 版対応 / モジュール横断の収集 (cross-module collection) | `kotlin-compiler-plugin` (+ kitakkun/kotlin-compiler-plugin-skills) |
 | snapshot テスト / property-based テストの基盤 | `kmp-snapshot-testing-setup` |
 | GPG 鍵の作成・GitHub Secrets の登録 | `kotlin-maven-central-publish` の `setup-secrets.sh` |
 | IntelliJ plugin | `intellij-plugin-dev` |

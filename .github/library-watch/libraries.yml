@@ -26,19 +26,19 @@ libraries:
     paths: ["*.gradle.kts", gradle.properties, gradle/, buildSrc/, .github/, .claude/, CLAUDE.md, docs/, architecture-test/]
     last_commit: 1ba9b3627ab3c327a0b4cd2da331a32835fee409
   - repo: TBSten/compose-preview-lab
-    skills: [kotlin-library-bootup, kotlin-compiler-plugin-setup, kotlin-compiler-plugin-dev, exploratory-nightly-verification, exploratory-pr-verification, pr-fix-loop]
+    skills: [kotlin-library-bootup, kotlin-compiler-plugin, exploratory-nightly-verification, exploratory-pr-verification, pr-fix-loop]
     paths: ["*.gradle.kts", gradle.properties, gradle/, buildLogic/, .github/, .claude/, CLAUDE.md, docs/, scripts/]
     last_commit: b73a48c33b666fa9c78d62c519b059e3c28bd2cd
   - repo: TBSten/capture-code-compiler-plugin
-    skills: [kotlin-compiler-plugin-setup, kotlin-compiler-plugin-dev, kotlin-maven-central-publish]
+    skills: [kotlin-compiler-plugin, kotlin-maven-central-publish]
     paths: ["*.gradle.kts", gradle.properties, gradle/, buildSrc/, .github/, .claude/, .agents/, CLAUDE.md, docs/, compiler-plugin/compat/]
     last_commit: 34bc218e231242246339b82531877d079ebfc164
   - repo: TBSten/debuggable-compiler-plugin
-    skills: [kotlin-compiler-plugin-setup, kotlin-compiler-plugin-dev, kotlin-maven-central-publish]
+    skills: [kotlin-compiler-plugin, kotlin-maven-central-publish]
     paths: ["*.gradle.kts", gradle.properties, gradle/, .github/, .claude/, .agents/, CLAUDE.md, docs/, scripts/]
     last_commit: 8df304ff1df6e344875a4b965704e83d6877787d
   - repo: TBSten/kotlin-default-value-capture
-    skills: ["kotlin-compiler-plugin-setup", "kotlin-compiler-plugin-dev", "kotlin-maven-central-publish"]
+    skills: ["kotlin-compiler-plugin", "kotlin-maven-central-publish"]
     paths: ["*.gradle.kts", "gradle.properties", "gradle/", "buildSrc/", ".github/", ".claude/", ".agents/"]
     last_commit: 5363d90dbe7fc050ab0d505a082543def4a2c35e
 ignored:

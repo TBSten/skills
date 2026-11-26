@@ -2,7 +2,7 @@
 
 [English](./kotlin-maven-central-publish.md) | [DeepWiki](https://deepwiki.com/TBSten/skills)
 
-[kotlin-maven-central-publish スキル](../skills/kotlin-maven-central-publish.ja.md)の一回限りプロンプト版。Kotlin/KMP プロジェクトに Maven Central 公開設定 — Vanniktech Maven Publish による convention plugin (buildSrc / build-logic)、GPG 署名、Sonatype Central Portal 向け GitHub Actions CI/CD ワークフロー — をスキルのインストールなしでセットアップする。
+[kotlin-maven-central-publish スキル](../skills/kotlin-maven-central-publish.ja.md)の一回限りプロンプト版。Kotlin/KMP プロジェクトに Maven Central の公開設定を、スキルのインストールなしでセットアップする。設定するのは Vanniktech Maven Publish による convention plugin (buildSrc / build-logic)、GPG 署名、Sonatype Central Portal 向けの GitHub Actions CI/CD ワークフロー。
 
 ## 実行方法
 
@@ -15,7 +15,10 @@ https://raw.githubusercontent.com/TBSten/skills/refs/heads/main/prompts/kotlin-m
 ## やること
 
 - プロジェクト情報の収集 (Group ID、バージョン、ライセンス、GitHub URL、開発者情報、公開対象モジュール)
-- [`scripts/setup-publish.sh`](https://github.com/TBSten/skills/blob/main/skills/kotlin-maven-central-publish/scripts/setup-publish.sh) を `curl` で取得して実行 — `gradle/libs.versions.toml` への Vanniktech Maven Publish プラグインの冪等追記、convention plugin (buildSrc / build-logic) (`publish-convention.gradle.kts`) のプレースホルダー置換済み生成 (GitHub URL・ライセンス・開発者情報は `git remote` と `LICENSE` ファイルから自動推定)、`.github/workflows/publish.yml` / `publish-check.yml` の生成を一括で行う
+- [`scripts/setup-publish.sh`](https://github.com/TBSten/skills/blob/main/skills/kotlin-maven-central-publish/scripts/setup-publish.sh) を `curl` で取得して実行する。次を一括で行う
+  - `gradle/libs.versions.toml` に Vanniktech Maven Publish プラグインを冪等に足す
+  - convention plugin (buildSrc / build-logic) の `publish-convention.gradle.kts` を生成する。GitHub URL・ライセンス・開発者情報は `git remote` と `LICENSE` ファイルから推定して埋める
+  - `.github/workflows/publish.yml` / `publish-check.yml` を生成する
 - 公開対象の各モジュールに convention plugin を適用 (エージェントの判断)
 - `./gradlew publishToMavenLocal` でローカル動作確認
 - [`scripts/setup-secrets.sh`](https://github.com/TBSten/skills/blob/main/skills/kotlin-maven-central-publish/scripts/setup-secrets.sh) を取得して実行 — GPG 鍵の生成、キーサーバー送信、秘密鍵 export、`gh secret set` による 5 つの GitHub Secrets 登録までを対話で自動化。残る手作業は Sonatype Central Portal の User Token 発行だけ

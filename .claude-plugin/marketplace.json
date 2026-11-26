@@ -11,7 +11,7 @@
   "plugins": [
     {
       "name": "task-management",
-      "description": "Local Markdown ticket system and a status board for tracking tasks.",
+      "description": "Local Markdown ticket system, a status board for tracking tasks, and project management advice with PM document templates.",
       "source": "./",
       "strict": false,
       "category": "productivity",
@@ -21,6 +21,7 @@
       "homepage": "https://github.com/TBSten/skills",
       "skills": [
         "./skills/local-ticket-system",
+        "./skills/pm",
         "./skills/status-board"
       ]
     },
@@ -52,10 +53,8 @@
       },
       "homepage": "https://github.com/TBSten/skills",
       "skills": [
-        "./skills/collector-compiler-plugin",
         "./skills/intellij-plugin-dev",
-        "./skills/kotlin-compiler-plugin-dev",
-        "./skills/kotlin-compiler-plugin-setup",
+        "./skills/kotlin-compiler-plugin",
         "./skills/kotlin-library-bootup",
         "./skills/kotlin-maven-central-publish",
         "./skills/ksp-plugin-setup"

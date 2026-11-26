@@ -1,5 +1,5 @@
 /**
- * memory-sink.mjs — メモリの Sink（テスト・契約の確認・モックアップ用）。【追加】
+ * memory-sink.mjs — メモリの Sink（テスト・契約の確認・モックアップ用）。
  * 採番・競合・archived の数え方は file-sink と同じ規則（feedback-core.mjs の nextSeqFromIds）。
  */
 import { feedbackDay, entryId, nextSeqFromIds, ID_PATTERN, safeDocPath } from './feedback-core.mjs';

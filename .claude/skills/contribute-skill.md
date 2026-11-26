@@ -116,6 +116,7 @@ metadata:
 ```
 
 description は第三者視点で記述する (例: "This skill should be used when..." ではなく具体的な機能説明)。
+description に角括弧 (`<` `>`) を書かない。claude.ai の plugin 同期で XML タグ扱いの警告になり、角括弧を除いた文で保存される。プレースホルダは `{name}` のように波括弧で書く (`scripts/marketplace/generate.sh` が検出する)。
 
 #### status (必須)
 
@@ -186,6 +187,8 @@ example コードのパッケージ名は以下の規約に従う:
 - `skills/<skill-name>.md` (英語) — スキルの概要、使い方、生成されるファイルの説明
 - `skills/<skill-name>.ja.md` (日本語) — 上記の日本語版
 
+書き方は `.claude/rules/docs-writing.md` に従う。日本語版を先に書き、英語版はそれを訳す (節の構成・コードブロックは日英で 1 対 1)。H1 の直後に相手の言語へのリンク (`[English](./<name>.md)` / `[日本語](./<name>.ja.md)`) を置く。
+
 ### Step 5: README の更新
 
 `README.md` と `README.ja.md` の **Available Skills** テーブルに行を追加する。
@@ -248,18 +251,32 @@ scripts/marketplace/generate.sh
 - 新しいグループを作った場合は「plugin が定義されていないグループがある」で失敗する。`scripts/marketplace/plugins.json` の `plugins` に `{ "group", "name" (kebab-case), "category", "description" }` を 1 件追加してから再実行し、README の「🧩 Plugin としてインストール」表にも行を足す
 - CI (`.github/workflows/marketplace-check.yml`) が `generate.sh --check` と `claude plugin validate` を実行し、再生成漏れを検出する
 
+### Step 7: ドキュメントの検査
+
+人間向けドキュメント (README と詳細ドキュメント) の機械検査を通す。script をそのまま実行する:
+
+```bash
+scripts/docs-check/check.sh --base origin/main
+```
+
+- `OK docs-check` が出れば成功。CI (`.github/workflows/docs-check.yml`) も同じものを回す
+- 言い換え辞書 (`scripts/docs-check/prh.yml`) の指摘は `--fix` で直る。それ以外は ERROR の `fix:` に従って直す
+- 日本語版だけ・英語版だけを変えたと言われたら、もう一方にも同じ変更を入れる (表記だけの修正なら、コミットメッセージに `Docs-Translation-Not-Needed: <パス>` の行を入れる)
+- 内容が実体と合っているか・文章の方針に沿っているかは機械では見ない。気になるときは `.claude/skills/review-docs.md` でレビューする
+
 ## 既存スキルの更新
 
 1. `skills/<skill-name>/` 内の該当ファイルを編集する
 2. SKILL.md の `description` を変更した場合は `skills/<skill-name>.md` / `<skill-name>.ja.md` の説明も同期する
 3. 詳細ドキュメント (`skills/<skill-name>.md`, `<skill-name>.ja.md`) も必要に応じて更新する
 4. リソースの追加・削除も同ディレクトリ内で行う
-5. `name` (ディレクトリ名)・`metadata.group`・`metadata.status` を変えた、または skill を追加・削除した場合は Step 6 の `scripts/marketplace/generate.sh` を実行して `.claude-plugin/marketplace.json` を更新する (description や本文だけの変更なら不要)
-6. skill の振る舞いを変えたら、`evals/` があれば合わせて直す (古い期待値のままだと次の skill-eval で失敗扱いになる)。直したら `scripts/skill-eval/check-evals.sh --skill <name>` を通す
+5. `name` (ディレクトリ名)・`metadata.group`・`metadata.status` を変えた、または skill を追加・削除した場合は Step 6 の `scripts/marketplace/generate.sh` を実行して `.claude-plugin/marketplace.json` を更新する (description や本文だけの変更なら再生成は不要。ただし description を変えたら `--check` で角括弧が無いことを確かめる)
+6. Step 7 の `scripts/docs-check/check.sh --base origin/main` を通す。振る舞いを変えたのに詳細ドキュメントを直していなければ、直す
+7. skill の振る舞いを変えたら、`evals/` があれば合わせて直す (古い期待値のままだと次の skill-eval で失敗扱いになる)。直したら `scripts/skill-eval/check-evals.sh --skill <name>` を通す
 
 ## 注意点
 
-- `<skill-name>.md` (英語) と `<skill-name>.ja.md` (日本語) は **常に同期して更新** する
+- `<skill-name>.md` (英語) と `<skill-name>.ja.md` (日本語) は **常に同期して更新** する。日本語版が原本で、書き方は `.claude/rules/docs-writing.md`。PR 前に `scripts/docs-check/check.sh` を通す
 - テーブルは HTML `<table>` タグで記述し、Install 列のコマンドは ```sh code block で記載する
 - description は Claude Code がスキル発動を判断する最重要情報。具体的なトリガーフレーズを含めること
 - SKILL.md と references で情報を重複させない (Single Source of Truth)

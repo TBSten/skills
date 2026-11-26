@@ -136,7 +136,20 @@ gh skill install tbsten/skills status-board
 
 </td>
 <td>🧪 Experimental</td>
-<td>Collapse work state (PRs, issues, local branches, open questions) into one dependency graph + kanban HTML</td>
+<td>Put PRs, issues, branches and open questions in one dependency graph + kanban</td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./skills/pm.md">pm</a></td>
+<td>
+
+```sh
+gh skill install tbsten/skills pm
+```
+
+</td>
+<td>🧪 Experimental</td>
+<td>Diagnose PM trouble, advise, and draft only the docs that help decide (46 kinds)</td>
 </tr>
 <tr>
 <td>🟢 Kotlin / Android App Development</td>
@@ -192,29 +205,16 @@ gh skill install tbsten/skills kmp-snapshot-testing-setup
 </tr>
 <tr>
 <td>🟣 Kotlin Library / Tool Development</td>
-<td><a href="./skills/kotlin-compiler-plugin-setup.md">kotlin-compiler-plugin-setup</a></td>
+<td><a href="./skills/kotlin-compiler-plugin.md">kotlin-compiler-plugin</a></td>
 <td>
 
 ```sh
-gh skill install tbsten/skills kotlin-compiler-plugin-setup
+gh skill install tbsten/skills kotlin-compiler-plugin
 ```
 
 </td>
 <td>🧪 Experimental</td>
-<td>Set up a Kotlin Compiler Plugin project with the essential toolchain</td>
-</tr>
-<tr>
-<td></td>
-<td><a href="./skills/kotlin-compiler-plugin-dev.md">kotlin-compiler-plugin-dev</a></td>
-<td>
-
-```sh
-gh skill install tbsten/skills kotlin-compiler-plugin-dev
-```
-
-</td>
-<td>🧪 Experimental</td>
-<td>Support developing and reviewing Kotlin Compiler Plugins</td>
+<td>Setup, dev, review and Kotlin version support for compiler plugins</td>
 </tr>
 <tr>
 <td></td>
@@ -269,19 +269,6 @@ gh skill install tbsten/skills ksp-plugin-setup
 <td>Scaffold a KSP plugin with a 3-module layout</td>
 </tr>
 <tr>
-<td></td>
-<td><a href="./skills/collector-compiler-plugin.md">collector-compiler-plugin</a></td>
-<td>
-
-```sh
-gh skill install tbsten/skills collector-compiler-plugin
-```
-
-</td>
-<td>🧪 Experimental</td>
-<td>Scaffold a compiler plugin that collects annotated classes across modules</td>
-</tr>
-<tr>
 <td>🔵 Web Frontend</td>
 <td><a href="./skills/react-vite-supabase-starter.md">react-vite-supabase-starter</a></td>
 <td>
@@ -292,7 +279,7 @@ gh skill install tbsten/skills react-vite-supabase-starter
 
 </td>
 <td>🧪 Experimental</td>
-<td>Create a React + Vite + Tailwind v4 + shadcn/ui + TanStack + Supabase web app project</td>
+<td>Scaffold a React + Vite + Tailwind v4 + shadcn/ui + TanStack + Supabase web app</td>
 </tr>
 <tr>
 <td>⚫️ Git / GitHub</td>
@@ -370,7 +357,7 @@ gh skill install tbsten/skills feedback-mode
 
 </td>
 <td>🧪 Experimental</td>
-<td>Debug-only in-app feedback mode plus a Claude Code loop to triage the feedback, a Review flow where a human answers agent findings with buttons, and recorded decisions</td>
+<td>Add a debug-only in-app feedback mode and let Claude Code work through it</td>
 </tr>
 </table>
 

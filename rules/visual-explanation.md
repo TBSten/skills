@@ -5,7 +5,7 @@ group: Git / GitHub
 
 # visual-explanation Rule
 
-[Japanese](./visual-explanation.ja.md)
+[日本語](./visual-explanation.ja.md)
 
 A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) rule that makes every human-facing
 explanation (PR descriptions, ticket descriptions, reports) start with something visual: a diagram,
