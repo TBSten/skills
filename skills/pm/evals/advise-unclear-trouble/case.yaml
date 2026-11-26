@@ -1,0 +1,11 @@
+schema_version: "1.1"
+name: advise-unclear-trouble
+expected_outcome: |
+  pm skill の references/diagnosis.md に沿って、定例メモの症状 (承認経路の曖昧な仕様追加・仕様変更による手戻り・
+  iOS の属人化・完了時期が答えられない・決定理由の忘却) から原因の見立てを立て、資料が無くてもできる助言を出す。
+  作る資料は判断に効くものだけ (例: 変更影響分析 25・ADR 28・RACI 15・スキルマトリクス 16・WBS 09 / 見積り 12 など) に絞り、
+  46 種を全部作らない。資料は pm.mjs new で docs/pm/ に作り、メモにある事実で埋め、分からない数字・人・日付は
+  作らず「要確認:」として残す。最後に pm.mjs sync と check を通し (TODO が残っていない)、見えたこと・次の一手・要確認・
+  目次のパスを報告する。
+context:
+  scaffold_script: place-files.sh
