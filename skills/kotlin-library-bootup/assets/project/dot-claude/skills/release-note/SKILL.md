@@ -3,7 +3,7 @@ name: release-note
 description: >-
   example-lib のリリースノートとリリース準備資料を作り、リリース手順 (版 bump → GitHub Release を
   published → publish.yml が Maven Central へ publish) を案内する。前バージョンからの変更を
-  git log / merged PR から集め、.local/v<version>-release-note/ にまとめる。
+  git log / merged PR から集め、.local/v{version}-release-note/ にまとめる。
   「リリースノート」「release note」「リリース準備」「次のバージョンの変更をまとめて」と言われたら使う。
 ---
 

@@ -4,7 +4,7 @@ description: >
   Operational rules for a 60-minute single-shot exploratory verification of a Kotlin project's
   main branch (Android / JVM / KMP / Compose / server-side Kotlin). Runs sequentially through
   cat1–cat5 inside a single CI job (e.g. a nightly GitHub Actions workflow), writes findings
-  Markdown-by-Markdown to .local/tmp/exploratory-nightly-<date>/issues/<NN>-<slug>.md as it
+  Markdown-by-Markdown to .local/tmp/exploratory-nightly-{date}/issues/{NN}-{slug}.md as it
   goes, and produces a SUMMARY.md at the end. No PR side effects (no comments, no issue
   filing, no pushes). Tracks the latest Kotlin / Compose / Gradle / AGP releases alongside the
   project itself.
