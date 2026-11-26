@@ -179,7 +179,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
       - name: ./gradlew generateApiDocs
         run: ./gradlew generateApiDocs --stacktrace
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           package_json_file: docs/package.json
       - uses: actions/setup-node@v6
