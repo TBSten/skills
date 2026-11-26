@@ -27,6 +27,7 @@ Web 系の DOM 版（`assets/templates/adapters/web/dom/feedback-mode.js`）は�
 | web | react（+ Vite） | `web/react.md` | dom を使う | React 19 + Vite 7 で通し・スクショ・本番の検査を確認 |
 | web | astro | `web/astro.md` | `adapters/web/astro/` | Astro 7 の実サイトと最小プロジェクトで確認 |
 | web | single-html（agent が作る 1 枚の HTML） | `web/single-html.md` | `adapters/web/single-html/`（+ `scripts/single-html.mjs`） | PC・スマホ幅・保存できない状態で e2e を確認 |
+| web | chrome-extension（どのページでも選んでコピーする拡張） | `web/chrome-extension.md` | `adapters/web/chrome-extension/`（+ `scripts/chrome-extension.mjs`） | Chromium（画面あり）に読み込み、OS のキーとマウスで通し・CSP の厳しいページ・CONFIG の書き換えを確認 |
 | desktop | electron | `desktop/electron.md` | `adapters/desktop/electron/` | Electron 38 で通し・capturePage・asar の検査を確認 |
 | desktop | tauri | `desktop/tauri.md` | dom を使う | Tauri 2 + Vite 7（Linux）で通し・release の検査を確認 |
 | mobile | android（Jetpack Compose） | `mobile/android.md` | `adapters/mobile/compose/` + `adapters/mobile/android/` | エミュレータ（API 36.1）で通しと release の APK の検査を確認（docs だけで新しいアプリに導入する検証も通過）。別ウィンドウ（Dialog・Popup・ModalBottomSheet）の中は選べない。View（XML）の画面は未確認 |

@@ -56,7 +56,7 @@ Sink { kind, capabilities{put,list,read,archive,doc}
 | IPC | Electron の main（`registerFeedback`。チャネル `app:feedback-save`） | electron | `adapters/desktop/electron/main-feedback.mjs` |
 | toolbar のメッセージ | Astro の統合（`toolbar.on('feedback-mode:save')`。HMR の WebSocket に乗る） | astro | `adapters/web/astro/feedback-integration.ts` |
 | HTTP | 開発用サーバ `feedback-dev-server.mjs`（`node` で別プロセス） | dom・react・tauri・（モバイル） | `core/feedback-dev-server.mjs` |
-| クリップボード | 無い（人が会話に貼る） | single-html | （HTML の中に書く） |
+| クリップボード | 無い（人が会話に貼る） | single-html・chrome-extension | （HTML の中に書く）・`adapters/web/chrome-extension/content.js` の `copyTransport` |
 
 ### 3.1 結果の形
 
